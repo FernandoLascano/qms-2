@@ -6,7 +6,7 @@ export async function GET() {
     console.log('🔍 Probando conexión a la base de datos...')
     
     // Contar usuarios
-    const usuariosCount = await prisma.usuario.count()
+    const usuariosCount = await prisma.user.count()
     console.log('✅ Usuarios en la BD:', usuariosCount)
     
     // Contar trámites
