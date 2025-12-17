@@ -28,7 +28,7 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
     }
 
     // Generar el HTML del email
-    const html = templateFunction(data)
+    const html = templateFunction(data as any)
 
     console.log('📧 Enviando email:', {
       to,
