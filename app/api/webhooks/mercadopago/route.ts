@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         await prisma.pago.update({
           where: { id: pago.id },
           data: {
-            estado: 'PAGADO',
+            estado: 'APROBADO',
             mercadoPagoPaymentId: payment.id.toString()
           }
         })
