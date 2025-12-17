@@ -159,25 +159,29 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         })
 
         if (usuario) {
-          // Si es la etapa final (sociedad inscripta), enviar email especial
-          if (etapa === 'sociedadInscripta') {
-            await enviarEmailSociedadInscripta(
-              usuario.email,
-              usuario.name,
-              tramite.denominacionAprobada || tramite.denominacionSocial1,
-              tramite.cuit,
-              tramite.matricula,
-              id
-            )
-          } 
-          // Para otras etapas importantes, enviar email de progreso
-          else if (nombresEtapas[etapa]) {
-            await enviarEmailEtapaCompletada(
-              usuario.email,
-              usuario.name,
-              nombresEtapas[etapa],
-              id
-            )
+          try {
+            // Si es la etapa final (sociedad inscripta), enviar email especial
+            if (etapa === 'sociedadInscripta') {
+              await enviarEmailSociedadInscripta(
+                usuario.email,
+                usuario.name,
+                tramite.denominacionAprobada || tramite.denominacionSocial1,
+                tramite.cuit,
+                tramite.matricula,
+                id
+              )
+            } 
+            // Para otras etapas importantes, enviar email de progreso
+            else if (nombresEtapas[etapa]) {
+              await enviarEmailEtapaCompletada(
+                usuario.email,
+                usuario.name,
+                nombresEtapas[etapa],
+                id
+              )
+            }
+          } catch (emailError) {
+            console.error("Error al enviar email de etapa completada (no crítico):", emailError)
           }
         }
       }

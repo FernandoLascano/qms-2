@@ -231,13 +231,17 @@ export async function POST(request: Request) {
       })
     ))
 
-    // Enviar email de confirmación
-    await enviarEmailTramiteEnviado(
-      usuario.email,
-      usuario.name,
-      tramite.id,
-      data.denominacion1
-    )
+    // Enviar email de confirmación (no fallar si hay error)
+    try {
+      await enviarEmailTramiteEnviado(
+        usuario.email,
+        usuario.name,
+        tramite.id,
+        data.denominacion1
+      )
+    } catch (emailError) {
+      console.error("Error al enviar email de confirmación (no crítico):", emailError)
+    }
 
     // Crear historial de estado
     console.log('Creando historial...')

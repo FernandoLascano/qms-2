@@ -208,15 +208,19 @@ export async function POST(request: Request, { params }: RouteParams) {
       }
     })
 
-    // Enviar email de pago pendiente
+    // Enviar email de pago pendiente (no fallar si hay error)
     if (tramite.user) {
-      await enviarEmailPagoPendiente(
-        tramite.user.email,
-        tramite.user.name,
-        conceptoTexto,
-        parseFloat(monto),
-        id
-      )
+      try {
+        await enviarEmailPagoPendiente(
+          tramite.user.email,
+          tramite.user.name,
+          conceptoTexto,
+          parseFloat(monto),
+          id
+        )
+      } catch (emailError) {
+        console.error("Error al enviar email de pago pendiente (no crítico):", emailError)
+      }
     }
 
     return NextResponse.json({ 

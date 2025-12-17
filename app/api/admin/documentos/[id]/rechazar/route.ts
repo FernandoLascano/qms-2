@@ -50,13 +50,17 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
 
     if (usuario) {
-      await enviarEmailDocumentoRechazado(
-        usuario.email,
-        usuario.name,
-        documento.nombre,
-        observaciones,
-        documento.tramiteId
-      )
+      try {
+        await enviarEmailDocumentoRechazado(
+          usuario.email,
+          usuario.name,
+          documento.nombre,
+          observaciones,
+          documento.tramiteId
+        )
+      } catch (emailError) {
+        console.error("Error al enviar email de documento rechazado (no crítico):", emailError)
+      }
     }
 
     return NextResponse.json({ success: true })

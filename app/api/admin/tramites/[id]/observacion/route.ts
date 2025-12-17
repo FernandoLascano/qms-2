@@ -53,13 +53,17 @@ export async function POST(request: Request, { params }: RouteParams) {
     })
 
     if (usuario) {
-      await enviarEmailNotificacion(
-        usuario.email,
-        usuario.name,
-        'Nuevo mensaje del equipo',
-        mensaje,
-        id
-      )
+      try {
+        await enviarEmailNotificacion(
+          usuario.email,
+          usuario.name,
+          'Nuevo mensaje del equipo',
+          mensaje,
+          id
+        )
+      } catch (emailError) {
+        console.error("Error al enviar email de notificación (no crítico):", emailError)
+      }
     }
 
     return NextResponse.json({ success: true })

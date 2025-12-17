@@ -85,15 +85,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     })
 
-    // Enviar email al usuario
-    await enviarEmailValidacionTramite(
-      tramite.user.email,
-      tramite.user.name,
-      tramite.denominacionSocial1,
-      accion === 'VALIDADO',
-      observaciones || undefined,
-      id
-    )
+    // Enviar email al usuario (no fallar si hay error)
+    try {
+      await enviarEmailValidacionTramite(
+        tramite.user.email,
+        tramite.user.name,
+        tramite.denominacionSocial1,
+        accion === 'VALIDADO',
+        observaciones || undefined,
+        id
+      )
+    } catch (emailError) {
+      console.error("Error al enviar email de validación (no crítico):", emailError)
+    }
 
     // Crear historial de estado
     await prisma.historialEstado.create({

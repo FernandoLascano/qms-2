@@ -71,13 +71,17 @@ export async function POST(request: Request, { params }: RouteParams) {
     })
 
     if (usuario) {
-      await enviarEmailPagoPendiente(
-        usuario.email,
-        usuario.name,
-        conceptoTexto,
-        parseFloat(monto),
-        id
-      )
+      try {
+        await enviarEmailPagoPendiente(
+          usuario.email,
+          usuario.name,
+          conceptoTexto,
+          parseFloat(monto),
+          id
+        )
+      } catch (emailError) {
+        console.error("Error al enviar email de pago pendiente (no crítico):", emailError)
+      }
     }
 
     return NextResponse.json({ success: true })

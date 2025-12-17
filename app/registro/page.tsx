@@ -60,8 +60,12 @@ export default function RegistroPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Error al crear la cuenta')
+        const errorMessage = data.details 
+          ? `${data.error}: ${data.details}` 
+          : data.error || 'Error al crear la cuenta'
+        setError(errorMessage)
         setLoading(false)
+        console.error('Error en registro:', data)
         return
       }
 
