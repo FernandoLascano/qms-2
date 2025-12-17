@@ -1,0 +1,472 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// USUARIOS Y AUTENTICACIÓN
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  phone         String?
+  rol           Rol       @default(CLIENTE)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tramites             Tramite[]
+  documentos           Documento[]
+  notificaciones       Notificacion[]
+  pagos                Pago[]
+  mensajes             Mensaje[]
+  reunionesComoCliente Evento[]       @relation("ReunionesCliente")
+  reunionesComoAdmin   Evento[]       @relation("ReunionesAdmin")
+}
+
+enum Rol {
+  CLIENTE
+  ADMIN
+  ABOGADO
+}
+
+// TRÁMITES DE CONSTITUCIÓN
+model Tramite {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Datos básicos
+  jurisdiccion  Jurisdiccion
+  plan          Plan
+  estadoGeneral EstadoTramite @default(INICIADO)
+
+  // Datos de la sociedad
+  denominacionSocial1   String
+  denominacionSocial2   String?
+  denominacionSocial3   String?
+  denominacionAprobada  String?
+  objetoSocial          String  @db.Text
+  capitalSocial         Float
+  porcentajeIntegracion Int     @default(25)
+  domicilioLegal        String
+
+  // Datos del formulario del usuario (guardado como JSON)
+  datosUsuario Json?
+
+  // Socios (guardado como JSON)
+  socios Json
+
+  // Administradores
+  administradores Json
+
+  // Estados de cada etapa
+  formularioCompleto         Boolean   @default(false)
+  denominacionReservada      Boolean   @default(false)
+  denominacionReservadaFecha DateTime?
+  capitalDepositado          Boolean   @default(false)
+  tasaPagada                 Boolean   @default(false)
+  documentosRevisados        Boolean   @default(false)
+  documentosFirmados         Boolean   @default(false)
+  tramiteIngresado           Boolean   @default(false)
+  sociedadInscripta          Boolean   @default(false)
+
+  // Validación inicial del formulario
+  estadoValidacion EstadoValidacion @default(PENDIENTE_VALIDACION)
+  observacionesValidacion String? @db.Text
+
+  // Campos para recordatorios
+  recordatorioEstancado     Boolean @default(false)
+  alertaDenominacionEnviada Boolean @default(false)
+
+  // Fechas importantes
+  fechaReservaNombre   DateTime?
+  fechaDepositoCapital DateTime?
+  fechaPagoTasa        DateTime?
+  fechaIngresoTramite  DateTime?
+  fechaInscripcion     DateTime?
+
+  // Tracking de tiempo por etapa (timestamps de cuando se completó cada etapa)
+  fechaFormularioCompleto    DateTime?
+  fechaDenominacionReservada DateTime?
+  fechaCapitalDepositado     DateTime?
+  fechaTasaPagada            DateTime?
+  fechaDocumentosRevisados   DateTime?
+  fechaDocumentosFirmados    DateTime?
+  fechaTramiteIngresado      DateTime?
+  fechaSociedadInscripta     DateTime?
+
+  // Datos finales
+  cuit             String?
+  matricula        String?
+  numeroResolucion String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  documentos       Documento[]
+  pagos            Pago[]
+  notificaciones   Notificacion[]
+  mensajes         Mensaje[]
+  historialEstados HistorialEstado[]
+  enlacesPago      EnlacePago[]
+  eventos          Evento[]
+  cuentasBancarias CuentaBancaria[]
+}
+
+enum Jurisdiccion {
+  CORDOBA
+  CABA
+}
+
+enum Plan {
+  BASICO
+  EMPRENDEDOR
+  PREMIUM
+}
+
+enum EstadoTramite {
+  INICIADO
+  EN_PROCESO
+  ESPERANDO_CLIENTE
+  ESPERANDO_APROBACION
+  COMPLETADO
+  CANCELADO
+}
+
+enum EstadoValidacion {
+  PENDIENTE_VALIDACION
+  VALIDADO
+  REQUIERE_CORRECCIONES
+}
+
+// DOCUMENTOS
+model Documento {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  tipo        TipoDocumento?
+  nombre      String
+  descripcion String?
+  url         String
+  tamanio     Int
+  mimeType    String
+
+  estado EstadoDocumento @default(PENDIENTE)
+
+  // Fechas
+  fechaSubida     DateTime  @default(now())
+  fechaAprobacion DateTime?
+
+  // Observaciones
+  observaciones String? @db.Text
+
+  // Recordatorios
+  recordatorioEnviado Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TipoDocumento {
+  DNI_SOCIO
+  CUIT_SOCIO
+  COMPROBANTE_DOMICILIO
+  COMPROBANTE_DEPOSITO
+  ESTATUTO_FIRMADO
+  ACTA_CONSTITUTIVA
+  CERTIFICACION_FIRMA
+  RESOLUCION_FINAL
+  CONSTANCIA_CUIT
+  ESTATUTO_PARA_FIRMAR
+  ACTA_PARA_FIRMAR
+  DOCUMENTO_PARA_FIRMAR
+  OTROS
+}
+
+enum EstadoDocumento {
+  PENDIENTE
+  EN_REVISION
+  APROBADO
+  RECHAZADO
+}
+
+// PAGOS
+model Pago {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  concepto ConceptoPago
+  monto    Float
+  moneda   String       @default("ARS")
+
+  metodoPago MetodoPago?
+  estado     EstadoPago  @default(PENDIENTE)
+
+  // Datos de procesador de pagos
+  paymentId    String? @unique
+  preferenceId String?
+
+  // Mercado Pago
+  mercadoPagoId   String? // ID de la preferencia
+  mercadoPagoLink String? @db.Text // Link de pago
+
+  // Transferencia Bancaria
+  montoTransferencia         Float? // Monto con descuento por transferencia
+  datosBancarios             Json? // { banco, cbu, alias, titular }
+  comprobanteTransferenciaId String? // ID del documento comprobante
+
+  // Recordatorios
+  recordatorio3Dias    Boolean @default(false)
+  recordatorio7Dias    Boolean @default(false)
+  mercadoPagoPaymentId String? // ID del pago confirmado
+
+  // Fechas
+  fechaPago        DateTime?
+  fechaVencimiento DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ConceptoPago {
+  HONORARIOS_BASICO
+  HONORARIOS_EMPRENDEDOR
+  HONORARIOS_PREMIUM
+  DEPOSITO_CAPITAL
+  TASA_RETRIBUTIVA
+  TASA_RESERVA_NOMBRE
+  PUBLICACION_BOLETIN
+  CERTIFICACION_FIRMA
+  OTROS
+}
+
+enum MetodoPago {
+  MERCADO_PAGO
+  TRANSFERENCIA
+  EFECTIVO
+  TARJETA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PROCESANDO
+  APROBADO
+  RECHAZADO
+  REEMBOLSADO
+}
+
+// CUENTAS BANCARIAS POR TRÁMITE (por ejemplo, depósito de capital)
+model CuentaBancaria {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  // Tipo de cuenta dentro del flujo del trámite
+  // Ej: "DEPOSITO_CAPITAL"
+  tipo String
+
+  banco   String
+  cbu     String
+  alias   String?
+  titular String
+
+  montoEsperado Float
+
+  fechaInformacion DateTime @default(now())
+  fechaDeposito    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// NOTIFICACIONES
+model Notificacion {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  tramiteId String?
+  tramite   Tramite? @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  tipo    TipoNotificacion
+  titulo  String
+  mensaje String           @db.Text
+  leida   Boolean          @default(false)
+
+  link String?
+
+  createdAt DateTime @default(now())
+}
+
+enum TipoNotificacion {
+  INFO
+  EXITO
+  ALERTA
+  ERROR
+  ACCION_REQUERIDA
+  MENSAJE
+}
+
+// MENSAJES
+model Mensaje {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  contenido String  @db.Text
+  esAdmin   Boolean @default(false)
+  leido     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// HISTORIAL DE ESTADOS
+model HistorialEstado {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  estadoAnterior EstadoTramite?
+  estadoNuevo    EstadoTramite
+
+  descripcion String?
+
+  createdAt DateTime @default(now())
+}
+
+// CONFIGURACIÓN DEL SISTEMA
+model ConfiguracionSistema {
+  id    String @id @default(cuid())
+  clave String @unique
+  valor String @db.Text
+
+  descripcion String?
+
+  updatedAt DateTime @updatedAt
+}
+
+// PLANES Y PRECIOS
+model PlanPrecio {
+  id          String @id @default(cuid())
+  plan        Plan   @unique
+  precio      Float
+  descripcion String @db.Text
+
+  caracteristicas Json
+
+  activo Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// GASTOS POR JURISDICCIÓN
+model GastoJurisdiccion {
+  id           String       @id @default(cuid())
+  jurisdiccion Jurisdiccion @unique
+
+  tasaRetributiva    Float
+  tasaReservaNombre  Float?
+  publicacionBoletin Float?
+  certificacionFirma Float?
+
+  observaciones String? @db.Text
+
+  vigenciaDesde DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ENLACES DE PAGO EXTERNOS
+model EnlacePago {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  concepto String
+  monto    Float
+  enlace   String @db.Text
+
+  estado           EstadoEnlacePago @default(PENDIENTE)
+  reportadoVencido Boolean          @default(false)
+
+  fechaEnvio       DateTime  @default(now())
+  fechaVencimiento DateTime?
+  fechaPago        DateTime?
+
+  // Recordatorios
+  recordatorio3Dias Boolean @default(false)
+  recordatorio7Dias Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EstadoEnlacePago {
+  PENDIENTE
+  PAGADO
+  VENCIDO
+  CANCELADO
+}
+
+// EVENTOS Y CALENDARIO
+model Evento {
+  id        String   @id @default(cuid())
+  tramiteId String?
+  tramite   Tramite? @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  titulo      String
+  descripcion String?    @db.Text
+  tipo        TipoEvento
+
+  fechaInicio DateTime
+  fechaFin    DateTime?
+
+  // Para eventos relacionados con trámites
+  relacionadoCon String? // "denominacion", "pago", "documento", "reunion", etc.
+
+  // Para reuniones
+  clienteId String?
+  cliente   User?   @relation("ReunionesCliente", fields: [clienteId], references: [id])
+  adminId   String?
+  admin     User?   @relation("ReunionesAdmin", fields: [adminId], references: [id])
+
+  // Ubicación (para reuniones presenciales)
+  ubicacion   String?
+  linkReunion String? // Para reuniones virtuales
+
+  // Recordatorios
+  recordatorioEnviado Boolean @default(false)
+
+  // Estado
+  completado Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum TipoEvento {
+  REUNION_CLIENTE
+  VENCIMIENTO_DENOMINACION
+  VENCIMIENTO_PAGO
+  FECHA_LIMITE_DOCUMENTO
+  FECHA_LIMITE_TRAMITE
+  RECORDATORIO
+  OTRO
+}
