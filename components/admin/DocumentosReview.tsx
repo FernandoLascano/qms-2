@@ -115,7 +115,8 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
     }
   }
 
-  const getTipoTexto = (tipo: string) => {
+  const getTipoTexto = (tipo: string | null) => {
+    if (!tipo) return 'Sin tipo'
     switch (tipo) {
       case 'DNI_SOCIO': return 'DNI de Socio'
       case 'CUIT_SOCIO': return 'CUIT de Socio'
