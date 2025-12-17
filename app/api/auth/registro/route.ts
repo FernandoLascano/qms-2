@@ -26,9 +26,10 @@ export async function POST(request: Request) {
 
     console.log("📝 Intentando crear usuario:", { email, name })
 
-    // Verificar si el usuario ya existe
+    // Forzar conexión y verificar usuario
     let existingUser
     try {
+      await prisma.$connect()
       existingUser = await prisma.user.findUnique({
         where: { email }
       })
@@ -37,7 +38,8 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { 
           error: "Error de conexión a la base de datos",
-          details: process.env.NODE_ENV === 'development' ? dbError?.message : undefined
+          details: dbError?.message, // Mostramos el detalle para debug
+          code: dbError?.code
         },
         { status: 500 }
       )
