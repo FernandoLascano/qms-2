@@ -17,10 +17,12 @@ interface Pago {
   datosBancarios?: any
   estado: string
   createdAt: Date
-  mercadoPagoId?: string
-  mercadoPagoLink?: string
-  metodoPago?: string
-  comprobanteTransferenciaId?: string
+  mercadoPagoId?: string | null
+  mercadoPagoLink?: string | null
+  metodoPago?: string | null
+  comprobanteTransferenciaId?: string | null
+  fechaPago?: Date | null
+  fechaVencimiento?: Date | null
 }
 
 interface HonorariosMercadoPagoProps {
