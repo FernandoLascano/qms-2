@@ -42,7 +42,7 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
       to,
       subject,
       html,
-      reply_to: REPLY_TO_EMAIL
+      replyTo: REPLY_TO_EMAIL
     })
 
     console.log('✅ Email enviado exitosamente:', result)
