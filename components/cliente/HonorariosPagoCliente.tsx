@@ -149,7 +149,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                         <span className="flex items-center justify-center gap-2">
                           <ExternalLink className="h-5 w-5" />
                           Pagar con Mercado Pago
-                        </a>
+                        </span>
                       </Button>
                     </div>
                   )}
