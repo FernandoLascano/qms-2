@@ -142,16 +142,11 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                         </div>
                       </div>
                       <Button
-                        asChild
+                        onClick={() => pago.mercadoPagoLink && window.open(pago.mercadoPagoLink, '_blank', 'noopener,noreferrer')}
                         className="w-full bg-green-600 hover:bg-green-700"
                         size="lg"
                       >
-                        <a
-                          href={pago.mercadoPagoLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center justify-center gap-2"
-                        >
+                        <span className="flex items-center justify-center gap-2">
                           <ExternalLink className="h-5 w-5" />
                           Pagar con Mercado Pago
                         </a>
