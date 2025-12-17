@@ -36,15 +36,17 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
 
     // Notificar al usuario
-    await prisma.notificacion.create({
-      data: {
-        userId: enlace.tramite.userId,
-        tramiteId: enlace.tramiteId,
-        tipo: 'EXITO',
-        titulo: 'Pago Confirmado',
-        mensaje: `Hemos confirmado tu pago de ${enlace.concepto} por $${enlace.monto.toLocaleString('es-AR')}.`
-      }
-    })
+    if (enlace.tramite) {
+      await prisma.notificacion.create({
+        data: {
+          userId: enlace.tramite.userId,
+          tramiteId: enlace.tramiteId,
+          tipo: 'EXITO',
+          titulo: 'Pago Confirmado',
+          mensaje: `Hemos confirmado tu pago de ${enlace.concepto} por $${enlace.monto.toLocaleString('es-AR')}.`
+        }
+      })
+    }
 
     return NextResponse.json({ success: true })
 

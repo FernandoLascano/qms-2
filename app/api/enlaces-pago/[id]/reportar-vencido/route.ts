@@ -35,7 +35,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
 
     // Verificar que el usuario sea dueño del trámite
-    if (enlace.tramite.userId !== session.user.id) {
+    if (!enlace.tramite || enlace.tramite.userId !== session.user.id) {
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }

@@ -68,15 +68,17 @@ export async function POST(request: Request) {
         })
 
         // Notificar al usuario
-        await prisma.notificacion.create({
-          data: {
-            userId: pago.tramite.userId,
-            tramiteId: tramiteId,
-            tipo: 'EXITO',
-            titulo: '✅ Pago de Honorarios Confirmado',
-            mensaje: `Hemos recibido tu pago de ${concepto} por $${pago.monto.toLocaleString('es-AR')}. ¡Gracias!`
-          }
-        })
+        if (pago.tramite) {
+          await prisma.notificacion.create({
+            data: {
+              userId: pago.tramite.userId,
+              tramiteId: tramiteId,
+              tipo: 'EXITO',
+              titulo: '✅ Pago de Honorarios Confirmado',
+              mensaje: `Hemos recibido tu pago de ${concepto} por $${pago.monto.toLocaleString('es-AR')}. ¡Gracias!`
+            }
+          })
+        }
 
         // Notificar a los admins
         const admins = await prisma.user.findMany({

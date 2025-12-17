@@ -112,7 +112,7 @@ export async function POST(
 
     // Crear notificación para el destinatario
     const esAdmin = session.user.rol === 'ADMIN'
-    const destinatarioId = esAdmin ? tramite.userId : undefined
+    const destinatarioId = esAdmin && tramite ? tramite.userId : undefined
 
     if (destinatarioId) {
       await prisma.notificacion.create({
