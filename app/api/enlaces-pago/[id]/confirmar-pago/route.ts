@@ -103,10 +103,12 @@ export async function PATCH(
               if (error) {
                 console.error('Error de Cloudinary:', error)
                 reject(error)
-              } else {
+              } else if (result) {
                 console.log('Subido a Cloudinary exitosamente')
                 console.log('URL del archivo:', result.secure_url)
                 resolve(result)
+              } else {
+                reject(new Error('No se recibió resultado de Cloudinary'))
               }
             }
           )
