@@ -5,9 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { enviarEmailValidacionTramite } from '@/lib/emails/send'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function PATCH(request: Request, { params }: RouteParams) {
