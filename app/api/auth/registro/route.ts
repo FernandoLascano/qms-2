@@ -41,8 +41,13 @@ export async function POST(request: Request) {
       }
     })
 
-    // Enviar email de bienvenida
-    await enviarEmailBienvenida(user.email, user.name)
+    // Enviar email de bienvenida (no fallar si hay error)
+    try {
+      await enviarEmailBienvenida(user.email, user.name)
+    } catch (emailError) {
+      console.error("Error al enviar email de bienvenida (no crítico):", emailError)
+      // No fallar el registro si el email falla
+    }
 
     return NextResponse.json(
       { 
@@ -55,10 +60,18 @@ export async function POST(request: Request) {
       },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error en registro:", error)
+    console.error("Error details:", {
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack
+    })
     return NextResponse.json(
-      { error: "Error al crear usuario" },
+      { 
+        error: "Error al crear usuario",
+        details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+      },
       { status: 500 }
     )
   }
