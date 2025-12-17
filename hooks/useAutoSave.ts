@@ -11,7 +11,7 @@ interface UseAutoSaveOptions {
 export function useAutoSave({ data, onSave, delay = 3000, enabled = true }: UseAutoSaveOptions) {
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const previousDataRef = useRef<string>()
 
   useEffect(() => {
