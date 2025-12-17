@@ -237,7 +237,7 @@ export default function NuevoTramitePage() {
               let departamentoParsed = ''
               
               if (draft.domicilioLegal && draft.domicilioLegal !== 'A informar') {
-                const partesDomicilio = draft.domicilioLegal.split(',').map(p => p.trim())
+                const partesDomicilio = draft.domicilioLegal.split(',').map((p: string) => p.trim())
                 domicilioParsed = partesDomicilio[0] || ''
                 ciudadParsed = datosUsuario.ciudad || partesDomicilio[1] || ''
                 departamentoParsed = datosUsuario.departamento || partesDomicilio[2] || ''
