@@ -13,7 +13,7 @@ interface Pago {
   id: string
   concepto: string
   monto: number
-  montoTransferencia?: number
+  montoTransferencia?: number | null
   datosBancarios?: any
   estado: string
   createdAt: Date
