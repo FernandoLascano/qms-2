@@ -17,7 +17,7 @@ interface Comprobante {
   tamanio: number
   fechaSubida: Date
   observaciones: string | null
-  tipo: string
+  tipo: string | null
 }
 
 interface EnlacePago {
@@ -26,6 +26,8 @@ interface EnlacePago {
   monto: number
   estado: string
   fechaEnvio: Date
+  fechaVencimiento: Date | null
+  fechaPago: Date | null
 }
 
 interface ComprobantesReviewProps {

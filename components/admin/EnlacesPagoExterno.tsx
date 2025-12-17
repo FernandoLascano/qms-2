@@ -16,6 +16,7 @@ interface EnlacePago {
   estado: string
   fechaEnvio: Date
   fechaVencimiento: Date | null
+  fechaPago: Date | null
   reportadoVencido: boolean
 }
 
