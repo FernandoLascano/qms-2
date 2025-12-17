@@ -12,7 +12,7 @@ export function useAutoSave({ data, onSave, delay = 3000, enabled = true }: UseA
   const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-  const previousDataRef = useRef<string>()
+  const previousDataRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!enabled) return
