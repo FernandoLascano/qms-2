@@ -1,8 +1,8 @@
 'use client'
 
-import Link from 'next/link'
 import { useSession } from 'next-auth/react'
-import { Bell, User } from 'lucide-react'
+import { User } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 export function Header() {
   const { data: session } = useSession()
@@ -11,14 +11,8 @@ export function Header() {
     <header className="border-b bg-white">
       <div className="flex h-16 items-center justify-end px-4 md:px-6">
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Notificaciones */}
-          <Link 
-            href="/dashboard/notificaciones"
-            className="relative rounded-full p-2 hover:bg-gray-100 transition"
-          >
-            <Bell className="h-5 w-5 text-gray-600" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-          </Link>
+          {/* Notificaciones en tiempo real */}
+          <NotificationBell />
 
           {/* Usuario */}
           <div className="flex items-center gap-2 md:gap-3">
