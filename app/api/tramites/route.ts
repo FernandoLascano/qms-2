@@ -20,9 +20,91 @@ export async function POST(request: Request) {
     }
 
     console.log('Usuario autenticado:', session.user.id)
-    
+
     const data = await request.json()
     console.log('Datos recibidos:', JSON.stringify(data, null, 2))
+
+    // VALIDACIÓN DE CAMPOS REQUERIDOS
+    const erroresValidacion = []
+
+    // Validar campos básicos del paso 1
+    if (!data.nombre?.trim()) erroresValidacion.push('Nombre del usuario')
+    if (!data.apellido?.trim()) erroresValidacion.push('Apellido del usuario')
+    if (!data.dni?.trim()) erroresValidacion.push('DNI del usuario')
+    if (!data.telefono?.trim()) erroresValidacion.push('Teléfono del usuario')
+    if (!data.email?.trim()) erroresValidacion.push('Email del usuario')
+    if (!data.plan) erroresValidacion.push('Plan')
+    if (!data.jurisdiccion) erroresValidacion.push('Jurisdicción')
+
+    // Validar denominaciones del paso 2
+    if (!data.denominacion1?.trim()) erroresValidacion.push('Primera opción de denominación social')
+    if (!data.denominacion2?.trim()) erroresValidacion.push('Segunda opción de denominación social')
+    if (!data.denominacion3?.trim()) erroresValidacion.push('Tercera opción de denominación social')
+
+    // Validar objeto social y domicilio del paso 3
+    if (!data.objetoSocial?.trim() && !data.objetoPersonalizado?.trim()) {
+      erroresValidacion.push('Objeto social')
+    }
+    if (!data.sinDomicilio) {
+      if (!data.domicilio?.trim()) erroresValidacion.push('Domicilio legal')
+      if (!data.ciudad?.trim()) erroresValidacion.push('Ciudad')
+      if (!data.departamento?.trim()) erroresValidacion.push('Departamento')
+    }
+
+    // Validar capital social del paso 4
+    if (!data.capitalSocial || parseFloat(String(data.capitalSocial).replace(/\./g, '').replace(',', '.')) < 635600) {
+      erroresValidacion.push('Capital social (debe ser mayor o igual a $635,600)')
+    }
+
+    // Validar socios del paso 5
+    if (!data.socios || !Array.isArray(data.socios) || data.socios.length === 0) {
+      erroresValidacion.push('Debe haber al menos un socio')
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data.socios.forEach((socio: any, index: number) => {
+        if (!socio.nombre?.trim()) erroresValidacion.push(`Nombre del socio ${index + 1}`)
+        if (!socio.apellido?.trim()) erroresValidacion.push(`Apellido del socio ${index + 1}`)
+        if (!socio.dni?.trim()) erroresValidacion.push(`DNI del socio ${index + 1}`)
+        if (!socio.cuit?.trim()) erroresValidacion.push(`CUIT del socio ${index + 1}`)
+        if (!socio.domicilio?.trim()) erroresValidacion.push(`Domicilio del socio ${index + 1}`)
+        if (!socio.estadoCivil) erroresValidacion.push(`Estado civil del socio ${index + 1}`)
+        if (!socio.profesion?.trim()) erroresValidacion.push(`Profesión del socio ${index + 1}`)
+        if (!socio.aporteCapital || parseFloat(String(socio.aporteCapital).replace(/\./g, '').replace(',', '.')) <= 0) {
+          erroresValidacion.push(`Aporte de capital del socio ${index + 1}`)
+        }
+      })
+    }
+
+    // Validar administradores del paso 6
+    if (!data.administradores || !Array.isArray(data.administradores) || data.administradores.length < 2) {
+      erroresValidacion.push('Debe haber al menos 2 administradores')
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data.administradores.forEach((admin: any, index: number) => {
+        if (!admin.nombre?.trim()) erroresValidacion.push(`Nombre del administrador ${index + 1}`)
+        if (!admin.apellido?.trim()) erroresValidacion.push(`Apellido del administrador ${index + 1}`)
+        if (!admin.dni?.trim()) erroresValidacion.push(`DNI del administrador ${index + 1}`)
+        if (!admin.cuit?.trim()) erroresValidacion.push(`CUIT del administrador ${index + 1}`)
+        if (!admin.domicilio?.trim()) erroresValidacion.push(`Domicilio del administrador ${index + 1}`)
+        if (!admin.estadoCivil) erroresValidacion.push(`Estado civil del administrador ${index + 1}`)
+        if (!admin.profesion?.trim()) erroresValidacion.push(`Profesión del administrador ${index + 1}`)
+      })
+    }
+
+    // Validar fecha de cierre del paso 7
+    if (!data.fechaCierre?.trim()) erroresValidacion.push('Fecha de cierre de ejercicio')
+
+    // Si hay errores, devolver respuesta con detalles
+    if (erroresValidacion.length > 0) {
+      console.log('Errores de validación:', erroresValidacion)
+      return NextResponse.json(
+        {
+          error: 'Formulario incompleto',
+          details: `Faltan los siguientes campos obligatorios: ${erroresValidacion.join(', ')}`
+        },
+        { status: 400 }
+      )
+    }
 
     // Usar el usuario de la sesión
     const usuario = await prisma.user.findUnique({

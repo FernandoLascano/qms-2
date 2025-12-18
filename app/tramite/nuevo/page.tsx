@@ -549,8 +549,17 @@ export default function NuevoTramitePage() {
   }
 
   const handleSubmit = async () => {
+    // Validar TODOS los pasos antes de enviar
+    for (let paso = 1; paso <= 7; paso++) {
+      if (!validarPaso(paso)) {
+        toast.error(`Por favor completa todos los campos requeridos en el paso ${paso}`)
+        setPasoActual(paso) // Llevar al usuario al paso con error
+        return
+      }
+    }
+
     setGuardando(true)
-    
+
     try {
       const response = await fetch('/api/tramites', {
         method: 'POST',
