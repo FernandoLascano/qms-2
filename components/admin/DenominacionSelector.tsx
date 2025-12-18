@@ -7,16 +7,14 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, Search, AlertTriangle, Info } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface DenominacionSelectorProps {
   tramiteId: string
@@ -36,6 +34,7 @@ export default function DenominacionSelector({
   const router = useRouter()
   const [seleccionando, setSeleccionando] = useState(false)
   const [denominacionAConfirmar, setDenominacionAConfirmar] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen] = useState<Record<string, boolean>>({})
 
   const handleSeleccionar = async (denominacion: string) => {
     setSeleccionando(true)
@@ -58,6 +57,7 @@ export default function DenominacionSelector({
     } finally {
       setSeleccionando(false)
       setDenominacionAConfirmar(null)
+      setDialogOpen({})
     }
   }
 
@@ -83,8 +83,8 @@ export default function DenominacionSelector({
             <span className="font-bold">SELECCIONADA</span>
           </div>
         ) : (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+          <Dialog open={dialogOpen[texto]} onOpenChange={(open) => setDialogOpen(prev => ({ ...prev, [texto]: open }))}>
+            <DialogTrigger asChild>
               <Button
                 size="sm"
                 className="bg-purple-600 hover:bg-purple-700 shadow-sm transition-all active:scale-95"
@@ -92,34 +92,39 @@ export default function DenominacionSelector({
               >
                 Aprobar Esta
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="border-2 border-purple-100">
-              <AlertDialogHeader>
+            </DialogTrigger>
+            <DialogContent className="border-2 border-purple-100">
+              <DialogHeader>
                 <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
                   <Info className="h-8 w-8 text-purple-600" />
                 </div>
-                <AlertDialogTitle className="text-2xl text-center font-bold text-gray-900">
+                <DialogTitle className="text-2xl text-center font-bold text-gray-900">
                   ¿Confirmar Denominación?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-center text-gray-600 pt-2">
+                </DialogTitle>
+                <DialogDescription className="text-center text-gray-600 pt-2">
                   Estás por marcar <span className="font-bold text-purple-700">"{texto}"</span> como la denominación oficial aprobada para este trámite.
                   <br /><br />
                   Esto se verá reflejado en el panel del cliente.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="sm:justify-center gap-2 pt-4">
-                <AlertDialogCancel className="border-gray-300 font-semibold px-8">
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-center gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDialogOpen(prev => ({ ...prev, [texto]: false }))}
+                  className="border-gray-300 font-semibold px-8"
+                >
                   Cancelar
-                </AlertDialogCancel>
-                <AlertDialogAction
+                </Button>
+                <Button
                   onClick={() => handleSeleccionar(texto)}
                   className="bg-purple-600 hover:bg-purple-700 font-bold px-8 shadow-md"
+                  disabled={seleccionando}
                 >
-                  Sí, Confirmar
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {seleccionando ? 'Procesando...' : 'Sí, Confirmar'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         )}
       </div>
     )

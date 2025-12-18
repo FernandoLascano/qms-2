@@ -165,10 +165,38 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => {
+                        try {
+                          const url = doc.url
+                          if (url.includes('cloudinary.com') && url.toLowerCase().endsWith('.pdf')) {
+                            // Para PDFs en Cloudinary, forzar visualización correcta
+                            const viewUrl = url.replace('/upload/', '/upload/fl_attachment/')
+                            window.open(viewUrl, '_blank', 'noopener,noreferrer')
+                          } else {
+                            window.open(url, '_blank', 'noopener,noreferrer')
+                          }
+                        } catch (error) {
+                          console.error('Error al abrir documento:', error)
+                          toast.error('Error al abrir el documento')
+                        }
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                      Ver
+                    </Button>
+                    
+                    <a 
+                      href={doc.url} 
+                      download={doc.nombre}
+                      className="inline-block"
+                    >
                       <Button variant="outline" size="sm" className="gap-2">
-                        <Eye className="h-4 w-4" />
-                        Ver
+                        <Download className="h-4 w-4" />
+                        Bajar
                       </Button>
                     </a>
                     
