@@ -34,7 +34,8 @@ export async function GET(request: Request, { params }: RouteParams) {
       },
       select: {
         createdAt: true,
-        metadata: true
+        mensaje: true,
+        titulo: true
       }
     })
 
