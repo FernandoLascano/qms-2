@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect } from 'react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import { Button } from '@/components/ui/button'
