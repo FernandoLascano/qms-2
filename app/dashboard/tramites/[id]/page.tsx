@@ -135,76 +135,39 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Timeline de Progreso */}
       <TimelineProgreso tramite={tramite} />
 
-      {/* Mensajes del Equipo / Observaciones */}
-      {tramite.notificaciones && tramite.notificaciones.length > 0 && (
-        <MensajesDelEquipo notificaciones={tramite.notificaciones} />
-      )}
-      
-      {/* Documentos para Firmar */}
-      <DocumentosParaFirmar 
-        documentos={tramite.documentos || []}
-        tramiteId={tramite.id}
-      />
-
-      {/* Pagos - Grid de dos columnas */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Pagos de Honorarios - Mercado Pago */}
-        {tramite.pagos && tramite.pagos.length > 0 && (
-          <div id="pago-honorarios">
-            <HonorariosPagoCliente
-              pagos={tramite.pagos.map((pago: any) => ({
-                ...pago,
-                mercadoPagoLink: pago.mercadoPagoLink || undefined
-              }))}
-            />
-          </div>
-        )}
-
-        {/* Enlaces de Pago Externos (Tasas) */}
-        {tramite.enlacesPago && tramite.enlacesPago.length > 0 && (
-          <EnlacesPagoCliente enlaces={tramite.enlacesPago} />
-        )}
-      </div>
-
-      {/* Depósito de Capital - Card Independiente */}
-      <DepositoCapitalCliente
-        tramiteId={tramite.id}
-        capitalSocial={tramite.capitalSocial}
-        documentos={tramite.documentos || []}
-        notificaciones={tramite.notificaciones || []}
-      />
-
-      {/* Datos Finales - Si está inscripta */}
+      {/* Datos Finales - Si está inscripta (MOVIDO AQUÍ ARRIBA) */}
       {(tramite.cuit || tramite.matricula || tramite.numeroResolucion) && (
-        <>
-          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
+        <div className="space-y-6">
+          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg animate-in fade-in slide-in-from-top-4 duration-500">
             <CardHeader>
               <CardTitle className="text-green-900 flex items-center gap-2 text-2xl">
                 <CheckCircle className="h-8 w-8" />
                 🎉 ¡Tu Sociedad Está Inscripta!
               </CardTitle>
               <CardDescription className="text-green-700 text-base">
-                Estos son los datos oficiales de tu sociedad
+                Estos son los datos oficiales de tu sociedad. Ya puedes comenzar a operar.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-3 gap-4">
                 {tramite.cuit && (
                   <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium">CUIT</p>
-                    <p className="text-2xl font-bold text-green-900">{tramite.cuit}</p>
+                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">CUIT</p>
+                    <p className="text-2xl font-bold text-green-900 text-center">{tramite.cuit}</p>
                   </div>
                 )}
                 {tramite.matricula && (
                   <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium">Matrícula</p>
-                    <p className="text-2xl font-bold text-green-900">{tramite.matricula}</p>
+                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">Matrícula</p>
+                    <p className="text-2xl font-bold text-green-900 text-center">{tramite.matricula}</p>
                   </div>
                 )}
                 {tramite.numeroResolucion && (
                   <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium">Resolución</p>
-                    <p className="text-2xl font-bold text-green-900">{tramite.numeroResolucion}</p>
+                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">Fecha Inscrip.</p>
+                    <p className="text-2xl font-bold text-green-900 text-center">
+                      {tramite.fechaInscripcion ? format(new Date(tramite.fechaInscripcion), "dd/MM/yyyy") : tramite.numeroResolucion}
+                    </p>
                   </div>
                 )}
               </div>
@@ -217,26 +180,26 @@ async function TramiteDetallePage({ params }: PageProps) {
                 
                 if (resolucionDoc) {
                   return (
-                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 rounded-lg p-6 shadow-md">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-green-600 p-3 rounded-lg shadow-lg">
-                          <FileText className="h-8 w-8 text-white" />
+                    <div className="bg-white/60 backdrop-blur-sm border-2 border-green-400 rounded-xl p-6 shadow-md">
+                      <div className="flex flex-col md:flex-row items-center gap-6">
+                        <div className="bg-green-600 p-4 rounded-full shadow-lg shrink-0">
+                          <FileText className="h-10 w-10 text-white" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 text-center md:text-left">
                           <h3 className="text-xl font-bold text-green-900 mb-2">
-                            📄 Resolución de Inscripción
+                            📄 Resolución de Inscripción Oficial
                           </h3>
                           <p className="text-green-800 mb-4">
-                            Tu resolución de inscripción está lista. Este es el documento oficial que confirma que tu sociedad está inscripta.
+                            Ya puedes descargar el documento oficial emitido por el organismo.
                           </p>
                           <a
                             href={resolucionDoc.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors"
+                            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-full shadow-xl transition-all active:scale-95 hover:shadow-green-200"
                           >
-                            <FileText className="h-5 w-5" />
-                            Descargar Resolución de Inscripción
+                            <Download className="h-5 w-5" />
+                            DESCARGAR RESOLUCIÓN
                           </a>
                         </div>
                       </div>
@@ -247,7 +210,12 @@ async function TramiteDetallePage({ params }: PageProps) {
               })()}
             </CardContent>
           </Card>
-        </>
+        </div>
+      )}
+
+      {/* Mensajes del Equipo / Observaciones */}
+      {tramite.notificaciones && tramite.notificaciones.length > 0 && (
+        <MensajesDelEquipo notificaciones={tramite.notificaciones} />
       )}
 
       {/* Chat del Trámite - Antes de Información Detallada */}

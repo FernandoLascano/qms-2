@@ -139,11 +139,11 @@ export async function PATCH(
       }
     })
 
-    // Actualizar el enlace a estado PAGADO
+    // Actualizar el enlace a estado PROCESANDO (esperando validación)
     await prisma.enlacePago.update({
       where: { id },
       data: {
-        estado: 'PAGADO',
+        estado: 'PROCESANDO',
         fechaPago: new Date()
       }
     })

@@ -230,10 +230,14 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
             {(() => {
               // Detectar si es objeto pre-aprobado - buscar el inicio característico del texto pre-aprobado
               const objetoText = tramite.objetoSocial || ''
-              // El texto pre-aprobado comienza con: "La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades: 1) Construcción de todo tipo de obras"
+              // El texto pre-aprobado puede tener variaciones, buscamos frases clave
               const esPreAprobado = 
-                objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades:') &&
-                objetoText.includes('1) Construcción de todo tipo de obras')
+                objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
+                objetoText.includes('1) Construcción de todo tipo de obras') ||
+                objetoText.includes('2) Servicios inmobiliarios y de consultoría') ||
+                objetoText.includes('3) Comercialización de productos y servicios') ||
+                objetoText.includes('4) Inversiones y participación en sociedades')
+              
               return esPreAprobado ? (
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                   Pre-aprobado
@@ -604,7 +608,11 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       {/* Comprobantes de Pago */}
       <ComprobantesReview 
         tramiteId={tramite.id} 
-        comprobantes={tramite.documentos.filter(doc => doc.tipo === 'COMPROBANTE_DEPOSITO')}
+        comprobantes={tramite.documentos.filter(doc => 
+          doc.tipo === 'COMPROBANTE_DEPOSITO' || 
+          doc.nombre.toLowerCase().includes('comprobante') ||
+          doc.descripcion?.toLowerCase().includes('comprobante')
+        )}
         enlacesPago={tramite.enlacesPago}
       />
 

@@ -4,8 +4,19 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, Search } from 'lucide-react'
+import { CheckCircle, Search, AlertTriangle, Info } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface DenominacionSelectorProps {
   tramiteId: string
@@ -24,121 +35,133 @@ export default function DenominacionSelector({
 }: DenominacionSelectorProps) {
   const router = useRouter()
   const [seleccionando, setSeleccionando] = useState(false)
+  const [denominacionAConfirmar, setDenominacionAConfirmar] = useState<string | null>(null)
 
   const handleSeleccionar = async (denominacion: string) => {
-    if (window.confirm(`¿Aprobar "${denominacion}" como denominación sugerida/aprobada?`)) {
-      setSeleccionando(true)
+    setSeleccionando(true)
 
-      try {
-        const response = await fetch(`/api/admin/tramites/${tramiteId}/denominacion`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ denominacion })
-        })
+    try {
+      const response = await fetch(`/api/admin/tramites/${tramiteId}/denominacion`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ denominacion })
+      })
 
-        if (response.ok) {
-          toast.success('Denominación aprobada')
-          router.refresh()
-        } else {
-          toast.error('Error al aprobar denominación')
-        }
-      } catch (error) {
-        toast.error('Error al aprobar denominación')
-      } finally {
-        setSeleccionando(false)
+      if (response.ok) {
+        toast.success('Denominación aprobada con éxito')
+        router.refresh()
+      } else {
+        toast.error('Error al aprobar la denominación')
       }
+    } catch (error) {
+      toast.error('Error al aprobar la denominación')
+    } finally {
+      setSeleccionando(false)
+      setDenominacionAConfirmar(null)
     }
   }
 
-  return (
-    <div className="border-purple-200 bg-purple-50 rounded-lg">
-      <CollapsibleCard
-        title="Examen de Homonimia"
-        description="Marca la denominación sugerida después del examen de homonimia"
-        icon={<Search className="h-5 w-5 text-purple-700" />}
-      >
-        <div className="space-y-3">
-        {/* Opción 1 */}
-        <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-white">
-          <div className="flex-1">
-            <p className="text-xs text-gray-500 mb-1">Opción 1 (Preferida)</p>
-            <p className="font-medium text-gray-900">{denominacion1}</p>
-          </div>
-          {denominacionAprobada === denominacion1 ? (
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
-              <CheckCircle className="h-5 w-5" />
-              <span className="font-medium">Aprobada</span>
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              onClick={() => handleSeleccionar(denominacion1)}
-              disabled={seleccionando}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              Aprobar Esta
-            </Button>
-          )}
+  const RenderOpcion = ({ texto, label, index }: { texto: string, label: string, index: number }) => {
+    const isSelected = denominacionAprobada === texto
+
+    return (
+      <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all ${
+        isSelected ? 'bg-green-50 border-green-500 shadow-md' : 'bg-white border-gray-100 hover:border-purple-200'
+      }`}>
+        <div className="flex-1">
+          <p className={`text-xs mb-1 font-semibold ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
+            {label}
+          </p>
+          <p className={`text-lg font-bold ${isSelected ? 'text-green-900' : 'text-gray-900'}`}>
+            {texto}
+          </p>
         </div>
 
-        {/* Opción 2 */}
-        {denominacion2 && (
-          <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-white">
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Opción 2</p>
-              <p className="font-medium text-gray-900">{denominacion2}</p>
-            </div>
-            {denominacionAprobada === denominacion2 ? (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-medium">Aprobada</span>
-              </div>
-            ) : (
+        {isSelected ? (
+          <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm animate-in zoom-in duration-300">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-bold">SELECCIONADA</span>
+          </div>
+        ) : (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
               <Button
                 size="sm"
-                onClick={() => handleSeleccionar(denominacion2)}
+                className="bg-purple-600 hover:bg-purple-700 shadow-sm transition-all active:scale-95"
                 disabled={seleccionando}
-                className="bg-purple-600 hover:bg-purple-700"
               >
                 Aprobar Esta
               </Button>
-            )}
-          </div>
+            </AlertDialogTrigger>
+            <AlertDialogContent className="border-2 border-purple-100">
+              <AlertDialogHeader>
+                <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                  <Info className="h-8 w-8 text-purple-600" />
+                </div>
+                <AlertDialogTitle className="text-2xl text-center font-bold text-gray-900">
+                  ¿Confirmar Denominación?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-center text-gray-600 pt-2">
+                  Estás por marcar <span className="font-bold text-purple-700">"{texto}"</span> como la denominación oficial aprobada para este trámite.
+                  <br /><br />
+                  Esto se verá reflejado en el panel del cliente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter className="sm:justify-center gap-2 pt-4">
+                <AlertDialogCancel className="border-gray-300 font-semibold px-8">
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleSeleccionar(texto)}
+                  className="bg-purple-600 hover:bg-purple-700 font-bold px-8 shadow-md"
+                >
+                  Sí, Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
+      </div>
+    )
+  }
 
-        {/* Opción 3 */}
-        {denominacion3 && (
-          <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-white">
-            <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Opción 3</p>
-              <p className="font-medium text-gray-900">{denominacion3}</p>
-            </div>
-            {denominacionAprobada === denominacion3 ? (
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-medium">Aprobada</span>
+  return (
+    <div className="rounded-lg h-full">
+      <CollapsibleCard
+        title="Examen de Homonimia"
+        description="Marca la denominación definitiva tras el examen del IPJ/IGJ"
+        icon={<Search className="h-5 w-5 text-purple-700" />}
+      >
+        <div className="space-y-4">
+          <RenderOpcion texto={denominacion1} label="Opción 1 (Preferida)" index={1} />
+          {denominacion2 && <RenderOpcion texto={denominacion2} label="Opción 2" index={2} />}
+          {denominacion3 && <RenderOpcion texto={denominacion3} label="Opción 3" index={3} />}
+
+          {!denominacionAprobada && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mt-6 flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-900">Pendiente de Selección</p>
+                <p className="text-sm text-amber-800">
+                  Aún no has marcado ninguna denominación como aprobada. 
+                  Selecciona una opción una vez que tengas el resultado del examen.
+                </p>
               </div>
-            ) : (
-              <Button
-                size="sm"
-                onClick={() => handleSeleccionar(denominacion3)}
-                disabled={seleccionando}
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Aprobar Esta
-              </Button>
-            )}
-          </div>
-        )}
-
-        {denominacionAprobada && (
-          <div className="bg-green-100 border border-green-300 rounded-lg p-4 mt-4">
-            <p className="text-sm text-green-900">
-              💡 <strong>Tip:</strong> Esta denominación se mostrará al cliente como la sugerida/aprobada. 
-              Puedes enviarle una observación para informarle.
-            </p>
-          </div>
-        )}
+            </div>
+          )}
+          
+          {denominacionAprobada && (
+            <div className="bg-blue-50 border-2 border-blue-100 rounded-lg p-4 mt-6">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-4 w-4 text-blue-600" />
+                <p className="text-sm font-bold text-blue-900">Pasos Sugeridos</p>
+              </div>
+              <p className="text-sm text-blue-800">
+                Ya has seleccionado una denominación. Puedes enviar una observación al cliente 
+                para informarle y avanzar con el trámite.
+              </p>
+            </div>
+          )}
         </div>
       </CollapsibleCard>
     </div>

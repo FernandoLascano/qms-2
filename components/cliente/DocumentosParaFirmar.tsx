@@ -372,11 +372,6 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                 <h4 className="font-semibold text-gray-900 mb-1">
                   {doc.nombre}
                 </h4>
-                {doc.descripcion && (
-                  <p className="text-sm text-gray-700 mb-2 whitespace-pre-line">
-                    {doc.descripcion}
-                  </p>
-                )}
                 <p className="text-xs text-gray-500">
                   Enviado el {new Date(doc.createdAt).toLocaleDateString('es-AR')}
                 </p>
@@ -408,8 +403,11 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                   2
                 </span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    Firmar en todas las páginas indicadas
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    Instrucciones de firma:
+                  </p>
+                  <p className="text-sm text-purple-900 font-bold bg-white/50 p-2 rounded border border-purple-100 italic">
+                    {doc.descripcion || 'Firmar en todas las páginas indicadas'}
                   </p>
                 </div>
               </div>

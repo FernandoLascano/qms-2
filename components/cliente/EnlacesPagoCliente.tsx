@@ -87,6 +87,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
   }
 
   const enlacesPendientes = enlaces.filter(e => e.estado === 'PENDIENTE')
+  const enlacesEnProceso = enlaces.filter(e => e.estado === 'PROCESANDO')
   const enlacesPagados = enlaces.filter(e => e.estado === 'PAGADO')
 
   if (enlaces.length === 0) {
@@ -115,10 +116,43 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Enlaces en Proceso (Esperando Validación) */}
+        {enlacesEnProceso.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <h4 className="font-bold text-sm text-blue-700 uppercase tracking-wider">Esperando Validación</h4>
+            {enlacesEnProceso.map((enlace) => (
+              <div
+                key={enlace.id}
+                className="p-5 border-2 rounded-lg bg-blue-50 border-blue-200"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <Clock className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-bold text-gray-900 text-lg mb-1">
+                      {getConceptoTexto(enlace.concepto)}
+                    </h5>
+                    <p className="text-sm text-blue-800 font-medium mb-2">
+                      Comprobante recibido. Estamos validando el pago externo.
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span className="font-bold bg-white px-2 py-1 rounded border border-blue-100">
+                        Monto: ${enlace.monto.toLocaleString('es-AR')}
+                      </span>
+                      <span>Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Enlaces Pendientes */}
         {enlacesPendientes.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700">Pagos Pendientes</h4>
+            <h4 className="font-bold text-sm text-green-700 uppercase tracking-wider">Pagos Pendientes</h4>
             {enlacesPendientes.map((enlace) => (
               <div
                 key={enlace.id}

@@ -101,7 +101,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       data: {
         tramiteId: pago.tramiteId,
         userId: session.user.id,
-        tipo: 'OTROS',
+        tipo: 'COMPROBANTE_DEPOSITO', // Usar el tipo correcto para que aparezca en ComprobantesReview
         nombre: `Comprobante de Transferencia - Pago ${pagoId.substring(0, 8)}`,
         descripcion: 'Comprobante de transferencia bancaria para pago de honorarios',
         url: uploadResult.url,

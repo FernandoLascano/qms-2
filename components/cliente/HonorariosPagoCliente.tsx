@@ -37,9 +37,8 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
     p.concepto.includes('HONORARIOS')
   )
 
-  const pagosPendientes = pagosHonorarios.filter(p => 
-    p.estado === 'PENDIENTE' || p.estado === 'PROCESANDO'
-  )
+  const pagosPendientes = pagosHonorarios.filter(p => p.estado === 'PENDIENTE')
+  const pagosEnProceso = pagosHonorarios.filter(p => p.estado === 'PROCESANDO')
   const pagosPagados = pagosHonorarios.filter(p => p.estado === 'APROBADO')
 
   if (pagosHonorarios.length === 0) {
@@ -101,10 +100,43 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Pagos en Proceso (Esperando Validación) */}
+        {pagosEnProceso.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <h4 className="font-bold text-sm text-blue-700 uppercase tracking-wider">Esperando Validación</h4>
+            {pagosEnProceso.map((pago) => (
+              <div
+                key={pago.id}
+                className="p-5 border-2 rounded-lg bg-blue-50 border-blue-200 animate-pulse-slow"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <Clock className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="font-bold text-gray-900 text-lg mb-1">
+                      {getConceptoTexto(pago.concepto)}
+                    </h5>
+                    <p className="text-sm text-blue-800 font-medium mb-2">
+                      Comprobante recibido. Estamos validando tu transferencia.
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span className="font-bold bg-white px-2 py-1 rounded border border-blue-100">
+                        Monto: ${pago.montoTransferencia?.toLocaleString('es-AR')}
+                      </span>
+                      <span>Subido: {new Date(pago.createdAt).toLocaleDateString('es-AR')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Pagos Pendientes */}
         {pagosPendientes.length > 0 && (
           <div className="space-y-4">
-            <h4 className="font-medium text-sm text-gray-700">Pago de Honorarios Pendiente</h4>
+            <h4 className="font-bold text-sm text-green-700 uppercase tracking-wider">Pagos Pendientes</h4>
             {pagosPendientes.map((pago) => (
               <div
                 key={pago.id}
