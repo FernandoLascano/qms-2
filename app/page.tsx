@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { ArrowRight, CheckCircle2, Clock, DollarSign, Smartphone, Menu, X } from 'lucide-react'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 import { FAQ } from '@/components/landing/FAQ'
 import { Planes } from '@/components/landing/Planes'
 import { Testimonios } from '@/components/landing/Testimonios'
@@ -12,6 +14,12 @@ import { Notas } from '@/components/landing/Notas'
 
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const benefitsRef = useRef(null)
+  const stepsRef = useRef(null)
+  const ctaRef = useRef(null)
+  const benefitsInView = useInView(benefitsRef, { once: true, margin: "-100px" })
+  const stepsInView = useInView(stepsRef, { once: true, margin: "-100px" })
+  const ctaInView = useInView(ctaRef, { once: true, margin: "-100px" })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
@@ -87,255 +95,336 @@ export default function HomePage() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden mt-2 pb-4 border-t border-gray-200 bg-white rounded-b-lg shadow-lg">
-              <div className="flex flex-col space-y-1 pt-4">
-                <a 
-                  href="#beneficios" 
-                  className="px-4 py-3 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
+            <motion.div
+              className="md:hidden mt-2 pb-4 border-t border-gray-200 bg-white rounded-b-lg shadow-lg overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <motion.div
+                className="flex flex-col space-y-1 pt-4"
+                initial={{ y: -20 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                {['Beneficios', 'Cómo Funciona', 'Planes', 'FAQ'].map((item, index) => (
+                  <motion.a
+                    key={item}
+                    href={`#${item === 'Cómo Funciona' ? 'procedimiento' : item === 'FAQ' ? 'faq' : item.toLowerCase()}`}
+                    className="px-4 py-3 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: 0.1 + (index * 0.05) }}
+                  >
+                    {item}
+                  </motion.a>
+                ))}
+                <motion.div
+                  className="pt-3 mt-3 border-t border-gray-200 space-y-2 px-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3, delay: 0.3 }}
                 >
-                  Beneficios
-                </a>
-                <a 
-                  href="#procedimiento" 
-                  className="px-4 py-3 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Cómo Funciona
-                </a>
-                <a 
-                  href="#planes" 
-                  className="px-4 py-3 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Planes
-                </a>
-                <a 
-                  href="#faq" 
-                  className="px-4 py-3 text-gray-700 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  FAQ
-                </a>
-                <div className="pt-3 mt-3 border-t border-gray-200 space-y-2 px-4">
-                  <Link 
+                  <Link
                     href="/login"
                     className="block text-center px-4 py-2.5 text-gray-700 hover:text-red-700 transition-all duration-200 font-semibold border border-gray-200 rounded-lg hover:border-red-200"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Ingresar
                   </Link>
-                  <Link 
+                  <Link
                     href="/registro"
                     className="block bg-red-700 text-white px-4 py-2.5 rounded-lg hover:bg-red-800 transition-all duration-200 font-semibold text-center shadow-md"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Registrarse
                   </Link>
-                </div>
-              </div>
-            </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           )}
         </nav>
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:py-20">
+      <section className="container mx-auto px-4 py-12 md:py-20 overflow-hidden">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center max-w-7xl mx-auto">
           {/* Texto Hero */}
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
+          <motion.div
+            className="text-center md:text-left"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+            <motion.h1
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+            >
               Constituí tu <span className="text-red-700">S.A.S.</span> en{' '}
               <span className="text-red-700">5 días</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-3 md:mb-4">
-              En Córdoba o CABA - Funcional en todo el país
-            </p>
-            <p className="text-base sm:text-lg text-gray-500 mb-6 md:mb-8">
-              100% digital, rápido, económico y con seguimiento en tiempo real. 
-              Tu sociedad lista para facturar en menos de una semana.
-            </p>
+            </motion.h1>
 
-            
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start items-stretch sm:items-center">
-              <Link 
+            <motion.p
+              className="text-lg sm:text-xl text-gray-600 mb-3 md:mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              En Córdoba o CABA - Funcional en todo el país
+            </motion.p>
+
+            <motion.p
+              className="text-base sm:text-lg text-gray-500 mb-6 md:mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              100% digital, rápido, económico y con seguimiento en tiempo real.
+              Tu sociedad lista para facturar en menos de una semana.
+            </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start items-stretch sm:items-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+            >
+              <Link
                 href="/registro"
-                className="bg-red-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-red-800 transition font-semibold text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                className="bg-red-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-red-800 transition-all duration-300 font-semibold text-base sm:text-lg flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 Quiero mi S.A.S.
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Link>
-              <a 
+              <a
                 href="#planes"
-                className="border-2 border-red-700 text-red-700 px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-red-50 transition font-semibold text-base sm:text-lg text-center"
+                className="border-2 border-red-700 text-red-700 px-6 sm:px-8 py-3 sm:py-4 rounded-lg hover:bg-red-50 transition-all duration-300 font-semibold text-base sm:text-lg text-center hover:scale-105"
               >
                 Ver Planes y Precios
               </a>
-            </div>
+            </motion.div>
 
-            <div className="mt-8 md:mt-12 flex flex-wrap justify-center md:justify-start gap-4 sm:gap-8 text-xs sm:text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Más de 500 empresas constituidas</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Garantía de transparencia</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span>Soporte profesional</span>
-              </div>
-            </div>
-          </div>
+            <motion.div
+              className="mt-8 md:mt-12 flex flex-wrap justify-center md:justify-start gap-4 sm:gap-8 text-xs sm:text-sm text-gray-600"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+            >
+              {[
+                'Más de 500 empresas constituidas',
+                'Garantía de transparencia',
+                'Soporte profesional'
+              ].map((text, index) => (
+                <motion.div
+                  key={text}
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.9 + (index * 0.1) }}
+                >
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  <span>{text}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
 
           {/* Ilustración Hero */}
-          <div className="hidden md:block order-2">
-            <img 
-              src="/assets/img/img_ppal.png" 
-              alt="Constitución de S.A.S. digital" 
+          <motion.div
+            className="hidden md:block order-2"
+            initial={{ opacity: 0, x: 50, scale: 0.9 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          >
+            <img
+              src="/assets/img/img_ppal.png"
+              alt="Constitución de S.A.S. digital"
               className="w-full h-auto"
             />
-          </div>
+          </motion.div>
+
           {/* Mobile: Mostrar ilustración más pequeña */}
-          <div className="md:hidden order-2 mt-6">
-            <img 
-              src="/assets/img/img_ppal.png" 
-              alt="Constitución de S.A.S. digital" 
+          <motion.div
+            className="md:hidden order-2 mt-6"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+          >
+            <img
+              src="/assets/img/img_ppal.png"
+              alt="Constitución de S.A.S. digital"
               className="w-full h-auto max-w-sm mx-auto"
             />
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Beneficios */}
-      <section id="beneficios" className="bg-white py-20">
+      <section id="beneficios" className="bg-white py-20" ref={benefitsRef}>
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4 text-red-900">¿Por qué elegir QuieroMiSAS?</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+          <motion.h2
+            className="text-4xl font-bold text-center mb-4 text-red-900"
+            initial={{ opacity: 0, y: 30 }}
+            animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            ¿Por qué elegir QuieroMiSAS?
+          </motion.h2>
+          <motion.p
+            className="text-center text-gray-600 mb-12 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={benefitsInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             Hacemos que constituir tu empresa sea simple, rápido y económico
-          </p>
+          </motion.p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Beneficio 1 */}
-            <div className="bg-red-50 p-8 rounded-2xl hover:shadow-lg transition">
-              <div className="w-14 h-14 bg-red-700 rounded-xl flex items-center justify-center mb-4">
-                <Clock className="w-7 h-7 text-white" />
-              </div>
-                <h3 className="text-xl font-bold mb-3 text-red-900">Rápido</h3>
-              <p className="text-gray-600">
-                Tu S.A.S. inscripta en <strong>5 días hábiles</strong>. CUIT y matrícula listos para operar.
-              </p>
-            </div>
-
-            {/* Beneficio 2 */}
-            <div className="bg-green-50 p-8 rounded-2xl hover:shadow-lg transition">
-              <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-red-900">Fácil</h3>
-              <p className="text-gray-600">
-                Solo completá un formulario online. Nosotros nos encargamos de todo el proceso legal.
-              </p>
-            </div>
-
-            {/* Beneficio 3 */}
-            <div className="bg-purple-50 p-8 rounded-2xl hover:shadow-lg transition">
-              <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center mb-4">
-                <DollarSign className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-red-900">Económico</h3>
-              <p className="text-gray-600">
-                Costos inferiores a S.R.L. o S.A. Honorarios transparentes e imbatibles.
-              </p>
-            </div>
-
-            {/* Beneficio 4 */}
-            <div className="bg-orange-50 p-8 rounded-2xl hover:shadow-lg transition">
-              <div className="w-14 h-14 bg-orange-600 rounded-xl flex items-center justify-center mb-4">
-                <Smartphone className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-red-900">100% Digital</h3>
-              <p className="text-gray-600">
-                Todo online: formulario, firma digital, seguimiento en tiempo real desde tu panel.
-              </p>
-            </div>
+            {[
+              {
+                bg: 'bg-red-50',
+                iconBg: 'bg-red-700',
+                icon: Clock,
+                title: 'Rápido',
+                description: 'Tu S.A.S. inscripta en 5 días hábiles. CUIT y matrícula listos para operar.'
+              },
+              {
+                bg: 'bg-green-50',
+                iconBg: 'bg-green-600',
+                icon: CheckCircle2,
+                title: 'Fácil',
+                description: 'Solo completá un formulario online. Nosotros nos encargamos de todo el proceso legal.'
+              },
+              {
+                bg: 'bg-purple-50',
+                iconBg: 'bg-purple-600',
+                icon: DollarSign,
+                title: 'Económico',
+                description: 'Costos inferiores a S.R.L. o S.A. Honorarios transparentes e imbatibles.'
+              },
+              {
+                bg: 'bg-orange-50',
+                iconBg: 'bg-orange-600',
+                icon: Smartphone,
+                title: '100% Digital',
+                description: 'Todo online: formulario, firma digital, seguimiento en tiempo real desde tu panel.'
+              }
+            ].map((benefit, index) => {
+              const Icon = benefit.icon
+              return (
+                <motion.div
+                  key={benefit.title}
+                  className={`${benefit.bg} p-8 rounded-2xl hover:shadow-xl transition-all duration-300 cursor-pointer hover:-translate-y-2`}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.3 + (index * 0.1),
+                    ease: "easeOut"
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <motion.div
+                    className={`w-14 h-14 ${benefit.iconBg} rounded-xl flex items-center justify-center mb-4`}
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <Icon className="w-7 h-7 text-white" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold mb-3 text-red-900">{benefit.title}</h3>
+                  <p className="text-gray-600">{benefit.description}</p>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
 
       {/* Cómo Funciona */}
-      <section id="procedimiento" className="py-20 bg-gradient-to-b from-white to-red-50">
+      <section id="procedimiento" className="py-20 bg-gradient-to-b from-white to-red-50" ref={stepsRef}>
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-4 text-red-900">¿Cómo funciona?</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+          <motion.h2
+            className="text-4xl font-bold text-center mb-4 text-red-900"
+            initial={{ opacity: 0, y: 30 }}
+            animate={stepsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            ¿Cómo funciona?
+          </motion.h2>
+          <motion.p
+            className="text-center text-gray-600 mb-12 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={stepsInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             En solo 4 pasos tenés tu empresa constituida
-          </p>
+          </motion.p>
 
           <div className="max-w-4xl mx-auto">
-            {/* Paso 1 */}
-            <div className="flex gap-6 mb-8">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                  1
+            {[
+              {
+                number: 1,
+                title: 'Completá el formulario',
+                description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital social y actividad. Guardá tu progreso y continuá cuando quieras.'
+              },
+              {
+                number: 2,
+                title: 'Subí documentación',
+                description: 'Cargá DNI, CUIT y comprobantes necesarios directamente en tu panel. Seguimiento en tiempo real de cada documento.'
+              },
+              {
+                number: 3,
+                title: 'Pagá online',
+                description: 'Abonás honorarios y tasas de forma segura desde la plataforma. Recibís comprobantes automáticamente.'
+              },
+              {
+                number: 4,
+                title: 'Recibí tu S.A.S.',
+                description: 'Nosotros gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT, matrícula y tu empresa lista para facturar.'
+              }
+            ].map((step, index) => (
+              <motion.div
+                key={step.number}
+                className="flex gap-6 mb-8 last:mb-0"
+                initial={{ opacity: 0, x: -50 }}
+                animate={stepsInView ? { opacity: 1, x: 0 } : {}}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.3 + (index * 0.15),
+                  ease: "easeOut"
+                }}
+              >
+                <div className="flex-shrink-0">
+                  <motion.div
+                    className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg"
+                    initial={{ scale: 0 }}
+                    animate={stepsInView ? { scale: 1 } : {}}
+                    transition={{
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 15,
+                      delay: 0.4 + (index * 0.15)
+                    }}
+                    whileHover={{ scale: 1.2, rotate: 360 }}
+                  >
+                    {step.number}
+                  </motion.div>
                 </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-red-900">Completá el formulario</h3>
-                <p className="text-gray-600">
-                  Ingresá los datos de tu futura sociedad: nombre, socios, capital social y actividad. 
-                  Guardá tu progreso y continuá cuando quieras.
-                </p>
-              </div>
-            </div>
-
-            {/* Paso 2 */}
-            <div className="flex gap-6 mb-8">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                  2
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-red-900">Subí documentación</h3>
-                <p className="text-gray-600">
-                  Cargá DNI, CUIT y comprobantes necesarios directamente en tu panel. 
-                  Seguimiento en tiempo real de cada documento.
-                </p>
-              </div>
-            </div>
-
-            {/* Paso 3 */}
-            <div className="flex gap-6 mb-8">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                  3
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-red-900">Pagá online</h3>
-                <p className="text-gray-600">
-                  Abonás honorarios y tasas de forma segura desde la plataforma. 
-                  Recibís comprobantes automáticamente.
-                </p>
-              </div>
-            </div>
-
-            {/* Paso 4 */}
-            <div className="flex gap-6">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                  4
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-red-900">Recibí tu S.A.S.</h3>
-                <p className="text-gray-600">
-                  Nosotros gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT, matrícula y 
-                  tu empresa lista para facturar.
-                </p>
-              </div>
-            </div>
+                <motion.div
+                  className="flex-1"
+                  initial={{ opacity: 0 }}
+                  animate={stepsInView ? { opacity: 1 } : {}}
+                  transition={{ duration: 0.5, delay: 0.5 + (index * 0.15) }}
+                >
+                  <h3 className="text-xl font-bold mb-2 text-red-900">{step.title}</h3>
+                  <p className="text-gray-600">{step.description}</p>
+                </motion.div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -359,43 +448,69 @@ export default function HomePage() {
       <Notas />
 
       {/* CTA Final */}
-      <section className="bg-gradient-to-r from-red-700 to-red-900 text-white py-20">
+      <section className="bg-gradient-to-r from-red-700 to-red-900 text-white py-20 overflow-hidden" ref={ctaRef}>
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">¿Listo para dar el siguiente paso?</h2>
-          <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+          <motion.h2
+            className="text-4xl md:text-5xl font-bold mb-4"
+            initial={{ opacity: 0, y: 30 }}
+            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            ¿Listo para dar el siguiente paso?
+          </motion.h2>
+          <motion.p
+            className="text-xl mb-8 opacity-90 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={ctaInView ? { opacity: 1 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             Más de 500 emprendedores ya confiaron en nosotros. Unite a la revolución digital de las sociedades.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              href="/registro"
-              className="inline-flex items-center justify-center gap-2 bg-white text-red-700 px-8 py-4 rounded-lg hover:bg-gray-100 transition font-semibold text-lg shadow-lg"
-            >
-              Iniciar mi trámite ahora
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            <a
+          </motion.p>
+          <motion.div
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/registro"
+                className="inline-flex items-center justify-center gap-2 bg-white text-red-700 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl"
+              >
+                Iniciar mi trámite ahora
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+            <motion.a
               href="mailto:contacto@quieromisas.com"
-              className="inline-flex items-center justify-center gap-2 border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-red-700 transition font-semibold text-lg"
+              className="inline-flex items-center justify-center gap-2 border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-red-700 transition-all duration-300 font-semibold text-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               Consultar con un asesor
-            </a>
-          </div>
+            </motion.a>
+          </motion.div>
 
           {/* Trust badges */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8 opacity-80">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-sm">Garantía de transparencia</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-sm">Soporte 24/7</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="text-sm">Pago seguro</span>
-            </div>
-          </div>
+          <motion.div
+            className="mt-12 flex flex-wrap justify-center gap-8 opacity-80"
+            initial={{ opacity: 0 }}
+            animate={ctaInView ? { opacity: 0.8 } : {}}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            {['Garantía de transparencia', 'Soporte 24/7', 'Pago seguro'].map((text, index) => (
+              <motion.div
+                key={text}
+                className="flex items-center gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={ctaInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.4, delay: 0.6 + (index * 0.1) }}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-sm">{text}</span>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 

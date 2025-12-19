@@ -1,136 +1,363 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Bell, Filter, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Bell, CheckCircle, AlertCircle, Info, XCircle } from 'lucide-react'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { toast } from 'sonner'
 
-async function NotificacionesPage() {
-  const session = await getServerSession(authOptions)
+type Notificacion = {
+  id: string
+  tipo: string
+  titulo: string
+  mensaje: string
+  link: string | null
+  leida: boolean
+  createdAt: string
+  tramiteId: string | null
+}
 
-  if (!session?.user?.id) {
-    return null
-  }
+const TIPOS_NOTIFICACION = [
+  { value: 'TODOS', label: 'Todas', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { value: 'INFO', label: 'Info', color: 'bg-gray-100 text-gray-700 border-gray-300' },
+  { value: 'EXITO', label: 'Éxito', color: 'bg-green-100 text-green-700 border-green-300' },
+  { value: 'ALERTA', label: 'Alerta', color: 'bg-orange-100 text-orange-700 border-orange-300' },
+  { value: 'ERROR', label: 'Error', color: 'bg-red-100 text-red-700 border-red-300' },
+  { value: 'ACCION_REQUERIDA', label: 'Acción Requerida', color: 'bg-purple-100 text-purple-700 border-purple-300' },
+  { value: 'MENSAJE', label: 'Mensaje', color: 'bg-blue-100 text-blue-700 border-blue-300' }
+]
 
-  const notificaciones = await prisma.notificacion.findMany({
-    where: {
-      userId: session.user.id
-    },
-    include: {
-      tramite: {
-        select: {
-          denominacionSocial1: true,
-          denominacionAprobada: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 50
-  })
+const FILTROS_LEIDA = [
+  { value: 'todas', label: 'Todas' },
+  { value: 'false', label: 'No leídas' },
+  { value: 'true', label: 'Leídas' }
+]
 
-  const getTipoIcon = (tipo: string) => {
+export default function NotificacionesPage() {
+  const router = useRouter()
+  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([])
+  const [count, setCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [tipoFiltro, setTipoFiltro] = useState('TODOS')
+  const [leidaFiltro, setLeidaFiltro] = useState('todas')
+
+  const getTipoConfig = (tipo: string) => {
     switch (tipo) {
       case 'EXITO':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
-      case 'ALERTA':
-        return <AlertCircle className="h-5 w-5 text-orange-600" />
+        return {
+          badge: 'bg-green-100 text-green-700 border-green-200',
+          bg: 'bg-green-50',
+          icon: '✓'
+        }
       case 'ERROR':
-        return <XCircle className="h-5 w-5 text-red-600" />
+        return {
+          badge: 'bg-red-100 text-red-700 border-red-200',
+          bg: 'bg-red-50',
+          icon: '✕'
+        }
+      case 'ALERTA':
+        return {
+          badge: 'bg-orange-100 text-orange-700 border-orange-200',
+          bg: 'bg-orange-50',
+          icon: '⚠'
+        }
       case 'ACCION_REQUERIDA':
-        return <AlertCircle className="h-5 w-5 text-red-600" />
+        return {
+          badge: 'bg-purple-100 text-purple-700 border-purple-200',
+          bg: 'bg-purple-50',
+          icon: '!'
+        }
+      case 'MENSAJE':
+        return {
+          badge: 'bg-blue-100 text-blue-700 border-blue-200',
+          bg: 'bg-blue-50',
+          icon: '💬'
+        }
       default:
-        return <Info className="h-5 w-5 text-blue-600" />
+        return {
+          badge: 'bg-gray-100 text-gray-700 border-gray-200',
+          bg: 'bg-gray-50',
+          icon: 'ℹ'
+        }
     }
   }
 
-  const getTipoColor = (tipo: string) => {
-    switch (tipo) {
-      case 'EXITO':
-        return 'bg-green-50 border-green-200'
-      case 'ALERTA':
-        return 'bg-orange-50 border-orange-200'
-      case 'ERROR':
-        return 'bg-red-50 border-red-200'
-      case 'ACCION_REQUERIDA':
-        return 'bg-red-50 border-red-200'
-      default:
-        return 'bg-blue-50 border-blue-200'
+  const cargarNotificaciones = async () => {
+    try {
+      setLoading(true)
+      const params = new URLSearchParams()
+
+      if (tipoFiltro !== 'TODOS') {
+        params.append('tipo', tipoFiltro)
+      }
+
+      if (leidaFiltro !== 'todas') {
+        params.append('leida', leidaFiltro)
+      }
+
+      const response = await fetch(`/api/notificaciones?${params.toString()}`)
+
+      if (!response.ok) {
+        throw new Error('Error al cargar notificaciones')
+      }
+
+      const data = await response.json()
+      setNotificaciones(data.notificaciones)
+      setCount(data.count)
+    } catch (error) {
+      console.error('Error al cargar notificaciones:', error)
+      toast.error('Error al cargar las notificaciones')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    cargarNotificaciones()
+  }, [tipoFiltro, leidaFiltro])
+
+  const marcarComoLeida = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notificaciones/${id}/marcar-leida`, {
+        method: 'PATCH'
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al marcar como leída')
+      }
+
+      // Actualizar estado local
+      setNotificaciones(prev =>
+        prev.map(n => n.id === id ? { ...n, leida: true } : n)
+      )
+      setCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error('Error al marcar notificación como leída:', error)
+      toast.error('Error al marcar como leída')
+    }
+  }
+
+  const marcarTodasComoLeidas = async () => {
+    try {
+      const response = await fetch('/api/notificaciones/marcar-todas-leidas', {
+        method: 'PATCH'
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al marcar todas como leídas')
+      }
+
+      // Actualizar estado local
+      setNotificaciones(prev =>
+        prev.map(n => ({ ...n, leida: true }))
+      )
+      setCount(0)
+      toast.success('Todas las notificaciones marcadas como leídas')
+    } catch (error) {
+      console.error('Error al marcar todas como leídas:', error)
+      toast.error('Error al marcar todas como leídas')
+    }
+  }
+
+  const handleNotificacionClick = async (notificacion: Notificacion) => {
+    // Marcar como leída si no lo está
+    if (!notificacion.leida) {
+      await marcarComoLeida(notificacion.id)
+    }
+
+    // Navegar al link si existe
+    if (notificacion.link) {
+      router.push(notificacion.link)
     }
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-8 px-4 max-w-5xl">
       {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-red-900">Notificaciones</h2>
-        <p className="text-gray-600 mt-1">
-          Mantente al día con el estado de tus trámites
-        </p>
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-3 bg-red-100 rounded-xl">
+            <Bell className="h-7 w-7 text-red-600" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Notificaciones</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {count > 0 ? `${count} sin leer` : 'Todas las notificaciones leídas'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Notificaciones */}
-      {notificaciones.length === 0 ? (
-        <Card>
-          <CardContent className="py-16">
-            <div className="text-center">
-              <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No hay notificaciones
-              </h3>
-              <p className="text-gray-500">
-                Aquí aparecerán las actualizaciones de tus trámites
-              </p>
+      {/* Filtros */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="h-5 w-5 text-gray-500" />
+          <h2 className="font-semibold text-gray-900">Filtros</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Filtro por tipo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de notificación
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {TIPOS_NOTIFICACION.map((tipo) => (
+                <button
+                  key={tipo.value}
+                  onClick={() => setTipoFiltro(tipo.value)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                    tipoFiltro === tipo.value
+                      ? tipo.color + ' ring-2 ring-offset-2 ring-gray-300'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {tipo.label}
+                </button>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {notificaciones.map((notif) => (
-            <Card key={notif.id} className={`border ${getTipoColor(notif.tipo)}`}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
-                    {getTipoIcon(notif.tipo)}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-1">
-                      {notif.titulo}
-                    </h3>
-                    <p className="text-sm text-gray-700 mb-2">
-                      {notif.mensaje}
-                    </p>
-                    {notif.tramite && (
-                      <p className="text-xs text-gray-500 mb-2">
-                        Trámite: {notif.tramite.denominacionAprobada || notif.tramite.denominacionSocial1}
+          </div>
+
+          {/* Filtro por estado */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Estado
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {FILTROS_LEIDA.map((filtro) => (
+                <button
+                  key={filtro.value}
+                  onClick={() => setLeidaFiltro(filtro.value)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                    leidaFiltro === filtro.value
+                      ? 'bg-red-100 text-red-700 border-red-300 ring-2 ring-offset-2 ring-red-300'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {filtro.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Botón marcar todas como leídas */}
+        {count > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={marcarTodasComoLeidas}
+              className="gap-2 text-gray-700 border-gray-200 hover:bg-gray-50"
+            >
+              <Check className="h-4 w-4" />
+              Marcar todas como leídas
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Lista de notificaciones */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+          </div>
+        ) : notificaciones.length === 0 ? (
+          <div className="p-12 text-center text-gray-500">
+            <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <Bell className="h-10 w-10 text-gray-300" />
+            </div>
+            <p className="font-semibold text-gray-700 mb-1">No hay notificaciones</p>
+            <p className="text-sm text-gray-500">
+              {tipoFiltro !== 'TODOS' || leidaFiltro !== 'todas'
+                ? 'No se encontraron notificaciones con los filtros seleccionados'
+                : 'No tienes notificaciones en este momento'}
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {notificaciones.map((notificacion) => {
+              const config = getTipoConfig(notificacion.tipo)
+              return (
+                <div
+                  key={notificacion.id}
+                  onClick={() => handleNotificacionClick(notificacion)}
+                  className={`p-5 cursor-pointer transition-all hover:shadow-sm ${
+                    !notificacion.leida
+                      ? 'bg-blue-50/50 border-l-4 border-l-blue-500'
+                      : 'hover:bg-gray-50/50'
+                  }`}
+                >
+                  <div className="flex gap-4">
+                    {/* Icono */}
+                    <div
+                      className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold`}
+                    >
+                      {config.icon}
+                    </div>
+
+                    {/* Contenido */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3
+                          className={`font-semibold text-base leading-tight ${
+                            !notificacion.leida ? 'text-gray-900' : 'text-gray-700'
+                          }`}
+                        >
+                          {notificacion.titulo}
+                        </h3>
+                        {!notificacion.leida && (
+                          <div className="h-2.5 w-2.5 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                        )}
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                        {notificacion.mensaje}
                       </p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-500">
-                        {format(new Date(notif.createdAt), "d 'de' MMMM 'a las' HH:mm", { locale: es })}
-                      </p>
-                      {notif.link && (
-                        <Link href={notif.link}>
-                          <Button size="sm" variant="outline">
-                            Ver detalles
-                          </Button>
-                        </Link>
-                      )}
+
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span
+                          className={`text-xs px-2.5 py-1 rounded-lg font-medium border ${config.badge}`}
+                        >
+                          {notificacion.tipo.replace('_', ' ')}
+                        </span>
+                        <span className="text-xs text-gray-400">•</span>
+                        <span className="text-xs text-gray-500">
+                          {format(new Date(notificacion.createdAt), "d 'de' MMMM 'de' yyyy, HH:mm", {
+                            locale: es
+                          })}
+                        </span>
+                        {notificacion.leida && (
+                          <>
+                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <Check className="h-3 w-3" />
+                              Leída
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer info */}
+      {notificaciones.length > 0 && (
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-500">
+            Mostrando {notificaciones.length} {notificaciones.length === 1 ? 'notificación' : 'notificaciones'}
+          </p>
         </div>
       )}
     </div>
   )
 }
-
-export default NotificacionesPage
 

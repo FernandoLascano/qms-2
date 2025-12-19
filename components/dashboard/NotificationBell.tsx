@@ -72,7 +72,7 @@ export default function NotificationBell() {
       {/* Botón de campana */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
+        className="relative p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
       >
         <Bell className="h-6 w-6 text-gray-700" />
 
@@ -92,7 +92,7 @@ export default function NotificationBell() {
         <>
           {/* Overlay para cerrar al hacer clic fuera */}
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-40 cursor-pointer"
             onClick={() => setIsOpen(false)}
           />
 
@@ -113,7 +113,7 @@ export default function NotificationBell() {
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <X className="h-5 w-5 text-gray-500" />
               </button>
@@ -182,24 +182,23 @@ export default function NotificationBell() {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white flex gap-2">
+              <div className="p-3 border-t border-gray-100 bg-white flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="flex-1 gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
+                  className="flex-1 gap-2 text-gray-700 border-gray-200 hover:bg-gray-50"
                 >
                   <CheckCheck className="h-4 w-4" />
                   Marcar leídas
                 </Button>
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={() => {
                     router.push('/dashboard/notificaciones')
                     setIsOpen(false)
                   }}
-                  className="flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                 >
                   Ver todas
                 </Button>

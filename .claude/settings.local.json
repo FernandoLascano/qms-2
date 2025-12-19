@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(npm run build:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep:*)",
+      "Bash(for file in components/admin/*.tsx)",
+      "Bash(do if ! grep -q \"''use client''\" \"$file\")",
+      "Bash(then echo \"$file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(nslookup:*)",
+      "Bash(npx tsc:*)",
+      "Bash(find:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npx tsx:*)",
+      "Bash(Check Prisma Studio to see database)",
+      "Bash(taskkill /F /PID 33220)",
+      "Bash(npm run dev:*)"
+    ]
+  }
+}

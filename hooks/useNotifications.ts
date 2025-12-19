@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { toast } from 'sonner'
 
 interface Notificacion {
   id: string
@@ -27,6 +28,10 @@ export function useNotifications() {
     isConnected: false,
     error: null
   })
+
+  // Ref para rastrear el conteo previo y detectar nuevas notificaciones
+  const prevCountRef = useRef<number>(0)
+  const isInitialLoadRef = useRef<boolean>(true)
 
   useEffect(() => {
     if (!session?.user) {
@@ -56,6 +61,44 @@ export function useNotifications() {
             }
 
             if (data.type === 'notifications') {
+              const newCount = data.count
+              const newNotifications = data.notifications
+
+              // Detectar nuevas notificaciones comparando conteos
+              if (!isInitialLoadRef.current && newCount > prevCountRef.current) {
+                // Hay nuevas notificaciones, mostrar toast
+                const nuevasNotificaciones = newNotifications.filter((n: Notificacion) => !n.leida)
+
+                if (nuevasNotificaciones.length > 0) {
+                  const ultimaNotificacion = nuevasNotificaciones[0]
+
+                  toast.info(ultimaNotificacion.titulo, {
+                    description: ultimaNotificacion.mensaje,
+                    duration: 5000,
+                    action: ultimaNotificacion.link ? {
+                      label: 'Ver',
+                      onClick: () => {
+                        window.location.href = ultimaNotificacion.link || '/dashboard/notificaciones'
+                      }
+                    } : undefined,
+                    className: 'cursor-pointer',
+                    onClick: () => {
+                      if (ultimaNotificacion.link) {
+                        window.location.href = ultimaNotificacion.link
+                      } else {
+                        window.location.href = '/dashboard/notificaciones'
+                      }
+                    }
+                  })
+                }
+              }
+
+              // Actualizar refs
+              prevCountRef.current = newCount
+              if (isInitialLoadRef.current) {
+                isInitialLoadRef.current = false
+              }
+
               setState(prev => ({
                 ...prev,
                 notifications: data.notifications,
@@ -97,6 +140,9 @@ export function useNotifications() {
       if (reconnectTimer) {
         clearTimeout(reconnectTimer)
       }
+      // Resetear refs al desmontar
+      prevCountRef.current = 0
+      isInitialLoadRef.current = true
     }
   }, [session?.user])
 

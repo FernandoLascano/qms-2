@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard } from 'lucide-react'
+import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 async function AdminDashboardPage() {
@@ -304,6 +304,24 @@ async function AdminDashboardPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-2">Cuentas Bancarias</h3>
               <p className="text-sm text-gray-600">
                 Configurar cuentas pre-establecidas para transferencias
+              </p>
+            </div>
+          </Link>
+
+          {/* Gestión del Blog */}
+          <Link href="/dashboard/admin/blog" className="group">
+            <div className="bg-white hover:bg-rose-50 border-2 border-gray-200 hover:border-rose-500 rounded-xl p-6 transition-all duration-200 hover:shadow-lg">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-rose-100 rounded-lg group-hover:bg-rose-500 transition-colors">
+                  <BookOpen className="h-6 w-6 text-rose-600 group-hover:text-white transition-colors" />
+                </div>
+                <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  SEO
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Blog y Notas</h3>
+              <p className="text-sm text-gray-600">
+                Crear y gestionar artículos del blog
               </p>
             </div>
           </Link>

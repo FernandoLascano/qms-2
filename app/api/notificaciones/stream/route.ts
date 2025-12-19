@@ -22,10 +22,39 @@ export async function GET(request: NextRequest) {
     async start(controller) {
       console.log(`📡 SSE conectado para usuario ${userId}`)
 
+      let interval: NodeJS.Timeout | null = null
+      let isClosed = false
+
       // Función para enviar evento
       const sendEvent = (data: any) => {
-        const message = `data: ${JSON.stringify(data)}\n\n`
-        controller.enqueue(encoder.encode(message))
+        if (isClosed) return
+
+        try {
+          const message = `data: ${JSON.stringify(data)}\n\n`
+          controller.enqueue(encoder.encode(message))
+        } catch (error) {
+          console.error('Error al enviar evento SSE:', error)
+          cleanup()
+        }
+      }
+
+      // Función de limpieza
+      const cleanup = () => {
+        if (isClosed) return
+        isClosed = true
+
+        if (interval) {
+          clearInterval(interval)
+          interval = null
+        }
+
+        try {
+          controller.close()
+        } catch (error) {
+          // El controller ya podría estar cerrado
+        }
+
+        console.log(`📡 SSE desconectado para usuario ${userId}`)
       }
 
       // Enviar evento inicial de conexión
@@ -33,8 +62,10 @@ export async function GET(request: NextRequest) {
 
       // Función para verificar nuevas notificaciones
       const checkNotifications = async () => {
+        if (isClosed) return
+
         try {
-          // Obtener notificaciones no leídas
+          // Obtener últimas 5 notificaciones no leídas
           const notificaciones = await prisma.notificacion.findMany({
             where: {
               userId,
@@ -43,7 +74,7 @@ export async function GET(request: NextRequest) {
             orderBy: {
               createdAt: 'desc'
             },
-            take: 10,
+            take: 5,
             select: {
               id: true,
               tipo: true,
@@ -73,29 +104,27 @@ export async function GET(request: NextRequest) {
           })
         } catch (error) {
           console.error('Error al obtener notificaciones:', error)
+          // No cerrar la conexión por un error de DB temporal
         }
       }
 
       // Verificar notificaciones cada 5 segundos
-      const interval = setInterval(checkNotifications, 5000)
+      interval = setInterval(checkNotifications, 5000)
 
       // Verificar inmediatamente
       await checkNotifications()
 
       // Limpiar al cerrar la conexión
-      request.signal.addEventListener('abort', () => {
-        console.log(`📡 SSE desconectado para usuario ${userId}`)
-        clearInterval(interval)
-        controller.close()
-      })
+      request.signal.addEventListener('abort', cleanup)
     }
   })
 
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no'
     }
   })
 }

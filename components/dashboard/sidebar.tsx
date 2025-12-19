@@ -81,7 +81,7 @@ export function Sidebar() {
             setMobileMenuOpen(false)
             signOut({ callbackUrl: '/' })
           }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-900 transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-900 transition-colors cursor-pointer"
         >
           <LogOut className="h-5 w-5" />
           Cerrar Sesión
@@ -95,7 +95,7 @@ export function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-md text-gray-700 hover:text-red-700 transition"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-200 rounded-lg shadow-md text-gray-700 hover:text-red-700 transition cursor-pointer"
         aria-label="Toggle menu"
       >
         {mobileMenuOpen ? (
@@ -108,7 +108,7 @@ export function Sidebar() {
       {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-40 cursor-pointer"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}

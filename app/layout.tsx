@@ -64,8 +64,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <head>
-        {/* Schema.org para Google */}
+      <body className={inter.className}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -73,12 +72,15 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "ProfessionalService",
               "name": "QuieroMiSAS",
-              "description": "Servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina",
+              "alternateName": "Martínez Wehbe & Asociados",
+              "description": "Servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina. 100% online, rápido y económico.",
               "url": "https://www.quieromisas.com",
-              "logo": "https://www.quieromisas.com/logo.png",
+              "logo": "https://www.quieromisas.com/assets/img/logo4.png",
+              "image": "https://www.quieromisas.com/assets/img/logo4.png",
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Córdoba",
+                "addressRegion": "Córdoba",
                 "addressCountry": "AR"
               },
               "geo": {
@@ -86,21 +88,66 @@ export default function RootLayout({
                 "latitude": "-31.4201",
                 "longitude": "-64.1888"
               },
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+54-351-428-4037",
+                "contactType": "customer service",
+                "email": "contacto@quieromisas.com",
+                "availableLanguage": ["Spanish"],
+                "areaServed": "AR"
+              },
               "telephone": "+54-351-428-4037",
               "email": "contacto@quieromisas.com",
               "priceRange": "$$",
-              "areaServed": ["Córdoba", "CABA", "Argentina"],
-              "serviceType": ["Constitución de S.A.S.", "Trámites Societarios", "Asesoría Legal"],
+              "areaServed": ["Córdoba", "Buenos Aires", "Argentina"],
+              "serviceType": ["Constitución de S.A.S.", "Trámites Societarios", "Asesoría Legal", "Inscripción IPJ", "Inscripción IGJ"],
               "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.9",
+                "bestRating": "5",
+                "worstRating": "1",
                 "reviewCount": "127"
               }
             })
           }}
         />
-      </head>
-      <body className={inter.className}>
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "¿Cuánto tiempo tarda constituir una S.A.S.?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Con QuieroMiSAS, tu S.A.S. estará inscripta y operativa en 5 días hábiles. Recibirás tu CUIT y matrícula lista para facturar."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿Cuánto cuesta constituir una S.A.S.?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Los costos de constituir una S.A.S. son significativamente menores que una S.R.L. o S.A. Incluyen honorarios profesionales y tasas de inscripción."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "¿Dónde puedo constituir mi S.A.S.?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Actualmente constituimos S.A.S. en Córdoba (IPJ) y CABA (IGJ). Tu sociedad será funcional en todo el territorio argentino."
+                  }
+                }
+              ]
+            })
+          }}
+        />
+
         <Providers>
           {children}
         </Providers>

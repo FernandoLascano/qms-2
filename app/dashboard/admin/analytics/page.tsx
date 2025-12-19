@@ -21,6 +21,7 @@ import { ComparativaCard } from '@/components/admin/analytics/ComparativaCard'
 import { TiemposPromedioPanel } from '@/components/admin/analytics/TiemposPromedioPanel'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
 
 interface ErrorData {
   error: string
@@ -199,11 +200,11 @@ export default function AnalyticsPage() {
             </p>
           </div>
           <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition"
+            onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)}
+            className="flex items-center gap-2 bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 transition cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            Exportar
+            Exportar Reporte Profesional
           </button>
         </div>
 

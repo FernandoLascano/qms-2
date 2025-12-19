@@ -470,3 +470,45 @@ enum TipoEvento {
   RECORDATORIO
   OTRO
 }
+
+// BLOG Y NOTAS
+model Post {
+  id String @id @default(cuid())
+
+  // Contenido principal
+  titulo      String
+  slug        String    @unique
+  descripcion String    @db.Text // Resumen/excerpt para SEO
+  contenido   Json // Contenido estructurado (sections)
+
+  // Metadata
+  categoria  String
+  tags       String[] // Array de tags para SEO
+  autor      String?
+  lectura    String   @default("5 min")
+
+  // Imágenes
+  imagenHero String? // URL de imagen principal
+  imagenAlt  String? // Alt text para SEO
+
+  // SEO Avanzado
+  metaTitle       String? // Si es diferente del titulo
+  metaDescription String? @db.Text // Meta description personalizada
+  keywords        String[] // Keywords para SEO
+  canonical       String? // URL canónica si aplica
+
+  // Estado y publicación
+  publicado   Boolean   @default(false)
+  destacado   Boolean   @default(false) // Para mostrar en home
+  fechaPublicacion DateTime @default(now())
+
+  // Analytics
+  vistas      Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([publicado])
+  @@index([categoria])
+}
