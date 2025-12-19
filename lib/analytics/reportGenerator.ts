@@ -144,9 +144,11 @@ const drawCard = (
 
   // Icono con fondo de color
   doc.setFillColor(color[0], color[1], color[2])
-  doc.setGState(new doc.GState({ opacity: 0.1 }))
+  // @ts-ignore - jsPDF GState types are not fully compatible
+  doc.setGState(new (doc as any).GState({ opacity: 0.1 }))
   doc.circle(x + 11, y + 13, 5, 'F')
-  doc.setGState(new doc.GState({ opacity: 1 }))
+  // @ts-ignore - jsPDF GState types are not fully compatible
+  doc.setGState(new (doc as any).GState({ opacity: 1 }))
   drawIcon(doc, x + 8, y + 10, 6, icon, color)
 
   // Titulo
