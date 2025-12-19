@@ -154,19 +154,19 @@ const drawCard = (
   // Titulo
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text(title, x + 6, y + 24)
 
   // Valor
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(value, x + 6, y + 34)
 
   // Subtitulo
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text(subtitle, x + 6, y + h - 5)
 }
 
@@ -184,7 +184,7 @@ const drawLineChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(title, x + 6, y + 8)
 
   if (data.length === 0) return
@@ -199,7 +199,7 @@ const drawLineChart = (
     const gy = cy + (ch / 4) * i
     doc.line(cx, gy, cx + cw, gy)
     doc.setFontSize(7)
-    doc.setTextColor(...C.grayMedium)
+    doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
     const val = max - (max / 4) * i
     doc.text(Math.round(val).toString(), cx - 5, gy + 1, { align: 'right' })
   }
@@ -220,7 +220,7 @@ const drawLineChart = (
     doc.setFillColor(color[0], color[1], color[2])
     doc.circle(px, py, 2, 'F')
     doc.setFontSize(7)
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
     doc.text(data[i].toString(), px, py - 3, { align: 'center' })
   })
 
@@ -228,7 +228,7 @@ const drawLineChart = (
   labels.forEach((label, i) => {
     const px = cx + (cw / (data.length - 1)) * i
     doc.setFontSize(7)
-    doc.setTextColor(...C.grayMedium)
+    doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
     doc.text(label, px, cy + ch + 5, { align: 'center' })
   })
 }
@@ -247,7 +247,7 @@ const drawPieChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(title, x + 6, y + 8)
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
@@ -283,10 +283,10 @@ const drawPieChart = (
     doc.roundedRect(x + 6, ly - 2.5, 3, 3, 0.5, 0.5, 'F')
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
-    doc.setTextColor(...C.grayMedium)
+    doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
     doc.text(item.label, x + 11, ly)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
     doc.text(`${pct}%`, x + w - 12, ly)
     ly += 5
   })
@@ -306,7 +306,7 @@ const drawDonutChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(title, x + 6, y + 8)
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
@@ -335,11 +335,11 @@ const drawDonutChart = (
   doc.circle(cx, cy, ir, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(total.toString(), cx, cy + 1, { align: 'center' })
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(6)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text('Total', cx, cy + 6, { align: 'center' })
 
   // Leyenda
@@ -350,10 +350,10 @@ const drawDonutChart = (
     doc.roundedRect(x + 6, ly - 2.5, 3, 3, 0.5, 0.5, 'F')
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
-    doc.setTextColor(...C.grayMedium)
+    doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
     doc.text(item.label, x + 11, ly)
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
     doc.text(`${pct}%`, x + w - 12, ly)
     ly += 5
   })
@@ -373,7 +373,7 @@ const drawBarChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(title, x + 6, y + 8)
 
   let cy = y + 18
@@ -382,7 +382,7 @@ const drawBarChart = (
   data.forEach((item) => {
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8)
-    doc.setTextColor(...C.grayMedium)
+    doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
     doc.text(item.label, x + 6, cy)
 
     doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
@@ -394,7 +394,7 @@ const drawBarChart = (
 
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(7)
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
     doc.text(`${item.value}d`, x + lw + bw + 3, cy)
 
     cy += 12
@@ -414,7 +414,7 @@ const drawGanttChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(title, x + 6, y + 8)
 
   const etapas = [
@@ -429,7 +429,7 @@ const drawGanttChart = (
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text('Dia 0', cx, cy - 3)
   doc.text(`Dia ${total}`, cx + cw - 10, cy - 3)
 
@@ -447,7 +447,7 @@ const drawGanttChart = (
     doc.setFillColor(etapa.color[0], etapa.color[1], etapa.color[2])
     doc.roundedRect(start, currentY, width, 6, 1.5, 1.5, 'F')
 
-    doc.setTextColor(...C.white)
+    doc.setTextColor(C.white[0], C.white[1], C.white[2])
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(6)
     doc.text(`${etapa.nombre} (${etapa.duracion}d)`, start + 2, currentY + 4)
@@ -458,7 +458,7 @@ const drawGanttChart = (
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text(`Total: ${total} dias promedio`, cx, currentY + 8)
 }
 
@@ -469,14 +469,14 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
   doc.rect(0, 0, 210, 297, 'F')
 
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(38)
   doc.text('Analytics Dashboard', 105, 60, { align: 'center' })
 
   doc.setFontSize(16)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text('Reporte Profesional de Metricas', 105, 73, { align: 'center' })
 
   // Card info
@@ -487,12 +487,12 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   const fecha = format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('QuieroMiSAS', 105, 102, { align: 'center' })
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text(fecha, 105, 110, { align: 'center' })
   doc.text(`Periodo: ${periodo.toUpperCase()}`, 105, 117, { align: 'center' })
   doc.text(`Jurisdiccion: ${jurisdiccion.toUpperCase()}`, 105, 124, { align: 'center' })
@@ -518,7 +518,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text('Reporte generado automaticamente', 105, 280, { align: 'center' })
   doc.text(`QuieroMiSAS © ${new Date().getFullYear()}`, 105, 285, { align: 'center' })
 
@@ -531,7 +531,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Metricas Clave', 15, y)
 
   y += 3
@@ -581,7 +581,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   // Titulo comparativas
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Comparativa Mensual', 15, y)
 
   y += 8
@@ -634,7 +634,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Analisis Visual', 15, y)
 
   y += 3
@@ -713,7 +713,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(18)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Resumen Ejecutivo', 15, y)
 
   y += 3
@@ -730,12 +730,12 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Resumen del Periodo', 25, y + 10)
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   const resumen = `Durante este periodo se procesaron ${data.tramites.totales} tramites en total, de los cuales ${data.tramites.completados} fueron completados exitosamente (${data.tramites.tasaCompletitud}% de tasa de completitud). Se generaron ingresos por $${(data.ingresos.periodo / 1000).toFixed(0)}K a traves de ${data.ingresos.cantidadPagos} pagos procesados. El tiempo promedio del proceso completo fue de ${data.tiemposPromedio.total} dias.`
 
   const lines = doc.splitTextToSize(resumen, 160)
@@ -748,7 +748,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   // Recomendaciones
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
-  doc.setTextColor(...C.dark)
+  doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
   doc.text('Recomendaciones Estrategicas', 15, y)
 
   y += 10
@@ -770,7 +770,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(9)
-    doc.setTextColor(...C.dark)
+    doc.setTextColor(C.dark[0], C.dark[1], C.dark[2])
     doc.text(`${i + 1}. ${rec}`, 27, y + 9)
 
     y += 20
@@ -779,7 +779,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   // Footer
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7)
-  doc.setTextColor(...C.grayMedium)
+  doc.setTextColor(C.grayMedium[0], C.grayMedium[1], C.grayMedium[2])
   doc.text('QuieroMiSAS Analytics Engine - Reporte Generado Automaticamente', 105, 285, { align: 'center' })
   doc.text(`© ${new Date().getFullYear()} QuieroMiSAS - Datos en tiempo real`, 105, 290, { align: 'center' })
 
