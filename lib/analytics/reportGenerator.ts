@@ -136,14 +136,14 @@ const drawCard = (
   value: string, title: string, subtitle: string, icon: string, color: number[]
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
   // Icono con fondo de color
-  doc.setFillColor(...color)
+  doc.setFillColor(color[0], color[1], color[2])
   doc.setGState(new doc.GState({ opacity: 0.1 }))
   doc.circle(x + 11, y + 13, 5, 'F')
   doc.setGState(new doc.GState({ opacity: 1 }))
@@ -174,9 +174,9 @@ const drawLineChart = (
   data: number[], labels: string[], color: number[], title: string
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
@@ -191,7 +191,7 @@ const drawLineChart = (
   const max = Math.max(...data)
 
   // Grid
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   for (let i = 0; i <= 4; i++) {
     const gy = cy + (ch / 4) * i
@@ -204,7 +204,7 @@ const drawLineChart = (
 
   // Linea
   doc.setLineWidth(2)
-  doc.setDrawColor(...color)
+  doc.setDrawColor(color[0], color[1], color[2])
   const points: Array<[number, number]> = data.map((val, i) => [
     cx + (cw / (data.length - 1)) * i,
     cy + ch - (val / max) * ch
@@ -215,7 +215,7 @@ const drawLineChart = (
 
   // Puntos
   points.forEach(([px, py], i) => {
-    doc.setFillColor(...color)
+    doc.setFillColor(color[0], color[1], color[2])
     doc.circle(px, py, 2, 'F')
     doc.setFontSize(7)
     doc.setTextColor(...C.dark)
@@ -237,9 +237,9 @@ const drawPieChart = (
   data: Array<{ label: string; value: number; color: number[] }>, title: string
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
@@ -256,20 +256,20 @@ const drawPieChart = (
 
   data.forEach((item) => {
     const a = (item.value / total) * Math.PI * 2
-    doc.setFillColor(...item.color)
+    doc.setFillColor(item.color[0], item.color[1], item.color[2])
     for (let i = 0; i < 30; i++) {
       const a1 = angle + (a * i) / 30
       const a2 = angle + (a * (i + 1)) / 30
       doc.triangle(cx, cy, cx + Math.cos(a1) * r, cy + Math.sin(a1) * r,
         cx + Math.cos(a2) * r, cy + Math.sin(a2) * r, 'F')
     }
-    doc.setDrawColor(...C.white)
+    doc.setDrawColor(C.white[0], C.white[1], C.white[2])
     doc.setLineWidth(1)
     doc.line(cx, cy, cx + Math.cos(angle) * r, cy + Math.sin(angle) * r)
     angle += a
   })
 
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.3)
   doc.circle(cx, cy, r, 'S')
 
@@ -277,7 +277,7 @@ const drawPieChart = (
   let ly = y + h - data.length * 5.5
   data.forEach((item) => {
     const pct = ((item.value / total) * 100).toFixed(0)
-    doc.setFillColor(...item.color)
+    doc.setFillColor(item.color[0], item.color[1], item.color[2])
     doc.roundedRect(x + 6, ly - 2.5, 3, 3, 0.5, 0.5, 'F')
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
@@ -296,9 +296,9 @@ const drawDonutChart = (
   data: Array<{ label: string; value: number; color: number[] }>, title: string
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
@@ -315,7 +315,7 @@ const drawDonutChart = (
 
   data.forEach((item) => {
     const a = (item.value / total) * Math.PI * 2
-    doc.setFillColor(...item.color)
+    doc.setFillColor(item.color[0], item.color[1], item.color[2])
     for (let i = 0; i < 30; i++) {
       const a1 = angle + (a * i) / 30
       const a2 = angle + (a * (i + 1)) / 30
@@ -329,7 +329,7 @@ const drawDonutChart = (
     angle += a
   })
 
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.circle(cx, cy, ir, 'F')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12)
@@ -344,7 +344,7 @@ const drawDonutChart = (
   let ly = y + h - data.length * 5.5
   data.forEach((item) => {
     const pct = ((item.value / total) * 100).toFixed(0)
-    doc.setFillColor(...item.color)
+    doc.setFillColor(item.color[0], item.color[1], item.color[2])
     doc.roundedRect(x + 6, ly - 2.5, 3, 3, 0.5, 0.5, 'F')
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7)
@@ -363,9 +363,9 @@ const drawBarChart = (
   data: Array<{ label: string; value: number; max: number; color: number[] }>, title: string
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
@@ -383,11 +383,11 @@ const drawBarChart = (
     doc.setTextColor(...C.grayMedium)
     doc.text(item.label, x + 6, cy)
 
-    doc.setFillColor(...C.grayVeryLight)
+    doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
     doc.roundedRect(x + lw, cy - 4, bw, bh, 2, 2, 'F')
 
     const barW = (bw * item.value) / item.max
-    doc.setFillColor(...item.color)
+    doc.setFillColor(item.color[0], item.color[1], item.color[2])
     doc.roundedRect(x + lw, cy - 4, barW, bh, 2, 2, 'F')
 
     doc.setFont('helvetica', 'bold')
@@ -404,9 +404,9 @@ const drawGanttChart = (
   doc: jsPDF, x: number, y: number, w: number, h: number, title: string, data: AnalyticsData
 ) => {
   drawShadow(doc, x, y, w, h)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   doc.roundedRect(x, y, w, h, 3, 3, 'S')
 
@@ -431,7 +431,7 @@ const drawGanttChart = (
   doc.text('Dia 0', cx, cy - 3)
   doc.text(`Dia ${total}`, cx + cw - 10, cy - 3)
 
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.2)
   for (let i = 0; i <= 4; i++) {
     doc.line(cx + (cw * i) / 4, cy, cx + (cw * i) / 4, cy + etapas.length * rh)
@@ -442,7 +442,7 @@ const drawGanttChart = (
     const start = cx + (cw * acum) / total
     const width = (cw * etapa.duracion) / total
 
-    doc.setFillColor(...etapa.color)
+    doc.setFillColor(etapa.color[0], etapa.color[1], etapa.color[2])
     doc.roundedRect(start, currentY, width, 6, 1.5, 1.5, 'F')
 
     doc.setTextColor(...C.white)
@@ -464,7 +464,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   const doc = new jsPDF()
 
   // ==================== PORTADA ====================
-  doc.setFillColor(...C.grayVeryLight)
+  doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
   doc.rect(0, 0, 210, 297, 'F')
 
   doc.setTextColor(...C.dark)
@@ -479,7 +479,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   // Card info
   drawShadow(doc, 40, 90, 130, 40, 4)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(40, 90, 130, 40, 4, 4, 'F')
 
   const fecha = format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })
@@ -522,7 +522,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   // ==================== PAGINA 2: METRICAS Y COMPARATIVAS ====================
   doc.addPage()
-  doc.setFillColor(...C.grayVeryLight)
+  doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
   doc.rect(0, 0, 210, 297, 'F')
 
   let y = 15
@@ -533,7 +533,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   doc.text('Metricas Clave', 15, y)
 
   y += 3
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.5)
   doc.line(15, y, 195, y)
 
@@ -625,7 +625,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   // ==================== PAGINA 3: GRAFICOS ====================
   doc.addPage()
-  doc.setFillColor(...C.grayVeryLight)
+  doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
   doc.rect(0, 0, 210, 297, 'F')
 
   y = 15
@@ -636,7 +636,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   doc.text('Analisis Visual', 15, y)
 
   y += 3
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.5)
   doc.line(15, y, 195, y)
 
@@ -704,7 +704,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   // ==================== PAGINA 4: RESUMEN Y RECOMENDACIONES ====================
   doc.addPage()
-  doc.setFillColor(...C.grayVeryLight)
+  doc.setFillColor(C.grayVeryLight[0], C.grayVeryLight[1], C.grayVeryLight[2])
   doc.rect(0, 0, 210, 297, 'F')
 
   y = 15
@@ -715,7 +715,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
   doc.text('Resumen Ejecutivo', 15, y)
 
   y += 3
-  doc.setDrawColor(...C.grayLight)
+  doc.setDrawColor(C.grayLight[0], C.grayLight[1], C.grayLight[2])
   doc.setLineWidth(0.5)
   doc.line(15, y, 195, y)
 
@@ -723,7 +723,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   // Card de resumen principal
   drawShadow(doc, 15, y, 180, 50, 4)
-  doc.setFillColor(...C.white)
+  doc.setFillColor(C.white[0], C.white[1], C.white[2])
   doc.roundedRect(15, y, 180, 50, 4, 4, 'F')
 
   doc.setFont('helvetica', 'bold')
@@ -763,7 +763,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
 
   recs.forEach((rec, i) => {
     drawShadow(doc, 20, y, 170, 15, 3)
-    doc.setFillColor(...C.white)
+    doc.setFillColor(C.white[0], C.white[1], C.white[2])
     doc.roundedRect(20, y, 170, 15, 3, 3, 'F')
 
     doc.setFont('helvetica', 'normal')
