@@ -597,7 +597,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
         data.comparativas.tramites.anterior.toString(),
         {
           content: `${data.comparativas.tramites.cambio > 0 ? '+' : ''}${data.comparativas.tramites.cambio.toFixed(1)}%`,
-          styles: { textColor: data.comparativas.tramites.esPositivo ? C.success : C.primary, fontStyle: 'bold' }
+          styles: { textColor: (data.comparativas.tramites.esPositivo ? C.success : C.primary) as [number, number, number], fontStyle: 'bold' }
         }
       ],
       [
@@ -606,7 +606,7 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
         `$${(data.comparativas.ingresos.anterior / 1000).toFixed(0)}K`,
         {
           content: `${data.comparativas.ingresos.cambio > 0 ? '+' : ''}${data.comparativas.ingresos.cambio.toFixed(1)}%`,
-          styles: { textColor: data.comparativas.ingresos.esPositivo ? C.success : C.primary, fontStyle: 'bold' }
+          styles: { textColor: (data.comparativas.ingresos.esPositivo ? C.success : C.primary) as [number, number, number], fontStyle: 'bold' }
         }
       ],
       [
@@ -615,14 +615,14 @@ export const generarReporteProfesional = (data: AnalyticsData, periodo: string, 
         data.comparativas.clientes.anterior.toString(),
         {
           content: `${data.comparativas.clientes.cambio > 0 ? '+' : ''}${data.comparativas.clientes.cambio.toFixed(1)}%`,
-          styles: { textColor: data.comparativas.clientes.esPositivo ? C.success : C.primary, fontStyle: 'bold' }
+          styles: { textColor: (data.comparativas.clientes.esPositivo ? C.success : C.primary) as [number, number, number], fontStyle: 'bold' }
         }
       ]
     ],
     theme: 'striped',
-    headStyles: { fillColor: C.dark, textColor: C.white, fontStyle: 'bold', fontSize: 10 },
+    headStyles: { fillColor: C.dark as [number, number, number], textColor: C.white as [number, number, number], fontStyle: 'bold', fontSize: 10 },
     styles: { fontSize: 9, cellPadding: 4 },
-    alternateRowStyles: { fillColor: C.grayVeryLight }
+    alternateRowStyles: { fillColor: C.grayVeryLight as [number, number, number] }
   })
 
   // ==================== PAGINA 3: GRAFICOS ====================
