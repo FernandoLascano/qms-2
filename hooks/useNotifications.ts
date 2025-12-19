@@ -80,15 +80,7 @@ export function useNotifications() {
                       onClick: () => {
                         window.location.href = ultimaNotificacion.link || '/dashboard/notificaciones'
                       }
-                    } : undefined,
-                    className: 'cursor-pointer',
-                    onClick: () => {
-                      if (ultimaNotificacion.link) {
-                        window.location.href = ultimaNotificacion.link
-                      } else {
-                        window.location.href = '/dashboard/notificaciones'
-                      }
-                    }
+                    } : undefined
                   })
                 }
               }
