@@ -72,11 +72,14 @@ const C = {
 // Sombra estilo shadow-md del dashboard
 const drawShadow = (doc: jsPDF, x: number, y: number, w: number, h: number, r: number = 3) => {
   doc.setFillColor(0, 0, 0)
-  doc.setGState(new doc.GState({ opacity: 0.03 }))
+  // @ts-ignore - jsPDF GState types are not fully compatible
+  doc.setGState(new (doc as any).GState({ opacity: 0.03 }))
   doc.roundedRect(x + 1, y + 2, w, h, r, r, 'F')
-  doc.setGState(new doc.GState({ opacity: 0.05 }))
+  // @ts-ignore - jsPDF GState types are not fully compatible
+  doc.setGState(new (doc as any).GState({ opacity: 0.05 }))
   doc.roundedRect(x + 0.5, y + 1, w, h, r, r, 'F')
-  doc.setGState(new doc.GState({ opacity: 1 }))
+  // @ts-ignore - jsPDF GState types are not fully compatible
+  doc.setGState(new (doc as any).GState({ opacity: 1 }))
 }
 
 // Dibuja icono usando formas geometricas
