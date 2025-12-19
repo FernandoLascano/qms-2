@@ -21,7 +21,9 @@
       "Bash(npx tsx:*)",
       "Bash(Check Prisma Studio to see database)",
       "Bash(taskkill /F /PID 33220)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(gh repo view:*)",
+      "Bash(cat:*)"
     ]
   }
 }
