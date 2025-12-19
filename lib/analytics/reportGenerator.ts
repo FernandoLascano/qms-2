@@ -84,8 +84,8 @@ const drawShadow = (doc: jsPDF, x: number, y: number, w: number, h: number, r: n
 
 // Dibuja icono usando formas geometricas
 const drawIcon = (doc: jsPDF, x: number, y: number, size: number, type: string, color: number[]) => {
-  doc.setDrawColor(...color)
-  doc.setFillColor(...color)
+  doc.setDrawColor(color[0], color[1], color[2])
+  doc.setFillColor(color[0], color[1], color[2])
   doc.setLineWidth(0.5)
 
   switch (type) {
