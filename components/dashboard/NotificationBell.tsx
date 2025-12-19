@@ -13,20 +13,44 @@ export default function NotificationBell() {
   const { notifications, count, isConnected, markAsRead, markAllAsRead } = useNotifications()
   const [isOpen, setIsOpen] = useState(false)
 
-  const getTipoColor = (tipo: string) => {
+  const getTipoConfig = (tipo: string) => {
     switch (tipo) {
       case 'EXITO':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return {
+          badge: 'bg-green-100 text-green-700 border-green-200',
+          bg: 'bg-green-50',
+          icon: '✓'
+        }
       case 'ERROR':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return {
+          badge: 'bg-red-100 text-red-700 border-red-200',
+          bg: 'bg-red-50',
+          icon: '✕'
+        }
       case 'ALERTA':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return {
+          badge: 'bg-orange-100 text-orange-700 border-orange-200',
+          bg: 'bg-orange-50',
+          icon: '⚠'
+        }
       case 'ACCION_REQUERIDA':
-        return 'bg-purple-100 text-purple-800 border-purple-200'
+        return {
+          badge: 'bg-purple-100 text-purple-700 border-purple-200',
+          bg: 'bg-purple-50',
+          icon: '!'
+        }
       case 'MENSAJE':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return {
+          badge: 'bg-blue-100 text-blue-700 border-blue-200',
+          bg: 'bg-blue-50',
+          icon: '💬'
+        }
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return {
+          badge: 'bg-gray-100 text-gray-700 border-gray-200',
+          bg: 'bg-gray-50',
+          icon: 'ℹ'
+        }
     }
   }
 
@@ -73,80 +97,100 @@ export default function NotificationBell() {
           />
 
           {/* Panel */}
-          <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[600px] overflow-hidden flex flex-col">
+          <div className="absolute right-0 mt-2 w-[420px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[calc(100vh-100px)] overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gray-50">
-              <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-gray-700" />
-                <h3 className="font-semibold text-gray-900">Notificaciones</h3>
-                {count > 0 && (
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {count}
-                  </span>
-                )}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <Bell className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Notificaciones</h3>
+                  {count > 0 && (
+                    <p className="text-xs text-gray-500">{count} sin leer</p>
+                  )}
+                </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-gray-200 rounded"
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="h-4 w-4 text-gray-600" />
+                <X className="h-5 w-5 text-gray-500" />
               </button>
             </div>
 
             {/* Lista de notificaciones */}
             <div className="flex-1 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Bell className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p className="font-medium">No tienes notificaciones</p>
-                  <p className="text-sm">Te avisaremos cuando haya novedades</p>
+                <div className="p-12 text-center text-gray-500">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Bell className="h-10 w-10 text-gray-300" />
+                  </div>
+                  <p className="font-semibold text-gray-700 mb-1">Todo al día</p>
+                  <p className="text-sm text-gray-500">No tienes notificaciones nuevas</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      onClick={() => handleNotificationClick(notification)}
-                      className={`p-4 cursor-pointer transition-colors ${
-                        !notification.leida ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`px-2 py-1 rounded text-xs font-medium border ${getTipoColor(notification.tipo)}`}>
-                          {notification.tipo}
+                <div className="divide-y divide-gray-50">
+                  {notifications.map((notification) => {
+                    const config = getTipoConfig(notification.tipo)
+                    return (
+                      <div
+                        key={notification.id}
+                        onClick={() => handleNotificationClick(notification)}
+                        className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
+                          !notification.leida ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50/50'
+                        }`}
+                      >
+                        <div className="flex gap-3">
+                          {/* Icono */}
+                          <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${config.bg} flex items-center justify-center text-lg font-bold`}>
+                            {config.icon}
+                          </div>
+
+                          {/* Contenido */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <p className={`font-semibold text-sm leading-tight ${!notification.leida ? 'text-gray-900' : 'text-gray-700'}`}>
+                                {notification.titulo}
+                              </p>
+                              {!notification.leida && (
+                                <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
+                              )}
+                            </div>
+
+                            <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                              {notification.mensaje}
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-md font-medium border ${config.badge}`}>
+                                {notification.tipo.replace('_', ' ')}
+                              </span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-500">
+                                {format(new Date(notification.createdAt), "d MMM, HH:mm", { locale: es })}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`font-semibold text-sm ${!notification.leida ? 'text-gray-900' : 'text-gray-700'}`}>
-                            {notification.titulo}
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                            {notification.mensaje}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {format(new Date(notification.createdAt), "d 'de' MMM, HH:mm", { locale: es })}
-                          </p>
-                        </div>
-                        {!notification.leida && (
-                          <div className="h-2 w-2 bg-blue-600 rounded-full flex-shrink-0 mt-1" />
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t border-gray-200 bg-gray-50 flex gap-2">
+              <div className="p-3 border-t border-gray-100 bg-gradient-to-r from-gray-50 to-white flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
                 >
                   <CheckCheck className="h-4 w-4" />
-                  Marcar todas como leídas
+                  Marcar leídas
                 </Button>
                 <Button
                   variant="outline"
@@ -155,7 +199,7 @@ export default function NotificationBell() {
                     router.push('/dashboard/notificaciones')
                     setIsOpen(false)
                   }}
-                  className="flex-1"
+                  className="flex-1 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
                 >
                   Ver todas
                 </Button>
