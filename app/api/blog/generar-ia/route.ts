@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import OpenAI from 'openai'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +12,20 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // Verificar que la API key esté configurada
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'API de OpenAI no configurada. Agregá OPENAI_API_KEY en las variables de entorno.' },
+        { status: 503 }
+      )
+    }
+
+    // Importar OpenAI dinámicamente para evitar error en build
+    const OpenAI = (await import('openai')).default
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    })
 
     const { prompt, tipo } = await request.json()
 
