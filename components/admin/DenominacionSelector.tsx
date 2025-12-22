@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, Search, AlertTriangle, Info, XCircle } from 'lucide-react'
+import { CheckCircle, Search, AlertTriangle, Info, XCircle, Plus, Pencil } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import {
   Dialog,
@@ -40,6 +41,8 @@ export default function DenominacionSelector({
   const [dialogRechazar, setDialogRechazar] = useState(false)
   const [motivoRechazo, setMotivoRechazo] = useState('')
   const [rechazando, setRechazando] = useState(false)
+  const [dialogPersonalizada, setDialogPersonalizada] = useState(false)
+  const [denominacionPersonalizada, setDenominacionPersonalizada] = useState('')
 
   const handleSeleccionar = async (denominacion: string) => {
     setSeleccionando(true)
@@ -63,6 +66,36 @@ export default function DenominacionSelector({
       setSeleccionando(false)
       setDenominacionAConfirmar(null)
       setDialogOpen({})
+    }
+  }
+
+  const handleAprobarPersonalizada = async () => {
+    if (!denominacionPersonalizada.trim()) {
+      toast.error('Debes ingresar una denominación')
+      return
+    }
+
+    setSeleccionando(true)
+
+    try {
+      const response = await fetch(`/api/admin/tramites/${tramiteId}/denominacion`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ denominacion: denominacionPersonalizada.trim() })
+      })
+
+      if (response.ok) {
+        toast.success('Denominación personalizada aprobada con éxito')
+        router.refresh()
+        setDialogPersonalizada(false)
+        setDenominacionPersonalizada('')
+      } else {
+        toast.error('Error al aprobar la denominación')
+      }
+    } catch (error) {
+      toast.error('Error al aprobar la denominación')
+    } finally {
+      setSeleccionando(false)
     }
   }
 
@@ -182,7 +215,77 @@ export default function DenominacionSelector({
 
           {!denominacionAprobada && (
             <>
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-6">
+              {/* Opción para ingresar denominación personalizada */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Pencil className="h-4 w-4 text-blue-600" />
+                  <p className="text-sm font-bold text-blue-900">¿Ninguna opción es viable?</p>
+                </div>
+                <p className="text-sm text-blue-800 mb-3">
+                  Si el cliente acordó una denominación diferente con el registro, podés ingresarla manualmente.
+                </p>
+                <Dialog open={dialogPersonalizada} onOpenChange={setDialogPersonalizada}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full border-blue-300 text-blue-700 hover:bg-blue-100 hover:border-blue-400"
+                      disabled={seleccionando}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Ingresar Denominación Alternativa
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="border-2 border-blue-100">
+                    <DialogHeader>
+                      <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <Pencil className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                        Denominación Alternativa
+                      </DialogTitle>
+                      <DialogDescription className="text-center text-gray-600 pt-2">
+                        Ingresá la denominación que fue acordada con el registro.
+                        <br />
+                        Esta será marcada como la denominación oficial aprobada.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Label htmlFor="denominacion-personalizada" className="text-base font-semibold mb-2 block text-gray-900">
+                        Nueva Denominación *
+                      </Label>
+                      <Input
+                        id="denominacion-personalizada"
+                        value={denominacionPersonalizada}
+                        onChange={(e) => setDenominacionPersonalizada(e.target.value)}
+                        placeholder="Ej: MI EMPRESA ALTERNATIVA SAS"
+                        className="text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <DialogFooter className="sm:justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setDialogPersonalizada(false)
+                          setDenominacionPersonalizada('')
+                        }}
+                        className="border-gray-300 font-semibold px-8"
+                        disabled={seleccionando}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleAprobarPersonalizada}
+                        className="bg-blue-600 hover:bg-blue-700 font-bold px-8 shadow-md"
+                        disabled={seleccionando || !denominacionPersonalizada.trim()}
+                      >
+                        {seleccionando ? 'Procesando...' : 'Aprobar Esta Denominación'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-4">
                 <Dialog open={dialogRechazar} onOpenChange={setDialogRechazar}>
                   <DialogTrigger asChild>
                     <Button
