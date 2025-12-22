@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Calendar, Clock, Tag, ArrowLeft } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import Navbar from '@/components/Navbar'
 
 interface Post {
   id: string
@@ -64,25 +65,31 @@ export default function PostPage() {
     switch (section.type) {
       case 'h2':
         return (
-          <h2 key={index} className="text-2xl md:text-3xl font-bold text-red-900 mt-8 mb-4">
-            {section.content}
+          <h2 key={index} className="text-2xl md:text-3xl font-bold text-red-900 mt-8 mb-4 first:mt-0">
+            {section.text || section.content}
           </h2>
         )
       case 'p':
         return (
           <p key={index} className="text-gray-700 leading-relaxed mb-4 text-lg">
-            {section.content}
+            {section.text || section.content}
           </p>
         )
       case 'list':
         return (
-          <ul key={index} className="space-y-3 mb-6">
+          <ul key={index} className="list-disc list-inside space-y-3 mb-6">
             {section.items?.map((item: string, i: number) => (
               <li key={i} className="text-gray-700 leading-relaxed text-lg">
                 {item}
               </li>
             ))}
           </ul>
+        )
+      case 'quote':
+        return (
+          <blockquote key={index} className="border-l-4 border-red-700 pl-6 italic text-gray-700 mb-6 my-8 text-lg">
+            {section.text || section.content}
+          </blockquote>
         )
       default:
         return null
@@ -131,18 +138,7 @@ export default function PostPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="inline-block">
-            <img
-              src="/assets/img/logo4.png"
-              alt="QuieroMiSAS Logo"
-              className="h-12 w-auto"
-            />
-          </Link>
-        </div>
-      </header>
+      <Navbar currentPage="blog" />
 
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -213,9 +209,10 @@ export default function PostPage() {
 
           {/* Content Sections */}
           <div className="prose prose-lg max-w-none">
-            {post.contenido?.sections?.map((section, index) =>
-              renderSection(section, index)
-            )}
+            {Array.isArray(post.contenido)
+              ? post.contenido.map((section, index) => renderSection(section, index))
+              : post.contenido?.sections?.map((section, index) => renderSection(section, index))
+            }
           </div>
 
           {/* Tags */}

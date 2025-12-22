@@ -185,11 +185,16 @@ export default function ValidacionTramite({
         )}
 
         {estadoActual === 'REQUIERE_CORRECCIONES' && observacionesValidacion && (
-          <div className="bg-orange-100 border border-orange-300 rounded-lg p-4">
-            <p className="text-orange-900 font-medium mb-2">⚠️ Correcciones Requeridas</p>
-            <p className="text-sm text-orange-800 whitespace-pre-wrap">
-              {observacionesValidacion}
+          <div className="bg-white border-2 border-orange-400 rounded-lg p-4">
+            <p className="text-orange-900 font-bold mb-3 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Correcciones Requeridas
             </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
+              <p className="text-base text-gray-900 leading-relaxed whitespace-pre-wrap font-medium">
+                {observacionesValidacion}
+              </p>
+            </div>
           </div>
         )}
 

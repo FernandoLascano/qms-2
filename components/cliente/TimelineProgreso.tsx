@@ -83,18 +83,18 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
   const etapasCompletadasList = etapas.filter(e => e.completado)
 
   return (
-    <Card>
+    <Card className={progresoPercentage === 100 ? 'border-2 border-green-500 bg-green-50' : ''}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Progreso del Trámite</CardTitle>
-            <CardDescription>
+            <CardTitle className={progresoPercentage === 100 ? 'text-green-900' : ''}>Progreso del Trámite</CardTitle>
+            <CardDescription className={progresoPercentage === 100 ? 'text-green-700' : ''}>
               {etapasCompletadas} de {etapas.length} etapas completadas
             </CardDescription>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-red-700">{progresoPercentage}%</p>
-            <p className="text-xs text-gray-500">Completado</p>
+            <p className={`text-3xl font-bold ${progresoPercentage === 100 ? 'text-green-700' : 'text-red-700'}`}>{progresoPercentage}%</p>
+            <p className={`text-xs ${progresoPercentage === 100 ? 'text-green-600' : 'text-gray-500'}`}>Completado</p>
           </div>
         </div>
       </CardHeader>

@@ -1,7 +1,27 @@
+'use client'
+
 import { Check } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export function Planes() {
+  const [precios, setPrecios] = useState({
+    precioPlanEsencial: 85000,
+    precioPlanProfesional: 120000
+  })
+
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        setPrecios({
+          precioPlanEsencial: data.precioPlanEsencial,
+          precioPlanProfesional: data.precioPlanProfesional
+        })
+      })
+      .catch(err => console.error('Error al cargar precios:', err))
+  }, [])
+
   return (
     <section id="planes" className="py-20 bg-gradient-to-b from-red-50 to-white">
       <div className="container mx-auto px-4">
@@ -17,7 +37,7 @@ export function Planes() {
               <h3 className="text-2xl font-bold mb-2 text-red-900">Esencial</h3>
               <p className="text-gray-600 text-sm mb-4">Para startups y emprendedores</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-gray-900">$85.000</span>
+                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanEsencial.toLocaleString('es-AR')}</span>
               </div>
               <p className="text-sm text-gray-500">+ Tasas de jurisdicción</p>
             </div>
@@ -69,7 +89,7 @@ export function Planes() {
               <h3 className="text-2xl font-bold mb-2 text-red-900">Profesional</h3>
               <p className="text-gray-600 text-sm mb-4">Para PyMEs en crecimiento</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-red-700">$120.000</span>
+                <span className="text-4xl font-bold text-red-700">${precios.precioPlanProfesional.toLocaleString('es-AR')}</span>
               </div>
               <p className="text-sm text-gray-500">+ Tasas de jurisdicción</p>
             </div>

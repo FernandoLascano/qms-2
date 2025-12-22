@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, Search, AlertTriangle, Info } from 'lucide-react'
+import { CheckCircle, Search, AlertTriangle, Info, XCircle } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import {
   Dialog,
@@ -35,6 +37,9 @@ export default function DenominacionSelector({
   const [seleccionando, setSeleccionando] = useState(false)
   const [denominacionAConfirmar, setDenominacionAConfirmar] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState<Record<string, boolean>>({})
+  const [dialogRechazar, setDialogRechazar] = useState(false)
+  const [motivoRechazo, setMotivoRechazo] = useState('')
+  const [rechazando, setRechazando] = useState(false)
 
   const handleSeleccionar = async (denominacion: string) => {
     setSeleccionando(true)
@@ -58,6 +63,39 @@ export default function DenominacionSelector({
       setSeleccionando(false)
       setDenominacionAConfirmar(null)
       setDialogOpen({})
+    }
+  }
+
+  const handleRechazarTodas = async () => {
+    if (!motivoRechazo.trim()) {
+      toast.error('Debes explicar los motivos del rechazo')
+      return
+    }
+
+    setRechazando(true)
+
+    try {
+      const response = await fetch(`/api/admin/tramites/${tramiteId}/validacion`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accion: 'REQUIERE_CORRECCIONES',
+          observaciones: `⚠️ DENOMINACIONES RECHAZADAS - Se requieren 3 nuevas alternativas\n\n${motivoRechazo}`
+        })
+      })
+
+      if (response.ok) {
+        toast.success('Se ha solicitado al cliente que envíe 3 nuevas denominaciones')
+        router.refresh()
+        setDialogRechazar(false)
+        setMotivoRechazo('')
+      } else {
+        toast.error('Error al rechazar las denominaciones')
+      }
+    } catch (error) {
+      toast.error('Error al rechazar las denominaciones')
+    } finally {
+      setRechazando(false)
     }
   }
 
@@ -143,16 +181,81 @@ export default function DenominacionSelector({
           {denominacion3 && <RenderOpcion texto={denominacion3} label="Opción 3" index={3} />}
 
           {!denominacionAprobada && (
-            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mt-6 flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-bold text-amber-900">Pendiente de Selección</p>
-                <p className="text-sm text-amber-800">
-                  Aún no has marcado ninguna denominación como aprobada. 
-                  Selecciona una opción una vez que tengas el resultado del examen.
-                </p>
+            <>
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-6">
+                <Dialog open={dialogRechazar} onOpenChange={setDialogRechazar}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      className="w-full bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95"
+                      disabled={rechazando}
+                    >
+                      <XCircle className="h-5 w-5 mr-2" />
+                      Rechazar Todas y Solicitar 3 Nuevas Denominaciones
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="border-2 border-red-100">
+                    <DialogHeader>
+                      <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                        <XCircle className="h-8 w-8 text-red-600" />
+                      </div>
+                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                        Rechazar Todas las Denominaciones
+                      </DialogTitle>
+                      <DialogDescription className="text-center text-gray-600 pt-2">
+                        Se le solicitará al cliente que envíe 3 nuevas alternativas de denominación.
+                        <br />
+                        Es <span className="font-bold text-red-700">obligatorio</span> explicar los motivos del rechazo.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Label htmlFor="motivo-rechazo" className="text-base font-semibold mb-2 block text-gray-900">
+                        Motivos del Rechazo *
+                      </Label>
+                      <Textarea
+                        id="motivo-rechazo"
+                        value={motivoRechazo}
+                        onChange={(e) => setMotivoRechazo(e.target.value)}
+                        placeholder="Explica detalladamente por qué se rechazan las denominaciones (ej: homonimia con empresas existentes, términos no permitidos, etc.)"
+                        rows={6}
+                        className="resize-none text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-red-500 focus:ring-red-500"
+                      />
+                    </div>
+                    <DialogFooter className="sm:justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setDialogRechazar(false)
+                          setMotivoRechazo('')
+                        }}
+                        className="border-gray-300 font-semibold px-8"
+                        disabled={rechazando}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleRechazarTodas}
+                        className="bg-red-600 hover:bg-red-700 font-bold px-8 shadow-md"
+                        disabled={rechazando || !motivoRechazo.trim()}
+                      >
+                        {rechazando ? 'Procesando...' : 'Confirmar Rechazo'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
-            </div>
+
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-amber-900">Pendiente de Selección</p>
+                  <p className="text-sm text-amber-800">
+                    Aún no has marcado ninguna denominación como aprobada.
+                    Selecciona una opción una vez que tengas el resultado del examen.
+                  </p>
+                </div>
+              </div>
+            </>
           )}
           
           {denominacionAprobada && (

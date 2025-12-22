@@ -512,3 +512,36 @@ model Post {
   @@index([publicado])
   @@index([categoria])
 }
+
+// CONFIGURACIÓN DEL SISTEMA
+model Config {
+  id String @id @default(cuid())
+
+  // Notificaciones
+  notificacionesAutomaticas Boolean @default(true)
+  diasAlertaDenominacion    Int     @default(7)
+  diasAlertaEstancamiento   Int     @default(15)
+
+  // Email
+  emailRemitente       String @default("noreply@quieromisas.com")
+  emailNombreRemitente String @default("QuieroMiSAS")
+
+  // Sistema
+  diasVencimientoReserva Int @default(30)
+  horasLimiteRespuesta   Int @default(48)
+
+  // Pagos
+  mercadoPagoEnabled Boolean @default(true)
+  precioBaseSAS      Float   @default(50000)
+
+  // Planes y Precios
+  precioPlanEsencial     Float @default(85000)
+  precioPlanProfesional  Float @default(120000)
+  smvm                   Float @default(317800) // Salario Mínimo, Vital y Móvil
+
+  // General
+  mantenimientoMode Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

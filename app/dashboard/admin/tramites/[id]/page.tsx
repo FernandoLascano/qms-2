@@ -192,6 +192,21 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         icon={<Tag className="h-5 w-5 text-gray-600" />}
       >
         <div className="space-y-2">
+          {(() => {
+            const datosUsuario = (tramite.datosUsuario as any) || {}
+            const marcaRegistrada = datosUsuario.marcaRegistrada
+            return marcaRegistrada ? (
+              <div className="mb-3 p-3 bg-blue-50 border-2 border-blue-400 rounded-lg">
+                <p className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Marca Registrada
+                </p>
+                <p className="text-xs text-blue-800 mt-1">
+                  El cliente indicó que la denominación es una marca registrada de su propiedad
+                </p>
+              </div>
+            ) : null
+          })()}
           <div className="p-3 border rounded-lg bg-gray-50">
             <span className="text-xs text-gray-500">Opción 1 (Preferida)</span>
             <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial1}</p>

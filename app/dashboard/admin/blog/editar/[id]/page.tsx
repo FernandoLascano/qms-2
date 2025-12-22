@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowLeft, Save, Eye, Plus, Trash2, Sparkles, Wand2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
@@ -12,9 +12,13 @@ interface Section {
   items?: string[]
 }
 
-export default function NuevoPostPage() {
+export default function EditarPostPage() {
   const router = useRouter()
+  const params = useParams()
+  const postId = params?.id as string
+
   const [loading, setLoading] = useState(false)
+  const [loadingPost, setLoadingPost] = useState(true)
   const [generandoIA, setGenerandoIA] = useState(false)
   const [promptIA, setPromptIA] = useState('')
   const [mostrarModalIA, setMostrarModalIA] = useState(false)
@@ -43,6 +47,54 @@ export default function NuevoPostPage() {
 
   const [newTag, setNewTag] = useState('')
   const [newKeyword, setNewKeyword] = useState('')
+
+  // Cargar el post existente
+  useEffect(() => {
+    if (postId) {
+      fetchPost()
+    }
+  }, [postId])
+
+  const fetchPost = async () => {
+    try {
+      const res = await fetch(`/api/blog/${postId}`)
+      if (!res.ok) throw new Error('Error al cargar post')
+
+      const post = await res.json()
+
+      setFormData({
+        titulo: post.titulo || '',
+        slug: post.slug || '',
+        descripcion: post.descripcion || '',
+        categoria: post.categoria || 'Emprendimiento',
+        tags: post.tags || [],
+        autor: post.autor || '',
+        lectura: post.lectura || '5 min',
+        imagenHero: post.imagenHero || '',
+        imagenAlt: post.imagenAlt || '',
+        metaTitle: post.metaTitle || '',
+        metaDescription: post.metaDescription || '',
+        keywords: post.keywords || [],
+        publicado: post.publicado || false,
+        destacado: post.destacado || false
+      })
+
+      // Cargar el contenido
+      if (post.contenido) {
+        if (Array.isArray(post.contenido)) {
+          setSections(post.contenido)
+        } else if (post.contenido.sections) {
+          setSections(post.contenido.sections)
+        }
+      }
+
+      setLoadingPost(false)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al cargar el post')
+      router.push('/dashboard/admin/blog')
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
@@ -256,8 +308,8 @@ export default function NuevoPostPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/blog', {
-        method: 'POST',
+      const res = await fetch(`/api/blog/${postId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
@@ -266,18 +318,29 @@ export default function NuevoPostPage() {
       })
 
       if (res.ok) {
-        toast.success('Post creado exitosamente')
+        toast.success('Post actualizado exitosamente')
         router.push('/dashboard/admin/blog')
       } else {
         const error = await res.json()
-        toast.error(error.error || 'Error al crear post')
+        toast.error(error.error || 'Error al actualizar post')
       }
     } catch (error) {
       console.error('Error:', error)
-      toast.error('Error al crear post')
+      toast.error('Error al actualizar post')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loadingPost) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Cargando post...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -292,8 +355,8 @@ export default function NuevoPostPage() {
             <ArrowLeft className="w-6 h-6 text-gray-900" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-red-900">Crear Nueva Nota</h1>
-            <p className="text-gray-600 mt-1">Completa todos los campos para optimizar el SEO</p>
+            <h1 className="text-3xl font-bold text-red-900">Editar Nota</h1>
+            <p className="text-gray-600 mt-1">Modifica los campos que necesites</p>
           </div>
         </div>
         <button

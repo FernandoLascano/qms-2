@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2 } from 'lucide-react'
+import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
@@ -15,23 +15,23 @@ const navigation = [
   { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
 ]
 
-const adminNavigation = [
-  { name: 'Panel de Admin', href: '/dashboard/admin', icon: Shield },
-]
-
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.rol === 'ADMIN'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics y Sociedades
-  const navItems = isAdmin 
+  // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics, Sociedades, Blog y Calendario
+  const navItems = isAdmin
     ? [
         { name: 'Panel de Admin', href: '/dashboard/admin', icon: Shield },
         { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
         { name: 'Sociedades', href: '/dashboard/admin/sociedades', icon: Building2 },
-        ...navigation.slice(1) // Excluir "Inicio" para admins
+        { name: 'Blog', href: '/dashboard/admin/blog', icon: BookOpen },
+        { name: 'Calendario', href: '/dashboard/admin/calendario', icon: Calendar },
+        { name: 'Configuración Sistema', href: '/dashboard/admin/configuracion', icon: Settings },
+        ...navigation.slice(1, -1), // Excluir "Inicio" y "Configuración" normal para admins
+        { name: 'Mi Cuenta', href: '/dashboard/configuracion', icon: User }
       ]
     : navigation
 
@@ -51,10 +51,13 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || 
+          const isActive = pathname === item.href ||
             (item.href === '/dashboard/admin' && pathname === '/dashboard/admin') ||
             (item.href === '/dashboard/admin/analytics' && pathname?.startsWith('/dashboard/admin/analytics')) ||
-            (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades'))
+            (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades')) ||
+            (item.href === '/dashboard/admin/blog' && pathname?.startsWith('/dashboard/admin/blog')) ||
+            (item.href === '/dashboard/admin/calendario' && pathname?.startsWith('/dashboard/admin/calendario')) ||
+            (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion'))
           return (
             <Link
               key={item.name}

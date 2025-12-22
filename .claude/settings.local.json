@@ -23,7 +23,16 @@
       "Bash(taskkill /F /PID 33220)",
       "Bash(npm run dev:*)",
       "Bash(gh repo view:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill //F //PID 33220)",
+      "Bash(taskkill:*)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(if exist \".next\\\\dev\\\\lock\" del /f \".next\\\\dev\\\\lock\")",
+      "Bash(del /f \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\.next\\\\dev\\\\lock\")",
+      "Bash(echo:*)",
+      "Bash(timeout:*)"
     ]
   }
 }

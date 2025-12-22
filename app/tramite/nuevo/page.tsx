@@ -14,9 +14,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 
-// Constante SMVM (Salario Mínimo, Vital y Móvil) - Variable configurable
-const SMVM = 317800 // Este valor se puede cambiar fácilmente
-
 const PASOS = [
   { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
   { id: 2, nombre: 'Nombre', descripcion: 'Marca de la sociedad', icon: Building2 },
@@ -120,7 +117,8 @@ export default function NuevoTramitePage() {
   const [guardando, setGuardando] = useState(false)
   const [cargandoBorrador, setCargandoBorrador] = useState(true)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
-  
+  const [smvm, setSmvm] = useState(317800) // Valor por defecto
+
   const [formData, setFormData] = useState<FormData>({
     nombre: session?.user?.name?.split(' ')[0] || '',
     apellido: session?.user?.name?.split(' ').slice(1).join(' ') || '',
@@ -143,7 +141,7 @@ export default function NuevoTramitePage() {
     departamento: '',
     provincia: 'Córdoba',
     
-    capitalSocial: String(2 * SMVM),
+    capitalSocial: String(2 * smvm),
     cbuPrincipal: '',
     cbuSecundario: '',
     
@@ -173,6 +171,23 @@ export default function NuevoTramitePage() {
     fechaCierre: '31-12',
     asesoramientoContable: false
   })
+
+  // Cargar configuración (SMVM)
+  useEffect(() => {
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data.smvm) {
+          setSmvm(data.smvm)
+          // Actualizar capital social si aún no fue modificado por el usuario
+          setFormData(prev => ({
+            ...prev,
+            capitalSocial: String(2 * data.smvm)
+          }))
+        }
+      })
+      .catch(err => console.error('Error al cargar SMVM:', err))
+  }, [])
 
   // Cargar borrador al iniciar - SOLO si es un borrador sin terminar
   useEffect(() => {
@@ -276,14 +291,14 @@ export default function NuevoTramitePage() {
                 ciudad: ciudadParsed,
                 departamento: departamentoParsed,
                 provincia: draft.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires',
-                capitalSocial: String(draft.capitalSocial || (2 * SMVM)),
+                capitalSocial: String(draft.capitalSocial || (2 * smvm)),
                 cbuPrincipal: datosUsuario.cbuPrincipal || '',
                 cbuSecundario: datosUsuario.cbuSecundario || '',
                 fechaCierre: datosUsuario.fechaCierre || '31-12',
                 asesoramientoContable: datosUsuario.asesoramientoContable !== undefined ? datosUsuario.asesoramientoContable : false,
                 numeroSocios: socios.length || 1,
                 socios: socios.length > 0 ? socios.map((s: any) => {
-                  const capitalTotal = parseFloat(String(draft.capitalSocial || (2 * SMVM)))
+                  const capitalTotal = parseFloat(String(draft.capitalSocial || (2 * smvm)))
                   const aporteCapital = parseFloat(String(s.aporteCapital || '0'))
                   const porcentajeCalculado = capitalTotal > 0 ? ((aporteCapital / capitalTotal) * 100).toFixed(2) : '0'
                   
@@ -454,9 +469,9 @@ export default function NuevoTramitePage() {
         }
         return true
       case 4:
-        const capitalMinimo = 2 * SMVM // SMVM * 2
+        const capitalMinimo = 2 * smvm // smvm * 2
         if (!formData.capitalSocial.trim() || parseFloat(formData.capitalSocial) < capitalMinimo) {
-          toast.error(`El capital social mínimo es de $${capitalMinimo.toLocaleString('es-AR')} (2 SMVM = $${SMVM.toLocaleString('es-AR')} cada uno)`)
+          toast.error(`El capital social mínimo es de $${capitalMinimo.toLocaleString('es-AR')} (2 SMVM = $${smvm.toLocaleString('es-AR')} cada uno)`)
           return false
         }
         if (formData.jurisdiccion === 'CORDOBA' && (!formData.cbuPrincipal.trim() || !formData.cbuSecundario.trim())) {
@@ -1066,33 +1081,33 @@ export default function NuevoTramitePage() {
                   <p className="text-sm text-gray-600 mb-4">Define el capital inicial de tu sociedad</p>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                     <p className="text-sm text-red-900 mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
-                    <p className="text-sm font-bold text-red-900">2 SMVM = ${(2 * SMVM).toLocaleString('es-AR')}</p>
-                    <p className="text-xs text-gray-600 mt-1">SMVM actual: ${SMVM.toLocaleString('es-AR')}</p>
+                    <p className="text-sm font-bold text-red-900">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
+                    <p className="text-xs text-gray-600 mt-1">SMVM actual: ${smvm.toLocaleString('es-AR')}</p>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label className="text-gray-700">Capital Social *</Label>
                       <div className="space-y-3 mt-2">
                         <label className="flex items-center gap-3 p-3 border-2 border-red-600 bg-red-50 rounded-lg cursor-pointer">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * SMVM)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * SMVM) }))} />
+                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
                           <div>
-                            <p className="font-medium text-gray-900">Capital Social Mínimo (2 SMVM: ${(2 * SMVM).toLocaleString('es-AR')})</p>
+                            <p className="font-medium text-gray-900">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
                           </div>
                         </label>
                         <label className="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer hover:border-red-300 transition">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * SMVM)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
+                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
                           <div>
                             <p className="font-medium text-gray-900">Otro monto</p>
                           </div>
                         </label>
                       </div>
                     </div>
-                    {formData.capitalSocial !== String(2 * SMVM) && (
+                    {formData.capitalSocial !== String(2 * smvm) && (
                       <div>
                         <Label htmlFor="capitalSocialCustom" className="text-gray-700">Capital Social *</Label>
-                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * SMVM).toLocaleString('es-AR')}`} min={2 * SMVM} className="text-gray-900" />
-                        {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * SMVM) && (
-                          <p className="text-xs text-red-600 mt-1">El capital mínimo es ${(2 * SMVM).toLocaleString('es-AR')}</p>
+                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} className="text-gray-900" />
+                        {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * smvm) && (
+                          <p className="text-xs text-red-600 mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
                         )}
                       </div>
                     )}

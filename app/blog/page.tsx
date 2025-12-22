@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Calendar, Clock, ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import Navbar from '@/components/Navbar'
 
 interface Post {
   id: string
@@ -58,18 +59,7 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-red-50 to-white">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="inline-block">
-            <img
-              src="/assets/img/logo4.png"
-              alt="QuieroMiSAS Logo"
-              className="h-12 w-auto"
-            />
-          </Link>
-        </div>
-      </header>
+      <Navbar currentPage="blog" />
 
       {/* Hero del Blog */}
       <section className="container mx-auto px-4 py-16 max-w-6xl">
