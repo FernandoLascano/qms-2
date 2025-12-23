@@ -213,6 +213,9 @@ async function TramiteDetallePage({ params }: PageProps) {
         </div>
       )}
 
+      {/* Pago de Honorarios - DEBE estar visible para que funcione el link #pago-honorarios */}
+      <HonorariosPagoCliente pagos={tramite.pagos || []} />
+
       {/* Mensajes del Equipo / Observaciones */}
       {tramite.notificaciones && tramite.notificaciones.length > 0 && (
         <MensajesDelEquipo notificaciones={tramite.notificaciones} />
