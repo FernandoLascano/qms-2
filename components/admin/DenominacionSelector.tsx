@@ -236,9 +236,69 @@ export default function DenominacionSelector({
                   {denominacionAprobada}
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-bold">SELECCIONADA</span>
+              <div className="flex items-center gap-3">
+                <Dialog open={dialogPersonalizada} onOpenChange={setDialogPersonalizada}>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-green-400 text-green-700 hover:bg-green-100"
+                      onClick={() => setDenominacionPersonalizada(denominacionAprobada)}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Editar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="border-2 border-blue-100">
+                    <DialogHeader>
+                      <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <Pencil className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                        Editar Denominación
+                      </DialogTitle>
+                      <DialogDescription className="text-center text-gray-600 pt-2">
+                        Modificá la denominación si es necesario realizar algún ajuste.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      <Label htmlFor="denominacion-personalizada" className="text-base font-semibold mb-2 block text-gray-900">
+                        Denominación *
+                      </Label>
+                      <Input
+                        id="denominacion-personalizada"
+                        value={denominacionPersonalizada}
+                        onChange={(e) => setDenominacionPersonalizada(e.target.value)}
+                        placeholder="Ej: MI EMPRESA ALTERNATIVA SAS"
+                        className="text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <DialogFooter className="sm:justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setDialogPersonalizada(false)
+                          setDenominacionPersonalizada('')
+                        }}
+                        className="border-gray-300 font-semibold px-8"
+                        disabled={seleccionando}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        onClick={handleAprobarPersonalizada}
+                        className="bg-blue-600 hover:bg-blue-700 font-bold px-8 shadow-md"
+                        disabled={seleccionando || !denominacionPersonalizada.trim()}
+                      >
+                        {seleccionando ? 'Procesando...' : 'Guardar Cambios'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm">
+                  <CheckCircle className="h-5 w-5" />
+                  <span className="font-bold">SELECCIONADA</span>
+                </div>
               </div>
             </div>
           )}

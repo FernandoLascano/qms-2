@@ -26,11 +26,16 @@ export async function uploadToCloudinary(
 ): Promise<{ url: string; public_id: string } | null> {
   try {
     return new Promise((resolve, reject) => {
+      // Limpiar el nombre del archivo
+      const cleanFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_')
+      const publicId = `${Date.now()}-${cleanFileName}`
+
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: folder,
           resource_type: 'auto',
-          public_id: `${folder}/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+          public_id: publicId,
+          access_mode: 'public' // Asegurar que sea público para poder visualizarlo
         },
         (error, result) => {
           if (error) {

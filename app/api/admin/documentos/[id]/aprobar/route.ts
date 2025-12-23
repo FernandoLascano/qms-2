@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -78,6 +79,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           link: `/dashboard/tramites/${documento.tramiteId}`
         }
       })
+
+      // Enviar email al usuario
+      const usuario = await prisma.user.findUnique({
+        where: { id: documento.userId }
+      })
+      if (usuario) {
+        try {
+          await enviarEmailNotificacion(
+            usuario.email,
+            usuario.name || 'Usuario',
+            'Pago Aprobado',
+            `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+            documento.tramiteId || undefined
+          )
+        } catch (emailError) {
+          console.error('Error al enviar email de pago aprobado:', emailError)
+        }
+      }
     } else if (documento.tipo === 'COMPROBANTE_DEPOSITO') {
       // Si no existe un pago relacionado pero es un COMPROBANTE_DEPOSITO, crear uno nuevo
       try {

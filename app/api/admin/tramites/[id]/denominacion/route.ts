@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -57,6 +58,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         link: `/dashboard/tramites/${id}`
       }
     })
+
+    // Enviar email al usuario
+    const usuario = await prisma.user.findUnique({
+      where: { id: tramite.userId }
+    })
+    if (usuario) {
+      try {
+        await enviarEmailNotificacion(
+          usuario.email,
+          usuario.name || 'Usuario',
+          'Denominación Sugerida para tu Sociedad',
+          `Después de realizar el examen de homonimia, sugerimos utilizar la denominación: "${denominacion}" para tu sociedad. Te contactaremos para coordinar el pago de la tasa de reserva de nombre.`,
+          id
+        )
+      } catch (emailError) {
+        console.error('Error al enviar email de denominación sugerida:', emailError)
+      }
+    }
 
     return NextResponse.json({ success: true })
 
