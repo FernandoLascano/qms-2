@@ -325,6 +325,24 @@ async function AdminDashboardPage() {
               </p>
             </div>
           </Link>
+
+          {/* Gestión de Usuarios */}
+          <Link href="/dashboard/admin/usuarios" className="group">
+            <div className="bg-white hover:bg-cyan-50 border-2 border-gray-200 hover:border-cyan-500 rounded-xl p-6 transition-all duration-200 hover:shadow-lg">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 bg-cyan-100 rounded-lg group-hover:bg-cyan-500 transition-colors">
+                  <Users className="h-6 w-6 text-cyan-600 group-hover:text-white transition-colors" />
+                </div>
+                <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  {totalUsuarios}
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Gestión de Usuarios</h3>
+              <p className="text-sm text-gray-600">
+                Administrar usuarios, contraseñas y permisos
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
 

@@ -33,7 +33,10 @@
       "Bash(del /f \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\.next\\\\dev\\\\lock\")",
       "Bash(echo:*)",
       "Bash(timeout:*)",
-      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\fix-pagos.ts\")"
+      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\fix-pagos.ts\")",
+      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\fix-deposito-capital.ts\")",
+      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\delete-user.ts\")",
+      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\check-user.ts\")"
     ]
   }
 }

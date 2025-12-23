@@ -26,6 +26,7 @@ import ComprobantesReview from '@/components/admin/ComprobantesReview'
 import CuentaCapital from '@/components/admin/CuentaCapital'
 import ValidacionTramite from '@/components/admin/ValidacionTramite'
 import ReportingPagos from '@/components/admin/ReportingPagos'
+import EliminarTramite from '@/components/admin/EliminarTramite'
 
 interface PageProps {
   params: Promise<{
@@ -673,16 +674,22 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
 
       {/* Datos Finales */}
-      <DatosFinalesForm 
+      <DatosFinalesForm
         tramiteId={tramite.id}
         cuitActual={tramite.cuit}
         matriculaActual={tramite.matricula}
         numeroResolucionActual={tramite.numeroResolucion}
-        fechaInscripcionActual={tramite.fechaSociedadInscripta 
+        fechaInscripcionActual={tramite.fechaSociedadInscripta
           ? new Date(tramite.fechaSociedadInscripta).toISOString().split('T')[0]
           : tramite.fechaInscripcion
           ? new Date(tramite.fechaInscripcion).toISOString().split('T')[0]
           : null}
+      />
+
+      {/* Zona de Peligro - Eliminar Trámite */}
+      <EliminarTramite
+        tramiteId={tramite.id}
+        denominacion={tramite.denominacionAprobada || tramite.denominacionSocial1}
       />
     </div>
   )

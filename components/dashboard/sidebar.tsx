@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User } from 'lucide-react'
+import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
@@ -21,12 +21,13 @@ export function Sidebar() {
   const isAdmin = session?.user?.rol === 'ADMIN'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics, Sociedades, Blog y Calendario
+  // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics, Sociedades, Blog, Calendario y Usuarios
   const navItems = isAdmin
     ? [
         { name: 'Panel de Admin', href: '/dashboard/admin', icon: Shield },
         { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
         { name: 'Sociedades', href: '/dashboard/admin/sociedades', icon: Building2 },
+        { name: 'Usuarios', href: '/dashboard/admin/usuarios', icon: Users },
         { name: 'Blog', href: '/dashboard/admin/blog', icon: BookOpen },
         { name: 'Calendario', href: '/dashboard/admin/calendario', icon: Calendar },
         { name: 'Configuración Sistema', href: '/dashboard/admin/configuracion', icon: Settings },
@@ -57,7 +58,8 @@ export function Sidebar() {
             (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades')) ||
             (item.href === '/dashboard/admin/blog' && pathname?.startsWith('/dashboard/admin/blog')) ||
             (item.href === '/dashboard/admin/calendario' && pathname?.startsWith('/dashboard/admin/calendario')) ||
-            (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion'))
+            (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion')) ||
+            (item.href === '/dashboard/admin/usuarios' && pathname?.startsWith('/dashboard/admin/usuarios'))
           return (
             <Link
               key={item.name}
