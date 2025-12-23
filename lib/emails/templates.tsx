@@ -63,39 +63,40 @@ const EmailLayout = ({ children, nombre }: { children: React.ReactNode; nombre: 
 }
 
 // 1. Email de Bienvenida al Registrarse
+// NOTA: Template simplificada para evitar filtros de spam de DonWeb/Ferozo
 export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
   const content = `
-    <div style="background-color: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; margin-bottom: 20px; border-radius: 4px;">
-      <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: bold;">¡Bienvenido a QuieroMiSAS! 🎉</p>
-    </div>
-    
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 15px; line-height: 1.6;">
-      ¡Gracias por confiar en nosotros para la constitución de tu sociedad!
+      Gracias por registrarte en QuieroMiSAS. Tu cuenta ha sido creada exitosamente.
     </p>
-    
+
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 15px; line-height: 1.6;">
-      Estamos aquí para acompañarte en cada paso del proceso. Nuestra plataforma te permitirá:
+      Nuestra plataforma te permite constituir tu Sociedad por Acciones Simplificada (SAS) de manera rapida y sencilla.
     </p>
-    
+
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 15px; line-height: 1.6;">
+      Con tu cuenta podras:
+    </p>
+
     <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151; font-size: 15px; line-height: 1.8;">
-      <li>Completar tu trámite en línea de forma sencilla</li>
-      <li>Hacer seguimiento en tiempo real del progreso</li>
+      <li>Completar tu tramite en linea</li>
+      <li>Ver el seguimiento en tiempo real</li>
       <li>Subir documentos de manera segura</li>
-      <li>Realizar pagos de forma simple</li>
-      <li>Comunicarte directamente con nuestro equipo</li>
+      <li>Realizar pagos</li>
+      <li>Comunicarte con nuestro equipo</li>
     </ul>
-    
+
     <div style="text-align: center; margin: 30px 0;">
       <a href="${BASE_URL}/tramite/nuevo" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
-        Iniciar mi Trámite
+        Iniciar mi Tramite
       </a>
     </div>
-    
+
     <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
-      Si tienes alguna pregunta, no dudes en contactarnos. ¡Estamos para ayudarte!
+      Si tienes alguna pregunta, contactanos a info@quieromisas.com
     </p>
   `
-  
+
   return EmailLayout({ children: content, nombre })
 }
 
