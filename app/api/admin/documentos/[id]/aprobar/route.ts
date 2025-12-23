@@ -139,14 +139,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               monto = cuenta.montoEsperado
             }
           } else {
-            // Buscar enlace de pago relacionado en estado PROCESANDO (el usuario ya confirmó el pago)
+            // Buscar enlace de pago relacionado en estado PROCESANDO o PENDIENTE
+            // PROCESANDO = el usuario ya confirmó el pago con el botón "Ya Pagué"
+            // PENDIENTE = el admin aprobó el comprobante directamente
             const enlaceRelacionado = await prisma.enlacePago.findFirst({
               where: {
                 tramiteId: documento.tramiteId,
-                estado: 'PROCESANDO',
+                estado: { in: ['PROCESANDO', 'PENDIENTE'] },
                 concepto: typeof conceptoPago === 'string' ? conceptoPago : undefined
               },
-              orderBy: { fechaPago: 'desc' }
+              orderBy: { createdAt: 'desc' }
             })
 
             if (enlaceRelacionado) {
@@ -160,6 +162,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                   fechaPago: new Date()
                 }
               })
+            } else {
+              // Si no hay enlace, intentar obtener el monto del último enlace con ese concepto (aunque esté PAGADO)
+              const enlaceAnterior = await prisma.enlacePago.findFirst({
+                where: {
+                  tramiteId: documento.tramiteId,
+                  concepto: typeof conceptoPago === 'string' ? conceptoPago : undefined
+                },
+                orderBy: { createdAt: 'desc' }
+              })
+              if (enlaceAnterior) {
+                monto = enlaceAnterior.monto
+              }
             }
           }
         }
