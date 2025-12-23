@@ -132,18 +132,31 @@ export default function DenominacionSelector({
     }
   }
 
+  // Verificar si la denominación aprobada es una de las 3 originales o es alternativa
+  const esAlternativa = denominacionAprobada &&
+    denominacionAprobada !== denominacion1 &&
+    denominacionAprobada !== denominacion2 &&
+    denominacionAprobada !== denominacion3
+
   const RenderOpcion = ({ texto, label, index }: { texto: string, label: string, index: number }) => {
     const isSelected = denominacionAprobada === texto
 
     return (
       <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all ${
-        isSelected ? 'bg-green-50 border-green-500 shadow-md' : 'bg-white border-gray-100 hover:border-purple-200'
+        isSelected ? 'bg-green-50 border-green-500 shadow-md' :
+        denominacionAprobada ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-100 hover:border-purple-200'
       }`}>
         <div className="flex-1">
-          <p className={`text-xs mb-1 font-semibold ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
+          <p className={`text-xs mb-1 font-semibold ${
+            isSelected ? 'text-green-700' :
+            denominacionAprobada ? 'text-gray-400' : 'text-gray-500'
+          }`}>
             {label}
           </p>
-          <p className={`text-lg font-bold ${isSelected ? 'text-green-900' : 'text-gray-900'}`}>
+          <p className={`text-lg font-bold ${
+            isSelected ? 'text-green-900' :
+            denominacionAprobada ? 'text-gray-400' : 'text-gray-900'
+          }`}>
             {texto}
           </p>
         </div>
@@ -153,6 +166,9 @@ export default function DenominacionSelector({
             <CheckCircle className="h-5 w-5" />
             <span className="font-bold">SELECCIONADA</span>
           </div>
+        ) : denominacionAprobada ? (
+          // Si ya hay una denominación aprobada, no mostrar botón
+          <span className="text-sm text-gray-400 italic">No seleccionada</span>
         ) : (
           <Dialog open={dialogOpen[texto]} onOpenChange={(open) => setDialogOpen(prev => ({ ...prev, [texto]: open }))}>
             <DialogTrigger asChild>
@@ -179,8 +195,8 @@ export default function DenominacionSelector({
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="sm:justify-center gap-2 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => setDialogOpen(prev => ({ ...prev, [texto]: false }))}
                   className="border-gray-300 font-semibold px-8"
                 >
@@ -209,9 +225,40 @@ export default function DenominacionSelector({
         icon={<Search className="h-5 w-5 text-purple-700" />}
       >
         <div className="space-y-4">
-          <RenderOpcion texto={denominacion1} label="Opción 1 (Preferida)" index={1} />
-          {denominacion2 && <RenderOpcion texto={denominacion2} label="Opción 2" index={2} />}
-          {denominacion3 && <RenderOpcion texto={denominacion3} label="Opción 3" index={3} />}
+          {/* Si hay una denominación alternativa aprobada, mostrarla primero */}
+          {esAlternativa && denominacionAprobada && (
+            <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-green-50 border-green-500 shadow-md">
+              <div className="flex-1">
+                <p className="text-xs mb-1 font-semibold text-green-700">
+                  Denominación Alternativa (Aprobada)
+                </p>
+                <p className="text-lg font-bold text-green-900">
+                  {denominacionAprobada}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm">
+                <CheckCircle className="h-5 w-5" />
+                <span className="font-bold">SELECCIONADA</span>
+              </div>
+            </div>
+          )}
+
+          {/* Mostrar las opciones originales (solo si no es alternativa, o mostrar como no seleccionadas) */}
+          {!esAlternativa && (
+            <RenderOpcion texto={denominacion1} label="Opción 1 (Preferida)" index={1} />
+          )}
+          {esAlternativa && (
+            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+              <p className="text-xs mb-1 font-semibold text-gray-400">Opciones originales (no seleccionadas)</p>
+              <div className="space-y-2 mt-2">
+                <p className="text-sm text-gray-400">{denominacion1}</p>
+                {denominacion2 && <p className="text-sm text-gray-400">{denominacion2}</p>}
+                {denominacion3 && <p className="text-sm text-gray-400">{denominacion3}</p>}
+              </div>
+            </div>
+          )}
+          {!esAlternativa && denominacion2 && <RenderOpcion texto={denominacion2} label="Opción 2" index={2} />}
+          {!esAlternativa && denominacion3 && <RenderOpcion texto={denominacion3} label="Opción 3" index={3} />}
 
           {!denominacionAprobada && (
             <>

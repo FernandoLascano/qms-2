@@ -23,11 +23,26 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const { id } = await params
     const { denominacion } = await request.json()
 
-    // Actualizar denominación aprobada
+    // Obtener el trámite actual para verificar si es una denominación alternativa
+    const tramiteActual = await prisma.tramite.findUnique({
+      where: { id },
+      select: { denominacion1: true, denominacion2: true, denominacion3: true }
+    })
+
+    // Si la denominación no es ninguna de las 3 originales, es una alternativa
+    // En ese caso también actualizamos denominacion1 para que se muestre el nombre final
+    const esAlternativa = tramiteActual &&
+      denominacion !== tramiteActual.denominacion1 &&
+      denominacion !== tramiteActual.denominacion2 &&
+      denominacion !== tramiteActual.denominacion3
+
+    // Actualizar denominación aprobada (y denominacion1 si es alternativa)
     const tramite = await prisma.tramite.update({
       where: { id },
       data: {
-        denominacionAprobada: denominacion
+        denominacionAprobada: denominacion,
+        // Si es alternativa, actualizar también denominacion1 para mostrar el nombre final
+        ...(esAlternativa && { denominacion1: denominacion })
       }
     })
 
