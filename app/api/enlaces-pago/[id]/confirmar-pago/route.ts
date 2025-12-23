@@ -97,7 +97,8 @@ export async function PATCH(
               folder: 'qms/comprobantes',
               resource_type: 'raw', // 'raw' para PDFs y documentos
               public_id: `comprobante_${enlace.id}_${Date.now()}`,
-              format: file.type.includes('pdf') ? 'pdf' : undefined
+              format: file.type.includes('pdf') ? 'pdf' : undefined,
+              access_mode: 'public' // Hacer accesible públicamente
             },
             (error, result) => {
               if (error) {
@@ -139,13 +140,23 @@ export async function PATCH(
       }
     })
 
-    // Actualizar el enlace con la fecha de pago (permanece PENDIENTE hasta validación del admin)
+    // Actualizar el enlace: cambiar a PROCESANDO (esperando validación del admin)
     await prisma.enlacePago.update({
       where: { id },
       data: {
+        estado: 'PROCESANDO',
         fechaPago: new Date()
       }
     })
+
+    // Obtener texto legible del concepto
+    const conceptoTexto = enlace.concepto === 'TASA_RESERVA_NOMBRE'
+      ? 'Tasa de Reserva de Nombre'
+      : enlace.concepto === 'TASA_RETRIBUTIVA'
+      ? 'Tasa Retributiva'
+      : enlace.concepto === 'PUBLICACION_BOLETIN'
+      ? 'Publicación en Boletín'
+      : enlace.concepto
 
     // Crear notificación para el admin
     const admins = await prisma.user.findMany({
@@ -156,11 +167,12 @@ export async function PATCH(
     for (const admin of admins) {
       await prisma.notificacion.create({
         data: {
-          tipo: 'INFO',
-          titulo: 'Pago confirmado por cliente',
-          mensaje: `El cliente ha confirmado el pago de ${enlace.concepto} y adjuntó comprobante.`,
+          tipo: 'ACCION_REQUERIDA',
+          titulo: 'Comprobante de Pago Recibido',
+          mensaje: `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.`,
           userId: admin.id,
           tramiteId: enlace.tramiteId,
+          link: `/dashboard/admin/tramites/${enlace.tramiteId}#comprobantes`,
           leida: false
         }
       })
@@ -171,9 +183,10 @@ export async function PATCH(
       data: {
         tipo: 'EXITO',
         titulo: 'Comprobante recibido',
-        mensaje: `Hemos recibido tu comprobante de pago de ${enlace.concepto}. Lo revisaremos pronto.`,
+        mensaje: `Hemos recibido tu comprobante de pago de ${conceptoTexto}. Lo revisaremos pronto.`,
         userId: session.user.id,
         tramiteId: enlace.tramiteId,
+        link: `/dashboard/tramites/${enlace.tramiteId}#enlaces-pago`,
         leida: false
       }
     })

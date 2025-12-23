@@ -139,11 +139,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               monto = cuenta.montoEsperado
             }
           } else {
-            // Otros conceptos: buscar enlace de pago relacionado
+            // Buscar enlace de pago relacionado en estado PROCESANDO (el usuario ya confirmó el pago)
             const enlaceRelacionado = await prisma.enlacePago.findFirst({
               where: {
                 tramiteId: documento.tramiteId,
-                estado: 'PAGADO',
+                estado: 'PROCESANDO',
                 concepto: typeof conceptoPago === 'string' ? conceptoPago : undefined
               },
               orderBy: { fechaPago: 'desc' }
@@ -151,9 +151,29 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
             if (enlaceRelacionado) {
               monto = enlaceRelacionado.monto
+
+              // Marcar el enlace de pago como PAGADO
+              await prisma.enlacePago.update({
+                where: { id: enlaceRelacionado.id },
+                data: {
+                  estado: 'PAGADO',
+                  fechaPago: new Date()
+                }
+              })
             }
           }
         }
+
+        // Obtener texto legible del concepto para notificaciones
+        const conceptoTexto = conceptoPago === 'TASA_RESERVA_NOMBRE'
+          ? 'Tasa de Reserva de Nombre'
+          : conceptoPago === 'TASA_RETRIBUTIVA'
+          ? 'Tasa Retributiva'
+          : conceptoPago === 'PUBLICACION_BOLETIN'
+          ? 'Publicación en Boletín'
+          : conceptoPago === 'DEPOSITO_CAPITAL'
+          ? 'Depósito de Capital'
+          : conceptoPago
 
         // Crear el registro de pago
         if (documento.tramiteId && documento.userId) {
@@ -169,14 +189,45 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               fechaPago: new Date()
             }
           })
+
+          // Crear notificación al usuario de pago aprobado
+          await prisma.notificacion.create({
+            data: {
+              userId: documento.userId,
+              tramiteId: documento.tramiteId,
+              tipo: 'EXITO',
+              titulo: 'Pago Aprobado',
+              mensaje: `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+              link: `/dashboard/tramites/${documento.tramiteId}#enlaces-pago`
+            }
+          })
+
+          // Enviar email al usuario
+          const usuario = await prisma.user.findUnique({
+            where: { id: documento.userId }
+          })
+          if (usuario) {
+            try {
+              await enviarEmailNotificacion(
+                usuario.email,
+                usuario.name || 'Usuario',
+                'Pago Aprobado',
+                `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+                documento.tramiteId || undefined
+              )
+            } catch (emailError) {
+              console.error('Error al enviar email de pago aprobado:', emailError)
+            }
+          }
         }
       } catch (error) {
         console.error('Error al registrar pago automático desde comprobante:', error)
       }
     }
 
-    // Notificar al usuario (solo si no es un comprobante de transferencia con pago relacionado, ya que se notificó arriba)
-    if (!pagoExistente) {
+    // Notificar al usuario (solo si no es un comprobante de pago, ya que se notificó arriba)
+    const esComprobantePago = pagoExistente || documento.tipo === 'COMPROBANTE_DEPOSITO'
+    if (!esComprobantePago) {
       await prisma.notificacion.create({
         data: {
           userId: documento.userId,
