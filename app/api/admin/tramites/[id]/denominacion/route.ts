@@ -53,7 +53,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         tramiteId: id,
         tipo: 'INFO',
         titulo: 'Denominación Sugerida',
-        mensaje: `Después del examen de homonimia, sugerimos utilizar: "${denominacion}". Te contactaremos para coordinar el pago de la tasa de reserva.`
+        mensaje: `Después del examen de homonimia, sugerimos utilizar: "${denominacion}". Te contactaremos para coordinar el pago de la tasa de reserva.`,
+        link: `/dashboard/tramites/${id}`
       }
     })
 

@@ -60,7 +60,8 @@ export async function POST(request: Request, { params }: RouteParams) {
           `CBU: ${cbu}\n` +
           `${alias ? `Alias: ${alias}\n` : ''}` +
           `Titular: ${titular}\n\n` +
-          `Luego de realizar el depósito, subí el comprobante en la sección de Documentos (Comprobante de Depósito).`
+          `Luego de realizar el depósito, subí el comprobante en la sección de Documentos (Comprobante de Depósito).`,
+        link: `/dashboard/tramites/${id}`
       }
     })
 

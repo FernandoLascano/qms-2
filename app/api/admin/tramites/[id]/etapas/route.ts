@@ -134,7 +134,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
 
       const nombresEtapas: { [key: string]: string } = {
-        denominacionReservada: 'Denominación Reservada',
+        denominacionReservada: 'Reserva de Denominación',
         capitalDepositado: 'Capital Depositado',
         tasaPagada: 'Tasa Pagada',
         documentosFirmados: 'Documentos Firmados',

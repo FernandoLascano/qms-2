@@ -1,4 +1,5 @@
 import { resend, FROM_EMAIL, REPLY_TO_EMAIL, isResendConfigured } from '@/lib/resend'
+import { sendEmail as sendEmailNodemailer, emailTemplates } from '@/lib/email'
 import * as templates from './templates'
 
 interface SendEmailParams {
@@ -9,20 +10,10 @@ interface SendEmailParams {
 }
 
 export async function sendEmail({ to, subject, template, data }: SendEmailParams) {
-  // Si Resend no está configurado, solo logear y retornar
-  if (!isResendConfigured()) {
-    console.log('📧 Email NO enviado (Resend no configurado):', {
-      to,
-      subject,
-      template
-    })
-    return { success: false, message: 'Resend not configured' }
-  }
-
   try {
     // Obtener la template correspondiente
     const templateFunction = templates[template]
-    
+
     if (!templateFunction) {
       throw new Error(`Template "${template}" no encontrada`)
     }
@@ -36,18 +27,39 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
       template
     })
 
-    // Enviar el email
-    const result = await resend.emails.send({
-      from: FROM_EMAIL,
+    // Intentar con Resend primero si está configurado
+    if (isResendConfigured()) {
+      try {
+        const result = await resend.emails.send({
+          from: FROM_EMAIL,
+          to,
+          subject,
+          html,
+          replyTo: REPLY_TO_EMAIL
+        })
+
+        console.log('✅ Email enviado exitosamente via Resend:', result)
+        return { success: true, result }
+      } catch (resendError: any) {
+        console.error('⚠️ Error con Resend, intentando con Nodemailer:', resendError.message)
+      }
+    }
+
+    // Fallback a Nodemailer (SMTP DonWeb/Ferozo)
+    console.log('📧 Usando Nodemailer como fallback...')
+    const nodemailerResult = await sendEmailNodemailer({
       to,
       subject,
-      html,
-      replyTo: REPLY_TO_EMAIL
+      html
     })
 
-    console.log('✅ Email enviado exitosamente:', result)
+    if (nodemailerResult.success) {
+      console.log('✅ Email enviado exitosamente via Nodemailer:', nodemailerResult.messageId)
+      return { success: true, result: nodemailerResult }
+    } else {
+      throw new Error(nodemailerResult.error || 'Error al enviar email via Nodemailer')
+    }
 
-    return { success: true, result }
   } catch (error: any) {
     console.error('❌ Error al enviar email:', error)
     return { success: false, error: error.message }

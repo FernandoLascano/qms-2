@@ -297,7 +297,7 @@ async function DashboardPage() {
               <Link href="/tramite/nuevo">
                 <Button size="lg" className="gap-2 bg-red-600 hover:bg-red-700">
                   <Plus className="h-5 w-5" />
-                  Iniciar Primer Trámite
+                  Iniciar Nuevo Trámite
                 </Button>
               </Link>
             </div>

@@ -125,7 +125,8 @@ export async function POST(
           mensaje: contenido.substring(0, 100),
           userId: destinatarioId,
           tramiteId: id,
-          leida: false
+          leida: false,
+          link: esAdmin ? `/dashboard/tramites/${id}` : `/dashboard/admin/tramites/${id}`
         }
       })
     }

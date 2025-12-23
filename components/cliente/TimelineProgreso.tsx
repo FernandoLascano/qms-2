@@ -23,7 +23,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
     },
     {
       id: 2,
-      titulo: 'Denominación Reservada',
+      titulo: 'Reserva de Denominación',
       descripcion: 'Nombre aprobado y reservado',
       completado: tramite.denominacionReservada,
       fecha: tramite.fechaReservaNombre,

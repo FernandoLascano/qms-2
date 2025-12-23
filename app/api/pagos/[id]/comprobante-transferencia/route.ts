@@ -150,7 +150,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         tramiteId: pago.tramiteId,
         tipo: 'EXITO',
         titulo: 'Comprobante Subido Correctamente',
-        mensaje: 'Tu comprobante de transferencia fue recibido. El administrador lo revisará y validará el pago.'
+        mensaje: 'Tu comprobante de transferencia fue recibido. El administrador lo revisará y validará el pago.',
+        link: `/dashboard/tramites/${pago.tramiteId}`
       }
     })
 

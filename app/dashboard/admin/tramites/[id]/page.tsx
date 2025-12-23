@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getObjetoSocialTexto } from '@/lib/constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -243,16 +244,13 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         >
           <div className="mb-3">
             {(() => {
-              // Detectar si es objeto pre-aprobado - buscar el inicio característico del texto pre-aprobado
+              // Detectar si es objeto pre-aprobado
               const objetoText = tramite.objetoSocial || ''
-              // El texto pre-aprobado puede tener variaciones, buscamos frases clave
-              const esPreAprobado = 
+              const esPreAprobado =
+                objetoText === 'PREAPROBADO' ||
                 objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
-                objetoText.includes('1) Construcción de todo tipo de obras') ||
-                objetoText.includes('2) Servicios inmobiliarios y de consultoría') ||
-                objetoText.includes('3) Comercialización de productos y servicios') ||
-                objetoText.includes('4) Inversiones y participación en sociedades')
-              
+                objetoText.includes('1. Construcción de todo tipo de obras')
+
               return esPreAprobado ? (
                 <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                   Pre-aprobado
@@ -265,7 +263,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
             })()}
           </div>
           <p className="text-sm text-gray-700 whitespace-pre-line">
-            {tramite.objetoSocial}
+            {getObjetoSocialTexto(tramite.objetoSocial)}
           </p>
         </CollapsibleCard>
 

@@ -43,7 +43,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         tramiteId: id,
         tipo: 'ACCION_REQUERIDA',
         titulo: 'Nueva observación del administrador',
-        mensaje: mensaje
+        mensaje: mensaje,
+        link: `/dashboard/tramites/${id}`
       }
     })
 

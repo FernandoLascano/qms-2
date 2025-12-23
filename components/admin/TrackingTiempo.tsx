@@ -63,7 +63,7 @@ export default function TrackingTiempo() {
 
   const nombresEtapas: Record<string, string> = {
     formularioCompleto: 'Formulario Completo',
-    denominacionReservada: 'Denominación Reservada',
+    denominacionReservada: 'Reserva de Denominación',
     capitalDepositado: 'Capital Depositado',
     tasaPagada: 'Tasa Pagada',
     documentosRevisados: 'Documentos Revisados',

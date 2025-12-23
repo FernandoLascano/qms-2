@@ -74,7 +74,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           tramiteId: documento.tramiteId,
           tipo: 'EXITO',
           titulo: 'Pago Aprobado',
-          mensaje: `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado como aprobado.`
+          mensaje: `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado como aprobado.`,
+          link: `/dashboard/tramites/${documento.tramiteId}`
         }
       })
     } else if (documento.tipo === 'COMPROBANTE_DEPOSITO') {
@@ -163,7 +164,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           tramiteId: documento.tramiteId,
           tipo: 'EXITO',
           titulo: 'Documento aprobado',
-          mensaje: `Tu documento "${documento.nombre}" ha sido aprobado.`
+          mensaje: `Tu documento "${documento.nombre}" ha sido aprobado.`,
+          link: `/dashboard/tramites/${documento.tramiteId}`
         }
       })
     }

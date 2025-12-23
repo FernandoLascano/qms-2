@@ -528,11 +528,23 @@ export default function NuevoTramitePage() {
         }
         for (let i = 0; i < formData.administradores.length; i++) {
           const admin = formData.administradores[i]
-          if (!admin.nombre.trim() || !admin.apellido.trim() || !admin.dni.trim() || 
+          if (!admin.nombre.trim() || !admin.apellido.trim() || !admin.dni.trim() ||
               !admin.cuit.trim() || !admin.domicilio.trim() || !admin.estadoCivil || !admin.profesion.trim()) {
             toast.error(`Por favor completa todos los campos del Administrador ${i + 1}`)
             return false
           }
+        }
+        // Validar que el Titular y Suplente no sean la misma persona
+        if (formData.administradores[0].dni === formData.administradores[1].dni) {
+          toast.error('El Administrador Titular y el Suplente deben ser personas diferentes (tienen el mismo DNI)')
+          return false
+        }
+        // Validar que no haya DNIs duplicados entre todos los administradores
+        const dnisAdmin = formData.administradores.map(a => a.dni.trim())
+        const dnisUnicos = new Set(dnisAdmin)
+        if (dnisUnicos.size !== dnisAdmin.length) {
+          toast.error('Cada administrador debe ser una persona diferente. Hay DNIs duplicados.')
+          return false
         }
         return true
       case 7:
@@ -1656,6 +1668,16 @@ export default function NuevoTramitePage() {
                               const socioIndex = parseInt(e.target.value)
                               if (!isNaN(socioIndex)) {
                                 const socio = formData.socios[socioIndex]
+                                // Verificar si este DNI ya está siendo usado por otro administrador (Titular vs Suplente)
+                                const dniYaUsado = formData.administradores.some((admin, adminIdx) =>
+                                  adminIdx !== index &&
+                                  admin.dni &&
+                                  admin.dni === socio.dni
+                                )
+                                if (dniYaUsado) {
+                                  alert('Este socio ya está seleccionado como otro administrador. El Administrador Titular y el Suplente deben ser personas diferentes.')
+                                  return
+                                }
                                 const newAdmins = [...formData.administradores]
                                 newAdmins[index] = {
                                   nombre: socio.nombre,
@@ -1675,11 +1697,23 @@ export default function NuevoTramitePage() {
                             className="text-sm max-w-xs"
                           >
                             <option value="">Autocompletar desde socio...</option>
-                            {formData.socios.map((socio, idx) => (
-                              <option key={idx} value={idx}>
-                                {socio.nombre} {socio.apellido}
-                              </option>
-                            ))}
+                            {formData.socios.map((socio, idx) => {
+                              // Deshabilitar si el socio ya está usado como otro administrador
+                              const yaUsado = formData.administradores.some((admin, adminIdx) =>
+                                adminIdx !== index &&
+                                admin.dni &&
+                                admin.dni === socio.dni
+                              )
+                              return (
+                                <option
+                                  key={idx}
+                                  value={idx}
+                                  disabled={yaUsado}
+                                >
+                                  {socio.nombre} {socio.apellido}{yaUsado ? ' (ya asignado)' : ''}
+                                </option>
+                              )
+                            })}
                           </Select>
                         )}
                       </div>

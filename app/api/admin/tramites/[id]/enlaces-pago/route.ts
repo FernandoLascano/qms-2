@@ -61,7 +61,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         tramiteId: id,
         tipo: 'ACCION_REQUERIDA',
         titulo: 'Enlace de Pago Disponible',
-        mensaje: `Debes abonar ${conceptoTexto} por $${parseFloat(monto).toLocaleString('es-AR')}. Ingresa a tu panel para ver el enlace de pago.${fechaVencimiento ? ` Vence el ${new Date(fechaVencimiento).toLocaleDateString('es-AR')}.` : ''}`
+        mensaje: `Debes abonar ${conceptoTexto} por $${parseFloat(monto).toLocaleString('es-AR')}. Ingresa a tu panel para ver el enlace de pago.${fechaVencimiento ? ` Vence el ${new Date(fechaVencimiento).toLocaleDateString('es-AR')}.` : ''}`,
+        link: `/dashboard/tramites/${id}`
       }
     })
 

@@ -40,7 +40,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         tramiteId: documento.tramiteId,
         tipo: 'ALERTA',
         titulo: 'Documento rechazado',
-        mensaje: `Tu documento "${documento.nombre}" ha sido rechazado. Motivo: ${observaciones}`
+        mensaje: `Tu documento "${documento.nombre}" ha sido rechazado. Motivo: ${observaciones}`,
+        link: `/dashboard/tramites/${documento.tramiteId}`
       }
     })
 

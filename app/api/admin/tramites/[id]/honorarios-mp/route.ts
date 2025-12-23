@@ -204,7 +204,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         tramiteId: id,
         tipo: 'ACCION_REQUERIDA',
         titulo: 'Link de Pago de Honorarios Disponible',
-        mensaje: mensajeNotificacion
+        mensaje: mensajeNotificacion,
+        link: `/dashboard/tramites/${id}#pago-honorarios`
       }
     })
 

@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getObjetoSocialTexto } from '@/lib/constants'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Calendar, Building2, DollarSign, Users, User, CheckCircle, Clock, FileText, Download } from 'lucide-react'
@@ -328,7 +329,7 @@ async function TramiteDetallePage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-700 whitespace-pre-line">
-              {tramite.objetoSocial}
+              {getObjetoSocialTexto(tramite.objetoSocial)}
             </p>
           </CardContent>
         </Card>
