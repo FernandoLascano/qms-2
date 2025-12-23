@@ -57,7 +57,7 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
 export async function enviarEmailBienvenida(email: string, nombre: string) {
   return sendEmail({
     to: email,
-    subject: 'Bienvenido a QuieroMiSAS - Tu cuenta ha sido creada',
+    subject: '¡Bienvenido a QuieroMiSAS! Tu cuenta ha sido creada',
     template: 'emailBienvenida',
     data: { nombre }
   })

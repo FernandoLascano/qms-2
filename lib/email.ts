@@ -1,12 +1,13 @@
 import nodemailer from 'nodemailer'
 
-// Configuración del transporter SMTP (DonWeb/Ferozo)
+// Configuración del transporter SMTP (Amazon SES)
+const smtpPort = parseInt(process.env.SMTP_PORT || '587')
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'c2680923.ferozo.com',
-  port: parseInt(process.env.SMTP_PORT || '465'),
-  secure: true,
+  host: process.env.SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
+  port: smtpPort,
+  secure: smtpPort === 465, // true para 465, false para 587
   auth: {
-    user: process.env.SMTP_USER || 'contacto@quieromisas.com',
+    user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD
   }
 })
@@ -20,16 +21,19 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html, text }: EmailOptions) {
   try {
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'contacto@quieromisas.com'
+    const fromName = process.env.SMTP_FROM_NAME || 'QuieroMiSAS'
+
     console.log('📧 [NODEMAILER] Enviando email:', {
       to,
       subject,
-      from: process.env.SMTP_USER || 'contacto@quieromisas.com',
-      host: process.env.SMTP_HOST || 'c2680923.ferozo.com',
+      from: fromEmail,
+      host: process.env.SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
       hasPassword: !!process.env.SMTP_PASSWORD
     })
 
     const info = await transporter.sendMail({
-      from: `"${process.env.SMTP_FROM_NAME || 'QuieroMiSAS'}" <${process.env.SMTP_USER || 'contacto@quieromisas.com'}>`,
+      from: `"${fromName}" <${fromEmail}>`,
       to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       html,
