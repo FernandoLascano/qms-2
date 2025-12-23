@@ -48,6 +48,31 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Notificar al cliente con los datos bancarios
     const monto = parseFloat(String(montoEsperado))
 
+    // Guardar o actualizar la cuenta bancaria para el depósito de capital
+    // Esto permite que cuando se apruebe el comprobante, se pueda obtener el monto esperado
+    await prisma.cuentaBancaria.upsert({
+      where: {
+        id: `${id}_DEPOSITO_CAPITAL` // ID único basado en tramiteId + tipo
+      },
+      create: {
+        id: `${id}_DEPOSITO_CAPITAL`,
+        tramiteId: id,
+        tipo: 'DEPOSITO_CAPITAL',
+        banco,
+        cbu,
+        alias: alias || null,
+        titular,
+        montoEsperado: monto
+      },
+      update: {
+        banco,
+        cbu,
+        alias: alias || null,
+        titular,
+        montoEsperado: monto
+      }
+    })
+
     const mensajeNotificacion = `Para continuar con tu trámite, debés realizar el depósito del 25% del capital social.\n\n` +
       `Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
       `Datos de la cuenta:\n` +

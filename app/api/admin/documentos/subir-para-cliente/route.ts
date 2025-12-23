@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import cloudinary from '@/lib/cloudinary'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 export async function POST(request: Request) {
   try {
@@ -59,13 +60,15 @@ export async function POST(request: Request) {
     console.log('📁 Tamaño del archivo:', buffer.length, 'bytes')
     console.log('☁️ Subiendo a Cloudinary...')
 
-    // Subir a Cloudinary
+    // Subir a Cloudinary con acceso público
     let uploadResult
     try {
       uploadResult = await cloudinary.uploader.upload(base64File, {
         folder: 'qms-documentos',
         resource_type: 'auto',
-        public_id: `${tramiteId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        public_id: `${tramiteId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
+        type: 'upload',  // 'upload' permite acceso público sin autenticación
+        access_mode: 'public'  // Hacer accesible públicamente
       })
       console.log('✅ Archivo subido a Cloudinary:', uploadResult.secure_url)
     } catch (error: any) {
@@ -106,6 +109,8 @@ export async function POST(request: Request) {
     }
 
     // Notificar al cliente
+    const mensajeNotificacion = `Los documentos "${nombre}" están listos. Descargalos, firmalos y subí las versiones firmadas.${descripcion ? ` Instrucciones: ${descripcion}` : ''}`
+
     try {
       await prisma.notificacion.create({
         data: {
@@ -113,10 +118,30 @@ export async function POST(request: Request) {
           tramiteId: tramiteId,
           tipo: 'ACCION_REQUERIDA',
           titulo: '📄 Documentos Listos para Firmar',
-          mensaje: `Los documentos "${nombre}" están listos. Descargalos, firmalos y subí las versiones firmadas. ${descripcion ? `Instrucciones: ${descripcion}` : ''}`
+          mensaje: mensajeNotificacion,
+          link: `/dashboard/tramites/${tramiteId}#documentos`
         }
       })
       console.log('✅ Notificación enviada')
+
+      // Enviar email al usuario
+      const usuario = await prisma.user.findUnique({
+        where: { id: userId }
+      })
+      if (usuario) {
+        try {
+          await enviarEmailNotificacion(
+            usuario.email,
+            usuario.name || 'Usuario',
+            'Documentos Listos para Firmar',
+            mensajeNotificacion,
+            tramiteId
+          )
+          console.log('✅ Email enviado al usuario')
+        } catch (emailError) {
+          console.error('⚠️ Error al enviar email:', emailError)
+        }
+      }
     } catch (error: any) {
       console.error('⚠️ Error al crear notificación:', error)
     }

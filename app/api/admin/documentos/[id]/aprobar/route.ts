@@ -125,18 +125,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
         if (documento.tramiteId) {
           if (conceptoPago === 'DEPOSITO_CAPITAL') {
-            // Depósito de capital: usar la cuenta bancaria del trámite (si existe el modelo)
-            const prismaAny: any = prisma as any
-            const cuenta = prismaAny.cuentaBancaria
-              ? await prismaAny.cuentaBancaria.findFirst({
-                  where: {
-                    tramiteId: documento.tramiteId,
-                    tipo: 'DEPOSITO_CAPITAL'
-                  }
-                })
-              : null
+            // Depósito de capital: obtener el monto desde la cuenta bancaria guardada
+            const cuenta = await prisma.cuentaBancaria.findFirst({
+              where: {
+                tramiteId: documento.tramiteId,
+                tipo: 'DEPOSITO_CAPITAL'
+              }
+            })
             if (cuenta) {
               monto = cuenta.montoEsperado
+            } else {
+              // Fallback: calcular 25% del capital social del trámite
+              const tramite = await prisma.tramite.findUnique({
+                where: { id: documento.tramiteId },
+                select: { capitalSocial: true }
+              })
+              if (tramite?.capitalSocial) {
+                monto = tramite.capitalSocial * 0.25
+              }
             }
           } else {
             // Buscar enlace de pago relacionado en estado PROCESANDO o PENDIENTE

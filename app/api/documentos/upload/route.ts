@@ -3,9 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToCloudinary } from '@/lib/cloudinary'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
-import { existsSync } from 'fs'
 
 export async function POST(request: Request) {
   try {
@@ -53,41 +50,23 @@ export async function POST(request: Request) {
 
     let fileUrl: string
 
-    // Intentar subir a Cloudinary primero (si está configurado)
-    try {
-      const uploadResult = await uploadToCloudinary(
-        buffer,
-        `documentos/${tramiteId}`,
-        file.name,
-        file.type
+    // Subir a Cloudinary (requerido en producción - Vercel no permite filesystem)
+    const uploadResult = await uploadToCloudinary(
+      buffer,
+      `documentos/${tramiteId}`,
+      file.name,
+      file.type
+    )
+
+    if (!uploadResult?.url) {
+      console.error('Error: Cloudinary upload failed')
+      return NextResponse.json(
+        { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
+        { status: 500 }
       )
-      
-      if (uploadResult?.url) {
-        fileUrl = uploadResult.url
-      } else {
-        throw new Error('Cloudinary upload failed')
-      }
-    } catch (error) {
-      // Fallback a almacenamiento local si Cloudinary falla
-      console.log('Cloudinary no disponible, usando almacenamiento local')
-      
-      // Crear directorio si no existe
-      const uploadDir = join(process.cwd(), 'public', 'uploads', tramiteId)
-      if (!existsSync(uploadDir)) {
-        await mkdir(uploadDir, { recursive: true })
-      }
-
-      // Generar nombre único para el archivo
-      const timestamp = Date.now()
-      const fileName = `${timestamp}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
-      const filePath = join(uploadDir, fileName)
-
-      // Guardar archivo
-      await writeFile(filePath, buffer)
-
-      // URL pública del archivo
-      fileUrl = `/uploads/${tramiteId}/${fileName}`
     }
+
+    fileUrl = uploadResult.url
 
     // Guardar en base de datos
     const documento = await prisma.documento.create({
@@ -104,16 +83,38 @@ export async function POST(request: Request) {
       }
     })
 
-    // Crear notificación
+    // Crear notificación para el usuario
     await prisma.notificacion.create({
       data: {
         userId: session.user.id,
         tramiteId: tramiteId,
         tipo: 'INFO',
         titulo: 'Documento subido',
-        mensaje: `Se ha subido el documento "${nombre}". Será revisado por nuestro equipo.`
+        mensaje: `Se ha subido el documento "${nombre}". Será revisado por nuestro equipo.`,
+        link: `/dashboard/tramites/${tramiteId}`
       }
     })
+
+    // Si es un comprobante de depósito de capital, notificar a los admins
+    if (nombre?.includes('DEPOSITO_CAPITAL') || tipo === 'COMPROBANTE_DEPOSITO') {
+      const admins = await prisma.user.findMany({
+        where: { rol: 'ADMIN' },
+        select: { id: true }
+      })
+
+      for (const admin of admins) {
+        await prisma.notificacion.create({
+          data: {
+            userId: admin.id,
+            tramiteId: tramiteId,
+            tipo: 'ACCION_REQUERIDA',
+            titulo: 'Comprobante de Depósito Recibido',
+            mensaje: `El cliente ha subido un comprobante de depósito del 25% del capital. Revisar y aprobar.`,
+            link: `/dashboard/admin/tramites/${tramiteId}#comprobantes`
+          }
+        })
+      }
+    }
 
     return NextResponse.json({
       success: true,

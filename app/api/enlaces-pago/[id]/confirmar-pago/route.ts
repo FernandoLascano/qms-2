@@ -2,30 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { v2 as cloudinary } from 'cloudinary'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
-
-// Verificar si Cloudinary está configurado
-const cloudinaryConfigured = 
-  process.env.CLOUDINARY_CLOUD_NAME && 
-  process.env.CLOUDINARY_API_KEY && 
-  process.env.CLOUDINARY_API_SECRET
-
-console.log('🔍 Verificando Cloudinary:', {
-  configured: cloudinaryConfigured,
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET',
-  api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
-  api_secret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'
-})
-
-if (cloudinaryConfigured) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME?.trim().replace(/['"]/g, ''),
-    api_key: process.env.CLOUDINARY_API_KEY?.trim().replace(/['"]/g, ''),
-    api_secret: process.env.CLOUDINARY_API_SECRET?.trim().replace(/['"]/g, '')
-  })
-}
+import { uploadToCloudinary } from '@/lib/cloudinary'
 
 export async function PATCH(
   req: NextRequest,
@@ -33,7 +10,7 @@ export async function PATCH(
 ) {
   try {
     console.log('=== CONFIRMAR PAGO - INICIO ===')
-    
+
     const session = await getServerSession(authOptions)
     if (!session?.user) {
       console.error('No hay sesión de usuario')
@@ -85,46 +62,25 @@ export async function PATCH(
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    let fileUrl: string
+    // Subir a Cloudinary (requerido - Vercel no permite filesystem)
+    console.log('Subiendo a Cloudinary...')
+    const uploadResult = await uploadToCloudinary(
+      buffer,
+      `qms/comprobantes/${enlace.tramiteId}`,
+      file.name,
+      file.type
+    )
 
-    // Intentar subir a Cloudinary si está configurado
-    if (cloudinaryConfigured) {
-      console.log('Intentando subir a Cloudinary...')
-      try {
-        const uploadResult = await new Promise<any>((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'qms/comprobantes',
-              resource_type: 'auto', // 'auto' detecta el tipo automáticamente
-              public_id: `comprobante_${enlace.id}_${Date.now()}`,
-              type: 'upload', // 'upload' permite acceso público sin autenticación
-              access_mode: 'public' // Hacer accesible públicamente
-            },
-            (error, result) => {
-              if (error) {
-                console.error('Error de Cloudinary:', error)
-                reject(error)
-              } else if (result) {
-                console.log('Subido a Cloudinary exitosamente')
-                console.log('URL del archivo:', result.secure_url)
-                resolve(result)
-              } else {
-                reject(new Error('No se recibió resultado de Cloudinary'))
-              }
-            }
-          )
-          uploadStream.end(buffer)
-        })
-        fileUrl = uploadResult.secure_url
-      } catch (cloudinaryError) {
-        console.error('Error al subir a Cloudinary:', cloudinaryError)
-        // Fallback a almacenamiento local
-        fileUrl = await saveFileLocally(buffer, file.name, enlace.id)
-      }
-    } else {
-      console.log('Cloudinary no configurado, guardando localmente...')
-      fileUrl = await saveFileLocally(buffer, file.name, enlace.id)
+    if (!uploadResult?.url) {
+      console.error('Error: Cloudinary upload failed')
+      return NextResponse.json(
+        { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
+        { status: 500 }
+      )
     }
+
+    const fileUrl = uploadResult.url
+    console.log('Archivo subido a Cloudinary:', fileUrl)
 
     // Crear documento con el comprobante
     await prisma.documento.create({
@@ -203,24 +159,3 @@ export async function PATCH(
     )
   }
 }
-
-// Función auxiliar para guardar archivo localmente
-async function saveFileLocally(buffer: Buffer, originalName: string, enlaceId: string): Promise<string> {
-  try {
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'comprobantes')
-    await mkdir(uploadDir, { recursive: true })
-    
-    const ext = path.extname(originalName)
-    const fileName = `comprobante_${enlaceId}_${Date.now()}${ext}`
-    const filePath = path.join(uploadDir, fileName)
-    
-    await writeFile(filePath, buffer)
-    
-    console.log('Archivo guardado localmente:', fileName)
-    return `/uploads/comprobantes/${fileName}`
-  } catch (error) {
-    console.error('Error al guardar archivo localmente:', error)
-    throw new Error('Error al guardar el comprobante')
-  }
-}
-

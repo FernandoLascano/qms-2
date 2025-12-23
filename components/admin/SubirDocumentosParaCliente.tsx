@@ -7,14 +7,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, Send } from 'lucide-react'
+import { Upload, FileText, Send, History, ExternalLink, CheckCircle, Clock } from 'lucide-react'
+
+interface DocumentoEnviado {
+  id: string
+  nombre: string
+  descripcion: string | null
+  url: string
+  estado: string
+  fechaSubida: Date
+}
 
 interface SubirDocumentosParaClienteProps {
   tramiteId: string
   userId: string
+  documentosEnviados?: DocumentoEnviado[]
 }
 
-export default function SubirDocumentosParaCliente({ tramiteId, userId }: SubirDocumentosParaClienteProps) {
+export default function SubirDocumentosParaCliente({ tramiteId, userId, documentosEnviados = [] }: SubirDocumentosParaClienteProps) {
   const router = useRouter()
   const [subiendo, setSubiendo] = useState(false)
   const [archivo, setArchivo] = useState<File | null>(null)
@@ -155,10 +165,65 @@ export default function SubirDocumentosParaCliente({ tramiteId, userId }: SubirD
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-xs text-blue-900">
-            💡 <strong>Tip:</strong> El cliente recibirá una notificación y verá este documento 
+            💡 <strong>Tip:</strong> El cliente recibirá una notificación y verá este documento
             en su panel. Podrá descargarlo, firmarlo y subirlo de vuelta.
           </p>
         </div>
+
+        {/* Historial de documentos enviados */}
+        {documentosEnviados.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-purple-200">
+            <div className="flex items-center gap-2 mb-3">
+              <History className="h-4 w-4 text-purple-600" />
+              <h4 className="text-sm font-medium text-purple-900">Documentos Enviados</h4>
+            </div>
+            <div className="space-y-2">
+              {documentosEnviados.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-3 bg-white border border-purple-100 rounded-lg"
+                >
+                  <div className="flex items-center gap-3">
+                    {doc.estado === 'APROBADO' ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-orange-500" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{doc.nombre}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(doc.fechaSubida).toLocaleDateString('es-AR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      doc.estado === 'APROBADO'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-orange-100 text-orange-700'
+                    }`}>
+                      {doc.estado === 'APROBADO' ? 'Firmado' : 'Pendiente'}
+                    </span>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-600 hover:text-purple-800"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

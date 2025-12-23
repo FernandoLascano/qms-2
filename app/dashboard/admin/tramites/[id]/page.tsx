@@ -598,7 +598,25 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       />
 
       {/* Subir Documentos para que el Cliente Firme */}
-      <SubirDocumentosParaCliente tramiteId={tramite.id} userId={tramite.userId} />
+      <SubirDocumentosParaCliente
+        tramiteId={tramite.id}
+        userId={tramite.userId}
+        documentosEnviados={tramite.documentos
+          .filter(doc =>
+            doc.tipo === 'DOCUMENTO_PARA_FIRMAR' ||
+            doc.tipo === 'ESTATUTO_PARA_FIRMAR' ||
+            doc.tipo === 'ACTA_PARA_FIRMAR'
+          )
+          .map(doc => ({
+            id: doc.id,
+            nombre: doc.nombre,
+            descripcion: doc.descripcion,
+            url: doc.url,
+            estado: doc.estado,
+            fechaSubida: doc.fechaSubida
+          }))
+        }
+      />
 
       {/* Enviar Observación al Cliente */}
       <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />

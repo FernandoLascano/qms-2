@@ -77,13 +77,8 @@ export default function DepositoCapitalCliente({
     id: doc.id 
   })))
   
-  // Solo ocultar si el comprobante está aprobado
+  // Verificar si el comprobante está aprobado
   const comprobanteAprobado = comprobanteSubido?.estado === 'APROBADO'
-  
-  if (comprobanteAprobado) {
-    console.log('✅ DepositoCapitalCliente: Comprobante ya aprobado, no se muestra')
-    return null
-  }
 
   console.log('✅ DepositoCapitalCliente: Se renderizará con notificación:', notif.titulo)
   console.log('   Comprobante subido:', comprobanteSubido ? { 
