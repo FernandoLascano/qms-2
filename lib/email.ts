@@ -20,6 +20,14 @@ interface EmailOptions {
 
 export async function sendEmail({ to, subject, html, text }: EmailOptions) {
   try {
+    console.log('📧 [NODEMAILER] Enviando email:', {
+      to,
+      subject,
+      from: process.env.SMTP_USER || 'contacto@quieromisas.com',
+      host: process.env.SMTP_HOST || 'c2680923.ferozo.com',
+      hasPassword: !!process.env.SMTP_PASSWORD
+    })
+
     const info = await transporter.sendMail({
       from: `"${process.env.SMTP_FROM_NAME || 'QuieroMiSAS'}" <${process.env.SMTP_USER || 'contacto@quieromisas.com'}>`,
       to: Array.isArray(to) ? to.join(', ') : to,
@@ -28,10 +36,12 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
       text: text || html.replace(/<[^>]*>/g, '')
     })
 
-    console.log('Email enviado:', info.messageId)
+    console.log('✅ [NODEMAILER] Email enviado:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
-    console.error('Error al enviar email:', error)
+    console.error('❌ [NODEMAILER] Error:', error.message)
+    console.error('❌ [NODEMAILER] Code:', error.code)
+    console.error('❌ [NODEMAILER] Response:', error.response)
     return { success: false, error: error.message }
   }
 }

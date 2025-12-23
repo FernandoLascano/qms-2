@@ -1,5 +1,8 @@
 // Plantillas de emails HTML profesionales
 
+// URL base para los enlaces en emails (funciona en el servidor)
+const BASE_URL = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
+
 interface EmailTemplateProps {
   nombre: string
   [key: string]: any
@@ -83,7 +86,7 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
     </ul>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/tramite/nuevo" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/tramite/nuevo" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Iniciar mi Trámite
       </a>
     </div>
@@ -124,7 +127,7 @@ export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTe
     </ol>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Estado del Trámite
       </a>
     </div>
@@ -155,7 +158,7 @@ export const emailPagoPendiente = ({ nombre, concepto, monto, tramiteId }: Email
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Realizar Pago
       </a>
     </div>
@@ -185,7 +188,7 @@ export const emailDocumentoRechazado = ({ nombre, nombreDocumento, observaciones
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Subir Documento Corregido
       </a>
     </div>
@@ -214,7 +217,7 @@ export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplate
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Progreso Completo
       </a>
     </div>
@@ -266,7 +269,7 @@ export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, 
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Documentos Oficiales
       </a>
     </div>
@@ -292,7 +295,7 @@ export const emailNotificacion = ({ nombre, titulo, mensaje, tramiteId }: EmailT
     
     ${tramiteId ? `
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Trámite
       </a>
     </div>
@@ -324,7 +327,7 @@ export const emailRecordatorioPago = ({ nombre, concepto, monto, diasPendientes,
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Realizar Pago Ahora
       </a>
     </div>
@@ -358,7 +361,7 @@ export const emailRecordatorioDocumento = ({ nombre, nombreDocumento, observacio
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Subir Documento Ahora
       </a>
     </div>
@@ -397,7 +400,7 @@ export const emailRecordatorioTramiteEstancado = ({ nombre, etapaActual, diasEst
     </div>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Estado del Trámite
       </a>
     </div>
@@ -431,7 +434,7 @@ export const emailAlertaDenominacion = ({ nombre, denominacion, diasParaVencer, 
     </p>
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/admin/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/admin/tramites/${tramiteId}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Trámite
       </a>
     </div>
@@ -477,7 +480,7 @@ export const emailValidacionTramite = ({ nombre, denominacion, validado, observa
     }
     
     <div style="text-align: center; margin: 30px 0;">
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/tramites/${tramiteId || ''}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+      <a href="${BASE_URL}/dashboard/tramites/${tramiteId || ''}" style="display: inline-block; background-color: #991b1b; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px;">
         Ver Trámite
       </a>
     </div>
