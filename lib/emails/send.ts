@@ -1,5 +1,4 @@
-import { resend, FROM_EMAIL, REPLY_TO_EMAIL, isResendConfigured } from '@/lib/resend'
-import { sendEmail as sendEmailNodemailer, emailTemplates } from '@/lib/email'
+import { sendEmail as sendEmailNodemailer } from '@/lib/email'
 import * as templates from './templates'
 
 interface SendEmailParams {
@@ -15,7 +14,6 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
       to,
       subject,
       template,
-      resendConfigured: isResendConfigured(),
       smtpHost: process.env.SMTP_HOST || 'no configurado',
       smtpUser: process.env.SMTP_USER || 'no configurado'
     })
@@ -32,29 +30,7 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
     const html = templateFunction(data as any)
     console.log('✅ [EMAIL] HTML generado, longitud:', html.length)
 
-    // Intentar con Resend primero si está configurado
-    if (isResendConfigured()) {
-      try {
-        console.log('📧 [EMAIL] Intentando con Resend...')
-        const result = await resend.emails.send({
-          from: FROM_EMAIL,
-          to,
-          subject,
-          html,
-          replyTo: REPLY_TO_EMAIL
-        })
-
-        console.log('✅ [EMAIL] Enviado via Resend:', result)
-        return { success: true, result }
-      } catch (resendError: any) {
-        console.error('⚠️ [EMAIL] Error con Resend:', resendError.message)
-        console.log('📧 [EMAIL] Fallback a Nodemailer...')
-      }
-    } else {
-      console.log('📧 [EMAIL] Resend no configurado, usando Nodemailer directamente')
-    }
-
-    // Fallback a Nodemailer (SMTP DonWeb/Ferozo)
+    // Enviar via Nodemailer (SMTP DonWeb/Ferozo)
     const nodemailerResult = await sendEmailNodemailer({
       to,
       subject,
