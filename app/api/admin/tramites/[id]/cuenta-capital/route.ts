@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -47,23 +48,40 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Notificar al cliente con los datos bancarios
     const monto = parseFloat(String(montoEsperado))
 
+    const mensajeNotificacion = `Para continuar con tu trámite, debés realizar el depósito del 25% del capital social.\n\n` +
+      `Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
+      `Datos de la cuenta:\n` +
+      `Banco: ${banco}\n` +
+      `CBU: ${cbu}\n` +
+      `${alias ? `Alias: ${alias}\n` : ''}` +
+      `Titular: ${titular}\n\n` +
+      `Luego de realizar el depósito, subí el comprobante desde tu panel.`
+
     await prisma.notificacion.create({
       data: {
         userId: tramite.userId,
         tramiteId: id,
         tipo: 'ACCION_REQUERIDA',
         titulo: 'Datos para Depósito del 25% del Capital',
-        mensaje: `Para continuar con tu trámite, debés realizar el depósito del 25% del capital social.\n\n` +
-          `Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
-          `Datos de la cuenta:\n` +
-          `Banco: ${banco}\n` +
-          `CBU: ${cbu}\n` +
-          `${alias ? `Alias: ${alias}\n` : ''}` +
-          `Titular: ${titular}\n\n` +
-          `Luego de realizar el depósito, subí el comprobante en la sección de Documentos (Comprobante de Depósito).`,
-        link: `/dashboard/tramites/${id}`
+        mensaje: mensajeNotificacion,
+        link: `/dashboard/tramites/${id}#deposito-capital`
       }
     })
+
+    // Enviar email al usuario
+    if (tramite.user) {
+      try {
+        await enviarEmailNotificacion(
+          tramite.user.email,
+          tramite.user.name || 'Usuario',
+          'Datos para Depósito del 25% del Capital',
+          mensajeNotificacion,
+          id
+        )
+      } catch (emailError) {
+        console.error('Error al enviar email de depósito de capital:', emailError)
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

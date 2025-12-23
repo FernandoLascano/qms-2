@@ -35,6 +35,7 @@ export async function uploadToCloudinary(
           folder: folder,
           resource_type: 'auto',
           public_id: publicId,
+          type: 'upload', // 'upload' permite acceso público sin autenticación
           access_mode: 'public' // Asegurar que sea público para poder visualizarlo
         },
         (error, result) => {

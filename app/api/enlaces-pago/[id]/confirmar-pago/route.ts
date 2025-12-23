@@ -95,9 +95,9 @@ export async function PATCH(
           const uploadStream = cloudinary.uploader.upload_stream(
             {
               folder: 'qms/comprobantes',
-              resource_type: 'raw', // 'raw' para PDFs y documentos
+              resource_type: 'auto', // 'auto' detecta el tipo automáticamente
               public_id: `comprobante_${enlace.id}_${Date.now()}`,
-              format: file.type.includes('pdf') ? 'pdf' : undefined,
+              type: 'upload', // 'upload' permite acceso público sin autenticación
               access_mode: 'public' // Hacer accesible públicamente
             },
             (error, result) => {

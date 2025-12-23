@@ -32,7 +32,8 @@
       "Bash(if exist \".next\\\\dev\\\\lock\" del /f \".next\\\\dev\\\\lock\")",
       "Bash(del /f \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\.next\\\\dev\\\\lock\")",
       "Bash(echo:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(del \"c:\\\\Users\\\\ferna\\\\OneDrive\\\\Escritorio\\\\qms-v2\\\\scripts\\\\fix-pagos.ts\")"
     ]
   }
 }

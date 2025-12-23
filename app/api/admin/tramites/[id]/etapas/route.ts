@@ -149,7 +149,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             tramiteId: id,
             tipo: etapa === 'sociedadInscripta' ? 'EXITO' : 'INFO',
             titulo: `Etapa completada: ${etapa.replace(/([A-Z])/g, ' $1').trim()}`,
-            mensaje: mensajesEtapas[etapa]
+            mensaje: mensajesEtapas[etapa],
+            link: `/dashboard/tramites/${id}`
           }
         })
 

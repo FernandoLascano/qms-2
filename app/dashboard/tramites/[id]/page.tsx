@@ -220,6 +220,20 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Enlaces de Pago Externos (Tasas) - DEBE estar visible para que funcione el link #enlaces-pago */}
       <EnlacesPagoCliente enlaces={tramite.enlacesPago || []} />
 
+      {/* Depósito de Capital - Card para subir comprobante */}
+      <DepositoCapitalCliente
+        tramiteId={tramite.id}
+        capitalSocial={tramite.capitalSocial}
+        documentos={tramite.documentos || []}
+        notificaciones={tramite.notificaciones || []}
+      />
+
+      {/* Documentos Para Firmar */}
+      <DocumentosParaFirmar
+        tramiteId={tramite.id}
+        documentos={tramite.documentos || []}
+      />
+
       {/* Mensajes del Equipo / Observaciones */}
       {tramite.notificaciones && tramite.notificaciones.length > 0 && (
         <MensajesDelEquipo notificaciones={tramite.notificaciones} />
