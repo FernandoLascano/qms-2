@@ -420,6 +420,7 @@ model EnlacePago {
 
 enum EstadoEnlacePago {
   PENDIENTE
+  PROCESANDO
   PAGADO
   VENCIDO
   CANCELADO
