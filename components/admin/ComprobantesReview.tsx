@@ -193,18 +193,9 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                     className="gap-2"
                     onClick={() => {
                       try {
-                        // Intentar abrir directamente la URL de Cloudinary
-                        const url = comprobante.url
-                        console.log('Abriendo URL:', url)
-                        
-                        // Si es un PDF de Cloudinary, usar la URL de descarga
-                        if (url.includes('cloudinary.com') && url.includes('.pdf')) {
-                          // Forzar descarga/visualización
-                          const downloadUrl = url.replace('/upload/', '/upload/fl_attachment/')
-                          window.open(downloadUrl, '_blank', 'noopener,noreferrer')
-                        } else {
-                          window.open(url, '_blank', 'noopener,noreferrer')
-                        }
+                        // Abrir URL directamente sin fl_attachment (causa error 401)
+                        console.log('Abriendo URL:', comprobante.url)
+                        window.open(comprobante.url, '_blank', 'noopener,noreferrer')
                       } catch (error) {
                         console.error('Error al abrir documento:', error)
                         toast.error('Error al abrir el documento')

@@ -171,14 +171,8 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                       className="gap-2"
                       onClick={() => {
                         try {
-                          const url = doc.url
-                          if (url.includes('cloudinary.com') && url.toLowerCase().endsWith('.pdf')) {
-                            // Para PDFs en Cloudinary, forzar visualización correcta
-                            const viewUrl = url.replace('/upload/', '/upload/fl_attachment/')
-                            window.open(viewUrl, '_blank', 'noopener,noreferrer')
-                          } else {
-                            window.open(url, '_blank', 'noopener,noreferrer')
-                          }
+                          // Abrir URL directamente sin fl_attachment (causa error 401)
+                          window.open(doc.url, '_blank', 'noopener,noreferrer')
                         } catch (error) {
                           console.error('Error al abrir documento:', error)
                           toast.error('Error al abrir el documento')

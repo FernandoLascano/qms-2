@@ -183,7 +183,26 @@ export default function ProximosPasos({
     }
 
     // 6. Si hay documentos enviados pero aún no subió firmados
-    if (tramite.documentosRevisados && !tramite.documentosFirmados) {
+    // Verificar si realmente hay documentos para firmar que necesitan acción del usuario
+    const tiposParaFirmar = ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR']
+    const docsParaFirmar = documentos.filter(d => tiposParaFirmar.includes(d.tipo || ''))
+
+    // Verificar si hay documentos que aún necesitan ser firmados:
+    // - Tienen tipo PARA_FIRMAR
+    // - No tienen un documento firmado aprobado o pendiente relacionado
+    const hayDocsPendientesFirma = docsParaFirmar.some(docParaFirmar => {
+      // Buscar si ya existe un documento firmado relacionado (por la descripción)
+      const tieneDocFirmado = documentos.some(docFirmado => {
+        if (tiposParaFirmar.includes(docFirmado.tipo || '')) return false // Ignorar otros docs para firmar
+        const descripcion = docFirmado.descripcion?.toLowerCase() || ''
+        const nombreOriginal = docParaFirmar.nombre.toLowerCase()
+        return descripcion.includes('correspondiente a') && descripcion.includes(nombreOriginal)
+      })
+      return !tieneDocFirmado
+    })
+
+    // Solo mostrar "Firmar y Subir" si hay documentos que realmente necesitan firma
+    if (tramite.documentosRevisados && !tramite.documentosFirmados && hayDocsPendientesFirma) {
       acciones.push({
         tipo: 'FIRMAR_DOCUMENTOS',
         titulo: '✍️ Firmar y Subir Documentos',
@@ -192,14 +211,24 @@ export default function ProximosPasos({
         accion: 'Ir a Documentos para Firmar',
         link: '#documentos-para-firmar'
       })
+    } else if (tramite.documentosRevisados && !tramite.documentosFirmados && !hayDocsPendientesFirma && docsParaFirmar.length > 0) {
+      // Hay documentos para firmar pero todos ya tienen sus versiones firmadas (en validación)
+      acciones.push({
+        tipo: 'DOCS_EN_VALIDACION',
+        titulo: '⏳ Documentos en Validación',
+        descripcion: 'Tus documentos firmados están siendo revisados por nuestro equipo.',
+        urgencia: 'media',
+        accion: null,
+        link: null
+      })
     }
 
     // 7. Si firmó documentos, espera ingreso del trámite
     if (tramite.documentosFirmados && !tramite.tramiteIngresado) {
       acciones.push({
         tipo: 'ESPERA_INGRESO',
-        titulo: '📋 Revisando Documentos',
-        descripcion: 'Estamos revisando tus documentos firmados antes de ingresar el trámite en el organismo.',
+        titulo: '📋 Esperando Ingreso del Trámite',
+        descripcion: 'Tus documentos fueron aprobados. Estamos preparando el expediente para presentarlo en el organismo.',
         urgencia: 'baja',
         accion: null,
         link: null

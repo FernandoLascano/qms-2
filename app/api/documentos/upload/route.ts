@@ -95,25 +95,48 @@ export async function POST(request: Request) {
       }
     })
 
-    // Si es un comprobante de depósito de capital, notificar a los admins
-    if (nombre?.includes('DEPOSITO_CAPITAL') || tipo === 'COMPROBANTE_DEPOSITO') {
-      const admins = await prisma.user.findMany({
-        where: { rol: 'ADMIN' },
-        select: { id: true }
-      })
+    // Notificar a los admins según el tipo de documento
+    const admins = await prisma.user.findMany({
+      where: { rol: 'ADMIN' },
+      select: { id: true }
+    })
 
-      for (const admin of admins) {
-        await prisma.notificacion.create({
-          data: {
-            userId: admin.id,
-            tramiteId: tramiteId,
-            tipo: 'ACCION_REQUERIDA',
-            titulo: 'Comprobante de Depósito Recibido',
-            mensaje: `El cliente ha subido un comprobante de depósito del 25% del capital. Revisar y aprobar.`,
-            link: `/dashboard/admin/tramites/${tramiteId}#comprobantes`
-          }
-        })
-      }
+    // Determinar el tipo de notificación según el documento
+    let notifTitulo = ''
+    let notifMensaje = ''
+    let notifLink = ''
+
+    if (nombre?.includes('DEPOSITO_CAPITAL') || tipo === 'COMPROBANTE_DEPOSITO') {
+      notifTitulo = 'Comprobante de Depósito Recibido'
+      notifMensaje = `El cliente ha subido un comprobante de depósito del 25% del capital. Revisar y aprobar.`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}#comprobantes`
+    } else if (tipo === 'DOCUMENTO_FIRMADO' || nombre?.toLowerCase().includes('firmado')) {
+      notifTitulo = 'Documento Firmado Recibido'
+      notifMensaje = `El cliente ha subido el documento firmado "${nombre}". Revisar y aprobar.`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+    } else if (tipo === 'DNI_FRENTE' || tipo === 'DNI_DORSO' || tipo === 'CONSTANCIA_CUIL') {
+      notifTitulo = 'Documentación Personal Recibida'
+      notifMensaje = `El cliente ha subido documentación personal: "${nombre}". Revisar.`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+    } else {
+      // Cualquier otro documento también debe notificarse al admin
+      notifTitulo = 'Nuevo Documento Recibido'
+      notifMensaje = `El cliente ha subido un documento: "${nombre}". Revisar.`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+    }
+
+    // Crear notificación para todos los admins
+    for (const admin of admins) {
+      await prisma.notificacion.create({
+        data: {
+          userId: admin.id,
+          tramiteId: tramiteId,
+          tipo: 'ACCION_REQUERIDA',
+          titulo: notifTitulo,
+          mensaje: notifMensaje,
+          link: notifLink
+        }
+      })
     }
 
     return NextResponse.json({

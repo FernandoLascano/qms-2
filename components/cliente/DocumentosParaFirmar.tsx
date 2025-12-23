@@ -388,22 +388,15 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                   <p className="text-sm font-medium text-gray-900 mb-2">
                     Descargar documento
                   </p>
-                  <Button 
-                    className="gap-2 bg-blue-600 hover:bg-blue-700" 
-                    size="sm"
-                    onClick={() => {
-                      const url = doc.url
-                      if (url.includes('cloudinary.com') && url.toLowerCase().endsWith('.pdf')) {
-                        const downloadUrl = url.replace('/upload/', '/upload/fl_attachment/')
-                        window.open(downloadUrl, '_blank', 'noopener,noreferrer')
-                      } else {
-                        window.open(url, '_blank', 'noopener,noreferrer')
-                      }
-                    }}
+                  <a
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium"
                   >
                     <Download className="h-4 w-4" />
-                    Descargar
-                  </Button>
+                    Ver / Descargar
+                  </a>
                 </div>
               </div>
 

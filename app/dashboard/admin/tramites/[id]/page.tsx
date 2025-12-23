@@ -90,6 +90,25 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
+      {/* Banner de Sociedad Inscripta */}
+      {tramite.sociedadInscripta && (
+        <div className="bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-4 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-full">
+              <CheckCircle className="h-8 w-8" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold">🎉 Sociedad Inscripta</h3>
+              <p className="text-green-100">
+                {tramite.denominacionAprobada || tramite.denominacionSocial1} S.A.S.
+                {tramite.cuit && ` • CUIT: ${tramite.cuit}`}
+                {tramite.matricula && ` • Matrícula: ${tramite.matricula}`}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/dashboard/admin/tramites">
@@ -98,8 +117,8 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           </Button>
         </Link>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-red-900">
-            Gestión de Trámite
+          <h2 className={`text-3xl font-bold ${tramite.sociedadInscripta ? 'text-green-900' : 'text-red-900'}`}>
+            {tramite.sociedadInscripta ? '✅ Trámite Completado' : 'Gestión de Trámite'}
           </h2>
           <p className="text-gray-600 mt-1">
             {tramite.denominacionAprobada || tramite.denominacionSocial1}
