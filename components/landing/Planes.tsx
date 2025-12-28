@@ -1,13 +1,28 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useInView } from 'framer-motion'
+
+// Definición de características por plan
+const caracteristicas = [
+  { nombre: 'Constitución de Sociedad', basico: true, emprendedor: true, premium: true },
+  { nombre: 'Obtención de CUIT', basico: true, emprendedor: true, premium: true },
+  { nombre: 'Guía de uso de Libros Digitales', basico: true, emprendedor: true, premium: true },
+  { nombre: 'Lista para facturar', basico: false, emprendedor: true, premium: true },
+  { nombre: 'Alta de Libros Digitales', basico: false, emprendedor: false, premium: true },
+  { nombre: 'Una reunión de asesoría societaria al mes', basico: false, emprendedor: false, premium: true },
+]
 
 export function Planes() {
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
   const [precios, setPrecios] = useState({
-    precioPlanEsencial: 85000,
-    precioPlanProfesional: 120000
+    precioPlanBasico: 285000,
+    precioPlanEmprendedor: 320000,
+    precioPlanPremium: 390000
   })
 
   useEffect(() => {
@@ -15,58 +30,66 @@ export function Planes() {
       .then(res => res.json())
       .then(data => {
         setPrecios({
-          precioPlanEsencial: data.precioPlanEsencial,
-          precioPlanProfesional: data.precioPlanProfesional
+          precioPlanBasico: data.precioPlanBasico,
+          precioPlanEmprendedor: data.precioPlanEmprendedor,
+          precioPlanPremium: data.precioPlanPremium
         })
       })
       .catch(err => console.error('Error al cargar precios:', err))
   }, [])
 
   return (
-    <section id="planes" className="py-20 bg-gradient-to-b from-red-50 to-white">
+    <section ref={sectionRef} id="planes" className="py-20 md:py-28 bg-gradient-to-b from-red-50 to-white">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-4 text-red-900">Planes y Precios</h2>
-        <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-          Elegí el plan que mejor se adapte a tu proyecto. Todos incluyen seguimiento completo y garantía.
-        </p>
+        {/* Header con nuevo diseño */}
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            Planes y Precios
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+            Elegí el plan{' '}
+            <span className="text-red-700">ideal</span>
+          </h2>
+          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            Ofrecemos distintos servicios según las necesidades que tengas
+          </p>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {/* Plan Esencial */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200 hover:border-red-300 transition">
+          {/* Plan Básico */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200 hover:border-red-300 transition"
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold mb-2 text-red-900">Esencial</h3>
-              <p className="text-gray-600 text-sm mb-4">Para startups y emprendedores</p>
+              <h3 className="text-2xl font-bold mb-2 text-red-900">Básico</h3>
+              <p className="text-gray-600 text-sm mb-4">Para quienes están comenzando</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanEsencial.toLocaleString('es-AR')}</span>
+                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanBasico.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">+ Tasas de jurisdicción</p>
+              <p className="text-sm text-gray-500">+ gastos</p>
             </div>
 
             <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Constitución completa en 5 días</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Hasta 3 socios</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Estatuto estándar</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Seguimiento online 24/7</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">CUIT y matrícula incluidos</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Soporte por chat</span>
-              </li>
+              {caracteristicas.map((caracteristica, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  {caracteristica.basico ? (
+                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className={`text-sm ${caracteristica.basico ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+                    {caracteristica.nombre}
+                  </span>
+                </li>
+              ))}
             </ul>
 
             <Link
@@ -75,54 +98,43 @@ export function Planes() {
             >
               Elegir Plan
             </Link>
-          </div>
+          </motion.div>
 
-          {/* Plan Profesional - Destacado */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-red-700 hover:border-red-800 transition transform md:scale-105 relative">
+          {/* Plan Emprendedor - Destacado */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-red-700 hover:border-red-800 transition transform md:scale-105 relative"
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
               <span className="bg-red-700 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                MÁS POPULAR
+                MÁS CONTRATADO
               </span>
             </div>
 
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold mb-2 text-red-900">Profesional</h3>
-              <p className="text-gray-600 text-sm mb-4">Para PyMEs en crecimiento</p>
+              <h3 className="text-2xl font-bold mb-2 text-red-900">Emprendedor</h3>
+              <p className="text-gray-600 text-sm mb-4">Para emprendedores en crecimiento</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-red-700">${precios.precioPlanProfesional.toLocaleString('es-AR')}</span>
+                <span className="text-4xl font-bold text-red-700">${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">+ Tasas de jurisdicción</p>
+              <p className="text-sm text-gray-500">+ gastos</p>
             </div>
 
             <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Todo del Plan Esencial, más:</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Hasta 10 socios</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Estatuto personalizado</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Asesoría legal incluida</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Gestoría de bancos</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Prioridad en respuestas</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">1 reforma de estatuto gratis</span>
-              </li>
+              {caracteristicas.map((caracteristica, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  {caracteristica.emprendedor ? (
+                    <Check className="w-5 h-5 text-red-700 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className={`text-sm ${caracteristica.emprendedor ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+                    {caracteristica.nombre}
+                  </span>
+                </li>
+              ))}
             </ul>
 
             <Link
@@ -131,67 +143,60 @@ export function Planes() {
             >
               Elegir Plan
             </Link>
-          </div>
+          </motion.div>
 
-          {/* Plan Empresarial */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200 hover:border-red-300 transition">
+          {/* Plan Premium */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-lg p-8 border-2 border-gray-200 hover:border-red-300 transition"
+            initial={{ opacity: 0, y: 40 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold mb-2 text-red-900">Empresarial</h3>
-              <p className="text-gray-600 text-sm mb-4">Para grandes proyectos</p>
+              <h3 className="text-2xl font-bold mb-2 text-red-900">Premium</h3>
+              <p className="text-gray-600 text-sm mb-4">Para empresas consolidadas</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-gray-900">Consultar</span>
+                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanPremium.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">Presupuesto personalizado</p>
+              <p className="text-sm text-gray-500">+ gastos</p>
             </div>
 
             <ul className="space-y-3 mb-8">
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700 font-medium">Todo del Plan Profesional, más:</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Socios ilimitados</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Cláusulas especiales</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Acuerdos de accionistas</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Asesoría contable/impositiva</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Gestor dedicado</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-700">Soporte 24/7 prioritario</span>
-              </li>
+              {caracteristicas.map((caracteristica, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  {caracteristica.premium ? (
+                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                  )}
+                  <span className={`text-sm ${caracteristica.premium ? 'text-gray-700' : 'text-gray-400 italic'}`}>
+                    {caracteristica.nombre}
+                  </span>
+                </li>
+              ))}
             </ul>
 
-            <a
-              href="mailto:contacto@quieromisas.com"
+            <Link
+              href="/registro"
               className="block w-full text-center bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition font-semibold"
             >
-              Contactar
-            </a>
-          </div>
+              Elegir Plan
+            </Link>
+          </motion.div>
         </div>
 
-        <div className="mt-12 text-center text-sm text-gray-600 max-w-3xl mx-auto">
+        <motion.div
+          className="mt-12 text-center text-sm text-gray-600 max-w-3xl mx-auto"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
           <p>
-            <strong>Nota:</strong> Los precios no incluyen las tasas de inscripción de IGJ/IPJ (varían según jurisdicción y capital social) 
+            <strong>Nota:</strong> Los precios no incluyen las tasas de inscripción de IGJ/IPJ (varían según jurisdicción y capital social)
             ni el depósito del 25% del capital social. Te informamos todos los costos detallados antes de comenzar.
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
-

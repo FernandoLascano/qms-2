@@ -4,10 +4,8 @@ import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { CheckCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { CheckCircle, Mail, Lock, ArrowLeft, LogIn, Loader2 } from 'lucide-react'
 
 function LoginForm() {
   const router = useRouter()
@@ -47,71 +45,94 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {isFromRegistration && (
-        <div className="bg-green-50 border-2 border-green-200 text-green-700 p-4 rounded-lg text-sm font-medium flex items-center gap-2">
-          <CheckCircle className="h-5 w-5 flex-shrink-0" />
-          <span>Cuenta creada exitosamente. Ya puedes iniciar sesion.</span>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl text-sm font-medium flex items-center gap-3"
+        >
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="h-4 w-4" />
+          </div>
+          <span>Cuenta creada exitosamente. Ya podés iniciar sesión.</span>
+        </motion.div>
       )}
 
       {error && (
-        <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-lg text-sm font-medium">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium"
+        >
           {error}
-        </div>
+        </motion.div>
       )}
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-semibold text-red-900">
+        <label htmlFor="email" className="text-sm font-semibold text-gray-700">
           Email
         </label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="tu@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          disabled={loading}
-          className="h-12 text-base"
-        />
+        <div className="relative">
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <Mail className="w-5 h-5 text-gray-400" />
+          </div>
+          <input
+            id="email"
+            type="email"
+            placeholder="tu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+            className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-semibold text-red-900">
+        <label htmlFor="password" className="text-sm font-semibold text-gray-700">
           Contraseña
         </label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          disabled={loading}
-          className="h-12 text-base"
-        />
+        <div className="relative">
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+            <Lock className="w-5 h-5 text-gray-400" />
+          </div>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+        </div>
       </div>
 
-      <Button
+      <button
         type="submit"
-        className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all"
         disabled={loading}
+        className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-red-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {loading ? (
-          <span className="flex items-center gap-2">
-            <span className="animate-spin">⏳</span>
+          <>
+            <Loader2 className="w-5 h-5 animate-spin" />
             Ingresando...
-          </span>
+          </>
         ) : (
-          'Ingresar'
+          <>
+            <LogIn className="w-5 h-5" />
+            Ingresar
+          </>
         )}
-      </Button>
+      </button>
 
-      <div className="text-center pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
+      <div className="text-center pt-5 border-t border-gray-100">
+        <p className="text-sm text-gray-500">
           ¿No tenés cuenta?{' '}
-          <Link href="/registro" className="text-red-700 hover:text-red-900 font-semibold underline-offset-2 hover:underline transition">
+          <Link href="/registro" className="text-red-700 hover:text-red-800 font-semibold transition">
             Registrate aquí
           </Link>
         </p>
@@ -122,38 +143,65 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo y Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link href="/" className="inline-block mb-4">
             <img
               src="/assets/img/logo4.png"
               alt="QuieroMiSAS Logo"
               className="h-16 w-auto mx-auto"
             />
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-red-900 mb-2">Bienvenido</h1>
-          <p className="text-gray-600">
+          <span className="block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            Acceso
+          </span>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
+            Bienvenido de <span className="text-red-700">vuelta</span>
+          </h1>
+          <p className="text-gray-500">
             Ingresá a tu cuenta de QuieroMiSAS
           </p>
-        </div>
+        </motion.div>
 
         {/* Card de Login */}
-        <Card className="shadow-xl border-2 border-gray-200">
-          <CardContent className="p-8">
-            <Suspense fallback={<div className="text-center py-4">Cargando...</div>}>
-              <LoginForm />
-            </Suspense>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white rounded-2xl border border-gray-200 shadow-xl p-8"
+        >
+          <Suspense fallback={
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto"></div>
+              <p className="text-gray-500 mt-3 text-sm">Cargando...</p>
+            </div>
+          }>
+            <LoginForm />
+          </Suspense>
+        </motion.div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
-          <Link href="/" className="text-sm text-gray-500 hover:text-red-700 transition">
-            ← Volver al inicio
+        <motion.div
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-700 transition font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al inicio
           </Link>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

@@ -25,6 +25,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* Estilos para react-big-calendar */
 .rbc-calendar {
   font-family: inherit;

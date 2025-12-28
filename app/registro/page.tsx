@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { motion } from 'framer-motion'
+import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 
 export default function RegistroPage() {
   const router = useRouter()
@@ -60,8 +59,8 @@ export default function RegistroPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        const errorMessage = data.details 
-          ? `${data.error}: ${data.details}` 
+        const errorMessage = data.details
+          ? `${data.error}: ${data.details}`
           : data.error || 'Error al crear la cuenta'
         setError(errorMessage)
         setLoading(false)
@@ -78,38 +77,60 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-red-50 flex items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo y Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
-            <img 
-              src="/assets/img/logo4.png" 
-              alt="QuieroMiSAS Logo" 
+        <motion.div
+          className="text-center mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Link href="/" className="inline-block mb-4">
+            <img
+              src="/assets/img/logo4.png"
+              alt="QuieroMiSAS Logo"
               className="h-16 w-auto mx-auto"
             />
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-red-900 mb-2">Crear cuenta</h1>
-          <p className="text-gray-600">
+          <span className="block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            Registro
+          </span>
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
+            Crear <span className="text-red-700">cuenta</span>
+          </h1>
+          <p className="text-gray-500">
             Registrate para comenzar tu trámite
           </p>
-        </div>
+        </motion.div>
 
         {/* Card de Registro */}
-        <Card className="shadow-xl border-2 border-gray-200">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-lg text-sm font-medium">
-                  {error}
-                </div>
-              )}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white rounded-2xl border border-gray-200 shadow-xl p-8"
+        >
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium"
+              >
+                {error}
+              </motion.div>
+            )}
 
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-semibold text-red-900">
-                  Nombre completo
-                </label>
-                <Input
+            <div className="space-y-2">
+              <label htmlFor="name" className="text-sm font-semibold text-gray-700">
+                Nombre completo
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <User className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
                   id="name"
                   name="name"
                   type="text"
@@ -118,15 +139,20 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="h-12 text-base"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-semibold text-red-900">
-                  Email
-                </label>
-                <Input
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                Email
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <Mail className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
                   id="email"
                   name="email"
                   type="email"
@@ -135,15 +161,20 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="h-12 text-base"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-semibold text-red-900">
-                  Teléfono <span className="text-gray-500 font-normal">(opcional)</span>
-                </label>
-                <Input
+            <div className="space-y-2">
+              <label htmlFor="phone" className="text-sm font-semibold text-gray-700">
+                Teléfono <span className="text-gray-400 font-normal">(opcional)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <Phone className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
                   id="phone"
                   name="phone"
                   type="tel"
@@ -151,15 +182,20 @@ export default function RegistroPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={loading}
-                  className="h-12 text-base"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-semibold text-red-900">
-                  Contraseña
-                </label>
-                <Input
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-semibold text-gray-700">
+                Contraseña
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <Lock className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
                   id="password"
                   name="password"
                   type="password"
@@ -168,16 +204,21 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="h-12 text-base"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-500">Debe tener al menos 6 caracteres</p>
               </div>
+              <p className="text-xs text-gray-400 pl-1">Debe tener al menos 6 caracteres</p>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-semibold text-red-900">
-                  Confirmar contraseña
-                </label>
-                <Input
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
+                Confirmar contraseña
+              </label>
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <Lock className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
@@ -186,43 +227,55 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="h-12 text-base"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+            </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all mt-6"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    Creando cuenta...
-                  </span>
-                ) : (
-                  'Crear cuenta'
-                )}
-              </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-red-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Creando cuenta...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  Crear cuenta
+                </>
+              )}
+            </button>
 
-              <div className="text-center pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  ¿Ya tenés cuenta?{' '}
-                  <Link href="/login" className="text-red-700 hover:text-red-900 font-semibold underline-offset-2 hover:underline transition">
-                    Ingresá aquí
-                  </Link>
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            <div className="text-center pt-5 border-t border-gray-100">
+              <p className="text-sm text-gray-500">
+                ¿Ya tenés cuenta?{' '}
+                <Link href="/login" className="text-red-700 hover:text-red-800 font-semibold transition">
+                  Ingresá aquí
+                </Link>
+              </p>
+            </div>
+          </form>
+        </motion.div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
-          <Link href="/" className="text-sm text-gray-500 hover:text-red-700 transition">
-            ← Volver al inicio
+        <motion.div
+          className="text-center mt-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-700 transition font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al inicio
           </Link>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

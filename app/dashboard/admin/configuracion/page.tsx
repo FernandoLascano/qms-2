@@ -43,8 +43,9 @@ interface ConfigData {
   precioBaseSAS: number
 
   // Planes y Precios
-  precioPlanEsencial: number
-  precioPlanProfesional: number
+  precioPlanBasico: number
+  precioPlanEmprendedor: number
+  precioPlanPremium: number
   smvm: number
 
   // General
@@ -73,8 +74,9 @@ export default function ConfiguracionAdminPage() {
     horasLimiteRespuesta: 48,
     mercadoPagoEnabled: true,
     precioBaseSAS: 50000,
-    precioPlanEsencial: 85000,
-    precioPlanProfesional: 120000,
+    precioPlanBasico: 285000,
+    precioPlanEmprendedor: 320000,
+    precioPlanPremium: 390000,
     smvm: 317800,
     mantenimientoMode: false
   })
@@ -502,40 +504,59 @@ export default function ConfiguracionAdminPage() {
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Precios de Planes</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="precioPlanEsencial">Plan Esencial</Label>
+                  <Label htmlFor="precioPlanBasico">Plan Básico</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-3 text-gray-500">$</span>
                     <Input
-                      id="precioPlanEsencial"
+                      id="precioPlanBasico"
                       type="number"
-                      value={config.precioPlanEsencial}
-                      onChange={(e) => setConfig({ ...config, precioPlanEsencial: parseFloat(e.target.value) })}
+                      value={config.precioPlanBasico}
+                      onChange={(e) => setConfig({ ...config, precioPlanBasico: parseFloat(e.target.value) })}
                       className="pl-7"
                       min={0}
                       step={1000}
                     />
                   </div>
                   <p className="text-sm text-gray-500">
-                    Precio del plan Esencial (mostrado en landing page y formulario)
+                    Precio del plan Básico (mostrado en landing page y formulario)
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="precioPlanProfesional">Plan Profesional</Label>
+                  <Label htmlFor="precioPlanEmprendedor">Plan Emprendedor</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-3 text-gray-500">$</span>
                     <Input
-                      id="precioPlanProfesional"
+                      id="precioPlanEmprendedor"
                       type="number"
-                      value={config.precioPlanProfesional}
-                      onChange={(e) => setConfig({ ...config, precioPlanProfesional: parseFloat(e.target.value) })}
+                      value={config.precioPlanEmprendedor}
+                      onChange={(e) => setConfig({ ...config, precioPlanEmprendedor: parseFloat(e.target.value) })}
                       className="pl-7"
                       min={0}
                       step={1000}
                     />
                   </div>
                   <p className="text-sm text-gray-500">
-                    Precio del plan Profesional (mostrado en landing page y formulario)
+                    Precio del plan Emprendedor (mostrado en landing page y formulario)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="precioPlanPremium">Plan Premium</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-gray-500">$</span>
+                    <Input
+                      id="precioPlanPremium"
+                      type="number"
+                      value={config.precioPlanPremium}
+                      onChange={(e) => setConfig({ ...config, precioPlanPremium: parseFloat(e.target.value) })}
+                      className="pl-7"
+                      min={0}
+                      step={1000}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Precio del plan Premium (mostrado en landing page y formulario)
                   </p>
                 </div>
               </div>

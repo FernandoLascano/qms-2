@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useInView } from 'framer-motion'
 
 interface FAQItem {
   pregunta: string
@@ -53,54 +55,116 @@ const faqs: FAQItem[] = [
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const sectionRef = useRef(null)
+  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section id="faq" className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={sectionRef} id="faq" className="py-20 md:py-28 bg-gray-50 overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4 text-red-900">Preguntas Frecuentes</h2>
-          <p className="text-center text-gray-600 mb-12">
-            Todo lo que necesitás saber sobre la constitución de tu S.A.S.
-          </p>
+          {/* Header con nuevo diseño */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+              FAQ
+            </span>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+              Preguntas{' '}
+              <span className="text-red-700">frecuentes</span>
+            </h2>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+              Todo lo que necesitás saber sobre la constitución de tu S.A.S.
+            </p>
+          </motion.div>
 
-          <div className="space-y-4">
+          {/* Lista de preguntas */}
+          <div className="space-y-3">
             {faqs.map((faq, index) => (
-              <div
+              <motion.div
                 key={index}
-                className="border border-gray-200 rounded-lg overflow-hidden hover:border-red-300 transition"
+                initial={{ opacity: 0, y: 20 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+                className={`bg-white rounded-xl border overflow-hidden transition-all duration-300 ${
+                  openIndex === index
+                    ? 'border-red-200 shadow-lg'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                }`}
               >
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-red-50 transition"
+                  className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 transition-colors"
                 >
-                  <span className="font-semibold text-gray-900 pr-4">{faq.pregunta}</span>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                      openIndex === index ? 'bg-red-100' : 'bg-gray-100'
+                    }`}>
+                      <HelpCircle className={`w-4 h-4 transition-colors ${
+                        openIndex === index ? 'text-red-600' : 'text-gray-500'
+                      }`} />
+                    </div>
+                    <span className={`font-semibold transition-colors ${
+                      openIndex === index ? 'text-red-900' : 'text-gray-900'
+                    }`}>
+                      {faq.pregunta}
+                    </span>
+                  </div>
                   <ChevronDown
-                    className={`w-5 h-5 text-gray-500 flex-shrink-0 transition-transform ${
-                      openIndex === index ? 'transform rotate-180' : ''
+                    className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
+                      openIndex === index ? 'text-red-600 rotate-180' : 'text-gray-400'
                     }`}
                   />
                 </button>
-                {openIndex === index && (
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <p className="text-gray-700 leading-relaxed">{faq.respuesta}</p>
-                  </div>
-                )}
-              </div>
+                <AnimatePresence>
+                  {openIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-5 pt-0">
+                        <div className="pl-12">
+                          <p className="text-gray-600 leading-relaxed">{faq.respuesta}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))}
           </div>
 
-          <div className="mt-12 text-center">
-            <p className="text-gray-600 mb-4">¿No encontraste lo que buscabas?</p>
-            <a
-              href="mailto:contacto@quieromisas.com"
-              className="inline-block bg-red-700 text-white px-6 py-3 rounded-lg hover:bg-red-800 transition font-medium"
-            >
-              Contactanos directamente
-            </a>
-          </div>
+          {/* CTA de contacto */}
+          <motion.div
+            className="mt-12 text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-red-600" />
+                </div>
+              </div>
+              <p className="text-gray-900 font-semibold text-lg mb-2">¿No encontraste lo que buscabas?</p>
+              <p className="text-gray-500 mb-6">Estamos acá para ayudarte con cualquier consulta</p>
+              <a
+                href="mailto:contacto@quieromisas.com"
+                className="inline-flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition-colors font-semibold shadow-lg shadow-red-200"
+              >
+                Contactanos directamente
+              </a>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
   )
 }
-

@@ -535,9 +535,13 @@ model Config {
   mercadoPagoEnabled Boolean @default(true)
   precioBaseSAS      Float   @default(50000)
 
-  // Planes y Precios
+  // Planes y Precios (legacy - mantener por compatibilidad temporal)
   precioPlanEsencial     Float @default(85000)
   precioPlanProfesional  Float @default(120000)
+  // Nuevos precios
+  precioPlanBasico       Float @default(285000)
+  precioPlanEmprendedor  Float @default(320000)
+  precioPlanPremium      Float @default(390000)
   smvm                   Float @default(317800) // Salario Mínimo, Vital y Móvil
 
   // General

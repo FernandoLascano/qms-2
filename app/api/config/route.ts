@@ -16,8 +16,9 @@ export async function GET(request: NextRequest) {
 
     // Retornar solo los datos públicos
     return NextResponse.json({
-      precioPlanEsencial: config.precioPlanEsencial,
-      precioPlanProfesional: config.precioPlanProfesional,
+      precioPlanBasico: config.precioPlanBasico,
+      precioPlanEmprendedor: config.precioPlanEmprendedor,
+      precioPlanPremium: config.precioPlanPremium,
       smvm: config.smvm
     })
   } catch (error: any) {
@@ -25,8 +26,9 @@ export async function GET(request: NextRequest) {
 
     // En caso de error, retornar valores por defecto
     return NextResponse.json({
-      precioPlanEsencial: 85000,
-      precioPlanProfesional: 120000,
+      precioPlanBasico: 285000,
+      precioPlanEmprendedor: 320000,
+      precioPlanPremium: 390000,
       smvm: 317800
     })
   }

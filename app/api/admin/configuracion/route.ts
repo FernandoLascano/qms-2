@@ -68,8 +68,9 @@ export async function PUT(request: NextRequest) {
           horasLimiteRespuesta: body.horasLimiteRespuesta,
           mercadoPagoEnabled: body.mercadoPagoEnabled,
           precioBaseSAS: body.precioBaseSAS,
-          precioPlanEsencial: body.precioPlanEsencial,
-          precioPlanProfesional: body.precioPlanProfesional,
+          precioPlanBasico: body.precioPlanBasico,
+          precioPlanEmprendedor: body.precioPlanEmprendedor,
+          precioPlanPremium: body.precioPlanPremium,
           smvm: body.smvm,
           mantenimientoMode: body.mantenimientoMode
         }
