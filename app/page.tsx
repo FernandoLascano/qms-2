@@ -10,6 +10,7 @@ import { Testimonios } from '@/components/landing/Testimonios'
 import { QueEsSAS } from '@/components/landing/QueEsSAS'
 import { GastosJurisdiccion } from '@/components/landing/GastosJurisdiccion'
 import { Notas } from '@/components/landing/Notas'
+import { Contacto } from '@/components/landing/Contacto'
 import Navbar from '@/components/Navbar'
 
 // Componente de contador animado
@@ -484,6 +485,9 @@ export default function HomePage() {
 
       {/* Notas y Blog - Para SEO */}
       <Notas />
+
+      {/* Contacto */}
+      <Contacto />
 
       {/* CTA Final - Diseño impactante */}
       <section className="relative py-24 overflow-hidden" ref={ctaRef}>
