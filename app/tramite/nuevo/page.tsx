@@ -629,8 +629,11 @@ export default function NuevoTramitePage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-red-900">Nuevo Trámite</h1>
-            <p className="text-gray-600 mt-1">Completa el formulario para constituir tu S.A.S.</p>
+            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+              Nuevo Trámite
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Constituí tu <span className="text-red-700">S.A.S.</span></h1>
+            <p className="text-gray-500 mt-2 text-lg">Completa el formulario paso a paso</p>
           </div>
           {/* Auto-save indicator */}
           {status === 'authenticated' && pasoActual >= 2 && (
@@ -658,7 +661,7 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
+        <div className="mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-2xl border-2 border-gray-200 shadow-lg overflow-x-auto">
           <div className="flex items-start justify-between min-w-max md:min-w-0">
             {PASOS.map((paso, index) => {
               const Icon = paso.icon
@@ -726,18 +729,18 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Form Content */}
-        <Card className="shadow-lg border-gray-200">
+        <Card className="shadow-lg border-2 border-gray-200 rounded-2xl">
           <CardContent className="p-4 sm:p-6 md:p-8">
             {/* Paso 1: Datos */}
             {pasoActual === 1 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">
-                    1
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">1</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Datos</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Información personal y plan</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Datos Personales</h2>
+                    <p className="text-gray-500 mt-1">Información del solicitante y plan elegido</p>
                   </div>
                 </div>
 
@@ -768,7 +771,7 @@ export default function NuevoTramitePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="dni" className="text-gray-700">DNI *</Label>
+                    <Label htmlFor="dni">DNI *</Label>
                     <Input
                       id="dni"
                       name="dni"
@@ -776,11 +779,10 @@ export default function NuevoTramitePage() {
                       onChange={handleInputChange}
                       placeholder="12345678"
                       required
-                      className="text-gray-900"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="telefono" className="text-gray-700">Teléfono *</Label>
+                    <Label htmlFor="telefono">Teléfono *</Label>
                     <Input
                       id="telefono"
                       name="telefono"
@@ -788,11 +790,10 @@ export default function NuevoTramitePage() {
                       onChange={handleInputChange}
                       placeholder="+54 9 11 1234-5678"
                       required
-                      className="text-gray-900"
                     />
                   </div>
                   <div className="sm:col-span-2 lg:col-span-1">
-                    <Label htmlFor="email" className="text-gray-700">Email *</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
                       id="email"
                       name="email"
@@ -801,7 +802,6 @@ export default function NuevoTramitePage() {
                       onChange={handleInputChange}
                       placeholder="correo@ejemplo.com"
                       required
-                      className="text-gray-900"
                     />
                   </div>
                 </div>
@@ -848,7 +848,7 @@ export default function NuevoTramitePage() {
                 </div>
 
                 <div className="border-t pt-6">
-                  <h3 className="font-bold text-lg mb-4 text-red-900">Jurisdicción *</h3>
+                  <h3 className="font-black text-lg text-gray-900 mb-4">Jurisdicción *</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       { id: 'CORDOBA', nombre: 'Córdoba (IPJ)' },
@@ -883,25 +883,25 @@ export default function NuevoTramitePage() {
             {/* Paso 2: Nombre */}
             {pasoActual === 2 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">
-                    2
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">2</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Nombre</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Marca de la sociedad</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Denominación Social</h2>
+                    <p className="text-gray-500 mt-1">Nombre de tu sociedad</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Nombre de la Sociedad</h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Nombre de la Sociedad</h3>
+                  <p className="text-gray-500 mb-4">
                     Proporciona 3 opciones de nombre para tu SAS
                   </p>
                   
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                    <p className="text-sm text-red-900">
-                      ℹ️ Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
+                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-red-800">
+                      <span className="font-semibold">Importante:</span> Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
                     </p>
                   </div>
 
@@ -963,19 +963,21 @@ export default function NuevoTramitePage() {
             {/* PASO 3: Objeto */}
             {pasoActual === 3 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">3</div>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">3</span>
+                  </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Objeto</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Actividad y domicilio</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Objeto Social</h2>
+                    <p className="text-gray-500 mt-1">Actividad y domicilio legal</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Objeto y Domicilio</h3>
-                  <p className="text-sm text-gray-600 mb-4">Define el propósito de tu sociedad y su domicilio legal</p>
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Objeto y Domicilio</h3>
+                  <p className="text-gray-500 mb-4">Define el propósito de tu sociedad y su domicilio legal</p>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-700">Objeto Social *</Label>
+                      <Label>Objeto Social *</Label>
                       <div className="space-y-3 mt-2">
                         <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-red-300 transition">
                           <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
@@ -1011,14 +1013,14 @@ export default function NuevoTramitePage() {
                     </div>
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
-                        <Label htmlFor="objetoPersonalizado" className="text-gray-700">Describe tu objeto social *</Label>
-                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600" rows={4} placeholder="Describe las actividades específicas..." />
+                        <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>
+                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="border-t pt-6">
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Domicilio Social</h3>
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Domicilio Social</h3>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                     <p className="text-sm text-red-900">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
                   </div>
@@ -1038,14 +1040,14 @@ export default function NuevoTramitePage() {
                   {!formData.sinDomicilio && (
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="domicilio" className="text-gray-700">Domicilio completo *</Label>
+                        <Label htmlFor="domicilio">Domicilio completo *</Label>
                         <p className="text-xs text-gray-500 mb-2">Se requiere que sea completo con indicación de piso, departamento, lote o manzana si correspondiera.</p>
-                        <Input id="domicilio" name="domicilio" value={formData.domicilio} onChange={handleInputChange} placeholder="Av. Colón 123, Piso 2, Dpto. A" className="text-gray-900" />
+                        <Input id="domicilio" name="domicilio" value={formData.domicilio} onChange={handleInputChange} placeholder="Av. Colón 123, Piso 2, Dpto. A" />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="ciudad" className="text-gray-700">Ciudad *</Label>
-                          <Select id="ciudad" name="ciudad" value={formData.ciudad} onChange={handleInputChange} className="text-gray-900">
+                          <Label htmlFor="ciudad">Ciudad *</Label>
+                          <Select id="ciudad" name="ciudad" value={formData.ciudad} onChange={handleInputChange}>
                             <option value="">Seleccionar ciudad...</option>
                             {CIUDADES_CORDOBA.map(ciudad => (
                               <option key={ciudad} value={ciudad}>{ciudad}</option>
@@ -1053,8 +1055,8 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="departamento" className="text-gray-700">Departamento *</Label>
-                          <Select id="departamento" name="departamento" value={formData.departamento} onChange={handleInputChange} className="text-gray-900">
+                          <Label htmlFor="departamento">Departamento *</Label>
+                          <Select id="departamento" name="departamento" value={formData.departamento} onChange={handleInputChange}>
                             <option value="">Seleccionar departamento...</option>
                             {DEPARTAMENTOS_CORDOBA.map(depto => (
                               <option key={depto} value={depto}>{depto}</option>
@@ -1062,13 +1064,13 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="provincia" className="text-gray-700">Provincia *</Label>
+                          <Label htmlFor="provincia">Provincia *</Label>
                           <Input 
                             id="provincia" 
                             name="provincia" 
                             value={formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'} 
                             disabled
-                            className="text-gray-900 bg-gray-100"
+                            className="bg-gray-100"
                           />
                         </div>
                       </div>
@@ -1081,24 +1083,26 @@ export default function NuevoTramitePage() {
             {/* PASO 4: Capital */}
             {pasoActual === 4 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">4</div>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">4</span>
+                  </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Capital</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Capital social y CBU</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Capital Social</h2>
+                    <p className="text-gray-500 mt-1">Monto del capital y datos bancarios</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Capital Social y CBU</h3>
-                  <p className="text-sm text-gray-600 mb-4">Define el capital inicial de tu sociedad</p>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Capital Social y CBU</h3>
+                  <p className="text-gray-500 mb-4">Define el capital inicial de tu sociedad</p>
+                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
                     <p className="text-sm text-red-900 mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
                     <p className="text-sm font-bold text-red-900">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
                     <p className="text-xs text-gray-600 mt-1">SMVM actual: ${smvm.toLocaleString('es-AR')}</p>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-gray-700">Capital Social *</Label>
+                      <Label>Capital Social *</Label>
                       <div className="space-y-3 mt-2">
                         <label className="flex items-center gap-3 p-3 border-2 border-red-600 bg-red-50 rounded-lg cursor-pointer">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
@@ -1116,8 +1120,8 @@ export default function NuevoTramitePage() {
                     </div>
                     {formData.capitalSocial !== String(2 * smvm) && (
                       <div>
-                        <Label htmlFor="capitalSocialCustom" className="text-gray-700">Capital Social *</Label>
-                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} className="text-gray-900" />
+                        <Label htmlFor="capitalSocialCustom">Capital Social *</Label>
+                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} />
                         {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * smvm) && (
                           <p className="text-xs text-red-600 mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
                         )}
@@ -1126,8 +1130,8 @@ export default function NuevoTramitePage() {
                   </div>
                 </div>
                 <div className="border-t pt-6">
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Depósito del Capital (CBU)</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Depósito del Capital (CBU)</h3>
+                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
                     <p className="text-sm text-red-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito inicial del 25% del capital social en una cuenta bancaria. Este dinero luego será reintegrado a los CBU informados.</p>
                     <p className="text-sm font-bold text-red-900 mt-3">Requisitos de CBU:</p>
                     <ul className="text-xs text-gray-700 mt-2 space-y-1 ml-4">
@@ -1162,7 +1166,7 @@ export default function NuevoTramitePage() {
                   {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
                     <div className="space-y-4">
                       <div>
-                        <Label htmlFor="cbuPrincipal" className="text-gray-700">CBU Principal *</Label>
+                        <Label htmlFor="cbuPrincipal">CBU Principal *</Label>
                         <Input 
                           id="cbuPrincipal" 
                           name="cbuPrincipal" 
@@ -1170,11 +1174,11 @@ export default function NuevoTramitePage() {
                           onChange={handleInputChange} 
                           placeholder="0000000000000000000000" 
                           maxLength={22} 
-                          className="text-gray-900 font-mono" 
+                          className="font-mono" 
                         />
                       </div>
                       <div>
-                        <Label htmlFor="cbuSecundario" className="text-gray-700">CBU Secundario *</Label>
+                        <Label htmlFor="cbuSecundario">CBU Secundario *</Label>
                         <Input 
                           id="cbuSecundario" 
                           name="cbuSecundario" 
@@ -1182,7 +1186,7 @@ export default function NuevoTramitePage() {
                           onChange={handleInputChange} 
                           placeholder="0000000000000000000000" 
                           maxLength={22} 
-                          className="text-gray-900 font-mono" 
+                          className="font-mono" 
                         />
                       </div>
                     </div>
@@ -1194,19 +1198,19 @@ export default function NuevoTramitePage() {
             {/* Paso 5: Socios */}
             {pasoActual === 5 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">
-                    5
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">5</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Socios</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Accionistas</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Socios</h2>
+                    <p className="text-gray-500 mt-1">Datos de los accionistas</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Socios / Accionistas</h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Socios / Accionistas</h3>
+                  <p className="text-gray-500 mb-4">
                     Define quiénes serán los socios y su participación en el capital
                   </p>
 
@@ -1261,10 +1265,10 @@ export default function NuevoTramitePage() {
                     </div>
 
                     <div className="text-sm space-y-1">
-                      <p className="text-gray-700">
+                      <p >
                         <span className="font-semibold">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
                       </p>
-                      <p className="text-gray-700">
+                      <p >
                         <span className="font-semibold">Total de Aportes:</span> $
                         {(() => {
                           // Parsear capital social correctamente (remover puntos de miles)
@@ -1320,12 +1324,12 @@ export default function NuevoTramitePage() {
                   </div>
 
                   {formData.socios.map((socio, index) => (
-                    <div key={index} className="border rounded-lg p-6 mb-4 bg-gray-50">
-                      <h4 className="font-bold text-gray-900 mb-4">Socio {index + 1}</h4>
+                    <div key={index} className="border-2 border-gray-200 rounded-2xl p-6 mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                      <h4 className="font-black text-gray-900 text-lg mb-4">Socio {index + 1}</h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">Nombre *</Label>
+                          <Label>Nombre *</Label>
                           <Input
                             value={socio.nombre}
                             onChange={(e) => {
@@ -1334,11 +1338,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Juan"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">Apellido *</Label>
+                          <Label>Apellido *</Label>
                           <Input
                             value={socio.apellido}
                             onChange={(e) => {
@@ -1347,14 +1350,13 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Pérez"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">DNI *</Label>
+                          <Label>DNI *</Label>
                           <Input
                             value={socio.dni}
                             onChange={(e) => {
@@ -1363,11 +1365,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="12345678"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">CUIT *</Label>
+                          <Label>CUIT *</Label>
                           <Input
                             value={socio.cuit}
                             onChange={(e) => {
@@ -1376,13 +1377,12 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="20123456789"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <Label className="text-gray-700">Domicilio completo *</Label>
+                        <Label>Domicilio completo *</Label>
                         <p className="text-xs text-gray-500 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={socio.domicilio}
@@ -1392,13 +1392,12 @@ export default function NuevoTramitePage() {
                             setFormData(prev => ({ ...prev, socios: newSocios }))
                           }}
                           placeholder="Av. Córdoba 1234, Piso 2, Dpto. A"
-                          className="text-gray-900"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">Ciudad *</Label>
+                          <Label>Ciudad *</Label>
                           <Input
                             value={socio.ciudad}
                             onChange={(e) => {
@@ -1407,11 +1406,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Córdoba"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">Departamento *</Label>
+                          <Label>Departamento *</Label>
                           <Input
                             value={socio.departamento}
                             onChange={(e) => {
@@ -1420,11 +1418,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Capital"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">Provincia *</Label>
+                          <Label>Provincia *</Label>
                           <Input
                             value={socio.provincia}
                             onChange={(e) => {
@@ -1433,14 +1430,13 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Córdoba"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">Estado civil *</Label>
+                          <Label>Estado civil *</Label>
                           <Select
                             value={socio.estadoCivil}
                             onChange={(e) => {
@@ -1448,7 +1444,6 @@ export default function NuevoTramitePage() {
                               newSocios[index].estadoCivil = e.target.value
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
-                            className="text-gray-900"
                           >
                             <option value="">Seleccionar</option>
                             <option value="Soltero/a">Soltero/a</option>
@@ -1458,7 +1453,7 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-gray-700">Profesión *</Label>
+                          <Label>Profesión *</Label>
                           <Input
                             value={socio.profesion}
                             onChange={(e) => {
@@ -1467,13 +1462,12 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, socios: newSocios }))
                             }}
                             placeholder="Comerciante"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <Label className="text-gray-700">Aporte de capital *</Label>
+                        <Label>Aporte de capital *</Label>
                         <div className="space-y-3">
                           {/* Selector de tipo */}
                           <div className="flex gap-3">
@@ -1528,7 +1522,6 @@ export default function NuevoTramitePage() {
                                 }}
                                 placeholder="0"
                                 min="0"
-                                className="text-gray-900"
                               />
                               {socio.aportePorcentaje && parseFloat(socio.aportePorcentaje) > 0 && (
                                 <p className="text-xs text-gray-500 mt-1">
@@ -1557,7 +1550,6 @@ export default function NuevoTramitePage() {
                                 min="0"
                                 max="100"
                                 step="0.01"
-                                className="text-gray-900"
                               />
                               {socio.aporteCapital && parseFloat(socio.aporteCapital) > 0 && (
                                 <p className="text-xs text-gray-500 mt-1">
@@ -1577,23 +1569,23 @@ export default function NuevoTramitePage() {
             {/* Paso 6: Administración */}
             {pasoActual === 6 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">
-                    6
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">6</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Administración</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Administradores</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Administración</h2>
+                    <p className="text-gray-500 mt-1">Órgano de administración</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Órgano de Administración</h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Órgano de Administración</h3>
+                  <p className="text-gray-500 mb-4">
                     Define quiénes administrarán la sociedad
                   </p>
 
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
                     <p className="text-sm text-red-900">
                       ℹ️ <strong>Requisitos de administradores:</strong> Es obligatoria la designación de como mínimo un Administrador Titular y un Suplente. Los Administradores pueden o no ser socios de la Sociedad.
                     </p>
@@ -1655,9 +1647,9 @@ export default function NuevoTramitePage() {
                   </div>
 
                   {formData.administradores.map((admin, index) => (
-                    <div key={index} className="border rounded-lg p-6 mb-4 bg-gray-50">
+                    <div key={index} className="border-2 border-gray-200 rounded-2xl p-6 mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-bold text-gray-900">
+                        <h4 className="font-black text-gray-900 text-lg">
                           {index === 0 ? 'Administrador Titular' : index === 1 ? 'Administrador Suplente' : `Administrador ${index + 1}`}
                         </h4>
                         
@@ -1720,7 +1712,7 @@ export default function NuevoTramitePage() {
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">Nombre *</Label>
+                          <Label>Nombre *</Label>
                           <Input
                             value={admin.nombre}
                             onChange={(e) => {
@@ -1729,11 +1721,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="Juan"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">Apellido *</Label>
+                          <Label>Apellido *</Label>
                           <Input
                             value={admin.apellido}
                             onChange={(e) => {
@@ -1742,14 +1733,13 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="Pérez"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">DNI *</Label>
+                          <Label>DNI *</Label>
                           <Input
                             value={admin.dni}
                             onChange={(e) => {
@@ -1758,11 +1748,10 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="12345678"
-                            className="text-gray-900"
                           />
                         </div>
                         <div>
-                          <Label className="text-gray-700">CUIT *</Label>
+                          <Label>CUIT *</Label>
                           <Input
                             value={admin.cuit}
                             onChange={(e) => {
@@ -1771,13 +1760,12 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="20123456789"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
 
                       <div className="mb-4">
-                        <Label className="text-gray-700">Domicilio completo *</Label>
+                        <Label>Domicilio completo *</Label>
                         <p className="text-xs text-gray-500 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={admin.domicilio}
@@ -1787,13 +1775,12 @@ export default function NuevoTramitePage() {
                             setFormData(prev => ({ ...prev, administradores: newAdmins }))
                           }}
                           placeholder="Av. Córdoba 1234, Piso 2, Dpto. A"
-                          className="text-gray-900"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                         <div>
-                          <Label className="text-gray-700">Ciudad *</Label>
+                          <Label>Ciudad *</Label>
                           <Select
                             value={admin.ciudad}
                             onChange={(e) => {
@@ -1801,7 +1788,6 @@ export default function NuevoTramitePage() {
                               newAdmins[index].ciudad = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
-                            className="text-gray-900"
                           >
                             <option value="">Seleccionar...</option>
                             {CIUDADES_CORDOBA.map(ciudad => (
@@ -1810,7 +1796,7 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-gray-700">Departamento *</Label>
+                          <Label>Departamento *</Label>
                           <Select
                             value={admin.departamento}
                             onChange={(e) => {
@@ -1818,7 +1804,6 @@ export default function NuevoTramitePage() {
                               newAdmins[index].departamento = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
-                            className="text-gray-900"
                           >
                             <option value="">Seleccionar...</option>
                             {DEPARTAMENTOS_CORDOBA.map(depto => (
@@ -1827,7 +1812,7 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-gray-700">Provincia *</Label>
+                          <Label>Provincia *</Label>
                           <Input
                             value={admin.provincia || 'Córdoba'}
                             onChange={(e) => {
@@ -1836,7 +1821,6 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="Córdoba"
-                            className="text-gray-900"
                             readOnly
                           />
                         </div>
@@ -1844,7 +1828,7 @@ export default function NuevoTramitePage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-gray-700">Estado civil *</Label>
+                          <Label>Estado civil *</Label>
                           <Select
                             value={admin.estadoCivil}
                             onChange={(e) => {
@@ -1852,7 +1836,6 @@ export default function NuevoTramitePage() {
                               newAdmins[index].estadoCivil = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
-                            className="text-gray-900"
                           >
                             <option value="">Seleccionar</option>
                             <option value="Soltero/a">Soltero/a</option>
@@ -1862,7 +1845,7 @@ export default function NuevoTramitePage() {
                           </Select>
                         </div>
                         <div>
-                          <Label className="text-gray-700">Profesión *</Label>
+                          <Label>Profesión *</Label>
                           <Input
                             value={admin.profesion}
                             onChange={(e) => {
@@ -1871,7 +1854,6 @@ export default function NuevoTramitePage() {
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
                             placeholder="Comerciante"
-                            className="text-gray-900"
                           />
                         </div>
                       </div>
@@ -1884,30 +1866,30 @@ export default function NuevoTramitePage() {
             {/* Paso 7: Cierre */}
             {pasoActual === 7 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-3 md:pb-4 border-b border-gray-200">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold text-base md:text-lg shadow-sm flex-shrink-0">
-                    7
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-700 font-black text-xl">7</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-red-900">Cierre</h2>
-                    <p className="text-sm md:text-base text-gray-600 mt-1">Ejercicio económico</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Cierre de Ejercicio</h2>
+                    <p className="text-gray-500 mt-1">Fecha de cierre contable</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-lg mb-2 text-red-900">Cierre de Ejercicio Económico</h3>
-                  <p className="text-sm text-gray-600 mb-4">
+                  <h3 className="font-black text-lg text-gray-900 mb-2">Cierre de Ejercicio Económico</h3>
+                  <p className="text-gray-500 mb-4">
                     Define la fecha de cierre del ejercicio económico
                   </p>
 
-                  <div className="bg-gray-50 border rounded-lg p-4 mb-4">
+                  <div className="bg-gray-50 border-2 border-gray-100 rounded-xl p-4 mb-4">
                     <p className="text-sm text-gray-700">
                       El cierre de ejercicio es la fecha anual en la que se cierran los libros contables y se preparan los estados financieros. La fecha más común es el 31 de diciembre (31-12).
                     </p>
                   </div>
 
                   <div className="mb-6">
-                    <Label htmlFor="fechaCierre" className="text-gray-700">Fecha de cierre de ejercicio (día-mes) *</Label>
+                    <Label htmlFor="fechaCierre">Fecha de cierre de ejercicio (día-mes) *</Label>
                     <Input
                       id="fechaCierre"
                       name="fechaCierre"
@@ -1916,7 +1898,7 @@ export default function NuevoTramitePage() {
                       placeholder="31-12"
                       pattern="\d{2}-\d{2}"
                       required
-                      className="text-gray-900 max-w-xs"
+                      className="max-w-xs"
                     />
                     <p className="text-xs text-red-600 mt-1">Este campo es obligatorio</p>
                     <p className="text-xs text-gray-500 mt-1">
@@ -1942,17 +1924,17 @@ export default function NuevoTramitePage() {
                     </label>
                   </div>
 
-                  <div className="mt-8 bg-green-50 border-2 border-green-200 rounded-lg p-6">
-                    <h4 className="font-bold text-green-900 text-lg mb-3">¡Todo listo para enviar!</h4>
-                    <p className="text-sm text-green-800 mb-4">
-                      Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en "Enviar Formulario" para iniciar tu trámite de constitución.
+                  <div className="mt-8 bg-green-50 border-2 border-green-200 rounded-2xl p-6">
+                    <h4 className="font-black text-green-900 text-xl mb-3">¡Todo listo para enviar!</h4>
+                    <p className="text-green-800 mb-4">
+                      Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
                     </p>
-                    <div className="bg-white rounded p-4 text-sm text-gray-700 space-y-2">
-                      <p><strong>Plan seleccionado:</strong> {formData.plan}</p>
-                      <p><strong>Jurisdicción:</strong> {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}</p>
-                      <p><strong>Capital Social:</strong> ${formData.capitalSocial}</p>
-                      <p><strong>Socios:</strong> {formData.numeroSocios}</p>
-                      <p><strong>Administradores:</strong> {formData.numeroAdministradores}</p>
+                    <div className="bg-white rounded-xl p-4 text-gray-700 space-y-2 border border-green-100">
+                      <p><span className="font-semibold">Plan seleccionado:</span> {formData.plan}</p>
+                      <p><span className="font-semibold">Jurisdicción:</span> {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}</p>
+                      <p><span className="font-semibold">Capital Social:</span> ${formData.capitalSocial}</p>
+                      <p><span className="font-semibold">Socios:</span> {formData.numeroSocios}</p>
+                      <p><span className="font-semibold">Administradores:</span> {formData.numeroAdministradores}</p>
                     </div>
                   </div>
                 </div>
@@ -1960,30 +1942,30 @@ export default function NuevoTramitePage() {
             )}
 
             {/* Navegación */}
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-8 pt-6 border-t border-gray-100">
               <Button
                 variant="outline"
                 onClick={handleAnterior}
                 disabled={pasoActual === 1}
-                className="gap-2 w-full sm:w-auto"
+                className="gap-2 w-full sm:w-auto rounded-xl h-12 px-6 font-semibold"
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-5 w-5" />
                 Anterior
               </Button>
 
               {pasoActual < 7 ? (
-                <Button onClick={handleSiguiente} className="gap-2 bg-red-600 hover:bg-red-700 w-full sm:w-auto">
+                <Button onClick={handleSiguiente} className="gap-2 bg-red-700 hover:bg-red-800 w-full sm:w-auto rounded-xl shadow-lg shadow-red-200 h-12 px-6 font-semibold">
                   Siguiente
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
               ) : (
                 <Button
                   onClick={handleSubmit}
                   disabled={guardando}
-                  className="gap-2 bg-red-600 hover:bg-red-700 w-full sm:w-auto"
+                  className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto rounded-xl shadow-lg shadow-green-200 h-12 px-8 font-semibold"
                 >
                   {guardando ? 'Enviando...' : 'Enviar Formulario'}
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
               )}
             </div>

@@ -178,59 +178,80 @@ export default function UsuariosAdminPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-red-900">Gestión de Usuarios</h2>
-        <p className="text-sm sm:text-base text-gray-600 mt-1">
+        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          Administración
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+          Gestión de <span className="text-red-700">Usuarios</span>
+        </h1>
+        <p className="text-gray-500 mt-2 text-lg">
           Administra usuarios, contraseñas y permisos
         </p>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
+      <div className="grid gap-6 grid-cols-2 md:grid-cols-4">
+        <Card className="hover:shadow-lg hover:border-gray-300 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total Usuarios</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
+              <Users className="h-5 w-5 text-gray-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{usuarios.length}</div>
+            <p className="text-3xl font-black text-gray-900">{usuarios.length}</p>
+            <p className="text-xs text-gray-500 mt-1">Registrados en el sistema</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-lg hover:border-blue-200 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Clientes</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Users className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <p className="text-3xl font-black text-blue-600">
               {usuarios.filter(u => u.rol === 'CLIENTE').length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Usuarios cliente</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-lg hover:border-purple-200 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Administradores</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
+              <ShieldCheck className="h-5 w-5 text-purple-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
+            <p className="text-3xl font-black text-purple-600">
               {usuarios.filter(u => u.rol === 'ADMIN').length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Con acceso completo</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="hover:shadow-lg hover:border-green-200 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Con Trámites</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <p className="text-3xl font-black text-green-600">
               {usuarios.filter(u => u._count.tramites > 0).length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Usuarios activos</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filtros */}
-      <Card>
+      <Card className="shadow-lg">
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -239,13 +260,13 @@ export default function UsuariosAdminPage() {
                 placeholder="Buscar por nombre o email..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="pl-10"
+                className="pl-10 rounded-xl border-gray-200 focus:ring-2 focus:ring-red-200 focus:border-red-300"
               />
             </div>
             <select
               value={filtroRol}
               onChange={(e) => setFiltroRol(e.target.value)}
-              className="px-4 py-2 border rounded-md bg-white text-sm"
+              className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-medium focus:ring-2 focus:ring-red-200 focus:border-red-300"
             >
               <option value="TODOS">Todos los roles</option>
               <option value="CLIENTE">Clientes</option>
@@ -256,18 +277,26 @@ export default function UsuariosAdminPage() {
       </Card>
 
       {/* Lista de usuarios */}
-      <div className="space-y-4">
+      <Card className="shadow-lg">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-xl font-bold text-gray-900">Listado de Usuarios</CardTitle>
+          <CardDescription>
+            Todos los usuarios registrados en el sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
         {usuariosFiltrados.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No se encontraron usuarios</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-16">
+            <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+              <Users className="h-10 w-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No se encontraron usuarios</h3>
+            <p className="text-gray-500">Intenta con otros criterios de búsqueda</p>
+          </div>
         ) : (
-          usuariosFiltrados.map((usuario) => (
-            <Card key={usuario.id} className={usuario.rol === 'ADMIN' ? 'border-purple-300 bg-purple-50/50' : ''}>
-              <CardContent className="pt-6">
+          <div className="space-y-4">
+          {usuariosFiltrados.map((usuario) => (
+            <div key={usuario.id} className={`p-6 border-2 rounded-2xl transition-all duration-200 ${usuario.rol === 'ADMIN' ? 'border-purple-300 bg-purple-50/30 hover:border-purple-400 hover:shadow-lg' : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                   {/* Info del usuario */}
                   <div className="flex items-start gap-4 flex-1">
@@ -347,16 +376,17 @@ export default function UsuariosAdminPage() {
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
+              </div>
+          ))}
+          </div>
         )}
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Modal Eliminar Usuario */}
       {modalEliminar && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md rounded-2xl shadow-2xl">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 rounded-full">
@@ -428,7 +458,7 @@ export default function UsuariosAdminPage() {
       {/* Modal Reset Password */}
       {modalResetPassword && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md rounded-2xl shadow-2xl">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-full">
@@ -486,7 +516,7 @@ export default function UsuariosAdminPage() {
       {/* Modal Cambiar Rol */}
       {modalCambiarRol && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md rounded-2xl shadow-2xl">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-purple-100 rounded-full">

@@ -195,26 +195,30 @@ export default function ConfiguracionAdminPage() {
   ] as const
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <Shield className="h-8 w-8 text-red-700" />
-          Configuración del Sistema
+        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          Sistema
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+          Configuración del <span className="text-red-700">Sistema</span>
         </h1>
-        <p className="text-gray-600 mt-2">Administrá las configuraciones globales de la plataforma</p>
+        <p className="text-gray-500 mt-2 text-lg">
+          Administrá las configuraciones globales de la plataforma
+        </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex gap-4 overflow-x-auto">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+        <nav className="flex gap-2 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap font-medium ${
                 activeTab === tab.id
-                  ? 'border-red-700 text-red-700 font-semibold'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
+                  ? 'bg-red-700 text-white shadow-lg shadow-red-200'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
               <tab.icon className="h-4 w-4" />
@@ -226,7 +230,7 @@ export default function ConfiguracionAdminPage() {
 
       {/* Notificaciones Tab */}
       {activeTab === 'notificaciones' && (
-        <Card>
+        <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-red-700" />
@@ -287,7 +291,7 @@ export default function ConfiguracionAdminPage() {
 
       {/* Email Tab */}
       {activeTab === 'email' && (
-        <Card>
+        <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-red-700" />
@@ -428,7 +432,7 @@ export default function ConfiguracionAdminPage() {
 
       {/* Sistema Tab */}
       {activeTab === 'sistema' && (
-        <Card>
+        <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-red-700" />
@@ -474,7 +478,7 @@ export default function ConfiguracionAdminPage() {
 
       {/* Pagos Tab */}
       {activeTab === 'pagos' && (
-        <Card>
+        <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-red-700" />
@@ -597,7 +601,7 @@ export default function ConfiguracionAdminPage() {
 
       {/* General Tab */}
       {activeTab === 'general' && (
-        <Card>
+        <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5 text-red-700" />
@@ -661,7 +665,7 @@ export default function ConfiguracionAdminPage() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          className="bg-red-700 hover:bg-red-800"
+          className="bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200 px-6 font-semibold"
           disabled={loading}
         >
           {loading ? (

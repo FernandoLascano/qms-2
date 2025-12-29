@@ -104,20 +104,27 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración</h1>
-        <p className="text-gray-600 mt-2">Administrá tu perfil y preferencias</p>
+        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          Mi cuenta
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+          <span className="text-red-700">Configuración</span>
+        </h1>
+        <p className="text-gray-500 mt-2 text-lg">Administrá tu perfil y preferencias</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Información Personal */}
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5 text-red-700" />
-              Información Personal
-            </CardTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <User className="h-5 w-5 text-red-700" />
+              </div>
+              <CardTitle className="text-lg font-bold text-gray-900">Información Personal</CardTitle>
+            </div>
             <CardDescription>
               Actualizá tus datos personales
             </CardDescription>
@@ -167,7 +174,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-700 hover:bg-red-800"
+                className="w-full bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200"
                 disabled={loading}
               >
                 {loading ? (
@@ -187,12 +194,14 @@ export default function ConfiguracionPage() {
         </Card>
 
         {/* Cambiar Contraseña */}
-        <Card>
+        <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5 text-red-700" />
-              Seguridad
-            </CardTitle>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <Lock className="h-5 w-5 text-red-700" />
+              </div>
+              <CardTitle className="text-lg font-bold text-gray-900">Seguridad</CardTitle>
+            </div>
             <CardDescription>
               Cambiá tu contraseña
             </CardDescription>
@@ -236,7 +245,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-700 hover:bg-red-800"
+                className="w-full bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200"
                 disabled={loading}
               >
                 {loading ? (
@@ -257,9 +266,9 @@ export default function ConfiguracionPage() {
       </div>
 
       {/* Información de la Cuenta */}
-      <Card>
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Información de la cuenta</CardTitle>
+          <CardTitle className="text-lg font-bold text-gray-900">Información de la cuenta</CardTitle>
           <CardDescription>
             Detalles sobre tu cuenta
           </CardDescription>

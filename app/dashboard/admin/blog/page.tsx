@@ -95,16 +95,23 @@ export default function AdminBlogPage() {
   })
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-red-900">Gestión de Blog</h1>
-          <p className="text-gray-600 mt-1">Administra las notas y artículos del sitio</p>
+          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+            Contenido
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+            Gestión de <span className="text-red-700">Blog</span>
+          </h1>
+          <p className="text-gray-500 mt-2 text-lg">
+            Administra las notas y artículos del sitio
+          </p>
         </div>
         <Link
           href="/dashboard/admin/blog/nuevo"
-          className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-lg hover:bg-red-800 transition shadow-md cursor-pointer"
+          className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition-all shadow-lg shadow-red-200 font-semibold"
         >
           <Plus className="w-5 h-5" />
           Crear Nota
@@ -112,7 +119,7 @@ export default function AdminBlogPage() {
       </div>
 
       {/* Filtros y búsqueda */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
         <div className="grid md:grid-cols-2 gap-4">
           {/* Búsqueda */}
           <div className="relative">
@@ -122,17 +129,17 @@ export default function AdminBlogPage() {
               placeholder="Buscar por título o categoría..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-200 focus:border-red-300"
             />
           </div>
 
           {/* Filtros */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setFilter('todos')}
-              className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
+              className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
                 filter === 'todos'
-                  ? 'bg-red-700 text-white'
+                  ? 'bg-red-700 text-white shadow-lg shadow-red-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -140,9 +147,9 @@ export default function AdminBlogPage() {
             </button>
             <button
               onClick={() => setFilter('publicados')}
-              className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
+              className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
                 filter === 'publicados'
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-green-600 text-white shadow-lg shadow-green-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -150,9 +157,9 @@ export default function AdminBlogPage() {
             </button>
             <button
               onClick={() => setFilter('borradores')}
-              className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
+              className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
                 filter === 'borradores'
-                  ? 'bg-yellow-600 text-white'
+                  ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -163,89 +170,95 @@ export default function AdminBlogPage() {
       </div>
 
       {/* Lista de posts */}
-      {loading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Cargando posts...</p>
-        </div>
-      ) : filteredPosts.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-md p-12 text-center">
-          <p className="text-gray-600 text-lg">No hay posts que mostrar</p>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {filteredPosts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-gray-900">{post.titulo}</h3>
-                    {post.destacado && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-                        Destacado
-                      </span>
-                    )}
-                    {post.publicado ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                        Publicado
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">
-                        Borrador
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                    <span className="font-medium text-red-700">{post.categoria}</span>
-                    <span>·</span>
-                    <span>Slug: /{post.slug}</span>
-                    <span>·</span>
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      <span>{post.vistas} vistas</span>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+            <p className="text-gray-500 mt-4">Cargando posts...</p>
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+              <Filter className="h-10 w-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No hay posts que mostrar</h3>
+            <p className="text-gray-500">Intenta con otros criterios de búsqueda</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {filteredPosts.map((post) => (
+              <div
+                key={post.id}
+                className="p-6 hover:bg-gray-50/50 transition-all"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2 flex-wrap">
+                      <h3 className="text-xl font-bold text-gray-900">{post.titulo}</h3>
+                      {post.destacado && (
+                        <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-bold rounded-lg">
+                          Destacado
+                        </span>
+                      )}
+                      {post.publicado ? (
+                        <span className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg">
+                          Publicado
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-lg">
+                          Borrador
+                        </span>
+                      )}
                     </div>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
+                      <span className="font-semibold text-red-700">{post.categoria}</span>
+                      <span className="text-gray-300">·</span>
+                      <span>Slug: /{post.slug}</span>
+                      <span className="text-gray-300">·</span>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4" />
+                        <span>{post.vistas} vistas</span>
+                      </div>
+                    </div>
+
+                    <p className="text-gray-500 text-sm">
+                      Publicado: {new Date(post.fechaPublicacion).toLocaleDateString('es-AR')}
+                    </p>
                   </div>
 
-                  <p className="text-gray-500 text-sm">
-                    Publicado: {new Date(post.fechaPublicacion).toLocaleDateString('es-AR')}
-                  </p>
-                </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => togglePublicado(post.id, post.publicado)}
+                      className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
+                        post.publicado
+                          ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                    >
+                      {post.publicado ? 'Despublicar' : 'Publicar'}
+                    </button>
 
-                <div className="flex items-center gap-2 ml-4">
-                  <button
-                    onClick={() => togglePublicado(post.id, post.publicado)}
-                    className={`px-4 py-2 rounded-lg font-medium transition cursor-pointer ${
-                      post.publicado
-                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                        : 'bg-green-100 text-green-700 hover:bg-green-200'
-                    }`}
-                  >
-                    {post.publicado ? 'Despublicar' : 'Publicar'}
-                  </button>
+                    <Link
+                      href={`/dashboard/admin/blog/editar/${post.id}`}
+                      className="p-2.5 bg-blue-100 text-blue-700 rounded-xl hover:bg-blue-200 transition cursor-pointer"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </Link>
 
-                  <Link
-                    href={`/dashboard/admin/blog/editar/${post.id}`}
-                    className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition cursor-pointer"
-                  >
-                    <Edit className="w-5 h-5" />
-                  </Link>
-
-                  <button
-                    onClick={() => deletePost(post.id)}
-                    className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition cursor-pointer"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                    <button
+                      onClick={() => deletePost(post.id)}
+                      className="p-2.5 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

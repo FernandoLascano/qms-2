@@ -174,24 +174,22 @@ export default function NotificacionesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-3 bg-red-100 rounded-xl">
-            <Bell className="h-7 w-7 text-red-600" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notificaciones</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {count > 0 ? `${count} sin leer` : 'Todas las notificaciones leídas'}
-            </p>
-          </div>
-        </div>
+      <div>
+        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          Centro de alertas
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+          <span className="text-red-700">Notificaciones</span>
+        </h1>
+        <p className="text-gray-500 mt-2 text-lg">
+          {count > 0 ? `Tenés ${count} notificación${count > 1 ? 'es' : ''} sin leer` : 'Todas las notificaciones leídas'}
+        </p>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
         <div className="flex items-center gap-2 mb-4">
           <Filter className="h-5 w-5 text-gray-500" />
           <h2 className="font-semibold text-gray-900">Filtros</h2>
@@ -260,7 +258,7 @@ export default function NotificacionesPage() {
       </div>
 
       {/* Lista de notificaciones */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />

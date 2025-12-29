@@ -36,75 +36,91 @@ async function SociedadesPage() {
     }
   })
 
+  // Calcular estadísticas
+  const esteMes = sociedades.filter(s => {
+    const fecha = s.fechaSociedadInscripta || s.fechaInscripcion || s.createdAt
+    const mesActual = new Date().getMonth()
+    const añoActual = new Date().getFullYear()
+    return new Date(fecha).getMonth() === mesActual &&
+           new Date(fecha).getFullYear() === añoActual
+  }).length
+
+  const esteAño = sociedades.filter(s => {
+    const fecha = s.fechaSociedadInscripta || s.fechaInscripcion || s.createdAt
+    return new Date(fecha).getFullYear() === new Date().getFullYear()
+  }).length
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-red-700" />
-            Sociedades Constituidas
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Listado completo de todas las sociedades inscriptas
-          </p>
-        </div>
+      <div>
+        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          Registro
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+          Sociedades <span className="text-red-700">Constituidas</span>
+        </h1>
+        <p className="text-gray-500 mt-2 text-lg">
+          Listado completo de todas las sociedades inscriptas
+        </p>
       </div>
 
       {/* Estadísticas */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">Total de Sociedades</CardTitle>
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card className="hover:shadow-lg hover:border-gray-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Total Sociedades</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-gray-900">{sociedades.length}</p>
+            <p className="text-3xl font-black text-gray-900">{sociedades.length}</p>
+            <p className="text-xs text-gray-500 mt-1">Inscriptas exitosamente</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="hover:shadow-lg hover:border-blue-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Este Mes</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-gray-900">
-              {sociedades.filter(s => {
-                const fecha = s.fechaSociedadInscripta || s.fechaInscripcion || s.createdAt
-                const mesActual = new Date().getMonth()
-                const añoActual = new Date().getFullYear()
-                return new Date(fecha).getMonth() === mesActual && 
-                       new Date(fecha).getFullYear() === añoActual
-              }).length}
-            </p>
+            <p className="text-3xl font-black text-blue-600">{esteMes}</p>
+            <p className="text-xs text-gray-500 mt-1">Nuevas este mes</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="hover:shadow-lg hover:border-purple-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Este Año</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-purple-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-gray-900">
-              {sociedades.filter(s => {
-                const fecha = s.fechaSociedadInscripta || s.fechaInscripcion || s.createdAt
-                return new Date(fecha).getFullYear() === new Date().getFullYear()
-              }).length}
-            </p>
+            <p className="text-3xl font-black text-purple-600">{esteAño}</p>
+            <p className="text-xs text-gray-500 mt-1">Total {new Date().getFullYear()}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Lista de Sociedades */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Listado de Sociedades</CardTitle>
+      <Card className="shadow-lg">
+        <CardHeader className="border-b border-gray-100">
+          <CardTitle className="text-xl font-bold text-gray-900">Listado de Sociedades</CardTitle>
           <CardDescription>
             Todas las sociedades que han sido constituidas exitosamente
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {sociedades.length === 0 ? (
-            <div className="text-center py-12">
-              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Aún no hay sociedades constituidas</p>
+            <div className="text-center py-16">
+              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                <Building2 className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No hay sociedades aún</h3>
+              <p className="text-gray-500">Las sociedades constituidas aparecerán aquí</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -112,10 +128,9 @@ async function SociedadesPage() {
                 <Link
                   key={sociedad.id}
                   href={`/dashboard/admin/sociedades/${sociedad.id}`}
-                  className="block"
+                  className="block group"
                 >
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-l-red-600">
-                    <CardContent className="p-6">
+                  <div className="p-6 border-2 border-gray-200 rounded-2xl hover:border-green-300 hover:shadow-lg transition-all duration-200">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
@@ -165,8 +180,7 @@ async function SociedadesPage() {
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                  </div>
                 </Link>
               ))}
             </div>

@@ -84,17 +84,22 @@ async function DocumentosPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-red-900">Mis Documentos</h2>
-          <p className="text-gray-600 mt-1">
+          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+            Archivos
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
+            Mis <span className="text-red-700">Documentos</span>
+          </h1>
+          <p className="text-gray-500 mt-2 text-lg">
             Gestiona todos los documentos de tus trámites
           </p>
         </div>
         <Link href="/dashboard/documentos/subir">
-          <Button size="lg" className="gap-2 bg-blue-600 hover:bg-blue-700">
+          <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200 font-semibold">
             <Upload className="h-5 w-5" />
             Subir Documento
           </Button>
@@ -103,67 +108,81 @@ async function DocumentosPage() {
 
       {/* Estadísticas */}
       <div className="grid gap-6 md:grid-cols-4">
-        <Card>
+        <Card className="hover:shadow-lg hover:border-gray-300 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <FileText className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-gray-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{documentos.length}</div>
+            <p className="text-3xl font-black text-gray-900">{documentos.length}</p>
+            <p className="text-xs text-gray-500 mt-1">Documentos subidos</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg hover:border-green-200 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Aprobados</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">Aprobados</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <p className="text-3xl font-black text-green-600">
               {documentos.filter(d => d.estado === 'APROBADO').length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Documentos validados</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg hover:border-blue-200 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Revisión</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">En Revisión</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
+            <p className="text-3xl font-black text-blue-600">
               {documentos.filter(d => d.estado === 'EN_REVISION').length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">En proceso</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg hover:border-orange-200 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">Pendientes</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
+            <p className="text-3xl font-black text-orange-600">
               {documentos.filter(d => d.estado === 'PENDIENTE').length}
-            </div>
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Por revisar</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Lista de Documentos */}
       {documentos.length === 0 ? (
-        <Card>
+        <Card className="shadow-lg">
           <CardContent className="py-16">
             <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                <FileText className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 No hay documentos aún
               </h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">
                 Comienza subiendo los documentos necesarios para tu trámite de constitución.
               </p>
               <Link href="/dashboard/documentos/subir">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200">
                   <Upload className="h-5 w-5" />
                   Subir Mi Primer Documento
                 </Button>
@@ -172,36 +191,38 @@ async function DocumentosPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Documentos Subidos</CardTitle>
+        <Card className="shadow-lg">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle className="text-xl font-bold text-gray-900">Documentos Subidos</CardTitle>
             <CardDescription>
               Todos tus documentos organizados por trámite
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
               {documentos.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition"
+                  className="flex items-center justify-between p-5 border-2 border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-center gap-4 flex-1">
-                    {getEstadoIcon(doc.estado)}
+                    <div className="h-12 w-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      {getEstadoIcon(doc.estado)}
+                    </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h4 className="font-medium text-gray-900">{doc.nombre}</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getEstadoColor(doc.estado)}`}>
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
+                        <h4 className="font-semibold text-gray-900">{doc.nombre}</h4>
+                        <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${getEstadoColor(doc.estado)}`}>
                           {getEstadoTexto(doc.estado)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>{getTipoTexto(doc.tipo)}</span>
-                        <span>•</span>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
+                        <span className="font-medium text-red-700">{getTipoTexto(doc.tipo)}</span>
+                        <span className="text-gray-300">•</span>
                         <span>{doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1}</span>
-                        <span>•</span>
+                        <span className="text-gray-300">•</span>
                         <span>{format(new Date(doc.fechaSubida), "d 'de' MMMM, yyyy", { locale: es })}</span>
-                        <span>•</span>
+                        <span className="text-gray-300">•</span>
                         <span>{(doc.tamanio / 1024 / 1024).toFixed(2)} MB</span>
                       </div>
                       {doc.observaciones && (
@@ -211,9 +232,9 @@ async function DocumentosPage() {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-2">
+                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-200 hover:border-red-300 hover:text-red-700">
                         <Download className="h-4 w-4" />
                         Descargar
                       </Button>

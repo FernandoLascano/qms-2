@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Clock, CheckCircle, AlertCircle, Plus, ArrowRight, Bell, Upload } from 'lucide-react'
+import { FileText, Clock, CheckCircle, AlertCircle, Plus, ArrowRight, Bell, Upload, TrendingUp } from 'lucide-react'
 
 async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -51,13 +51,13 @@ async function DashboardPage() {
       createdAt: 'desc'
     }
   })
-  
+
   // Filtrar duplicados: si hay un trámite completado y un borrador con la misma denominación, mostrar solo el completado
   const tramitesMap = new Map()
   todosTramites.forEach(tramite => {
     const key = tramite.denominacionSocial1
     const existing = tramitesMap.get(key)
-    
+
     if (!existing) {
       tramitesMap.set(key, tramite)
     } else {
@@ -71,9 +71,9 @@ async function DashboardPage() {
       }
     }
   })
-  
+
   const tramites = Array.from(tramitesMap.values()).slice(0, 10)
-  
+
   // Calcular progreso de cada trámite
   const calcularProgreso = (tramite: any) => {
     const etapas = [
@@ -88,7 +88,7 @@ async function DashboardPage() {
     const completadas = etapas.filter(e => e).length
     return Math.round((completadas / etapas.length) * 100)
   }
-  
+
   // Contar estados
   const totalTramites = tramites.length
   // "En Proceso" = trámites con formulario completado pero no al 100%
@@ -111,7 +111,7 @@ async function DashboardPage() {
     const tieneDocumentosParaFirmar = t.documentos && t.documentos.length > 0
     // Estado esperando cliente
     const esperandoCliente = t.estadoGeneral === 'ESPERANDO_CLIENTE'
-    
+
     return tienePagosPendientes || tieneEnlacesPendientes || tieneDocumentosParaFirmar || esperandoCliente
   }).length
 
@@ -126,17 +126,17 @@ async function DashboardPage() {
   const getEstadoColor = (tramite: any) => {
     // Calcular el progreso del trámite
     const progreso = calcularProgreso(tramite)
-    
+
     // Si está al 100%, mostrar verde (Completado)
     if (progreso === 100 || tramite.sociedadInscripta) {
       return 'bg-green-100 text-green-800 border-green-200'
     }
-    
+
     // Si tiene formulario completado pero no está al 100%, mostrar azul (En Proceso)
     if (tramite.formularioCompleto && progreso < 100) {
       return 'bg-blue-100 text-blue-800 border-blue-200'
     }
-    
+
     // Para otros estados, usar el estado general
     switch (tramite.estadoGeneral) {
       case 'COMPLETADO':
@@ -155,17 +155,17 @@ async function DashboardPage() {
   const getEstadoTexto = (tramite: any) => {
     // Calcular el progreso del trámite
     const progreso = calcularProgreso(tramite)
-    
+
     // Si está al 100%, mostrar "Completado"
     if (progreso === 100 || tramite.sociedadInscripta) {
       return 'Completado'
     }
-    
+
     // Si tiene formulario completado pero no está al 100%, mostrar "En Proceso"
     if (tramite.formularioCompleto && progreso < 100) {
       return 'En Proceso'
     }
-    
+
     // Para otros estados, usar el estado general
     switch (tramite.estadoGeneral) {
       case 'COMPLETADO': return 'Completado'
@@ -176,7 +176,7 @@ async function DashboardPage() {
       default: return tramite.estadoGeneral
     }
   }
-  
+
   // Obtener la etapa actual del trámite
   const obtenerEtapaActual = (tramite: any) => {
     if (!tramite.formularioCompleto) return 'Formulario pendiente'
@@ -189,18 +189,26 @@ async function DashboardPage() {
     return 'Sociedad inscripta'
   }
 
+  // Obtener el nombre de visualización del usuario (primer nombre)
+  const firstName = session.user.name?.split(' ')[0] || 'Usuario'
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Welcome Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-red-900">¡Hola, {session.user.name}! 👋</h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
+          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+            Dashboard
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
+            Hola, <span className="text-red-700">{firstName}</span>
+          </h2>
+          <p className="text-gray-500 mt-2 text-lg">
             Resumen de tus trámites y acciones pendientes
           </p>
         </div>
         <Link href="/tramite/nuevo" className="w-full sm:w-auto">
-          <Button size="lg" className="gap-2 bg-red-600 hover:bg-red-700 w-full sm:w-auto">
+          <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 w-full sm:w-auto rounded-xl shadow-lg shadow-red-200 h-12 px-6 text-base font-semibold">
             <Plus className="h-5 w-5" />
             Nuevo Trámite
           </Button>
@@ -208,53 +216,62 @@ async function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="hover:shadow-lg hover:border-gray-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Trámites</CardTitle>
-            <FileText className="h-4 w-4 text-gray-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">Total Trámites</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-gray-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-gray-900">{totalTramites}</div>
-            <p className="text-xs text-gray-500 mt-1">
+            <div className="text-3xl font-black text-gray-900">{totalTramites}</div>
+            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+              <TrendingUp className="h-3 w-3" />
               Trámites iniciados
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg hover:border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Proceso</CardTitle>
-            <Clock className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">En Proceso</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-blue-600">{enProceso}</div>
+            <div className="text-3xl font-black text-blue-600">{enProceso}</div>
             <p className="text-xs text-gray-500 mt-1">
               Siendo procesados
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg hover:border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completados</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">Completados</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-green-600">{completados}</div>
+            <div className="text-3xl font-black text-green-600">{completados}</div>
             <p className="text-xs text-gray-500 mt-1">
               Finalizados exitosamente
             </p>
           </CardContent>
         </Card>
 
-        <Card className={requierenAtencion > 0 ? 'border-2 border-orange-300 bg-orange-50' : ''}>
+        <Card className={`hover:shadow-lg ${requierenAtencion > 0 ? 'border-2 border-orange-300 bg-orange-50' : 'hover:border-orange-200'}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Requieren Atención</CardTitle>
-            <AlertCircle className={`h-4 w-4 ${requierenAtencion > 0 ? 'text-orange-600 animate-pulse' : 'text-gray-400'}`} />
+            <CardTitle className="text-sm font-medium text-gray-600">Requieren Atención</CardTitle>
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${requierenAtencion > 0 ? 'bg-orange-200' : 'bg-orange-100'}`}>
+              <AlertCircle className={`h-5 w-5 ${requierenAtencion > 0 ? 'text-orange-600 animate-pulse' : 'text-orange-400'}`} />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-xl sm:text-2xl font-bold ${requierenAtencion > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
+            <div className={`text-3xl font-black ${requierenAtencion > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
               {requierenAtencion}
             </div>
             <p className="text-xs text-gray-500 mt-1">
@@ -265,18 +282,18 @@ async function DashboardPage() {
       </div>
 
       {/* Trámites Activos */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <Card className="shadow-lg">
+        <CardHeader className="border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <CardTitle>Tus Trámites</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl font-black text-gray-900">Tus Trámites</CardTitle>
+              <CardDescription className="mt-1">
                 {totalTramites === 0 ? 'Aún no has iniciado ningún trámite' : `${totalTramites} trámite${totalTramites > 1 ? 's' : ''} en total`}
               </CardDescription>
             </div>
             {totalTramites > 0 && (
               <Link href="/dashboard/tramites">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-300 hover:border-red-300 hover:text-red-700">
                   Ver Todos
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -284,18 +301,20 @@ async function DashboardPage() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {tramites.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="text-center py-16">
+              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                <FileText className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
                 No hay trámites aún
               </h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              <p className="text-gray-500 mb-8 max-w-md mx-auto">
                 Comenzá tu primer trámite para constituir tu Sociedad por Acciones Simplificada (S.A.S.)
               </p>
               <Link href="/tramite/nuevo">
-                <Button size="lg" className="gap-2 bg-red-600 hover:bg-red-700">
+                <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200">
                   <Plus className="h-5 w-5" />
                   Iniciar Nuevo Trámite
                 </Button>
@@ -305,30 +324,30 @@ async function DashboardPage() {
             <div className="space-y-4">
               {tramites.slice(0, 5).map((tramite) => {
                 const progreso = calcularProgreso(tramite)
-                const tieneAccionesPendientes = 
+                const tieneAccionesPendientes =
                   (tramite.pagos && tramite.pagos.length > 0) ||
                   (tramite.enlacesPago && tramite.enlacesPago.length > 0) ||
                   (tramite.documentos && tramite.documentos.length > 0) ||
                   tramite.estadoGeneral === 'ESPERANDO_CLIENTE'
-                
+
                 // Si el formulario no está completo, redirigir al formulario para continuar
-                const href = !tramite.formularioCompleto 
+                const href = !tramite.formularioCompleto
                   ? `/tramite/nuevo?tramiteId=${tramite.id}`
                   : `/dashboard/tramites/${tramite.id}`
 
                 return (
                   <Link key={tramite.id} href={href}>
                     <div className={`
-                      p-4 border-2 rounded-lg hover:shadow-md transition cursor-pointer
-                      ${tieneAccionesPendientes 
-                        ? 'border-orange-200 bg-orange-50 hover:border-orange-300' 
-                        : 'border-gray-200 hover:border-gray-300'
+                      p-5 border-2 rounded-2xl hover:shadow-lg transition-all duration-200 cursor-pointer group
+                      ${tieneAccionesPendientes
+                        ? 'border-orange-200 bg-orange-50/50 hover:border-orange-300'
+                        : 'border-gray-200 hover:border-red-200'
                       }
                     `}>
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-semibold text-gray-900">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h4 className="font-bold text-gray-900 text-lg group-hover:text-red-700 transition-colors">
                               {tramite.denominacionAprobada || tramite.denominacionSocial1}
                             </h4>
                             {tieneAccionesPendientes && (
@@ -343,25 +362,26 @@ async function DashboardPage() {
                             {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} • {tramite.plan}
                           </p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getEstadoColor(tramite)}`}>
+                        <span className={`px-4 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap ${getEstadoColor(tramite)}`}>
                           {getEstadoTexto(tramite)}
                         </span>
                       </div>
 
                       {/* Barra de Progreso */}
-                      <div className="mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-600 font-medium">Progreso</span>
-                          <span className="text-xs font-bold text-red-600">{progreso}%</span>
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-gray-600 font-medium">Progreso</span>
+                          <span className="text-sm font-bold text-red-700">{progreso}%</span>
                         </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-red-600 to-green-500 transition-all duration-500"
+                        <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-red-600 to-green-500 transition-all duration-500 rounded-full"
                             style={{ width: `${progreso}%` }}
                           />
                         </div>
                         {/* Indicador de etapa actual */}
-                        <p className="text-xs text-gray-600 mt-1">
+                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                          <Clock className="h-3 w-3" />
                           {obtenerEtapaActual(tramite)}
                         </p>
                       </div>
@@ -376,62 +396,80 @@ async function DashboardPage() {
       </Card>
 
       {/* Acciones Rápidas */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Link href="/tramite/nuevo">
-          <Card className="hover:shadow-lg transition cursor-pointer border-2 border-red-200 hover:border-red-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-900">
-                <Plus className="h-5 w-5" />
-                Nuevo Trámite
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Iniciá la constitución de una nueva S.A.S.
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/tramite/nuevo" className="group">
+            <Card className="hover:shadow-xl hover:border-red-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center group-hover:bg-red-700 transition-colors">
+                    <Plus className="h-6 w-6 text-red-700 group-hover:text-white transition-colors" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-red-700 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-red-700 transition-colors">
+                  Nuevo Trámite
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Iniciá la constitución de una nueva S.A.S.
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-        <Link href="/dashboard/notificaciones">
-          <Card className="hover:shadow-lg transition cursor-pointer border-2 hover:border-blue-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notificaciones
-                {notificacionesNoLeidas > 0 && (
-                  <span className="px-2 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
-                    {notificacionesNoLeidas}
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                {notificacionesNoLeidas > 0 
-                  ? `Tenés ${notificacionesNoLeidas} notificación${notificacionesNoLeidas > 1 ? 'es' : ''} nueva${notificacionesNoLeidas > 1 ? 's' : ''}`
-                  : 'Ver todas tus notificaciones'
-                }
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+          <Link href="/dashboard/notificaciones" className="group">
+            <Card className="hover:shadow-xl hover:border-blue-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors relative">
+                    <Bell className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
+                    {notificacionesNoLeidas > 0 && (
+                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs font-bold bg-red-600 text-white rounded-full">
+                        {notificacionesNoLeidas}
+                      </span>
+                    )}
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-blue-600 transition-colors">
+                  Notificaciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  {notificacionesNoLeidas > 0
+                    ? `Tenés ${notificacionesNoLeidas} notificación${notificacionesNoLeidas > 1 ? 'es' : ''} nueva${notificacionesNoLeidas > 1 ? 's' : ''}`
+                    : 'Ver todas tus notificaciones'
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-        <Link href="/dashboard/documentos">
-          <Card className="hover:shadow-lg transition cursor-pointer border-2 hover:border-green-300">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Documentos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                Subí y gestioná tus documentos
-              </p>
-            </CardContent>
-          </Card>
-        </Link>
+          <Link href="/dashboard/documentos" className="group">
+            <Card className="hover:shadow-xl hover:border-green-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-600 transition-colors">
+                    <Upload className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-green-600 transition-colors">
+                  Documentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">
+                  Subí y gestioná tus documentos
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
       </div>
     </div>
   )
