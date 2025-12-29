@@ -187,39 +187,61 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="gap-2"
-                    onClick={() => {
+                    onClick={async () => {
                       try {
-                        // Abrir URL directamente sin fl_attachment (causa error 401)
-                        console.log('Abriendo URL:', comprobante.url)
-                        window.open(comprobante.url, '_blank', 'noopener,noreferrer')
+                        // Obtener signed URL para evitar error 401
+                        const response = await fetch(`/api/documentos/signed-url?documentoId=${comprobante.id}`)
+                        if (response.ok) {
+                          const data = await response.json()
+                          window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                        } else {
+                          // Fallback: intentar abrir URL original
+                          window.open(comprobante.url, '_blank', 'noopener,noreferrer')
+                        }
                       } catch (error) {
                         console.error('Error al abrir documento:', error)
-                        toast.error('Error al abrir el documento')
+                        // Fallback: intentar abrir URL original
+                        window.open(comprobante.url, '_blank', 'noopener,noreferrer')
                       }
                     }}
                   >
                     <Eye className="h-4 w-4" />
                     Ver Comprobante
                   </Button>
-                  
-                  <a 
-                    href={comprobante.url} 
-                    download={comprobante.nombre}
-                    className="inline-block"
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={async () => {
+                      try {
+                        // Obtener signed URL para descargar
+                        const response = await fetch(`/api/documentos/signed-url?documentoId=${comprobante.id}`)
+                        if (response.ok) {
+                          const data = await response.json()
+                          const link = document.createElement('a')
+                          link.href = data.signedUrl
+                          link.download = comprobante.nombre
+                          link.target = '_blank'
+                          document.body.appendChild(link)
+                          link.click()
+                          document.body.removeChild(link)
+                        } else {
+                          window.open(comprobante.url, '_blank')
+                        }
+                      } catch (error) {
+                        console.error('Error al descargar documento:', error)
+                        window.open(comprobante.url, '_blank')
+                      }
+                    }}
                   >
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Descargar
-                    </Button>
-                  </a>
+                    <Download className="h-4 w-4" />
+                    Descargar
+                  </Button>
 
                   {(comprobante.estado === 'PENDIENTE' || comprobante.estado === 'EN_REVISION') && (
                     <>

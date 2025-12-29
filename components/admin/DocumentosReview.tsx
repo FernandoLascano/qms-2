@@ -165,34 +165,62 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="gap-2"
-                      onClick={() => {
+                      onClick={async () => {
                         try {
-                          // Abrir URL directamente sin fl_attachment (causa error 401)
-                          window.open(doc.url, '_blank', 'noopener,noreferrer')
+                          // Obtener signed URL para evitar error 401
+                          const response = await fetch(`/api/documentos/signed-url?documentoId=${doc.id}`)
+                          if (response.ok) {
+                            const data = await response.json()
+                            window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+                          } else {
+                            // Fallback: intentar abrir URL original
+                            window.open(doc.url, '_blank', 'noopener,noreferrer')
+                          }
                         } catch (error) {
                           console.error('Error al abrir documento:', error)
-                          toast.error('Error al abrir el documento')
+                          // Fallback: intentar abrir URL original
+                          window.open(doc.url, '_blank', 'noopener,noreferrer')
                         }
                       }}
                     >
                       <Eye className="h-4 w-4" />
                       Ver
                     </Button>
-                    
-                    <a 
-                      href={doc.url} 
-                      download={doc.nombre}
-                      className="inline-block"
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={async () => {
+                        try {
+                          // Obtener signed URL para descargar
+                          const response = await fetch(`/api/documentos/signed-url?documentoId=${doc.id}`)
+                          if (response.ok) {
+                            const data = await response.json()
+                            // Crear link temporal para descargar
+                            const link = document.createElement('a')
+                            link.href = data.signedUrl
+                            link.download = doc.nombre
+                            link.target = '_blank'
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                          } else {
+                            window.open(doc.url, '_blank')
+                          }
+                        } catch (error) {
+                          console.error('Error al descargar documento:', error)
+                          window.open(doc.url, '_blank')
+                        }
+                      }}
                     >
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Download className="h-4 w-4" />
-                        Bajar
-                      </Button>
-                    </a>
+                      <Download className="h-4 w-4" />
+                      Bajar
+                    </Button>
                     
                     {doc.estado === 'PENDIENTE' || doc.estado === 'EN_REVISION' ? (
                       <>

@@ -60,7 +60,29 @@ export default function NotificationBell() {
 
     // Navegar al link si existe
     if (notification.link) {
-      router.push(notification.link)
+      // Si el link contiene un hash (#), necesitamos forzar refresh para que la sección exista
+      if (notification.link.includes('#')) {
+        const [basePath, hash] = notification.link.split('#')
+        const currentPath = window.location.pathname
+
+        // Si estamos en la misma página, refrescar primero y luego scroll
+        if (currentPath === basePath || currentPath.startsWith(basePath.split('?')[0])) {
+          // Refrescar la página para cargar datos nuevos
+          router.refresh()
+          // Esperar a que se actualice y luego hacer scroll
+          setTimeout(() => {
+            const element = document.getElementById(hash)
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }, 500)
+        } else {
+          // Si es otra página, navegar normalmente
+          router.push(notification.link)
+        }
+      } else {
+        router.push(notification.link)
+      }
     }
 
     // Cerrar el panel
