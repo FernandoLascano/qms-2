@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToSupabase } from '@/lib/supabase-storage'
 
 interface RouteParams {
   params: Promise<{
@@ -58,31 +58,26 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       )
     }
 
-    // Subir archivo de resolución a Cloudinary
+    // Subir archivo de resolución a Supabase Storage
     const arrayBuffer = await archivoResolucion.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-    
-    let urlResolucion: string
-    try {
-      const uploadResult = await uploadToCloudinary(
-        buffer,
-        `resoluciones-inscripcion/${id}`,
-        archivoResolucion.name,
-        archivoResolucion.type
-      )
-      
-      if (!uploadResult?.url) {
-        throw new Error('Error al subir archivo a Cloudinary')
-      }
-      
-      urlResolucion = uploadResult.url
-    } catch (error) {
-      console.error('Error al subir resolución a Cloudinary:', error)
+
+    const uploadResult = await uploadToSupabase(
+      buffer,
+      `resoluciones-inscripcion/${id}`,
+      archivoResolucion.name,
+      archivoResolucion.type
+    )
+
+    if (!uploadResult?.url) {
+      console.error('Error al subir resolución a Supabase Storage')
       return NextResponse.json(
         { error: 'Error al subir el archivo de resolución' },
         { status: 500 }
       )
     }
+
+    const urlResolucion = uploadResult.url
 
     // Crear documento de resolución
     await prisma.documento.create({

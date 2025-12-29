@@ -58,44 +58,49 @@ export default function NotificationBell() {
     // Marcar como leída
     await markAsRead(notification.id)
 
+    // Cerrar el panel primero
+    setIsOpen(false)
+
     // Navegar al link si existe
     if (notification.link) {
-      // Si el link contiene un hash (#), necesitamos manejar el scroll
-      if (notification.link.includes('#')) {
-        const [basePath, hash] = notification.link.split('#')
-        const currentPath = window.location.pathname
+      const currentPath = window.location.pathname
+      const hasHash = notification.link.includes('#')
+      const [basePath, hash] = hasHash ? notification.link.split('#') : [notification.link, null]
+      const basePathClean = basePath.split('?')[0]
+      const isSamePage = currentPath === basePathClean
 
-        // Verificar si estamos en la misma página (comparar sin query params)
-        const basePathClean = basePath.split('?')[0]
-        const isSamePage = currentPath === basePathClean
+      if (isSamePage) {
+        // Ya estamos en la misma página - refrescar datos
+        router.refresh()
 
-        if (isSamePage) {
-          // Ya estamos en la página correcta, refrescar datos y hacer scroll
-          router.refresh()
+        // Si hay hash, hacer scroll después del refresh
+        if (hash) {
           setTimeout(() => {
             const element = document.getElementById(hash)
             if (element) {
               element.scrollIntoView({ behavior: 'smooth', block: 'start' })
             }
           }, 500)
-        } else {
-          // Navegar a la página y luego hacer scroll
-          router.push(notification.link)
-          // Después de navegar, intentar hacer scroll al elemento
-          setTimeout(() => {
-            const element = document.getElementById(hash)
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-          }, 1000)
         }
       } else {
+        // Navegar a otra página - siempre refrescar después para cargar datos actualizados
         router.push(notification.link)
+
+        // Refrescar después de navegar para asegurar datos actualizados
+        setTimeout(() => {
+          router.refresh()
+          // Si hay hash, hacer scroll después del refresh
+          if (hash) {
+            setTimeout(() => {
+              const element = document.getElementById(hash)
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }, 300)
+          }
+        }, 500)
       }
     }
-
-    // Cerrar el panel
-    setIsOpen(false)
   }
 
   return (
