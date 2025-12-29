@@ -118,10 +118,13 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           </Button>
         </Link>
         <div className="flex-1">
-          <h2 className={`text-3xl font-bold ${tramite.sociedadInscripta ? 'text-green-900' : 'text-red-900'}`}>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            Administración
+          </p>
+          <h2 className={`text-2xl md:text-3xl font-black ${tramite.sociedadInscripta ? 'text-green-900' : 'text-red-900'}`}>
             {tramite.sociedadInscripta ? '✅ Trámite Completado' : 'Gestión de Trámite'}
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-500 mt-1 font-medium">
             {tramite.denominacionAprobada || tramite.denominacionSocial1}
           </p>
         </div>
@@ -150,10 +153,13 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
 
       {/* Divisor - Información Detallada */}
       <div className="border-t-2 border-gray-200 my-8">
-        <h3 className="text-xl font-bold text-red-900 mt-8 mb-4">
-          📋 Información Detallada del Formulario
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-8 mb-1">
+          Formulario
+        </p>
+        <h3 className="text-xl font-black text-red-900 mb-2">
+          Información Detallada del Formulario
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-500 mb-6">
           Todos los datos completados por el cliente en el formulario
         </p>
       </div>
