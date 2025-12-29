@@ -597,20 +597,20 @@ export default function NuevoTramitePage() {
       const result = await response.json()
 
       if (response.ok && result.success) {
-        toast.success('¡Trámite creado exitosamente!')
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 1500)
+        toast.success('¡Trámite creado exitosamente! Redirigiendo...')
+        // Redirigir inmediatamente al dashboard
+        router.push('/dashboard')
       } else {
         console.error('Error del servidor:', result)
         toast.error(result.details || 'Error al crear el trámite')
+        setGuardando(false)
       }
     } catch (error) {
       console.error('Error al enviar el formulario:', error)
       toast.error('Error al enviar el formulario')
-    } finally {
       setGuardando(false)
     }
+    // No ponemos setGuardando(false) en el caso exitoso para evitar que el usuario pueda hacer click de nuevo
   }
 
   if (cargandoBorrador) {
