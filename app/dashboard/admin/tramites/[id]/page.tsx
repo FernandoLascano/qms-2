@@ -204,6 +204,26 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
             ) : null
             })()}
         </div>
+        {/* Indicador de Asesoramiento Contable */}
+        {(() => {
+          const datosUsuario = (tramite.datosUsuario as any) || {}
+          const asesoramientoContable = datosUsuario.asesoramientoContable
+          return asesoramientoContable ? (
+            <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-500 p-2 rounded-full">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-bold text-green-900">Interesado en Asesoramiento Contable</p>
+                  <p className="text-sm text-green-700">
+                    El cliente solicitó información sobre servicios contables adicionales - Oportunidad de postventa
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null
+        })()}
       </CollapsibleCard>
 
       {/* Denominaciones Propuestas */}

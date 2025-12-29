@@ -1265,11 +1265,11 @@ export default function NuevoTramitePage() {
                     </div>
 
                     <div className="text-sm space-y-1">
-                      <p >
-                        <span className="font-semibold">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
+                      <p className="text-gray-700">
+                        <span className="font-semibold text-gray-900">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
                       </p>
-                      <p >
-                        <span className="font-semibold">Total de Aportes:</span> $
+                      <p className="text-gray-700">
+                        <span className="font-semibold text-gray-900">Total de Aportes:</span> $
                         {(() => {
                           // Parsear capital social correctamente (remover puntos de miles)
                           const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')

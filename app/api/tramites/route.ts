@@ -135,6 +135,27 @@ export async function POST(request: Request) {
 
     console.log('Domicilio legal:', domicilioLegal)
 
+    // Preparar datos del usuario como JSON (incluyendo campos adicionales del formulario)
+    const datosUsuarioJSON = {
+      nombre: data.nombre || '',
+      apellido: data.apellido || '',
+      dni: data.dni || '',
+      telefono: data.telefono || '',
+      email: data.email || '',
+      marcaRegistrada: data.marcaRegistrada || false,
+      cbuPrincipal: data.cbuPrincipal || '',
+      cbuSecundario: data.cbuSecundario || '',
+      fechaCierre: data.fechaCierre || '31-12',
+      asesoramientoContable: data.asesoramientoContable || false,
+      ciudad: data.ciudad || '',
+      departamento: data.departamento || '',
+      sinDomicilio: data.sinDomicilio || false,
+      objetoSocial: data.objetoSocial || 'PRE_APROBADO',
+      objetoPersonalizado: data.objetoPersonalizado || ''
+    }
+
+    console.log('Datos usuario JSON:', datosUsuarioJSON)
+
     // Preparar capital social
     let capitalSocial = 0
     try {
@@ -246,9 +267,13 @@ export async function POST(request: Request) {
           // Socios y administradores como JSON
           socios: sociosJSON,
           administradores: administradoresJSON,
-          
+
+          // Datos del usuario (JSON con campos adicionales)
+          datosUsuario: datosUsuarioJSON,
+
           // Estados
           formularioCompleto: true,
+          fechaFormularioCompleto: new Date(),
           estadoValidacion: 'PENDIENTE_VALIDACION',
         }
       })
@@ -273,9 +298,13 @@ export async function POST(request: Request) {
           // Socios y administradores como JSON
           socios: sociosJSON,
           administradores: administradoresJSON,
-          
+
+          // Datos del usuario (JSON con campos adicionales)
+          datosUsuario: datosUsuarioJSON,
+
           // Estados
           formularioCompleto: true,
+          fechaFormularioCompleto: new Date(),
           estadoValidacion: 'PENDIENTE_VALIDACION',
         }
       })
