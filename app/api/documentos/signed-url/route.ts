@@ -2,7 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getSignedUrl, extractPublicIdFromUrl } from '@/lib/cloudinary'
+import { getSignedUrlSupabase } from '@/lib/supabase-storage'
+
+// Detectar si una URL es de Supabase Storage
+function isSupabaseUrl(url: string): boolean {
+  return url.includes('supabase.co/storage')
+}
+
+// Extraer el path del archivo desde una URL de Supabase
+function extractSupabasePath(url: string): string | null {
+  // URL format: https://xxx.supabase.co/storage/v1/object/public/documentos/folder/file.ext
+  const match = url.match(/\/storage\/v1\/object\/public\/documentos\/(.+)$/)
+  return match ? match[1] : null
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -39,26 +51,24 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
       }
 
-      // Extraer public_id de la URL guardada
-      const extracted = extractPublicIdFromUrl(documento.url)
-      if (!extracted) {
-        // Si no se puede extraer, devolver la URL original
+      // Si es URL de Supabase, la URL pública funciona directamente
+      if (isSupabaseUrl(documento.url)) {
         return NextResponse.json({ signedUrl: documento.url })
       }
 
-      const signedUrl = getSignedUrl(extracted.publicId, extracted.resourceType)
-      return NextResponse.json({ signedUrl: signedUrl || documento.url })
+      // Para URLs legacy (Cloudinary u otros), devolver la URL original
+      return NextResponse.json({ signedUrl: documento.url })
     }
 
     // Si se proporciona URL directamente (para admins)
     if (url && session.user.rol === 'ADMIN') {
-      const extracted = extractPublicIdFromUrl(url)
-      if (!extracted) {
+      // Si es URL de Supabase, funciona directamente
+      if (isSupabaseUrl(url)) {
         return NextResponse.json({ signedUrl: url })
       }
 
-      const signedUrl = getSignedUrl(extracted.publicId, extracted.resourceType)
-      return NextResponse.json({ signedUrl: signedUrl || url })
+      // Para otras URLs, devolverla tal cual
+      return NextResponse.json({ signedUrl: url })
     }
 
     return NextResponse.json({ error: 'Se requiere documentoId o url' }, { status: 400 })

@@ -60,16 +60,18 @@ export default function NotificationBell() {
 
     // Navegar al link si existe
     if (notification.link) {
-      // Si el link contiene un hash (#), necesitamos forzar refresh para que la sección exista
+      // Si el link contiene un hash (#), necesitamos manejar el scroll
       if (notification.link.includes('#')) {
         const [basePath, hash] = notification.link.split('#')
         const currentPath = window.location.pathname
 
-        // Si estamos en la misma página, refrescar primero y luego scroll
-        if (currentPath === basePath || currentPath.startsWith(basePath.split('?')[0])) {
-          // Refrescar la página para cargar datos nuevos
+        // Verificar si estamos en la misma página (comparar sin query params)
+        const basePathClean = basePath.split('?')[0]
+        const isSamePage = currentPath === basePathClean
+
+        if (isSamePage) {
+          // Ya estamos en la página correcta, refrescar datos y hacer scroll
           router.refresh()
-          // Esperar a que se actualice y luego hacer scroll
           setTimeout(() => {
             const element = document.getElementById(hash)
             if (element) {
@@ -77,8 +79,15 @@ export default function NotificationBell() {
             }
           }, 500)
         } else {
-          // Si es otra página, navegar normalmente
+          // Navegar a la página y luego hacer scroll
           router.push(notification.link)
+          // Después de navegar, intentar hacer scroll al elemento
+          setTimeout(() => {
+            const element = document.getElementById(hash)
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }, 1000)
         }
       } else {
         router.push(notification.link)

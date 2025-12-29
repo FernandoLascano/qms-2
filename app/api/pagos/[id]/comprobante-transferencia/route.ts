@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToSupabase } from '@/lib/supabase-storage'
 
 interface RouteParams {
   params: Promise<{
@@ -78,11 +78,11 @@ export async function POST(request: Request, { params }: RouteParams) {
       )
     }
 
-    // Subir archivo a Cloudinary
+    // Subir archivo a Supabase Storage
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
-    
-    const uploadResult = await uploadToCloudinary(
+
+    const uploadResult = await uploadToSupabase(
       buffer,
       `comprobantes-transferencia/${pagoId}`,
       file.name,

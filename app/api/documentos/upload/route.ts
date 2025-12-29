@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToSupabase } from '@/lib/supabase-storage'
 
 export async function POST(request: Request) {
   try {
@@ -48,10 +48,8 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    let fileUrl: string
-
-    // Subir a Cloudinary (requerido en producción - Vercel no permite filesystem)
-    const uploadResult = await uploadToCloudinary(
+    // Subir a Supabase Storage
+    const uploadResult = await uploadToSupabase(
       buffer,
       `documentos/${tramiteId}`,
       file.name,
@@ -59,14 +57,14 @@ export async function POST(request: Request) {
     )
 
     if (!uploadResult?.url) {
-      console.error('Error: Cloudinary upload failed')
+      console.error('Error: Supabase upload failed')
       return NextResponse.json(
         { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
       )
     }
 
-    fileUrl = uploadResult.url
+    const fileUrl = uploadResult.url
 
     // Guardar en base de datos
     const documento = await prisma.documento.create({

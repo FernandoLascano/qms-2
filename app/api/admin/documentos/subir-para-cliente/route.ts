@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import cloudinary from '@/lib/cloudinary'
+import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 export async function POST(request: Request) {
@@ -52,37 +52,31 @@ export async function POST(request: Request) {
       )
     }
 
-    // Convertir el archivo a base64 para Cloudinary
+    // Convertir el archivo a buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64File = `data:${file.type};base64,${buffer.toString('base64')}`
 
     console.log('📁 Tamaño del archivo:', buffer.length, 'bytes')
-    console.log('☁️ Subiendo a Cloudinary...')
+    console.log('☁️ Subiendo a Supabase Storage...')
 
-    // Subir a Cloudinary con acceso público
-    let uploadResult
-    try {
-      uploadResult = await cloudinary.uploader.upload(base64File, {
-        folder: 'qms-documentos',
-        resource_type: 'auto',
-        public_id: `${tramiteId}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`,
-        type: 'upload',  // 'upload' permite acceso público sin autenticación
-        access_mode: 'public'  // Hacer accesible públicamente
-      })
-      console.log('✅ Archivo subido a Cloudinary:', uploadResult.secure_url)
-    } catch (error: any) {
-      console.error('❌ Error al subir a Cloudinary:', error)
+    // Subir a Supabase Storage
+    const uploadResult = await uploadToSupabase(
+      buffer,
+      `documentos-admin/${tramiteId}`,
+      file.name,
+      file.type
+    )
+
+    if (!uploadResult?.url) {
+      console.error('❌ Error al subir a Supabase Storage')
       return NextResponse.json(
-        { error: `Error al subir a Cloudinary: ${error.message}` },
+        { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
       )
     }
 
-    // URL pública del archivo
-    const fileUrl = uploadResult.secure_url
-
-    console.log('🔗 URL pública:', fileUrl)
+    const fileUrl = uploadResult.url
+    console.log('✅ Archivo subido a Supabase:', fileUrl)
 
     // Crear registro en la base de datos
     try {
@@ -161,10 +155,10 @@ export async function POST(request: Request) {
 
     console.log('🎉 Documento subido exitosamente')
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       url: fileUrl,
-      cloudinaryId: uploadResult.public_id
+      storagePath: uploadResult.path
     })
 
   } catch (error: any) {

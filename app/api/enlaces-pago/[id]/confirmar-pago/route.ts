@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToSupabase } from '@/lib/supabase-storage'
 
 export async function PATCH(
   req: NextRequest,
@@ -62,17 +62,17 @@ export async function PATCH(
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Subir a Cloudinary (requerido - Vercel no permite filesystem)
-    console.log('Subiendo a Cloudinary...')
-    const uploadResult = await uploadToCloudinary(
+    // Subir a Supabase Storage
+    console.log('Subiendo a Supabase Storage...')
+    const uploadResult = await uploadToSupabase(
       buffer,
-      `qms/comprobantes/${enlace.tramiteId}`,
+      `comprobantes/${enlace.tramiteId}`,
       file.name,
       file.type
     )
 
     if (!uploadResult?.url) {
-      console.error('Error: Cloudinary upload failed')
+      console.error('Error: Supabase upload failed')
       return NextResponse.json(
         { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
@@ -80,7 +80,7 @@ export async function PATCH(
     }
 
     const fileUrl = uploadResult.url
-    console.log('Archivo subido a Cloudinary:', fileUrl)
+    console.log('Archivo subido a Supabase:', fileUrl)
 
     // Crear documento con el comprobante
     await prisma.documento.create({
