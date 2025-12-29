@@ -70,6 +70,14 @@ export async function PATCH(
   }
 }
 
+// PUT - Actualizar post (alias de PATCH para compatibilidad)
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  return PATCH(request, { params })
+}
+
 // DELETE - Eliminar post (solo admin)
 export async function DELETE(
   request: NextRequest,
