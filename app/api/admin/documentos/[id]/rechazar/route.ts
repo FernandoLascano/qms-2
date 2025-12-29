@@ -13,7 +13,7 @@ interface RouteParams {
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id || session.user.rol !== 'ADMIN') {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -33,7 +33,40 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     })
 
-    // Notificar al usuario
+    // Si es un comprobante de pago, actualizar el enlace de pago relacionado
+    // para que el cliente pueda volver a subir un comprobante
+    const esComprobante = documento.tipo === 'COMPROBANTE_DEPOSITO' || documento.nombre.includes('Comprobante')
+
+    if (esComprobante) {
+      // Buscar el enlace de pago en estado PROCESANDO para este trámite
+      const enlacePago = await prisma.enlacePago.findFirst({
+        where: {
+          tramiteId: documento.tramiteId,
+          estado: 'PROCESANDO'
+        },
+        orderBy: {
+          fechaPago: 'desc' // El más reciente
+        }
+      })
+
+      if (enlacePago) {
+        // Volver el enlace a estado PENDIENTE para que el cliente pueda subir otro comprobante
+        await prisma.enlacePago.update({
+          where: { id: enlacePago.id },
+          data: {
+            estado: 'PENDIENTE',
+            fechaPago: null
+          }
+        })
+        console.log(`Enlace de pago ${enlacePago.id} vuelto a PENDIENTE por rechazo de comprobante`)
+      }
+    }
+
+    // Notificar al usuario con link específico a la sección de pagos si es comprobante
+    const linkNotificacion = esComprobante
+      ? `/dashboard/tramites/${documento.tramiteId}#enlaces-pago`
+      : `/dashboard/tramites/${documento.tramiteId}`
+
     await prisma.notificacion.create({
       data: {
         userId: documento.userId,
@@ -41,7 +74,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         tipo: 'ALERTA',
         titulo: 'Documento rechazado',
         mensaje: `Tu documento "${documento.nombre}" ha sido rechazado. Motivo: ${observaciones}`,
-        link: `/dashboard/tramites/${documento.tramiteId}`
+        link: linkNotificacion
       }
     })
 
