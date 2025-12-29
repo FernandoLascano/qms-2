@@ -255,7 +255,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Info General */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle variant="section" className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
             Información General
           </CardTitle>
@@ -306,7 +306,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Denominaciones Propuestas */}
       <Card>
         <CardHeader>
-          <CardTitle>Denominaciones Propuestas</CardTitle>
+          <CardTitle variant="section">Denominaciones Propuestas</CardTitle>
           <CardDescription>Opciones de nombre para la sociedad</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -342,7 +342,7 @@ async function TramiteDetallePage({ params }: PageProps) {
         {/* Objeto Social */}
         <Card>
           <CardHeader>
-            <CardTitle>Objeto Social</CardTitle>
+            <CardTitle variant="section">Objeto Social</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-700 whitespace-pre-line">
@@ -354,7 +354,7 @@ async function TramiteDetallePage({ params }: PageProps) {
         {/* Domicilio Legal */}
         <Card>
           <CardHeader>
-            <CardTitle>Domicilio Legal</CardTitle>
+            <CardTitle variant="section">Domicilio Legal</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-gray-700">
@@ -367,7 +367,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Socios */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle variant="section" className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             Socios / Accionistas ({socios.length})
           </CardTitle>
@@ -476,7 +476,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       {/* Administradores */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle variant="section" className="flex items-center gap-2">
             <User className="h-5 w-5" />
             Órgano de Administración ({administradores.length})
           </CardTitle>

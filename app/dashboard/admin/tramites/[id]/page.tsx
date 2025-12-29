@@ -133,7 +133,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       {/* Info del Cliente */}
       <Card>
         <CardHeader>
-          <CardTitle>Información del Cliente</CardTitle>
+          <CardTitle variant="section">Información del Cliente</CardTitle>
         </CardHeader>
         <CardContent className="grid md:grid-cols-3 gap-4">
           <div>

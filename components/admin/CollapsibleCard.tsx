@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface CollapsibleCardProps {
@@ -23,14 +23,15 @@ export default function CollapsibleCard({
 
   return (
     <Card>
-      <CardHeader 
+      <CardHeader
         className="cursor-pointer hover:bg-gray-50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {icon}
-            <CardTitle>{title}</CardTitle>
+            {/* Título más suave para secciones colapsables */}
+            <h3 className="text-base font-semibold text-gray-800">{title}</h3>
           </div>
           {isOpen ? (
             <ChevronUp className="h-5 w-5 text-gray-500" />
