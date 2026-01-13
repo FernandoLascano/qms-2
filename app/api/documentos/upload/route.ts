@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 export async function POST(request: Request) {
   try {
@@ -29,11 +30,19 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verificar que el trámite pertenece al usuario
+    // Verificar que el trámite pertenece al usuario y obtener información para emails
     const tramite = await prisma.tramite.findFirst({
       where: {
         id: tramiteId,
         userId: session.user.id
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true
+          }
+        }
       }
     })
 
@@ -123,7 +132,7 @@ export async function POST(request: Request) {
       notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
     }
 
-    // Crear notificación para todos los admins
+    // Crear notificación y enviar email para todos los admins
     for (const admin of admins) {
       await prisma.notificacion.create({
         data: {
@@ -135,6 +144,30 @@ export async function POST(request: Request) {
           link: notifLink
         }
       })
+
+      // Enviar email al admin
+      const adminUser = await prisma.user.findUnique({
+        where: { id: admin.id },
+        select: { email: true, name: true }
+      })
+
+      if (adminUser?.email) {
+        try {
+          const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
+          const clienteNombre = tramite?.user?.name || 'Cliente'
+          const mensajeEmail = `${notifMensaje}\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
+          
+          await enviarEmailNotificacion(
+            adminUser.email,
+            adminUser.name || 'Administrador',
+            notifTitulo,
+            mensajeEmail,
+            tramiteId
+          )
+        } catch (emailError) {
+          console.error('Error al enviar email al admin:', emailError)
+        }
+      }
     }
 
     return NextResponse.json({

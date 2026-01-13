@@ -30,23 +30,37 @@ export async function GET(request: NextRequest) {
       where.leida = false
     }
 
-    // Obtener todas las notificaciones
+    // Obtener todas las notificaciones con información del trámite
     const notificaciones = await prisma.notificacion.findMany({
       where,
       orderBy: {
         createdAt: 'desc'
       },
-      select: {
-        id: true,
-        tipo: true,
-        titulo: true,
-        mensaje: true,
-        link: true,
-        leida: true,
-        createdAt: true,
-        tramiteId: true
+      include: {
+        tramite: {
+          select: {
+            id: true,
+            denominacionAprobada: true,
+            denominacionSocial1: true
+          }
+        }
       }
     })
+
+    // Formatear notificaciones con información del trámite
+    const notificacionesFormateadas = notificaciones.map(notif => ({
+      id: notif.id,
+      tipo: notif.tipo,
+      titulo: notif.titulo,
+      mensaje: notif.mensaje,
+      link: notif.link,
+      leida: notif.leida,
+      createdAt: notif.createdAt,
+      tramiteId: notif.tramiteId,
+      tramite: notif.tramite ? {
+        denominacion: notif.tramite.denominacionAprobada || notif.tramite.denominacionSocial1 || 'Trámite'
+      } : null
+    }))
 
     // Contar notificaciones no leídas
     const count = await prisma.notificacion.count({
@@ -57,7 +71,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({
-      notificaciones,
+      notificaciones: notificacionesFormateadas,
       count
     })
   } catch (error) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,15 @@ interface DepositoCapitalClienteProps {
   notificaciones: any[]
 }
 
+interface CuentaBancaria {
+  banco: string
+  cbu: string
+  alias: string | null
+  titular: string
+  montoEsperado: number
+  fechaInformacion: Date
+}
+
 export default function DepositoCapitalCliente({
   tramiteId,
   capitalSocial,
@@ -25,17 +34,30 @@ export default function DepositoCapitalCliente({
   const router = useRouter()
   const [archivo, setArchivo] = useState<File | null>(null)
   const [subiendo, setSubiendo] = useState(false)
+  const [cuenta, setCuenta] = useState<CuentaBancaria | null>(null)
+  const [cargando, setCargando] = useState(true)
 
-  // Debug inicial
-  console.log('🚀 DepositoCapitalCliente - Inicio:', {
-    tramiteId,
-    capitalSocial,
-    documentosCount: documentos?.length || 0,
-    notificacionesCount: notificaciones?.length || 0
-  })
+  // Cargar datos de la cuenta bancaria desde el API
+  useEffect(() => {
+    const fetchCuenta = async () => {
+      try {
+        const response = await fetch(`/api/tramites/${tramiteId}/cuenta-capital`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.cuenta) {
+            setCuenta(data.cuenta)
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar cuenta bancaria:', error)
+      } finally {
+        setCargando(false)
+      }
+    }
+    fetchCuenta()
+  }, [tramiteId])
 
-  // Buscar la notificación con los datos de depósito
-  // El título exacto es "Datos para Depósito del 25% del Capital"
+  // Verificar si hay notificación de depósito (para mostrar el componente)
   const notif = notificaciones?.find(
     (n: any) => {
       if (!n.titulo || typeof n.titulo !== 'string') return false
@@ -49,74 +71,29 @@ export default function DepositoCapitalCliente({
     }
   )
 
-  // Si no hay notificación, no mostrar
-  if (!notif) {
-    console.log('❌ DepositoCapitalCliente: No se encontró notificación de depósito')
-    console.log('   Notificaciones disponibles:', notificaciones?.map((n: any) => n.titulo))
+  // Si no hay notificación ni cuenta, no mostrar
+  if (!cargando && !notif && !cuenta) {
     return null
   }
 
   // Verificar si ya subió comprobante y si está aprobado
-  // Buscar SOLO documentos que sean específicamente comprobantes de depósito de capital
-  // No cualquier COMPROBANTE_DEPOSITO, sino el que tiene "DEPOSITO_CAPITAL" en el nombre
   const comprobanteSubido = documentos?.find(
     (doc: any) => {
-      // Buscar específicamente por nombre que contenga "DEPOSITO_CAPITAL"
-      // Esto diferencia entre comprobantes de tasas y comprobantes de depósito de capital
       return doc.nombre && 
              typeof doc.nombre === 'string' && 
              doc.nombre.includes('DEPOSITO_CAPITAL')
     }
   )
   
-  // Debug: ver todos los documentos
-  console.log('🔍 DepositoCapitalCliente - Todos los documentos:', documentos?.map((doc: any) => ({ 
-    tipo: doc.tipo, 
-    nombre: doc.nombre, 
-    estado: doc.estado,
-    id: doc.id 
-  })))
-  
-  // Verificar si el comprobante está aprobado
   const comprobanteAprobado = comprobanteSubido?.estado === 'APROBADO'
 
-  console.log('✅ DepositoCapitalCliente: Se renderizará con notificación:', notif.titulo)
-  console.log('   Comprobante subido:', comprobanteSubido ? { 
-    estado: comprobanteSubido.estado, 
-    id: comprobanteSubido.id,
-    tipo: comprobanteSubido.tipo,
-    nombre: comprobanteSubido.nombre
-  } : 'No')
-
-  const mensaje = typeof notif.mensaje === 'string' ? notif.mensaje : ''
-
-  const parseLine = (label: string) => {
-    // Buscar el patrón con o sin símbolo de peso, y capturar hasta el siguiente salto de línea o fin
-    const regex = new RegExp(`${label}:\\s*\\$?([^\\n]+)`, 'i')
-    const match = mensaje.match(regex)
-    return match ? match[1].trim() : ''
-  }
-
-  const montoTexto = parseLine('Monto a depositar')
-  const banco = parseLine('Banco')
-  const cbu = parseLine('CBU')
-  const alias = parseLine('Alias')
-  const titular = parseLine('Titular')
-
-  // Debug siempre activo para identificar el problema
-  console.log('🔍 DepositoCapitalCliente Debug:', {
-    notificacionesRecibidas: notificaciones?.map((n: any) => ({ titulo: n.titulo, id: n.id })),
-    notifEncontrada: notif ? { titulo: notif.titulo, id: notif.id, mensaje: notif.mensaje } : null,
-    mensajeParseado: mensaje,
-    montoTexto,
-    banco,
-    cbu,
-    alias,
-    titular,
-    comprobanteSubido: comprobanteSubido ? { estado: comprobanteSubido.estado, id: comprobanteSubido.id } : null,
-    comprobanteAprobado,
-    seRenderiza: !comprobanteAprobado && !!notif
-  })
+  // Usar datos de la cuenta bancaria si están disponibles, sino parsear del mensaje
+  const banco = cuenta?.banco || ''
+  const cbu = cuenta?.cbu || ''
+  const alias = cuenta?.alias || null
+  const titular = cuenta?.titular || ''
+  const montoEsperado = cuenta?.montoEsperado || 0
+  const montoTexto = montoEsperado > 0 ? `$${montoEsperado.toLocaleString('es-AR')}` : ''
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -153,7 +130,7 @@ export default function DepositoCapitalCliente({
       data.append('nombre', 'Comprobante - DEPOSITO_CAPITAL')
       data.append(
         'descripcion',
-        `Comprobante de depósito del 25% del capital social${montoTexto ? ` (${montoTexto})` : ''}`
+        `Comprobante de depósito del 25% del capital social${montoEsperado > 0 ? ` ($${montoEsperado.toLocaleString('es-AR')})` : ''}`
       )
 
       const response = await fetch('/api/documentos/upload', {
@@ -204,37 +181,46 @@ export default function DepositoCapitalCliente({
           )}
         </div>
 
-        {(banco || cbu || alias || titular) ? (
-          <div className="bg-white border border-green-100 rounded-lg p-3 text-xs text-gray-700 space-y-1">
-            <p className="font-semibold text-gray-900 mb-1 flex items-center gap-1">
-              <Banknote className="h-4 w-4" /> Datos de la cuenta
+        {(banco || cbu || titular) ? (
+          <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
+            <p className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-green-600" /> Datos de la cuenta bancaria
             </p>
-            {banco && (
-              <p>
-                <strong>Banco:</strong> {banco}
-              </p>
-            )}
-            {cbu && (
-              <p>
-                <strong>CBU:</strong> {cbu}
-              </p>
-            )}
-            {alias && alias !== '-' && (
-              <p>
-                <strong>Alias:</strong> {alias}
-              </p>
-            )}
-            {titular && (
-              <p>
-                <strong>Titular:</strong> {titular}
-              </p>
-            )}
+            <div className="grid grid-cols-1 gap-2">
+              {banco && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium text-gray-600 min-w-[80px]">Banco:</span>
+                  <span className="text-gray-900">{banco}</span>
+                </div>
+              )}
+              {cbu && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium text-gray-600 min-w-[80px]">CBU:</span>
+                  <span className="text-gray-900 font-mono">{cbu}</span>
+                </div>
+              )}
+              {alias && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium text-gray-600 min-w-[80px]">Alias:</span>
+                  <span className="text-gray-900">{alias}</span>
+                </div>
+              )}
+              {titular && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium text-gray-600 min-w-[80px]">Titular:</span>
+                  <span className="text-gray-900">{titular}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : cargando ? (
+          <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-500">
+            Cargando datos de la cuenta...
           </div>
         ) : (
-          // Si no se pudieron parsear los datos, mostrar el mensaje completo
-          <div className="bg-white border border-green-100 rounded-lg p-3 text-xs text-gray-700">
-            <p className="font-semibold text-gray-900 mb-2">Información del depósito:</p>
-            <p className="whitespace-pre-line text-sm">{mensaje}</p>
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
+            <p className="font-semibold mb-1">⚠️ Datos no disponibles</p>
+            <p>Los datos de la cuenta bancaria aún no han sido proporcionados. Contacta al equipo si necesitas esta información.</p>
           </div>
         )}
 

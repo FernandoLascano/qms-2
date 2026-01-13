@@ -39,7 +39,51 @@ export async function GET(request: Request, { params }: RouteParams) {
       }
     })
 
-    return NextResponse.json(notificaciones)
+    // Parsear metadata de las notificaciones
+    const notificacionesConMetadata = notificaciones.map(notif => {
+      let metadata = null
+      let mensajeLimpio = notif.mensaje
+
+      // Intentar extraer metadata del mensaje
+      const metadataMatch = notif.mensaje.match(/__METADATA__({.*?})__END__/)
+      if (metadataMatch) {
+        try {
+          metadata = JSON.parse(metadataMatch[1])
+          // Remover metadata del mensaje para mostrar solo el mensaje limpio
+          mensajeLimpio = notif.mensaje.replace(/__METADATA__.*?__END__\n\n/, '')
+        } catch (e) {
+          console.error('Error al parsear metadata:', e)
+        }
+      }
+
+      // Si no hay metadata en el mensaje, intentar obtener desde CuentaBancaria
+      if (!metadata) {
+        // Esto se hará en el frontend, pero aquí podemos intentar parsear del mensaje
+        const bancoMatch = mensajeLimpio.match(/Banco:\s*([^\n]+)/i)
+        const cbuMatch = mensajeLimpio.match(/CBU:\s*([^\n]+)/i)
+        const aliasMatch = mensajeLimpio.match(/Alias:\s*([^\n]+)/i)
+        const titularMatch = mensajeLimpio.match(/Titular:\s*([^\n]+)/i)
+        const montoMatch = mensajeLimpio.match(/Monto a depositar:\s*\$?([^\n]+)/i)
+
+        if (bancoMatch || cbuMatch) {
+          metadata = {
+            banco: bancoMatch ? bancoMatch[1].trim() : null,
+            cbu: cbuMatch ? cbuMatch[1].trim() : null,
+            alias: aliasMatch ? aliasMatch[1].trim() : null,
+            titular: titularMatch ? titularMatch[1].trim() : null,
+            montoEsperado: montoMatch ? parseFloat(montoMatch[1].trim().replace(/\./g, '').replace(',', '.')) : null
+          }
+        }
+      }
+
+      return {
+        ...notif,
+        metadata,
+        mensaje: mensajeLimpio
+      }
+    })
+
+    return NextResponse.json(notificacionesConMetadata)
   } catch (error) {
     console.error('Error al obtener historial de capital:', error)
     return NextResponse.json(

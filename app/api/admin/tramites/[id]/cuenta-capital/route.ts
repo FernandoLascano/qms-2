@@ -82,13 +82,17 @@ export async function POST(request: Request, { params }: RouteParams) {
       `Titular: ${titular}\n\n` +
       `Luego de realizar el depósito, subí el comprobante desde tu panel.`
 
+    // Guardar notificación con datos estructurados en el mensaje (formato JSON al inicio para fácil parsing)
+    const metadata = JSON.stringify({ banco, cbu, alias: alias || null, titular, montoEsperado: monto })
+    const mensajeConMetadata = `__METADATA__${metadata}__END__\n\n${mensajeNotificacion}`
+
     await prisma.notificacion.create({
       data: {
         userId: tramite.userId,
         tramiteId: id,
         tipo: 'ACCION_REQUERIDA',
         titulo: 'Datos para Depósito del 25% del Capital',
-        mensaje: mensajeNotificacion,
+        mensaje: mensajeConMetadata,
         link: `/dashboard/tramites/${id}#deposito-capital`
       }
     })

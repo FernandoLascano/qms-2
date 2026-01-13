@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
         if (isClosed) return
 
         try {
-          // Obtener últimas 5 notificaciones no leídas
+          // Obtener últimas 5 notificaciones no leídas con información del trámite
           const notificaciones = await prisma.notificacion.findMany({
             where: {
               userId,
@@ -75,17 +75,31 @@ export async function GET(request: NextRequest) {
               createdAt: 'desc'
             },
             take: 5,
-            select: {
-              id: true,
-              tipo: true,
-              titulo: true,
-              mensaje: true,
-              link: true,
-              leida: true,
-              createdAt: true,
-              tramiteId: true
+            include: {
+              tramite: {
+                select: {
+                  id: true,
+                  denominacionAprobada: true,
+                  denominacionSocial1: true
+                }
+              }
             }
           })
+
+          // Formatear notificaciones con información del trámite
+          const notificacionesFormateadas = notificaciones.map(notif => ({
+            id: notif.id,
+            tipo: notif.tipo,
+            titulo: notif.titulo,
+            mensaje: notif.mensaje,
+            link: notif.link,
+            leida: notif.leida,
+            createdAt: notif.createdAt,
+            tramiteId: notif.tramiteId,
+            tramite: notif.tramite ? {
+              denominacion: notif.tramite.denominacionAprobada || notif.tramite.denominacionSocial1 || 'Trámite'
+            } : null
+          }))
 
           // Contar notificaciones no leídas
           const count = await prisma.notificacion.count({
@@ -99,7 +113,7 @@ export async function GET(request: NextRequest) {
           sendEvent({
             type: 'notifications',
             count,
-            notifications: notificaciones,
+            notifications: notificacionesFormateadas,
             timestamp: new Date().toISOString()
           })
         } catch (error) {

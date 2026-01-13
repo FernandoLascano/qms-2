@@ -24,21 +24,31 @@ function LoginForm() {
     setLoading(true)
 
     try {
+      // Normalizar email antes de enviar
+      const normalizedEmail = email.trim().toLowerCase()
+
       const result = await signIn('credentials', {
-        email,
+        email: normalizedEmail,
         password,
         redirect: false,
       })
 
       if (result?.error) {
+        console.error('Error de login:', result.error)
         setError('Email o contraseña incorrectos')
         setLoading(false)
         return
       }
 
-      router.push('/dashboard')
-      router.refresh()
-    } catch (error) {
+      if (result?.ok) {
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        setError('Error al iniciar sesión. Intenta nuevamente.')
+        setLoading(false)
+      }
+    } catch (error: any) {
+      console.error('Error en login:', error)
       setError('Ocurrió un error. Intenta nuevamente.')
       setLoading(false)
     }

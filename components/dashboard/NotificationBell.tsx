@@ -178,8 +178,8 @@ export default function NotificationBell() {
                         }`}
                       >
                         <div className="flex gap-3">
-                          {/* Icono */}
-                          <div className={`flex-shrink-0 w-10 h-10 rounded-lg ${config.bg} flex items-center justify-center text-lg font-bold`}>
+                          {/* Icono - Mejorado para mayor visibilidad */}
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold shadow-sm border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('red') ? 'border-red-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}>
                             {config.icon}
                           </div>
 
@@ -198,7 +198,15 @@ export default function NotificationBell() {
                               {notification.mensaje}
                             </p>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {notification.tramite && (
+                                <>
+                                  <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                                    📋 {notification.tramite.denominacion}
+                                  </span>
+                                  <span className="text-xs text-gray-400">•</span>
+                                </>
+                              )}
                               <span className={`text-xs px-2 py-0.5 rounded-md font-medium border ${config.badge}`}>
                                 {notification.tipo.replace('_', ' ')}
                               </span>

@@ -27,6 +27,7 @@ import CuentaCapital from '@/components/admin/CuentaCapital'
 import ValidacionTramite from '@/components/admin/ValidacionTramite'
 import ReportingPagos from '@/components/admin/ReportingPagos'
 import EliminarTramite from '@/components/admin/EliminarTramite'
+import EditarFormulario from '@/components/admin/EditarFormulario'
 
 interface PageProps {
   params: Promise<{
@@ -323,6 +324,21 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           </p>
         </CollapsibleCard>
       </div>
+
+      {/* Editar Formulario - Componente para correcciones excepcionales */}
+      <EditarFormulario
+        tramiteId={tramite.id}
+        tramite={{
+          denominacionSocial1: tramite.denominacionSocial1,
+          denominacionSocial2: tramite.denominacionSocial2,
+          denominacionSocial3: tramite.denominacionSocial3,
+          objetoSocial: tramite.objetoSocial,
+          domicilioLegal: tramite.domicilioLegal,
+          capitalSocial: tramite.capitalSocial,
+          socios: tramite.socios,
+          administradores: tramite.administradores
+        }}
+      />
 
       {/* Socios / Accionistas - INFORMACIÓN COMPLETA */}
       <CollapsibleCard

@@ -11,6 +11,9 @@ interface Notificacion {
   leida: boolean
   createdAt: Date
   tramiteId: string | null
+  tramite?: {
+    denominacion: string
+  } | null
 }
 
 interface NotificationsState {

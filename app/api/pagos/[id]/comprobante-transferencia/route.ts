@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -121,16 +122,22 @@ export async function POST(request: Request, { params }: RouteParams) {
       }
     })
 
+    // Obtener información del trámite para el email
+    const tramite = await prisma.tramite.findUnique({
+      where: { id: pago.tramiteId },
+      include: { user: { select: { name: true, email: true } } }
+    })
+
     // Notificar a todos los admins
     const admins = await prisma.user.findMany({
       where: { rol: 'ADMIN' },
-      select: { id: true }
+      select: { id: true, email: true, name: true }
     })
 
-    // Crear notificaciones para todos los admins
+    // Crear notificaciones y enviar emails para todos los admins
     await Promise.all(
-      admins.map(admin =>
-        prisma.notificacion.create({
+      admins.map(async admin => {
+        await prisma.notificacion.create({
           data: {
             userId: admin.id,
             tramiteId: pago.tramiteId,
@@ -140,7 +147,26 @@ export async function POST(request: Request, { params }: RouteParams) {
             link: `/dashboard/admin/tramites/${pago.tramiteId}`
           }
         })
-      )
+
+        // Enviar email al admin
+        if (admin.email) {
+          try {
+            const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
+            const clienteNombre = tramite?.user?.name || 'Cliente'
+            const mensajeEmail = `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
+            
+            await enviarEmailNotificacion(
+              admin.email,
+              admin.name || 'Administrador',
+              'Comprobante de Transferencia Recibido',
+              mensajeEmail,
+              pago.tramiteId
+            )
+          } catch (emailError) {
+            console.error('Error al enviar email al admin:', emailError)
+          }
+        }
+      })
     )
 
     // Notificar al cliente

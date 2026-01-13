@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToSupabase } from '@/lib/supabase-storage'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 export async function PATCH(
   req: NextRequest,
@@ -114,10 +115,16 @@ export async function PATCH(
       ? 'Publicación en Boletín'
       : enlace.concepto
 
+    // Obtener información del trámite para el email
+    const tramite = await prisma.tramite.findUnique({
+      where: { id: enlace.tramiteId },
+      include: { user: { select: { name: true, email: true } } }
+    })
+
     // Crear notificación para el admin
     const admins = await prisma.user.findMany({
       where: { rol: 'ADMIN' },
-      select: { id: true }
+      select: { id: true, email: true, name: true }
     })
 
     for (const admin of admins) {
@@ -132,6 +139,25 @@ export async function PATCH(
           leida: false
         }
       })
+
+      // Enviar email al admin
+      if (admin.email) {
+        try {
+          const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
+          const clienteNombre = tramite?.user?.name || 'Cliente'
+          const mensajeEmail = `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
+          
+          await enviarEmailNotificacion(
+            admin.email,
+            admin.name || 'Administrador',
+            'Comprobante de Pago Recibido',
+            mensajeEmail,
+            enlace.tramiteId
+          )
+        } catch (emailError) {
+          console.error('Error al enviar email al admin:', emailError)
+        }
+      }
     }
 
     // Crear notificación para el cliente

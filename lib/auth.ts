@@ -14,34 +14,58 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email y contraseña requeridos")
-        }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email y contraseña requeridos")
           }
-        })
 
-        if (!user || !user.password) {
-          throw new Error("Usuario no encontrado")
-        }
+          // Normalizar email: trim y lowercase
+          const normalizedEmail = credentials.email.trim().toLowerCase()
 
-        const isCorrectPassword = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+          // Asegurar conexión a la base de datos
+          try {
+            await prisma.$connect()
+          } catch (connectError: any) {
+            console.error('[AUTH] Error de conexión a la base de datos:', connectError.message)
+            throw new Error("Error de conexión. Por favor intenta nuevamente.")
+          }
 
-        if (!isCorrectPassword) {
-          throw new Error("Contraseña incorrecta")
-        }
+          const user = await prisma.user.findUnique({
+            where: {
+              email: normalizedEmail
+            }
+          })
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          rol: user.rol,
+          if (!user) {
+            console.error(`[AUTH] Usuario no encontrado: ${normalizedEmail}`)
+            throw new Error("Email o contraseña incorrectos")
+          }
+
+          if (!user.password) {
+            console.error(`[AUTH] Usuario sin contraseña: ${normalizedEmail}`)
+            throw new Error("Email o contraseña incorrectos")
+          }
+
+          const isCorrectPassword = await bcrypt.compare(
+            credentials.password,
+            user.password
+          )
+
+          if (!isCorrectPassword) {
+            console.error(`[AUTH] Contraseña incorrecta para: ${normalizedEmail}`)
+            throw new Error("Email o contraseña incorrectos")
+          }
+
+          console.log(`[AUTH] Login exitoso: ${normalizedEmail}`)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            rol: user.rol,
+          }
+        } catch (error: any) {
+          console.error('[AUTH] Error en authorize:', error.message)
+          throw error
         }
       }
     })

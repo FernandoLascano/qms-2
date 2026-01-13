@@ -17,6 +17,9 @@ type Notificacion = {
   leida: boolean
   createdAt: string
   tramiteId: string | null
+  tramite?: {
+    denominacion: string
+  } | null
 }
 
 const TIPOS_NOTIFICACION = [
@@ -290,9 +293,9 @@ export default function NotificacionesPage() {
                   }`}
                 >
                   <div className="flex gap-4">
-                    {/* Icono */}
+                    {/* Icono - Mejorado para mayor visibilidad */}
                     <div
-                      className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold`}
+                      className={`flex-shrink-0 w-14 h-14 rounded-xl ${config.bg} flex items-center justify-center text-2xl font-bold shadow-md border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('red') ? 'border-red-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}
                     >
                       {config.icon}
                     </div>
@@ -317,6 +320,14 @@ export default function NotificacionesPage() {
                       </p>
 
                       <div className="flex items-center gap-3 flex-wrap">
+                        {notificacion.tramite && (
+                          <>
+                            <span className="text-xs px-2.5 py-1 rounded-lg font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                              📋 {notificacion.tramite.denominacion}
+                            </span>
+                            <span className="text-xs text-gray-400">•</span>
+                          </>
+                        )}
                         <span
                           className={`text-xs px-2.5 py-1 rounded-lg font-medium border ${config.badge}`}
                         >

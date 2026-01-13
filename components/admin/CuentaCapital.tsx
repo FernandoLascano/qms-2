@@ -27,6 +27,9 @@ interface EnvioRecord {
   fecha: Date
   banco: string
   cbu: string
+  alias?: string | null
+  titular?: string | null
+  montoEsperado?: number | null
 }
 
 export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial }: CuentaCapitalProps) {
@@ -53,7 +56,10 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
           setHistorialEnvios(data.map((n: any) => ({
             fecha: new Date(n.createdAt),
             banco: n.metadata?.banco || 'No especificado',
-            cbu: n.metadata?.cbu || 'No especificado'
+            cbu: n.metadata?.cbu || 'No especificado',
+            alias: n.metadata?.alias || null,
+            titular: n.metadata?.titular || null,
+            montoEsperado: n.metadata?.montoEsperado || null
           })))
         }
       } catch (error) {
@@ -214,24 +220,37 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
             </div>
             <div className="space-y-3">
               {historialEnvios.map((envio, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900">{envio.banco !== 'No especificado' ? envio.banco : 'Datos enviados'}</p>
+                        {envio.cbu !== 'No especificado' && (
+                          <p className="text-[10px] text-gray-500 font-mono mt-0.5">CBU: {envio.cbu}</p>
+                        )}
+                        {envio.alias && (
+                          <p className="text-[10px] text-gray-500 mt-0.5">Alias: {envio.alias}</p>
+                        )}
+                        {envio.titular && (
+                          <p className="text-[10px] text-gray-500 mt-0.5">Titular: {envio.titular}</p>
+                        )}
+                        {envio.montoEsperado && (
+                          <p className="text-[10px] text-gray-600 font-semibold mt-1">Monto: ${envio.montoEsperado.toLocaleString('es-AR')}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{envio.banco}</p>
-                      <p className="text-[10px] text-gray-500 font-mono">CBU: {envio.cbu}</p>
+                    <div className="text-right flex flex-col items-end shrink-0 ml-3">
+                      <div className="flex items-center gap-1 text-gray-600 font-medium text-xs">
+                        <Clock className="h-3 w-3" />
+                        {format(envio.fecha, "d/M/yy HH:mm", { locale: es })}
+                      </div>
+                      <span className="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-1 font-bold">
+                        ENVIADO
+                      </span>
                     </div>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                    <div className="flex items-center gap-1 text-gray-600 font-medium text-xs">
-                      <Clock className="h-3 w-3" />
-                      {format(envio.fecha, "d/M/yy HH:mm", { locale: es })}
-                    </div>
-                    <span className="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-1 font-bold">
-                      ENVIADO
-                    </span>
                   </div>
                 </div>
               ))}
