@@ -115,11 +115,13 @@ export function useNotifications() {
 
           eventSource?.close()
 
-          // Reconectar después de 5 segundos
+          // Reconectar después de 30 segundos con backoff exponencial
+          // Esto reduce la carga en el servidor cuando hay problemas
+          const reconnectDelay = Math.min(30000, 5000 * Math.pow(2, 0)) // Máximo 30s
           reconnectTimer = setTimeout(() => {
             console.log('🔄 Reconectando SSE...')
             connect()
-          }, 5000)
+          }, reconnectDelay)
         }
       } catch (error) {
         console.error('Error al crear EventSource:', error)

@@ -342,7 +342,7 @@ export async function POST(request: Request) {
       })
     ))
 
-    // Enviar email de confirmación (no fallar si hay error)
+    // Enviar email de confirmación al usuario (no fallar si hay error)
     try {
       console.log('📧 Enviando email de confirmación a:', usuario.email)
       const emailResult = await enviarEmailTramiteEnviado(
@@ -354,6 +354,29 @@ export async function POST(request: Request) {
       console.log('📧 Resultado del email:', emailResult)
     } catch (emailError) {
       console.error("❌ Error al enviar email de confirmación:", emailError)
+    }
+
+    // Enviar email a todos los admins sobre el nuevo trámite (no fallar si hay error)
+    try {
+      console.log('📧 Enviando emails a admins sobre nuevo trámite')
+      const { enviarEmailNuevoTramiteAdmin } = await import('@/lib/emails/send')
+      
+      await Promise.all(admins.map(async (admin) => {
+        try {
+          await enviarEmailNuevoTramiteAdmin(
+            admin.email,
+            admin.name || 'Administrador',
+            usuario.name || data.nombre || 'Usuario',
+            data.denominacion1,
+            tramite.id
+          )
+          console.log(`📧 Email enviado a admin: ${admin.email}`)
+        } catch (adminEmailError) {
+          console.error(`❌ Error al enviar email a admin ${admin.email}:`, adminEmailError)
+        }
+      }))
+    } catch (adminEmailError) {
+      console.error("❌ Error al enviar emails a admins:", adminEmailError)
     }
 
     // Crear historial de estado

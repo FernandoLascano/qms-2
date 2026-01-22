@@ -30,6 +30,7 @@ interface EnvioRecord {
   alias?: string | null
   titular?: string | null
   montoEsperado?: number | null
+  fechaActivacion?: string | null
 }
 
 export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial }: CuentaCapitalProps) {
@@ -43,6 +44,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
   const [montoEsperado, setMontoEsperado] = useState(
     cuentaInicial?.montoEsperado ? String(cuentaInicial.montoEsperado) : String(montoSugerido || '')
   )
+  const [fechaActivacion, setFechaActivacion] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [historialEnvios, setHistorialEnvios] = useState<EnvioRecord[]>([])
 
@@ -59,7 +61,8 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
             cbu: n.metadata?.cbu || 'No especificado',
             alias: n.metadata?.alias || null,
             titular: n.metadata?.titular || null,
-            montoEsperado: n.metadata?.montoEsperado || null
+            montoEsperado: n.metadata?.montoEsperado || null,
+            fechaActivacion: n.metadata?.fechaActivacion || null
           })))
         }
       } catch (error) {
@@ -91,7 +94,8 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
           cbu,
           alias,
           titular,
-          montoEsperado: parseFloat(montoEsperado)
+          montoEsperado: parseFloat(montoEsperado),
+          fechaActivacion: fechaActivacion || null
         })
       })
 
@@ -200,6 +204,22 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               Este es el monto que se le informará al cliente en su panel.
             </p>
           </div>
+
+          <div className="md:col-span-2 space-y-2">
+            <Label htmlFor="fechaActivacion">Fecha de activación de la cuenta (opcional)</Label>
+            <Input
+              id="fechaActivacion"
+              type="date"
+              value={fechaActivacion}
+              onChange={(e) => setFechaActivacion(e.target.value)}
+              disabled={guardando}
+              className="border-gray-200 focus:border-blue-300"
+              min={new Date().toISOString().split('T')[0]}
+            />
+            <p className="text-[11px] text-gray-500 italic">
+              Si la cuenta estará operativa en una fecha futura, indícalo aquí. El cliente recibirá una advertencia.
+            </p>
+          </div>
         </div>
 
         <Button
@@ -239,6 +259,11 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
                         )}
                         {envio.montoEsperado && (
                           <p className="text-[10px] text-gray-600 font-semibold mt-1">Monto: ${envio.montoEsperado.toLocaleString('es-AR')}</p>
+                        )}
+                        {envio.fechaActivacion && (
+                          <p className="text-[10px] text-orange-600 font-semibold mt-1">
+                            ⚠️ Activa desde: {format(new Date(envio.fechaActivacion), "d/M/yyyy", { locale: es })}
+                          </p>
                         )}
                       </div>
                     </div>

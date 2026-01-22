@@ -236,3 +236,24 @@ export async function enviarEmailValidacionTramite(
   })
 }
 
+// Email para notificar a admins cuando un usuario completa un formulario nuevo
+export async function enviarEmailNuevoTramiteAdmin(
+  email: string,
+  nombreAdmin: string,
+  nombreCliente: string,
+  denominacion: string,
+  tramiteId: string
+) {
+  return sendEmail({
+    to: email,
+    subject: `🆕 Nuevo trámite recibido - ${denominacion}`,
+    template: 'emailNotificacion',
+    data: { 
+      nombre: nombreAdmin,
+      titulo: 'Nuevo trámite recibido',
+      mensaje: `El cliente ${nombreCliente} ha completado el formulario para la sociedad "${denominacion}". El trámite está pendiente de validación inicial.`,
+      tramiteId 
+    }
+  })
+}
+

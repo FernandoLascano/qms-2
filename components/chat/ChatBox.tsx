@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,39 +49,71 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
     }
   }, [mensajes.length])
 
-  // Polling para nuevos mensajes cada 5 segundos
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      await cargarMensajes()
-    }, 5000)
+  const marcarComoLeidos = useCallback(async () => {
+    try {
+      // Crear AbortController para timeout manual
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // Timeout de 5 segundos
 
-    return () => clearInterval(interval)
+      await fetch(`/api/tramites/${tramiteId}/mensajes/marcar-leidos`, {
+        method: 'PATCH',
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+    } catch (error) {
+      // Ignorar errores de abort (timeout)
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error al marcar mensajes como leídos:', error)
+      }
+    }
   }, [tramiteId])
 
-  const cargarMensajes = async () => {
+  const cargarMensajes = useCallback(async () => {
     try {
-      const response = await fetch(`/api/tramites/${tramiteId}/mensajes`)
+      // Crear AbortController para timeout manual
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 8000) // Timeout de 8 segundos
+
+      const response = await fetch(`/api/tramites/${tramiteId}/mensajes`, {
+        cache: 'no-store',
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+
       if (response.ok) {
         const data = await response.json()
         setMensajes(data)
         
-        // Marcar mensajes como leídos
-        await marcarComoLeidos()
+        // Solo marcar como leídos si hay mensajes nuevos no leídos
+        const hayMensajesNoLeidos = data.some((m: Mensaje) => !m.leido && m.esAdmin !== isAdmin)
+        if (hayMensajesNoLeidos) {
+          await marcarComoLeidos()
+        }
       }
     } catch (error) {
-      console.error('Error al cargar mensajes:', error)
+      // Ignorar errores de abort (timeout)
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error al cargar mensajes:', error)
+      }
     }
-  }
+  }, [tramiteId, isAdmin, marcarComoLeidos])
 
-  const marcarComoLeidos = async () => {
-    try {
-      await fetch(`/api/tramites/${tramiteId}/mensajes/marcar-leidos`, {
-        method: 'PATCH'
-      })
-    } catch (error) {
-      console.error('Error al marcar mensajes como leídos:', error)
-    }
-  }
+  // Polling para nuevos mensajes cada 30 segundos (optimizado para reducir carga en servidor)
+  // Solo hacer polling si el chat está abierto
+  useEffect(() => {
+    if (!isOpen) return // No hacer polling si el chat está cerrado
+
+    const interval = setInterval(() => {
+      cargarMensajes()
+    }, 30000) // Aumentado de 5s a 30s
+
+    // Cargar mensajes inmediatamente al abrir
+    cargarMensajes()
+
+    return () => clearInterval(interval)
+  }, [tramiteId, isOpen, cargarMensajes])
 
   const enviarMensaje = async (e: React.FormEvent) => {
     e.preventDefault()

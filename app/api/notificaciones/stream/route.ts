@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
+export const maxDuration = 30 // Timeout de 30 segundos máximo
 
 // SSE endpoint para notificaciones en tiempo real
 export async function GET(request: NextRequest) {
@@ -122,8 +123,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Verificar notificaciones cada 5 segundos
-      interval = setInterval(checkNotifications, 5000)
+      // Verificar notificaciones cada 30 segundos (reducido de 5s para optimizar recursos)
+      interval = setInterval(checkNotifications, 30000)
 
       // Verificar inmediatamente
       await checkNotifications()

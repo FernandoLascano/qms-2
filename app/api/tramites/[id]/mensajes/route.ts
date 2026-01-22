@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 10 // Timeout de 10 segundos máximo
+
 // GET - Obtener todos los mensajes de un trámite
 export async function GET(
   req: NextRequest,

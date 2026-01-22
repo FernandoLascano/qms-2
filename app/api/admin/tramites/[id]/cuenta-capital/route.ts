@@ -23,7 +23,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const { id } = await params
     const body = await request.json()
-    const { banco, cbu, alias, titular, montoEsperado } = body
+    const { banco, cbu, alias, titular, montoEsperado, fechaActivacion } = body
 
     if (!banco || !cbu || !titular || !montoEsperado) {
       return NextResponse.json(
@@ -73,17 +73,37 @@ export async function POST(request: Request, { params }: RouteParams) {
       }
     })
 
+    // Construir mensaje con advertencia de fecha de activación si existe
+    let mensajeAdvertencia = ''
+    if (fechaActivacion) {
+      const fecha = new Date(fechaActivacion)
+      const fechaFormateada = fecha.toLocaleDateString('es-AR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+      mensajeAdvertencia = `\n\n⚠️ IMPORTANTE: La cuenta estará operativa recién a partir del ${fechaFormateada}. No realices la transferencia antes de esa fecha, ya que no será procesada.\n`
+    }
+
     const mensajeNotificacion = `Para continuar con tu trámite, debés realizar el depósito del 25% del capital social.\n\n` +
       `Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
       `Datos de la cuenta:\n` +
       `Banco: ${banco}\n` +
       `CBU: ${cbu}\n` +
       `${alias ? `Alias: ${alias}\n` : ''}` +
-      `Titular: ${titular}\n\n` +
+      `Titular: ${titular}${mensajeAdvertencia}\n\n` +
       `Luego de realizar el depósito, subí el comprobante desde tu panel.`
 
     // Guardar notificación con datos estructurados en el mensaje (formato JSON al inicio para fácil parsing)
-    const metadata = JSON.stringify({ banco, cbu, alias: alias || null, titular, montoEsperado: monto })
+    const metadata = JSON.stringify({ 
+      banco, 
+      cbu, 
+      alias: alias || null, 
+      titular, 
+      montoEsperado: monto,
+      fechaActivacion: fechaActivacion || null
+    })
     const mensajeConMetadata = `__METADATA__${metadata}__END__\n\n${mensajeNotificacion}`
 
     await prisma.notificacion.create({

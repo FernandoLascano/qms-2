@@ -23,6 +23,7 @@ interface CuentaBancaria {
   titular: string
   montoEsperado: number
   fechaInformacion: Date
+  fechaActivacion?: string | null
 }
 
 export default function DepositoCapitalCliente({
@@ -94,6 +95,10 @@ export default function DepositoCapitalCliente({
   const titular = cuenta?.titular || ''
   const montoEsperado = cuenta?.montoEsperado || 0
   const montoTexto = montoEsperado > 0 ? `$${montoEsperado.toLocaleString('es-AR')}` : ''
+  const fechaActivacion = cuenta?.fechaActivacion || null
+  
+  // Verificar si la cuenta aún no está activa
+  const cuentaNoActiva = fechaActivacion && new Date(fechaActivacion) > new Date()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -186,6 +191,23 @@ export default function DepositoCapitalCliente({
             <p className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <Banknote className="h-5 w-5 text-green-600" /> Datos de la cuenta bancaria
             </p>
+            {cuentaNoActiva && (
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-3 mb-3">
+                <p className="text-sm font-semibold text-orange-900 mb-1">⚠️ Importante: Cuenta aún no activa</p>
+                <p className="text-xs text-orange-800">
+                  Esta cuenta estará operativa recién a partir del{' '}
+                  <strong>{new Date(fechaActivacion!).toLocaleDateString('es-AR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</strong>.
+                </p>
+                <p className="text-xs text-orange-800 mt-1 font-semibold">
+                  No realices la transferencia antes de esa fecha, ya que no será procesada.
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-2">
               {banco && (
                 <div className="flex items-start gap-2">

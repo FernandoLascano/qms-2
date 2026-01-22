@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 5 // Timeout de 5 segundos máximo (operación rápida)
+
 // PATCH - Marcar mensajes como leídos
 export async function PATCH(
   req: NextRequest,

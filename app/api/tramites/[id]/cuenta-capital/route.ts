@@ -48,6 +48,32 @@ export async function GET(request: Request, { params }: RouteParams) {
       return NextResponse.json({ cuenta: null })
     }
 
+    // Buscar fecha de activación en las notificaciones más recientes
+    const notificacionReciente = await prisma.notificacion.findFirst({
+      where: {
+        tramiteId: tramiteId,
+        titulo: {
+          contains: 'Depósito del 25% del Capital'
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
+
+    let fechaActivacion = null
+    if (notificacionReciente?.mensaje) {
+      try {
+        const metadataMatch = notificacionReciente.mensaje.match(/__METADATA__({.*?})__END__/)
+        if (metadataMatch) {
+          const metadata = JSON.parse(metadataMatch[1])
+          fechaActivacion = metadata.fechaActivacion || null
+        }
+      } catch (e) {
+        console.error('Error al parsear metadata:', e)
+      }
+    }
+
     return NextResponse.json({
       cuenta: {
         banco: cuenta.banco,
@@ -55,7 +81,8 @@ export async function GET(request: Request, { params }: RouteParams) {
         alias: cuenta.alias,
         titular: cuenta.titular,
         montoEsperado: cuenta.montoEsperado,
-        fechaInformacion: cuenta.fechaInformacion
+        fechaInformacion: cuenta.fechaInformacion,
+        fechaActivacion: fechaActivacion
       }
     })
   } catch (error) {
@@ -66,4 +93,5 @@ export async function GET(request: Request, { params }: RouteParams) {
     )
   }
 }
+
 
