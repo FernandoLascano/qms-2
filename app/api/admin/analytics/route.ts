@@ -344,22 +344,24 @@ export async function GET(request: Request) {
       }
     }
 
-    // 10. TIEMPO PROMEDIO POR ETAPA (estimado)
+    // 10. TIEMPO PROMEDIO POR ETAPA (desde validación hasta inscripción)
     const tramitesCompletadosConFechas = await prisma.tramite.findMany({
       where: {
         estadoGeneral: 'COMPLETADO',
+        sociedadInscripta: true,
+        fechaSociedadInscripta: { not: null },
         ...jurisdiccionFilter
       },
       select: {
-        createdAt: true,
-        updatedAt: true,
+        id: true,
+        fechaSociedadInscripta: true,
         denominacionReservada: true,
         capitalDepositado: true,
         documentosFirmados: true,
         sociedadInscripta: true
       },
       take: 50, // Últimos 50 trámites completados
-      orderBy: { updatedAt: 'desc' }
+      orderBy: { fechaSociedadInscripta: 'desc' }
     })
 
     const tiemposPromedio = {
@@ -373,11 +375,51 @@ export async function GET(request: Request) {
     }
 
     if (tramitesCompletadosConFechas.length > 0) {
-      const tiemposTotales = tramitesCompletadosConFechas.map(t => {
-        const diff = t.updatedAt.getTime() - t.createdAt.getTime()
-        return diff / (1000 * 60 * 60 * 24) // Convertir a días
+      // Obtener IDs de trámites para buscar fechas de validación
+      const tramiteIds = tramitesCompletadosConFechas.map(t => t.id)
+      
+      // Buscar fechas de validación en el historial (cuando cambió a EN_PROCESO)
+      // La validación ocurre cuando el estado cambia a EN_PROCESO
+      const historialesValidacion = await prisma.historialEstado.findMany({
+        where: {
+          tramiteId: { in: tramiteIds },
+          estadoNuevo: 'EN_PROCESO'
+        },
+        select: {
+          tramiteId: true,
+          createdAt: true
+        },
+        orderBy: {
+          createdAt: 'asc' // Tomar la primera vez que cambió a EN_PROCESO
+        }
       })
-      tiemposPromedio.total = tiemposTotales.reduce((a, b) => a + b, 0) / tiemposTotales.length
+
+      // Crear mapa de fechas de validación por trámite
+      const fechasValidacion = new Map<string, Date>()
+      historialesValidacion.forEach(h => {
+        if (!fechasValidacion.has(h.tramiteId)) {
+          fechasValidacion.set(h.tramiteId, h.createdAt)
+        }
+      })
+
+      // Calcular tiempos desde validación hasta inscripción
+      const tiemposTotales = tramitesCompletadosConFechas
+        .map(t => {
+          const fechaValidacion = fechasValidacion.get(t.id)
+          const fechaInscripcion = t.fechaSociedadInscripta
+
+          // Solo calcular si tenemos ambas fechas
+          if (fechaValidacion && fechaInscripcion) {
+            const diff = fechaInscripcion.getTime() - fechaValidacion.getTime()
+            return diff / (1000 * 60 * 60 * 24) // Convertir a días
+          }
+          return null
+        })
+        .filter((t): t is number => t !== null) // Filtrar nulls
+
+      if (tiemposTotales.length > 0) {
+        tiemposPromedio.total = tiemposTotales.reduce((a, b) => a + b, 0) / tiemposTotales.length
+      }
     }
 
     // Respuesta final
