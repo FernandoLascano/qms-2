@@ -3,10 +3,20 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Calendar, Building2, User, DollarSign, Eye } from 'lucide-react'
+import { FileText, Calendar, Building2, User, DollarSign, Eye, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import TramitesFiltros from './TramitesFiltros'
 import { calcularProgreso, getEstadoColor, getEstadoTexto, obtenerEtapaActual } from '@/lib/tramites-helpers'
 
@@ -17,7 +27,10 @@ interface TramitesListaProps {
 }
 
 export default function TramitesLista({ tramites }: TramitesListaProps) {
+  const router = useRouter()
   const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>('TODOS')
+  const [tramiteAEliminar, setTramiteAEliminar] = useState<string | null>(null)
+  const [eliminando, setEliminando] = useState(false)
 
   const tramitesFiltrados = tramites.filter(tramite => {
     switch (filtroActivo) {
@@ -38,6 +51,45 @@ export default function TramitesLista({ tramites }: TramitesListaProps) {
         return true
     }
   })
+
+  // Verificar si un trámite está protegido
+  const esTramiteProtegido = (denominacion: string) => {
+    const tramitesProtegidos = [
+      'DRIX SAS',
+      'SPEED AI SOFTWARE',
+      'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
+      'Drixs SAS',
+      'Speed AI Software',
+      'Adocor Servicios de Construccion SAS'
+    ]
+    return tramitesProtegidos.some(protegido => denominacion.toUpperCase().includes(protegido.toUpperCase()))
+  }
+
+  const handleEliminar = async () => {
+    if (!tramiteAEliminar) return
+
+    setEliminando(true)
+    try {
+      const response = await fetch(`/api/admin/tramites/${tramiteAEliminar}/eliminar`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success(data.message || 'Trámite eliminado exitosamente')
+        setTramiteAEliminar(null)
+        router.refresh()
+      } else {
+        toast.error(data.error || 'Error al eliminar el trámite')
+      }
+    } catch (error) {
+      console.error('Error al eliminar trámite:', error)
+      toast.error('Error al eliminar el trámite')
+    } finally {
+      setEliminando(false)
+    }
+  }
 
   return (
     <>
@@ -121,12 +173,25 @@ export default function TramitesLista({ tramites }: TramitesListaProps) {
                       </div>
                     </div>
 
-                    <Link href={`/dashboard/admin/tramites/${tramite.id}`}>
-                      <Button className="gap-2">
-                        <Eye className="h-4 w-4" />
-                        Gestionar
-                      </Button>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/admin/tramites/${tramite.id}`}>
+                        <Button className="gap-2">
+                          <Eye className="h-4 w-4" />
+                          Gestionar
+                        </Button>
+                      </Link>
+                      {!esTramiteProtegido(tramite.denominacionAprobada || tramite.denominacionSocial1) && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => setTramiteAEliminar(tramite.id)}
+                          className="gap-2"
+                          title="Eliminar trámite"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm">
@@ -182,6 +247,35 @@ export default function TramitesLista({ tramites }: TramitesListaProps) {
           })}
         </div>
       )}
+
+      {/* Dialog de confirmación de eliminación */}
+      <Dialog open={!!tramiteAEliminar} onOpenChange={(open) => !open && setTramiteAEliminar(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Eliminar trámite?</DialogTitle>
+            <DialogDescription>
+              Esta acción no se puede deshacer. Se eliminarán todos los datos relacionados con este trámite
+              (documentos, pagos, notificaciones, mensajes, etc.).
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setTramiteAEliminar(null)}
+              disabled={eliminando}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleEliminar}
+              disabled={eliminando}
+            >
+              {eliminando ? 'Eliminando...' : 'Eliminar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

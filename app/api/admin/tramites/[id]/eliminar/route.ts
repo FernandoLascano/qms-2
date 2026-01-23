@@ -40,6 +40,24 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       )
     }
 
+    // Proteger trámites específicos que no se pueden eliminar
+    const tramitesProtegidos = [
+      'DRIX SAS',
+      'SPEED AI SOFTWARE',
+      'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
+      'Drixs SAS',
+      'Speed AI Software',
+      'Adocor Servicios de Construccion SAS'
+    ]
+
+    const denominacion = tramite.denominacionAprobada || tramite.denominacionSocial1 || ''
+    if (tramitesProtegidos.some(protegido => denominacion.toUpperCase().includes(protegido.toUpperCase()))) {
+      return NextResponse.json(
+        { error: 'Este trámite está protegido y no puede ser eliminado' },
+        { status: 403 }
+      )
+    }
+
     // Eliminar todos los datos relacionados
     console.log(`🗑️ Eliminando trámite: ${tramite.denominacionSocial1} (${id})`)
 
