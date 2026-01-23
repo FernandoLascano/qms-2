@@ -69,6 +69,7 @@ interface AnalyticsData {
   }
   tiemposPromedio: {
     total: number
+    desdeValidacion?: number
     porEtapa: {
       reservaDenominacion: number
       depositoCapital: number
@@ -376,6 +377,7 @@ export default function AnalyticsPage() {
         {data.tiemposPromedio && (
           <TiemposPromedioPanel
             total={data.tiemposPromedio.total}
+            desdeValidacion={data.tiemposPromedio.desdeValidacion}
             porEtapa={data.tiemposPromedio.porEtapa}
           />
         )}

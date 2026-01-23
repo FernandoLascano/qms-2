@@ -355,6 +355,7 @@ export async function GET(request: Request) {
       select: {
         id: true,
         fechaSociedadInscripta: true,
+        fechaDenominacionReservada: true,
         denominacionReservada: true,
         capitalDepositado: true,
         documentosFirmados: true,
@@ -365,7 +366,8 @@ export async function GET(request: Request) {
     })
 
     const tiemposPromedio = {
-      total: 0,
+      total: 0, // Desde Reserva de Nombre hasta Inscripción
+      desdeValidacion: 0, // Desde validación del formulario hasta Inscripción
       porEtapa: {
         reservaDenominacion: 1.5,  // Días estimados
         depositoCapital: 1,
@@ -402,8 +404,23 @@ export async function GET(request: Request) {
         }
       })
 
+      // Calcular tiempos desde Reserva de Nombre hasta inscripción (tiempo total)
+      const tiemposDesdeReserva = tramitesCompletadosConFechas
+        .map(t => {
+          const fechaReserva = t.fechaDenominacionReservada
+          const fechaInscripcion = t.fechaSociedadInscripta
+
+          // Solo calcular si tenemos ambas fechas
+          if (fechaReserva && fechaInscripcion) {
+            const diff = fechaInscripcion.getTime() - fechaReserva.getTime()
+            return diff / (1000 * 60 * 60 * 24) // Convertir a días
+          }
+          return null
+        })
+        .filter((t): t is number => t !== null) // Filtrar nulls
+
       // Calcular tiempos desde validación hasta inscripción
-      const tiemposTotales = tramitesCompletadosConFechas
+      const tiemposDesdeValidacion = tramitesCompletadosConFechas
         .map(t => {
           const fechaValidacion = fechasValidacion.get(t.id)
           const fechaInscripcion = t.fechaSociedadInscripta
@@ -417,8 +434,12 @@ export async function GET(request: Request) {
         })
         .filter((t): t is number => t !== null) // Filtrar nulls
 
-      if (tiemposTotales.length > 0) {
-        tiemposPromedio.total = tiemposTotales.reduce((a, b) => a + b, 0) / tiemposTotales.length
+      if (tiemposDesdeReserva.length > 0) {
+        tiemposPromedio.total = tiemposDesdeReserva.reduce((a, b) => a + b, 0) / tiemposDesdeReserva.length
+      }
+
+      if (tiemposDesdeValidacion.length > 0) {
+        tiemposPromedio.desdeValidacion = tiemposDesdeValidacion.reduce((a, b) => a + b, 0) / tiemposDesdeValidacion.length
       }
     }
 
