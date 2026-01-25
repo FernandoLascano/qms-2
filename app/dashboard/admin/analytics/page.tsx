@@ -19,6 +19,8 @@ import { AlertasPanel } from '@/components/admin/analytics/AlertasPanel'
 import { IngresosPorMesChart } from '@/components/admin/analytics/IngresosPorMesChart'
 import { ComparativaCard } from '@/components/admin/analytics/ComparativaCard'
 import { TiemposPromedioPanel } from '@/components/admin/analytics/TiemposPromedioPanel'
+import { ExportButton } from '@/components/admin/analytics/ExportButton'
+import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
@@ -204,13 +206,21 @@ export default function AnalyticsPage() {
             Última actualización: {format(new Date(), "d 'de' MMMM, HH:mm", { locale: es })}
           </p>
         </div>
-        <button
-          onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)}
-          className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition cursor-pointer shadow-lg shadow-red-200 font-semibold"
-        >
-          <Download className="w-5 h-5" />
-          Exportar Reporte
-        </button>
+        <div className="flex items-center gap-3">
+          {data && (
+            <ExportButton 
+              data={data} 
+              filename={`analytics-${periodo}-${jurisdiccion || 'todas'}`}
+            />
+          )}
+          <button
+            onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)}
+            className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition cursor-pointer shadow-lg shadow-red-200 font-semibold"
+          >
+            <Download className="w-5 h-5" />
+            Exportar PDF Completo
+          </button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -382,6 +392,14 @@ export default function AnalyticsPage() {
           />
         )}
       </div>
+
+      {/* Tendencias */}
+      {data.tramites?.porMes && data.ingresos?.porMes && (
+        <TendenciasChart 
+          tramites={data.tramites}
+          ingresos={data.ingresos}
+        />
+      )}
 
       {/* Embudo de conversión y alertas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

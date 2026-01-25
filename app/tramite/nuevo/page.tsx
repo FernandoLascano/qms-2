@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FormField } from '@/components/ui/form-field'
+import { useFormValidation, validators } from '@/hooks/useFormValidation'
+import { HelpTooltip } from '@/components/ui/help-tooltip'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -30,14 +33,14 @@ const DEPARTAMENTOS_CORDOBA = [
   'Unión', 'Marcos Juárez', 'Minas', 'Pocho', 'Punilla', 'San Alberto', 'San Javier',
   'Santa María', 'Sobremonte', 'Tulumba', 'Totoral', 'Río Segundo', 'Río Primero',
   'Presidente Roque Sáenz Peña', 'Juárez Celman', 'Ischilín', 'General San Martín',
-  'Cruz del Eje', 'Calamuchita', 'Calamuchita', 'Calamuchita'
+  'Cruz del Eje', 'Calamuchita'
 ]
 
 const CIUDADES_CORDOBA = [
   'Córdoba', 'Villa Carlos Paz', 'Río Cuarto', 'Villa María', 'San Francisco', 
   'Villa Allende', 'Jesús María', 'La Calera', 'Arroyito', 'Marcos Juárez',
   'Bell Ville', 'Leones', 'Monte Cristo', 'Morteros', 'Villa Dolores', 'Cruz del Eje',
-  'Deán Funes', 'Jesús María', 'Villa General Belgrano', 'La Falda', 'Cosquín',
+  'Deán Funes', 'Villa General Belgrano', 'La Falda', 'Cosquín',
   'Villa Giardino', 'Unquillo', 'Salsipuedes', 'Río Tercero', 'Villa Mercedes',
   'General Cabrera', 'Huinca Renancó', 'Laboulaye', 'Rufino', 'Villa Huidobro'
 ]
@@ -426,6 +429,40 @@ export default function NuevoTramitePage() {
     enabled: status === 'authenticated' && pasoActual >= 1 // Habilitar desde el paso 1
   })
 
+  // Validación en tiempo real para el paso 1
+  const paso1Validation = useFormValidation({
+    nombre: [validators.required('El nombre es obligatorio')],
+    apellido: [validators.required('El apellido es obligatorio')],
+    dni: [
+      validators.required('El DNI es obligatorio'),
+      validators.dni('El DNI debe tener 7 u 8 dígitos')
+    ],
+    telefono: [
+      validators.required('El teléfono es obligatorio'),
+      validators.phone('Ingresa un teléfono válido')
+    ],
+    email: [
+      validators.required('El email es obligatorio'),
+      validators.email('Ingresa un email válido')
+    ]
+  }, formData)
+
+  // Validación en tiempo real para el paso 2
+  const paso2Validation = useFormValidation({
+    denominacion1: [
+      validators.required('La primera opción de denominación es obligatoria'),
+      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+    ],
+    denominacion2: [
+      validators.required('La segunda opción de denominación es obligatoria'),
+      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+    ],
+    denominacion3: [
+      validators.required('La tercera opción de denominación es obligatoria'),
+      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+    ]
+  }, formData)
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
@@ -661,8 +698,33 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-2xl border-2 border-gray-200 shadow-lg overflow-x-auto">
-          <div className="flex items-start justify-between min-w-max md:min-w-0">
+        <div className="mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-2xl border-2 border-gray-200 shadow-lg">
+          {/* Barra de progreso superior */}
+          <div className="mb-6 pb-4 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-700">Progreso del formulario</span>
+              </div>
+              <span className="text-lg font-bold text-red-600">
+                {Math.round((pasoActual / 7) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-gradient-to-r from-red-600 to-red-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                style={{ width: `${(pasoActual / 7) * 100}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              </div>
+            </div>
+            <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+              <span>Paso {pasoActual} de 7</span>
+              <span>{Math.round((pasoActual / 7) * 100)}% completado</span>
+            </div>
+          </div>
+
+          {/* Pasos */}
+          <div className="flex items-start justify-between min-w-max md:min-w-0 overflow-x-auto pt-2">
             {PASOS.map((paso, index) => {
               const Icon = paso.icon
               const isCompleted = pasoActual > paso.id
@@ -745,63 +807,83 @@ export default function NuevoTramitePage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nombre">Nombre *</Label>
-                    <Input
-                      id="nombre"
-                      name="nombre"
-                      value={formData.nombre}
-                      onChange={handleInputChange}
-                      placeholder="Juan"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="apellido">Apellido *</Label>
-                    <Input
-                      id="apellido"
-                      name="apellido"
-                      value={formData.apellido}
-                      onChange={handleInputChange}
-                      placeholder="Pérez"
-                      required
-                    />
-                  </div>
+                  <FormField
+                    label="Nombre"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      paso1Validation.setFieldTouched('nombre')
+                    }}
+                    placeholder="Juan"
+                    required
+                    error={paso1Validation.errors.nombre || undefined}
+                    validation={paso1Validation.getFieldValidation('nombre')}
+                    helpText="Tu nombre de pila"
+                  />
+                  <FormField
+                    label="Apellido"
+                    name="apellido"
+                    value={formData.apellido}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      paso1Validation.setFieldTouched('apellido')
+                    }}
+                    placeholder="Pérez"
+                    required
+                    error={paso1Validation.errors.apellido || undefined}
+                    validation={paso1Validation.getFieldValidation('apellido')}
+                    helpText="Tu apellido completo"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="dni">DNI *</Label>
-                    <Input
-                      id="dni"
-                      name="dni"
-                      value={formData.dni}
-                      onChange={handleInputChange}
-                      placeholder="12345678"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="telefono">Teléfono *</Label>
-                    <Input
-                      id="telefono"
-                      name="telefono"
-                      value={formData.telefono}
-                      onChange={handleInputChange}
-                      placeholder="+54 9 11 1234-5678"
-                      required
-                    />
-                  </div>
+                  <FormField
+                    label="DNI"
+                    name="dni"
+                    value={formData.dni}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      paso1Validation.setFieldTouched('dni')
+                    }}
+                    placeholder="12345678"
+                    required
+                    error={paso1Validation.errors.dni || undefined}
+                    validation={paso1Validation.getFieldValidation('dni')}
+                    helpText="Sin puntos ni guiones, solo números"
+                    maxLength={8}
+                  />
+                  <FormField
+                    label="Teléfono"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={(e) => {
+                      handleInputChange(e)
+                      paso1Validation.setFieldTouched('telefono')
+                    }}
+                    placeholder="+54 9 11 1234-5678"
+                    required
+                    error={paso1Validation.errors.telefono || undefined}
+                    validation={paso1Validation.getFieldValidation('telefono')}
+                    helpText="Incluye código de área"
+                    type="tel"
+                  />
                   <div className="sm:col-span-2 lg:col-span-1">
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
+                    <FormField
+                      label="Email"
                       name="email"
-                      type="email"
                       value={formData.email}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        paso1Validation.setFieldTouched('email')
+                      }}
                       placeholder="correo@ejemplo.com"
                       required
+                      error={paso1Validation.errors.email || undefined}
+                      validation={paso1Validation.getFieldValidation('email')}
+                      helpText="Usaremos este email para notificarte"
+                      type="email"
+                      autoComplete="email"
                     />
                   </div>
                 </div>
@@ -906,39 +988,48 @@ export default function NuevoTramitePage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="denominacion1">Opción 1 *</Label>
-                      <Input
-                        id="denominacion1"
-                        name="denominacion1"
-                        value={formData.denominacion1}
-                        onChange={handleInputChange}
-                        placeholder="Mi Empresa SAS"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="denominacion2">Opción 2 *</Label>
-                      <Input
-                        id="denominacion2"
-                        name="denominacion2"
-                        value={formData.denominacion2}
-                        onChange={handleInputChange}
-                        placeholder="Empresa Innovadora SAS"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="denominacion3">Opción 3 *</Label>
-                      <Input
-                        id="denominacion3"
-                        name="denominacion3"
-                        value={formData.denominacion3}
-                        onChange={handleInputChange}
-                        placeholder="Soluciones Empresariales SAS"
-                        required
-                      />
-                    </div>
+                    <FormField
+                      label="Opción 1 (Preferida)"
+                      name="denominacion1"
+                      value={formData.denominacion1}
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        paso2Validation.setFieldTouched('denominacion1')
+                      }}
+                      placeholder="Denominacion1 SAS"
+                      required
+                      error={paso2Validation.errors.denominacion1 || undefined}
+                      validation={paso2Validation.getFieldValidation('denominacion1')}
+                      helpText="Tu primera opción de nombre para la sociedad"
+                    />
+                    <FormField
+                      label="Opción 2"
+                      name="denominacion2"
+                      value={formData.denominacion2}
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        paso2Validation.setFieldTouched('denominacion2')
+                      }}
+                      placeholder="Denominacion2 SAS"
+                      required
+                      error={paso2Validation.errors.denominacion2 || undefined}
+                      validation={paso2Validation.getFieldValidation('denominacion2')}
+                      helpText="Segunda opción en caso de que la primera no esté disponible"
+                    />
+                    <FormField
+                      label="Opción 3"
+                      name="denominacion3"
+                      value={formData.denominacion3}
+                      onChange={(e) => {
+                        handleInputChange(e)
+                        paso2Validation.setFieldTouched('denominacion3')
+                      }}
+                      placeholder="Denominacion3 SAS"
+                      required
+                      error={paso2Validation.errors.denominacion3 || undefined}
+                      validation={paso2Validation.getFieldValidation('denominacion3')}
+                      helpText="Tercera opción como respaldo"
+                    />
                   </div>
 
                   <div className="mt-4">
@@ -1163,32 +1254,73 @@ export default function NuevoTramitePage() {
                     </label>
                   </div>
 
-                  {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
+                      {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="cbuPrincipal">CBU Principal *</Label>
-                        <Input 
-                          id="cbuPrincipal" 
-                          name="cbuPrincipal" 
-                          value={formData.cbuPrincipal} 
-                          onChange={handleInputChange} 
-                          placeholder="0000000000000000000000" 
-                          maxLength={22} 
-                          className="font-mono" 
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cbuSecundario">CBU Secundario *</Label>
-                        <Input 
-                          id="cbuSecundario" 
-                          name="cbuSecundario" 
-                          value={formData.cbuSecundario} 
-                          onChange={handleInputChange} 
-                          placeholder="0000000000000000000000" 
-                          maxLength={22} 
-                          className="font-mono" 
-                        />
-                      </div>
+                      <FormField
+                        label="CBU Principal"
+                        name="cbuPrincipal"
+                        value={formData.cbuPrincipal}
+                        onChange={(e) => {
+                          handleInputChange(e)
+                          if (formData.jurisdiccion === 'CORDOBA') {
+                            // Validar CBU solo si es Córdoba
+                            const value = e.target.value.replace(/[.\-]/g, '')
+                            if (value.length === 22 && /^\d{22}$/.test(value)) {
+                              // CBU válido
+                            }
+                          }
+                        }}
+                        placeholder="0000000000000000000000"
+                        required={formData.jurisdiccion === 'CORDOBA'}
+                        helpText="22 dígitos sin espacios ni guiones"
+                        maxLength={22}
+                        pattern="\d{22}"
+                        className="font-mono"
+                        error={
+                          formData.jurisdiccion === 'CORDOBA' && formData.cbuPrincipal && 
+                          formData.cbuPrincipal.replace(/[.\-]/g, '').length !== 22
+                            ? 'El CBU debe tener exactamente 22 dígitos'
+                            : undefined
+                        }
+                        validation={
+                          formData.jurisdiccion === 'CORDOBA' && formData.cbuPrincipal
+                            ? formData.cbuPrincipal.replace(/[.\-]/g, '').length === 22 && /^\d{22}$/.test(formData.cbuPrincipal.replace(/[.\-]/g, ''))
+                              ? 'success'
+                              : formData.cbuPrincipal.length > 0
+                                ? 'error'
+                                : 'none'
+                            : 'none'
+                        }
+                      />
+                      <FormField
+                        label="CBU Secundario"
+                        name="cbuSecundario"
+                        value={formData.cbuSecundario}
+                        onChange={(e) => {
+                          handleInputChange(e)
+                        }}
+                        placeholder="0000000000000000000000"
+                        required={formData.jurisdiccion === 'CORDOBA'}
+                        helpText="22 dígitos sin espacios ni guiones"
+                        maxLength={22}
+                        pattern="\d{22}"
+                        className="font-mono"
+                        error={
+                          formData.jurisdiccion === 'CORDOBA' && formData.cbuSecundario && 
+                          formData.cbuSecundario.replace(/[.\-]/g, '').length !== 22
+                            ? 'El CBU debe tener exactamente 22 dígitos'
+                            : undefined
+                        }
+                        validation={
+                          formData.jurisdiccion === 'CORDOBA' && formData.cbuSecundario
+                            ? formData.cbuSecundario.replace(/[.\-]/g, '').length === 22 && /^\d{22}$/.test(formData.cbuSecundario.replace(/[.\-]/g, ''))
+                              ? 'success'
+                              : formData.cbuSecundario.length > 0
+                                ? 'error'
+                                : 'none'
+                            : 'none'
+                        }
+                      />
                     </div>
                   )}
                 </div>
@@ -1355,30 +1487,58 @@ export default function NuevoTramitePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>DNI *</Label>
-                          <Input
-                            value={socio.dni}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].dni = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="12345678"
-                          />
-                        </div>
-                        <div>
-                          <Label>CUIT *</Label>
-                          <Input
-                            value={socio.cuit}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].cuit = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="20123456789"
-                          />
-                        </div>
+                        <FormField
+                          label="DNI"
+                          name={`socio-${index}-dni`}
+                          value={socio.dni}
+                          onChange={(e) => {
+                            const newSocios = [...formData.socios]
+                            newSocios[index].dni = e.target.value.replace(/[.\-]/g, '')
+                            setFormData(prev => ({ ...prev, socios: newSocios }))
+                          }}
+                          placeholder="12345678"
+                          required
+                          helpText="Sin puntos ni guiones, solo números"
+                          maxLength={8}
+                          error={
+                            socio.dni && !/^\d{7,8}$/.test(socio.dni)
+                              ? 'El DNI debe tener 7 u 8 dígitos'
+                              : undefined
+                          }
+                          validation={
+                            socio.dni
+                              ? /^\d{7,8}$/.test(socio.dni)
+                                ? 'success'
+                                : 'error'
+                              : 'none'
+                          }
+                        />
+                        <FormField
+                          label="CUIT"
+                          name={`socio-${index}-cuit`}
+                          value={socio.cuit}
+                          onChange={(e) => {
+                            const newSocios = [...formData.socios]
+                            newSocios[index].cuit = e.target.value.replace(/[.\-]/g, '')
+                            setFormData(prev => ({ ...prev, socios: newSocios }))
+                          }}
+                          placeholder="20123456789"
+                          required
+                          helpText="11 dígitos sin guiones"
+                          maxLength={11}
+                          error={
+                            socio.cuit && !/^\d{11}$/.test(socio.cuit)
+                              ? 'El CUIT debe tener 11 dígitos'
+                              : undefined
+                          }
+                          validation={
+                            socio.cuit
+                              ? /^\d{11}$/.test(socio.cuit)
+                                ? 'success'
+                                : 'error'
+                              : 'none'
+                          }
+                        />
                       </div>
 
                       <div className="mb-4">
@@ -1470,7 +1630,7 @@ export default function NuevoTramitePage() {
                         <Label>Aporte de capital *</Label>
                         <div className="space-y-3">
                           {/* Selector de tipo */}
-                          <div className="flex gap-3">
+                          <div className="flex gap-2">
                             <button
                               type="button"
                               onClick={() => {
@@ -1478,7 +1638,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'MONTO'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-4 py-2 rounded-lg border-2 transition ${
+                              className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
                                 socio.tipoAporte === 'MONTO'
                                   ? 'border-red-600 bg-red-50 text-red-900 font-medium'
                                   : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
@@ -1493,7 +1653,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'PORCENTAJE'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-4 py-2 rounded-lg border-2 transition ${
+                              className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
                                 socio.tipoAporte === 'PORCENTAJE'
                                   ? 'border-red-600 bg-red-50 text-red-900 font-medium'
                                   : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
@@ -1738,30 +1898,58 @@ export default function NuevoTramitePage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>DNI *</Label>
-                          <Input
-                            value={admin.dni}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].dni = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="12345678"
-                          />
-                        </div>
-                        <div>
-                          <Label>CUIT *</Label>
-                          <Input
-                            value={admin.cuit}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].cuit = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="20123456789"
-                          />
-                        </div>
+                        <FormField
+                          label="DNI"
+                          name={`admin-${index}-dni`}
+                          value={admin.dni}
+                          onChange={(e) => {
+                            const newAdmins = [...formData.administradores]
+                            newAdmins[index].dni = e.target.value.replace(/[.\-]/g, '')
+                            setFormData(prev => ({ ...prev, administradores: newAdmins }))
+                          }}
+                          placeholder="12345678"
+                          required
+                          helpText="Sin puntos ni guiones, solo números"
+                          maxLength={8}
+                          error={
+                            admin.dni && !/^\d{7,8}$/.test(admin.dni)
+                              ? 'El DNI debe tener 7 u 8 dígitos'
+                              : undefined
+                          }
+                          validation={
+                            admin.dni
+                              ? /^\d{7,8}$/.test(admin.dni)
+                                ? 'success'
+                                : 'error'
+                              : 'none'
+                          }
+                        />
+                        <FormField
+                          label="CUIT"
+                          name={`admin-${index}-cuit`}
+                          value={admin.cuit}
+                          onChange={(e) => {
+                            const newAdmins = [...formData.administradores]
+                            newAdmins[index].cuit = e.target.value.replace(/[.\-]/g, '')
+                            setFormData(prev => ({ ...prev, administradores: newAdmins }))
+                          }}
+                          placeholder="20123456789"
+                          required
+                          helpText="11 dígitos sin guiones"
+                          maxLength={11}
+                          error={
+                            admin.cuit && !/^\d{11}$/.test(admin.cuit)
+                              ? 'El CUIT debe tener 11 dígitos'
+                              : undefined
+                          }
+                          validation={
+                            admin.cuit
+                              ? /^\d{11}$/.test(admin.cuit)
+                                ? 'success'
+                                : 'error'
+                              : 'none'
+                          }
+                        />
                       </div>
 
                       <div className="mb-4">
@@ -1781,35 +1969,31 @@ export default function NuevoTramitePage() {
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                         <div>
                           <Label>Ciudad *</Label>
-                          <Select
+                          <Input
                             value={admin.ciudad}
                             onChange={(e) => {
                               const newAdmins = [...formData.administradores]
                               newAdmins[index].ciudad = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
-                          >
-                            <option value="">Seleccionar...</option>
-                            {CIUDADES_CORDOBA.map(ciudad => (
-                              <option key={ciudad} value={ciudad}>{ciudad}</option>
-                            ))}
-                          </Select>
+                            placeholder="Ej: Córdoba, Buenos Aires, Rosario..."
+                            required
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Puede ser de cualquier provincia de Argentina</p>
                         </div>
                         <div>
                           <Label>Departamento *</Label>
-                          <Select
+                          <Input
                             value={admin.departamento}
                             onChange={(e) => {
                               const newAdmins = [...formData.administradores]
                               newAdmins[index].departamento = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
-                          >
-                            <option value="">Seleccionar...</option>
-                            {DEPARTAMENTOS_CORDOBA.map(depto => (
-                              <option key={depto} value={depto}>{depto}</option>
-                            ))}
-                          </Select>
+                            placeholder="Ej: Capital, La Matanza, Rosario..."
+                            required
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Puede ser de cualquier provincia de Argentina</p>
                         </div>
                         <div>
                           <Label>Provincia *</Label>
@@ -1820,8 +2004,9 @@ export default function NuevoTramitePage() {
                               newAdmins[index].provincia = e.target.value
                               setFormData(prev => ({ ...prev, administradores: newAdmins }))
                             }}
+                            required
                           >
-                            <option value="">Seleccionar...</option>
+                            <option value="">Seleccionar provincia...</option>
                             <option value="Buenos Aires">Buenos Aires</option>
                             <option value="Catamarca">Catamarca</option>
                             <option value="Chaco">Chaco</option>

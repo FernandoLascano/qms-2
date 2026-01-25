@@ -88,3 +88,17 @@ button {
   color: white;
   border-color: #DB1414;
 }
+
+/* Animación shimmer para barras de progreso */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
