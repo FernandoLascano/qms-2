@@ -1,13 +1,42 @@
 @import "tailwindcss";
 
+/* ============================================
+   PALETA DE MARCA - Rebranding fácil
+   Cambiá estos valores para cambiar toda la marca.
+   Ej: para verde usar #059669 como --brand-600
+   Ej: para azul usar #2563eb como --brand-600
+   ============================================ */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand (color principal de marca) - Igual al logo #991D23 */
+  --brand-50: #fef2f2;
+  --brand-100: #fde2e3;
+  --brand-200: #fbc8ca;
+  --brand-300: #f69b9e;
+  --brand-400: #ed666a;
+  --brand-500: #dc3d42;
+  --brand-600: #b0242b;
+  --brand-700: #991D23;
+  --brand-800: #7a181d;
+  --brand-900: #66161a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Brand palette - usa las variables de :root */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -43,7 +72,7 @@ button {
 }
 
 .rbc-today {
-  background-color: #fef2f2;
+  background-color: var(--brand-50);
 }
 
 .rbc-off-range-bg {
@@ -84,9 +113,9 @@ button {
 }
 
 .rbc-toolbar button.rbc-active {
-  background: #DB1414;
+  background: var(--brand-600);
   color: white;
-  border-color: #DB1414;
+  border-color: var(--brand-600);
 }
 
 /* Animación shimmer para barras de progreso */
@@ -101,4 +130,14 @@ button {
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.35; }
 }

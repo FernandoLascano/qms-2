@@ -136,7 +136,7 @@ export default function SubirDocumentoPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-3xl font-bold text-red-900">Subir Documento</h2>
+          <h2 className="text-3xl font-bold text-brand-900">Subir Documento</h2>
           <p className="text-gray-600 mt-1">
             Carga los documentos necesarios para tu trámite
           </p>

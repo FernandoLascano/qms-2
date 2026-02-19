@@ -8,8 +8,8 @@ import { useRef } from 'react'
 const caracteristicas = [
   {
     icon: Users,
-    iconBg: 'bg-red-100',
-    iconColor: 'text-red-700',
+    iconBg: 'bg-brand-100',
+    iconColor: 'text-brand-700',
     title: 'Puede ser unipersonal',
     description: 'No necesitás socios. Podés constituirla vos solo, algo imposible en S.R.L. o S.A. tradicionales.'
   },
@@ -65,12 +65,12 @@ export function QueEsSAS() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Conocé más
             </span>
             <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
               ¿Qué es una{' '}
-              <span className="text-red-700">S.A.S.</span>?
+              <span className="text-brand-700">S.A.S.</span>?
             </h2>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
               La <strong className="text-gray-700">Sociedad por Acciones Simplificada</strong> es un tipo societario moderno creado en 2017
@@ -108,7 +108,7 @@ export function QueEsSAS() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="bg-gradient-to-r from-red-50 to-red-100/50 border-l-4 border-red-700 p-6 md:p-8 rounded-xl"
+            className="bg-gradient-to-r from-brand-50 to-brand-100/50 border-l-4 border-brand-700 p-6 md:p-8 rounded-xl"
           >
             <h3 className="font-bold text-lg mb-3 text-gray-900">Marco Legal</h3>
             <p className="text-gray-700 mb-3 leading-relaxed">
@@ -121,7 +121,7 @@ export function QueEsSAS() {
                 href="https://www.argentina.gob.ar/justicia/registronacional/registrodesociedades/sas"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-red-700 font-semibold underline hover:text-red-800 transition-colors"
+                className="text-brand-700 font-semibold underline hover:text-brand-800 transition-colors"
               >
                 sitio oficial del Gobierno Argentino
               </a>.

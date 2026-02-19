@@ -42,7 +42,7 @@ export function Sidebar() {
       <div className="flex h-20 items-center border-b border-gray-100 px-6">
         <Link href="/" className="flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
           <img
-            src="/assets/img/logo4.png"
+            src="/assets/img/qms-logo-reg.png"
             alt="QuieroMiSAS Logo"
             className="h-12 w-auto"
           />
@@ -52,7 +52,7 @@ export function Sidebar() {
       {/* User Info */}
       <div className="px-4 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shadow-red-200">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-200">
             <span className="text-white font-bold text-sm">
               {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
             </span>
@@ -92,7 +92,7 @@ export function Sidebar() {
               className={cn(
                 'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-red-700 text-white shadow-lg shadow-red-200'
+                  ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               )}
             >
@@ -126,7 +126,7 @@ export function Sidebar() {
                   className={cn(
                     'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-red-700 text-white shadow-lg shadow-red-200'
+                      ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   )}
                 >
@@ -152,7 +152,7 @@ export function Sidebar() {
             setMobileMenuOpen(false)
             signOut({ callbackUrl: '/' })
           }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 cursor-pointer group"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition-all duration-200 cursor-pointer group"
         >
           <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
           <span>Cerrar Sesión</span>
@@ -166,7 +166,7 @@ export function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2.5 bg-white border border-gray-200 rounded-xl shadow-lg text-gray-700 hover:text-red-700 hover:border-red-200 transition-all duration-200 cursor-pointer"
+        className="md:hidden fixed top-4 left-4 z-50 p-2.5 bg-white border border-gray-200 rounded-xl shadow-lg text-gray-700 hover:text-brand-700 hover:border-brand-200 transition-all duration-200 cursor-pointer"
         aria-label="Toggle menu"
       >
         {mobileMenuOpen ? (

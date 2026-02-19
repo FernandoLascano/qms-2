@@ -46,10 +46,10 @@ export default function MigrateDomiciliosButton() {
   }
 
   return (
-    <div className="bg-white hover:bg-red-50 border-2 border-gray-200 hover:border-red-700 rounded-xl p-6 transition-all duration-200 hover:shadow-lg">
+    <div className="bg-white hover:bg-brand-50 border-2 border-gray-200 hover:border-brand-700 rounded-xl p-6 transition-all duration-200 hover:shadow-lg">
       <div className="flex items-start justify-between mb-4">
-        <div className="p-3 bg-red-100 rounded-lg">
-          <RefreshCw className={`h-6 w-6 text-red-700 ${migrando ? 'animate-spin' : ''}`} />
+        <div className="p-3 bg-brand-100 rounded-lg">
+          <RefreshCw className={`h-6 w-6 text-brand-700 ${migrando ? 'animate-spin' : ''}`} />
         </div>
         {resultado && (
           <div className="flex items-center gap-2">
@@ -85,7 +85,7 @@ export default function MigrateDomiciliosButton() {
       <Button
         onClick={ejecutarMigracion}
         disabled={migrando}
-        className="w-full bg-red-600 hover:bg-red-700 text-white"
+        className="w-full bg-brand-600 hover:bg-brand-700 text-white"
       >
         {migrando ? (
           <>

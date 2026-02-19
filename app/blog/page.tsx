@@ -58,7 +58,7 @@ export default function BlogPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto"></div>
           <p className="text-gray-500 mt-4">Cargando artículos...</p>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function BlogPage() {
       <Navbar currentPage="blog" />
 
       {/* Hero del Blog */}
-      <section className="bg-gradient-to-b from-red-50 to-white py-20 md:py-28">
+      <section className="bg-gradient-to-b from-brand-50 to-white py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
           <motion.div
             className="text-center mb-12"
@@ -78,12 +78,12 @@ export default function BlogPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Blog
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6">
               Recursos y{' '}
-              <span className="text-red-700">notas</span>
+              <span className="text-brand-700">notas</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-500 max-w-3xl mx-auto mb-8">
               Información actualizada sobre sociedades, trámites y legislación en Argentina.
@@ -99,7 +99,7 @@ export default function BlogPage() {
                   placeholder="Buscar artículos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all text-gray-700"
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all text-gray-700"
                 />
               </div>
             </div>
@@ -135,10 +135,10 @@ export default function BlogPage() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-red-200 hover:shadow-xl transition-all duration-300"
+                  className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-brand-200 hover:shadow-xl transition-all duration-300"
                 >
                   {/* Imagen */}
-                  <div className="h-52 bg-gradient-to-br from-red-50 to-orange-50 overflow-hidden relative">
+                  <div className="h-52 bg-gradient-to-br from-brand-50 to-orange-50 overflow-hidden relative">
                     {post.imagenHero ? (
                       <img
                         src={post.imagenHero}
@@ -148,13 +148,13 @@ export default function BlogPage() {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center">
-                          <BookOpen className="w-8 h-8 text-red-300" />
+                          <BookOpen className="w-8 h-8 text-brand-300" />
                         </div>
                       </div>
                     )}
                     {/* Categoría badge */}
                     <div className="absolute top-4 left-4">
-                      <span className="text-xs font-bold text-white bg-red-700 px-3 py-1.5 rounded-full shadow-lg">
+                      <span className="text-xs font-bold text-white bg-brand-700 px-3 py-1.5 rounded-full shadow-lg">
                         {post.categoria}
                       </span>
                     </div>
@@ -174,7 +174,7 @@ export default function BlogPage() {
                     </div>
 
                     {/* Título */}
-                    <h2 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-red-700 transition-colors leading-tight">
+                    <h2 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-brand-700 transition-colors leading-tight">
                       <Link href={`/blog/${post.slug}`}>
                         {post.titulo}
                       </Link>
@@ -188,7 +188,7 @@ export default function BlogPage() {
                     {/* Link */}
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="inline-flex items-center gap-2 text-red-700 font-semibold hover:text-red-800 transition-colors group/link"
+                      className="inline-flex items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
                     >
                       Leer artículo
                       <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
@@ -219,7 +219,7 @@ export default function BlogPage() {
             </p>
             <Link
               href="/registro"
-              className="inline-flex items-center gap-3 bg-red-700 text-white px-8 py-4 rounded-xl hover:bg-red-800 transition-colors font-bold text-lg shadow-lg shadow-red-900/30"
+              className="inline-flex items-center gap-3 bg-brand-700 text-white px-8 py-4 rounded-xl hover:bg-brand-800 transition-colors font-bold text-lg shadow-lg shadow-brand-900/30"
             >
               Comenzar ahora
               <ArrowRight className="w-5 h-5" />

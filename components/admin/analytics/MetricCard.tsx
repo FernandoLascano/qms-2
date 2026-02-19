@@ -23,7 +23,7 @@ export function MetricCard({
   color = 'red' 
 }: MetricCardProps) {
   const colorClasses = {
-    red: 'bg-red-50 text-red-700',
+    red: 'bg-brand-50 text-brand-700',
     green: 'bg-green-50 text-green-700',
     blue: 'bg-blue-50 text-blue-700',
     yellow: 'bg-yellow-50 text-yellow-700',
@@ -44,7 +44,7 @@ export function MetricCard({
           {trend && (
             <div className="flex items-center gap-1 mt-2">
               <span className={`text-sm font-semibold ${
-                trend.isPositive ? 'text-green-600' : 'text-red-600'
+                trend.isPositive ? 'text-green-600' : 'text-brand-600'
               }`}>
                 {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}%
               </span>

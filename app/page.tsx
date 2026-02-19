@@ -6,11 +6,17 @@ import { motion, useInView, useMotionValue, useTransform, animate } from 'framer
 import { useRef, useEffect, useState } from 'react'
 import { FAQ } from '@/components/landing/FAQ'
 import { Planes } from '@/components/landing/Planes'
+import { AsistenteChat } from '@/components/landing/AsistenteChat'
 import { Testimonios } from '@/components/landing/Testimonios'
 import { QueEsSAS } from '@/components/landing/QueEsSAS'
 import { GastosJurisdiccion } from '@/components/landing/GastosJurisdiccion'
 import { Notas } from '@/components/landing/Notas'
 import { Contacto } from '@/components/landing/Contacto'
+import { OtrosServicios } from '@/components/landing/OtrosServicios'
+import { StaggeredText } from '@/components/landing/StaggeredText'
+import { HeroBackground } from '@/components/landing/HeroBackground'
+import { AnimatedList } from '@/components/landing/AnimatedList'
+import { ParallaxCard } from '@/components/landing/ParallaxCard'
 import Navbar from '@/components/Navbar'
 
 // Componente de contador animado
@@ -56,12 +62,15 @@ export default function HomePage() {
 
       {/* Hero Section - Diseño Bold y Diferenciador */}
       <section className="relative overflow-hidden">
-        {/* Background con gradiente sutil */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-red-50/30" />
+        {/* Background base + gradiente */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-brand-50/30" />
 
         {/* Elementos decorativos geométricos */}
-        <div className="absolute top-20 right-0 w-96 h-96 bg-red-100/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-red-50/60 rounded-full blur-3xl" />
+        <div className="absolute top-20 right-0 w-96 h-96 bg-brand-100/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-brand-50/50 rounded-full blur-3xl" />
+
+        {/* Fondo dot-grid sobre los blurs para que sea visible */}
+        <HeroBackground variant="dot-grid" />
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 md:pt-16 md:pb-24">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-7xl mx-auto">
@@ -75,43 +84,31 @@ export default function HomePage() {
             >
               {/* Badge de confianza */}
               <motion.div
-                className="inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-4 py-2 mb-6"
+                className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-full px-4 py-2 mb-6"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
                 <span className="flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-brand-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
                 </span>
-                <span className="text-sm font-medium text-red-800">+500 empresas constituidas</span>
+                <span className="text-sm font-medium text-brand-800">+500 empresas constituidas</span>
               </motion.div>
 
-              {/* Título Principal - Tipografía más impactante */}
-              <motion.h1
+              {/* Título Principal - Texto staggered animado */}
+              <StaggeredText
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 tracking-tight leading-[1.1]"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              >
-                Tu empresa{' '}
-                <span className="relative">
-                  <span className="text-red-700">lista</span>
-                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
-                    <motion.path
-                      d="M2 8C50 2 150 2 198 8"
-                      stroke="#dc2626"
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.8, delay: 0.8 }}
-                    />
-                  </svg>
-                </span>
-                <br />
-                en <span className="text-red-700">5 días</span>
-              </motion.h1>
+                words={[
+                  { text: 'Tu' },
+                  { text: 'empresa' },
+                  { text: 'lista', withUnderline: true },
+                  { lineBreak: true },
+                  { text: 'en' },
+                  { text: '5', highlight: true },
+                  { text: 'días', highlight: true }
+                ]}
+              />
 
               {/* Subtítulo con valor claro */}
               <motion.p
@@ -142,20 +139,20 @@ export default function HomePage() {
               >
                 <Link href="/registro">
                   <motion.button
-                    className="group relative bg-red-700 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg shadow-red-200 overflow-hidden"
+                    className="group relative bg-brand-700 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg shadow-brand-200 overflow-hidden"
                     style={{ cursor: 'pointer' }}
                     whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <span className="relative z-10">Comenzar ahora</span>
                     <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-800 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-brand-700 to-brand-800 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   </motion.button>
                 </Link>
 
                 <motion.a
                   href="#planes"
-                  className="group border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 hover:border-red-200 hover:bg-red-50 transition-all"
+                  className="group border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -184,7 +181,7 @@ export default function HomePage() {
                     transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
                     whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                   >
-                    <item.icon className="w-5 h-5 text-red-600" />
+                    <item.icon className="w-5 h-5 text-brand-600" />
                     <span className="text-sm font-medium text-gray-700">{item.text}</span>
                   </motion.div>
                 ))}
@@ -296,12 +293,12 @@ export default function HomePage() {
             animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Por qué elegirnos
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
               La forma más simple de{' '}
-              <span className="text-red-700">constituir tu empresa</span>
+              <span className="text-brand-700">constituir tu empresa</span>
             </h2>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
               Nos encargamos de todo el proceso legal mientras vos te enfocás en tu negocio
@@ -312,8 +309,8 @@ export default function HomePage() {
             {[
               {
                 icon: Clock,
-                iconBg: 'bg-red-100',
-                iconColor: 'text-red-600',
+                iconBg: 'bg-brand-100',
+                iconColor: 'text-brand-600',
                 title: 'Ultra rápido',
                 description: 'Tu S.A.S. inscripta en solo 5 días hábiles. CUIT y matrícula listos.',
                 highlight: '5 días'
@@ -345,25 +342,26 @@ export default function HomePage() {
             ].map((benefit, index) => {
               const Icon = benefit.icon
               return (
-                <motion.div
-                  key={benefit.title}
-                  className="group relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 transition-all duration-300"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                  whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
-                >
-                  <div className={`w-14 h-14 ${benefit.iconBg} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                    <Icon className={`w-7 h-7 ${benefit.iconColor}`} />
-                  </div>
+                <ParallaxCard key={benefit.title} intensity={0.15 + index * 0.05}>
+                  <motion.div
+                    className="group relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 transition-all duration-300 h-full"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                    whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
+                  >
+                    <div className={`w-14 h-14 ${benefit.iconBg} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
+                      <Icon className={`w-7 h-7 ${benefit.iconColor}`} />
+                    </div>
 
-                  <span className="inline-block text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full mb-3">
-                    {benefit.highlight}
-                  </span>
+                    <span className="inline-block text-xs font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-full mb-3">
+                      {benefit.highlight}
+                    </span>
 
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{benefit.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{benefit.description}</p>
-                </motion.div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{benefit.title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed">{benefit.description}</p>
+                  </motion.div>
+                </ParallaxCard>
               )
             })}
           </div>
@@ -379,12 +377,12 @@ export default function HomePage() {
             animate={stepsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Proceso simple
             </span>
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
               4 pasos y{' '}
-              <span className="text-red-700">listo</span>
+              <span className="text-brand-700">listo</span>
             </h2>
             <p className="text-lg text-gray-500 max-w-2xl mx-auto">
               Un proceso diseñado para que sea lo más fácil posible
@@ -392,7 +390,7 @@ export default function HomePage() {
           </motion.div>
 
           <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
+            <AnimatedList className="grid md:grid-cols-2 gap-8">
               {[
                 {
                   number: '01',
@@ -418,14 +416,8 @@ export default function HomePage() {
                   description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.',
                   icon: '🎉'
                 }
-              ].map((step, index) => (
-                <motion.div
-                  key={step.number}
-                  className="relative"
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-                  animate={stepsInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.2 + index * 0.15 }}
-                >
+              ].map((step) => (
+                <div key={step.number} className="relative">
                   <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 h-full">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
@@ -433,7 +425,7 @@ export default function HomePage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="text-xs font-black text-red-600 bg-red-50 px-2 py-1 rounded">
+                          <span className="text-xs font-black text-brand-600 bg-brand-50 px-2 py-1 rounded">
                             PASO {step.number}
                           </span>
                         </div>
@@ -442,9 +434,9 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </div>
+            </AnimatedList>
 
             {/* CTA después de pasos */}
             <motion.div
@@ -477,6 +469,9 @@ export default function HomePage() {
       {/* Gastos por Jurisdicción */}
       <GastosJurisdiccion />
 
+      {/* Otros Servicios */}
+      <OtrosServicios />
+
       {/* Testimonios */}
       <Testimonios />
 
@@ -492,7 +487,7 @@ export default function HomePage() {
       {/* CTA Final - Diseño impactante */}
       <section className="relative py-24 overflow-hidden" ref={ctaRef}>
         {/* Background con patrón */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-red-900" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-brand-900" />
         <div className="absolute inset-0 opacity-30" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }} />
@@ -505,7 +500,7 @@ export default function HomePage() {
           >
             <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
               ¿Listo para dar el<br />
-              <span className="text-red-400">siguiente paso</span>?
+              <span className="text-brand-400">siguiente paso</span>?
             </h2>
 
             <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
@@ -563,6 +558,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Asistente IA */}
+      <AsistenteChat />
+
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -572,19 +570,20 @@ export default function HomePage() {
             <div className="md:col-span-2">
               <Link href="/" className="inline-block mb-4">
                 <img
-                  src="/assets/img/logo4.png"
+                  src="/assets/img/qms-logo-white.png"
                   alt="QuieroMiSAS Logo"
-                  className="h-12 w-auto brightness-0 invert"
+                  className="h-12 w-auto"
                 />
               </Link>
               <p className="text-sm text-gray-400 mb-4 max-w-sm">
                 Plataforma digital para la constitución de Sociedades por Acciones Simplificadas en Argentina.
                 Rápido, seguro y 100% online.
               </p>
-              <p className="text-sm text-gray-400 font-semibold">
-                Martínez Wehbe & Asociados
-              </p>
-              <p className="text-xs text-gray-500">Grupo MW - Mat. Prof. 6-1234 IPJ Córdoba</p>
+              <img
+                src="/assets/img/grupo-mw.png"
+                alt="Part of Grupo MW"
+                className="h-8 w-auto opacity-90"
+              />
             </div>
 
             {/* Columna 2: Servicios */}
@@ -636,15 +635,15 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Bottom Footer */}
-          <div className="border-t border-gray-800 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          {/* Bottom Footer - Centrado para no superponerse con el botón del chat */}
+          <div className="border-t border-gray-800 pt-8 pr-20 md:pr-24">
+            <div className="flex flex-col justify-center items-center gap-2 text-center">
               <p className="text-sm text-gray-500">
-                © 2024 QuieroMiSAS by Martínez Wehbe & Asociados
+                © 2026 QuieroMiSAS
               </p>
-              <div className="flex gap-6 text-sm">
-                <a href="/terminos" className="text-gray-500 hover:text-white transition">Términos</a>
-                <a href="/privacidad" className="text-gray-500 hover:text-white transition">Privacidad</a>
+              <div className="flex gap-6 text-xs text-gray-500">
+                <a href="/terminos" className="hover:text-white transition">Términos</a>
+                <a href="/privacidad" className="hover:text-white transition">Privacidad</a>
               </div>
             </div>
           </div>

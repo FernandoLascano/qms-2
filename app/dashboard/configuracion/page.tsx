@@ -106,11 +106,11 @@ export default function ConfiguracionPage() {
   return (
     <div className="space-y-8">
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Mi cuenta
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          <span className="text-red-700">Configuración</span>
+          <span className="text-brand-700">Configuración</span>
         </h1>
         <p className="text-gray-500 mt-2 text-lg">Administrá tu perfil y preferencias</p>
       </div>
@@ -120,8 +120,8 @@ export default function ConfiguracionPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
-                <User className="h-5 w-5 text-red-700" />
+              <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                <User className="h-5 w-5 text-brand-700" />
               </div>
               <CardTitle className="text-lg font-bold text-gray-900">Información Personal</CardTitle>
             </div>
@@ -174,7 +174,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200"
+                className="w-full bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200"
                 disabled={loading}
               >
                 {loading ? (
@@ -197,8 +197,8 @@ export default function ConfiguracionPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-red-100 flex items-center justify-center">
-                <Lock className="h-5 w-5 text-red-700" />
+              <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
+                <Lock className="h-5 w-5 text-brand-700" />
               </div>
               <CardTitle className="text-lg font-bold text-gray-900">Seguridad</CardTitle>
             </div>
@@ -245,7 +245,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200"
+                className="w-full bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200"
                 disabled={loading}
               >
                 {loading ? (

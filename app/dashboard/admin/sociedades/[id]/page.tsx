@@ -72,7 +72,7 @@ async function SociedadDetallePage({ params }: PageProps) {
           </Link>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-red-700" />
+              <Building2 className="h-8 w-8 text-brand-700" />
               {tramite.denominacionAprobada || tramite.denominacionSocial1}
             </h1>
             <p className="text-gray-600 mt-1">Sociedad Constituida</p>
@@ -165,7 +165,7 @@ async function SociedadDetallePage({ params }: PageProps) {
 
       {/* Divisor */}
       <div className="border-t-2 border-gray-200 my-8">
-        <h3 className="text-xl font-bold text-red-900 mt-8 mb-4">
+        <h3 className="text-xl font-bold text-brand-900 mt-8 mb-4">
           📋 Información Completa del Trámite
         </h3>
         <p className="text-gray-600 mb-6">

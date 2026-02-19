@@ -14,18 +14,18 @@ export function ProgressSummary({ pasoActual, totalPasos, pasosCompletados }: Pr
   const pasosCompletos = pasosCompletados.filter(Boolean).length
 
   return (
-    <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-200 rounded-xl p-4 mb-6">
+    <div className="bg-gradient-to-r from-brand-50 to-orange-50 border-2 border-brand-200 rounded-xl p-4 mb-6">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-red-600" />
+          <Clock className="h-5 w-5 text-brand-600" />
           <span className="font-semibold text-gray-900">Progreso del Formulario</span>
         </div>
-        <span className="text-2xl font-bold text-red-600">{porcentaje}%</span>
+        <span className="text-2xl font-bold text-brand-600">{porcentaje}%</span>
       </div>
       
       <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
         <div
-          className="bg-gradient-to-r from-red-600 to-red-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+          className="bg-gradient-to-r from-brand-600 to-brand-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
           style={{ width: `${porcentaje}%` }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />

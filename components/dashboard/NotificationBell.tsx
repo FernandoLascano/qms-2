@@ -23,8 +23,8 @@ export default function NotificationBell() {
         }
       case 'ERROR':
         return {
-          badge: 'bg-red-100 text-red-700 border-red-200',
-          bg: 'bg-red-50',
+          badge: 'bg-brand-100 text-brand-700 border-brand-200',
+          bg: 'bg-brand-50',
           icon: '✕'
         }
       case 'ALERTA':
@@ -114,7 +114,7 @@ export default function NotificationBell() {
 
         {/* Badge con contador */}
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+          <span className="absolute -top-1 -right-1 bg-brand-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
             {count > 9 ? '9+' : count}
           </span>
         )}
@@ -137,8 +137,8 @@ export default function NotificationBell() {
             {/* Header */}
             <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Bell className="h-5 w-5 text-red-600" />
+                <div className="p-2 bg-brand-100 rounded-lg">
+                  <Bell className="h-5 w-5 text-brand-600" />
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900">Notificaciones</h3>
@@ -179,7 +179,7 @@ export default function NotificationBell() {
                       >
                         <div className="flex gap-3">
                           {/* Icono - Mejorado para mayor visibilidad */}
-                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold shadow-sm border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('red') ? 'border-red-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}>
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold shadow-sm border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('brand') ? 'border-brand-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}>
                             {config.icon}
                           </div>
 
@@ -242,7 +242,7 @@ export default function NotificationBell() {
                     router.push('/dashboard/notificaciones')
                     setIsOpen(false)
                   }}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  className="flex-1 bg-brand-600 hover:bg-brand-700 text-white"
                 >
                   Ver todas
                 </Button>

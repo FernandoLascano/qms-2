@@ -62,11 +62,11 @@ export default function ReportingPagos({ pagos }: ReportingPagosProps) {
   const conceptosArray = Object.values(pagosPorConcepto).sort((a, b) => b.total - a.total)
 
   return (
-    <div className="border-red-200 bg-red-50 rounded-lg">
+    <div className="border-brand-200 bg-brand-50 rounded-lg">
       <CollapsibleCard
         title="Reporte de Pagos (Honorarios)"
         description="Ingresos por honorarios de este trámite (las tasas y gastos externos no se contabilizan aquí)"
-        icon={<DollarSign className="h-5 w-5 text-red-700" />}
+        icon={<DollarSign className="h-5 w-5 text-brand-700" />}
       >
         <div className="space-y-6">
         {/* Estadísticas Principales */}
@@ -98,15 +98,15 @@ export default function ReportingPagos({ pagos }: ReportingPagosProps) {
           </div>
 
           {pagosRechazados.length > 0 && (
-            <div className="bg-red-100 border border-red-300 rounded-lg p-4">
+            <div className="bg-brand-100 border border-brand-300 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-red-900">Rechazado</span>
-                <AlertCircle className="h-5 w-5 text-red-600" />
+                <span className="text-sm font-medium text-brand-900">Rechazado</span>
+                <AlertCircle className="h-5 w-5 text-brand-600" />
               </div>
-              <p className="text-2xl font-bold text-red-900">
+              <p className="text-2xl font-bold text-brand-900">
                 ${totalRechazado.toLocaleString('es-AR')}
               </p>
-              <p className="text-xs text-red-700 mt-1">
+              <p className="text-xs text-brand-700 mt-1">
                 {pagosRechazados.length} pago{pagosRechazados.length !== 1 ? 's' : ''} rechazado{pagosRechazados.length !== 1 ? 's' : ''}
               </p>
             </div>

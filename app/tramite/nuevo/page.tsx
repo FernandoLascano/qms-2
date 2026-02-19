@@ -654,7 +654,7 @@ export default function NuevoTramitePage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-red-600 mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto mb-4" />
           <p className="text-gray-600">Cargando formulario...</p>
         </div>
       </div>
@@ -666,10 +666,10 @@ export default function NuevoTramitePage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
               Nuevo Trámite
             </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Constituí tu <span className="text-red-700">S.A.S.</span></h1>
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Constituí tu <span className="text-brand-700">S.A.S.</span></h1>
             <p className="text-gray-500 mt-2 text-lg">Completa el formulario paso a paso</p>
           </div>
           {/* Auto-save indicator */}
@@ -677,7 +677,7 @@ export default function NuevoTramitePage() {
             <div className="flex items-center gap-2 text-sm bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                 {isSaving ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                    <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
                     <span className="text-gray-600">Guardando...</span>
                   </>
                 ) : lastSaved ? (
@@ -705,13 +705,13 @@ export default function NuevoTramitePage() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-gray-700">Progreso del formulario</span>
               </div>
-              <span className="text-lg font-bold text-red-600">
+              <span className="text-lg font-bold text-brand-600">
                 {Math.round((pasoActual / 7) * 100)}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-red-600 to-red-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                className="bg-gradient-to-r from-brand-600 to-brand-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
                 style={{ width: `${(pasoActual / 7) * 100}%` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
@@ -740,9 +740,9 @@ export default function NuevoTramitePage() {
                       <div
                         className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                           isCompleted
-                            ? 'bg-red-600 text-white shadow-lg shadow-red-200 md:scale-110'
+                            ? 'bg-brand-600 text-white shadow-lg shadow-brand-200 md:scale-110'
                             : isActive
-                            ? 'bg-red-600 text-white shadow-lg shadow-red-300 md:scale-110 ring-2 md:ring-4 ring-red-100'
+                            ? 'bg-brand-600 text-white shadow-lg shadow-brand-300 md:scale-110 ring-2 md:ring-4 ring-brand-100'
                             : 'bg-gray-100 text-gray-400'
                         }`}
                       >
@@ -755,7 +755,7 @@ export default function NuevoTramitePage() {
                       {/* Step Number Badge */}
                       {!isCompleted && (
                         <div className={`absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold ${
-                          isActive ? 'bg-red-700 text-white' : 'bg-gray-300 text-gray-600'
+                          isActive ? 'bg-brand-700 text-white' : 'bg-gray-300 text-gray-600'
                         }`}>
                           {paso.id}
                         </div>
@@ -765,7 +765,7 @@ export default function NuevoTramitePage() {
                     {/* Labels - Fixed height for alignment */}
                     <div className="text-center w-full h-8 md:h-10 flex items-center justify-center">
                       <p className={`text-xs md:text-sm font-semibold transition-colors ${
-                        isActive ? 'text-red-600' : isCompleted ? 'text-gray-700' : 'text-gray-500'
+                        isActive ? 'text-brand-600' : isCompleted ? 'text-gray-700' : 'text-gray-500'
                       }`}>
                         {paso.nombre}
                       </p>
@@ -776,11 +776,11 @@ export default function NuevoTramitePage() {
                   {index < PASOS.length - 1 && (
                     <div className="flex-shrink-0 mx-1 md:mx-2 relative" style={{ marginTop: '20px', alignSelf: 'flex-start' }}>
                       <div className={`w-6 md:w-8 lg:w-10 h-0.5 md:h-1 rounded-full transition-all duration-500 ${
-                        isCompleted ? 'bg-red-600' : 'bg-gray-200'
+                        isCompleted ? 'bg-brand-600' : 'bg-gray-200'
                       }`} />
                       {/* Animated progress dot */}
                       {isActive && (
-                        <div className="absolute top-1/2 left-0 w-2 h-2 md:w-3 md:h-3 bg-red-600 rounded-full transform -translate-y-1/2 animate-pulse" />
+                        <div className="absolute top-1/2 left-0 w-2 h-2 md:w-3 md:h-3 bg-brand-600 rounded-full transform -translate-y-1/2 animate-pulse" />
                       )}
                     </div>
                   )}
@@ -797,8 +797,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 1 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">1</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">1</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Datos Personales</h2>
@@ -890,9 +890,9 @@ export default function NuevoTramitePage() {
 
                 <div className="border-t pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-red-900">Selecciona tu Plan</h3>
+                    <h3 className="font-bold text-lg text-brand-900">Selecciona tu Plan</h3>
                     <Link href="/#planes" target="_blank">
-                      <Button variant="outline" size="sm" className="gap-2 text-red-700 border-red-300 hover:bg-red-50">
+                      <Button variant="outline" size="sm" className="gap-2 text-brand-700 border-brand-300 hover:bg-brand-50">
                         Ver Comparativa
                       </Button>
                     </Link>
@@ -908,17 +908,17 @@ export default function NuevoTramitePage() {
                         onClick={() => setFormData(prev => ({ ...prev, plan: plan.id as any }))}
                         className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
                           formData.plan === plan.id
-                            ? 'border-red-600 bg-red-50 shadow-md'
+                            ? 'border-brand-600 bg-brand-50 shadow-md'
                             : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-sm'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-lg text-red-900">{plan.nombre}</h4>
+                          <h4 className="font-bold text-lg text-brand-900">{plan.nombre}</h4>
                           {formData.plan === plan.id && (
-                            <Check className="h-6 w-6 text-red-600 flex-shrink-0" />
+                            <Check className="h-6 w-6 text-brand-600 flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-2xl font-bold text-red-900 my-2">{plan.precio}</p>
+                        <p className="text-2xl font-bold text-brand-900 my-2">{plan.precio}</p>
                         <ul className="text-sm text-gray-700 space-y-1">
                           <li>✓ Constitución de Sociedad</li>
                           <li>✓ Obtención de CUIT</li>
@@ -945,14 +945,14 @@ export default function NuevoTramitePage() {
                         }))}
                         className={`border-2 rounded-lg p-4 cursor-pointer transition ${
                           formData.jurisdiccion === jurisdiccion.id
-                            ? 'border-red-600 bg-red-50'
+                            ? 'border-brand-600 bg-brand-50'
                             : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <span className="font-medium text-gray-900">{jurisdiccion.nombre}</span>
                           {formData.jurisdiccion === jurisdiccion.id && (
-                            <Check className="h-5 w-5 text-red-600" />
+                            <Check className="h-5 w-5 text-brand-600" />
                           )}
                         </div>
                       </div>
@@ -966,8 +966,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">2</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">2</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Denominación Social</h2>
@@ -981,8 +981,8 @@ export default function NuevoTramitePage() {
                     Proporciona 3 opciones de nombre para tu SAS
                   </p>
                   
-                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-red-800">
+                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-brand-800">
                       <span className="font-semibold">Importante:</span> Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
                     </p>
                   </div>
@@ -1055,8 +1055,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">3</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">3</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Objeto Social</h2>
@@ -1070,7 +1070,7 @@ export default function NuevoTramitePage() {
                     <div>
                       <Label>Objeto Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-red-300 transition">
+                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
                           <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
@@ -1079,7 +1079,7 @@ export default function NuevoTramitePage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="gap-1 text-xs text-red-700 border-red-300 hover:bg-red-50"
+                                className="gap-1 text-xs text-brand-700 border-brand-300 hover:bg-brand-50"
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
@@ -1093,7 +1093,7 @@ export default function NuevoTramitePage() {
                             <p className="text-sm text-gray-600">Objeto social estándar que cubre la mayoría de las actividades comerciales</p>
                           </div>
                         </label>
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-red-300 transition">
+                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
                           <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
                           <div>
                             <p className="font-medium text-gray-900">Objeto personalizado</p>
@@ -1105,15 +1105,15 @@ export default function NuevoTramitePage() {
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
                         <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>
-                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
+                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="border-t pt-6">
                   <h3 className="font-black text-lg text-gray-900 mb-2">Domicilio Social</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-red-900">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
+                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-brand-900">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
                   </div>
                   <div className="mb-4">
                     <label className="flex items-center gap-2">
@@ -1175,8 +1175,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 4 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">4</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">4</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Capital Social</h2>
@@ -1186,22 +1186,22 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-black text-lg text-gray-900 mb-2">Capital Social y CBU</h3>
                   <p className="text-gray-500 mb-4">Define el capital inicial de tu sociedad</p>
-                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-red-900 mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
-                    <p className="text-sm font-bold text-red-900">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
+                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-brand-900 mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
+                    <p className="text-sm font-bold text-brand-900">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
                     <p className="text-xs text-gray-600 mt-1">SMVM actual: ${smvm.toLocaleString('es-AR')}</p>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label>Capital Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-center gap-3 p-3 border-2 border-red-600 bg-red-50 rounded-lg cursor-pointer">
+                        <label className="flex items-center gap-3 p-3 border-2 border-brand-600 bg-brand-50 rounded-lg cursor-pointer">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
                           <div>
                             <p className="font-medium text-gray-900">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
                           </div>
                         </label>
-                        <label className="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer hover:border-red-300 transition">
+                        <label className="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
                           <div>
                             <p className="font-medium text-gray-900">Otro monto</p>
@@ -1214,7 +1214,7 @@ export default function NuevoTramitePage() {
                         <Label htmlFor="capitalSocialCustom">Capital Social *</Label>
                         <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} />
                         {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * smvm) && (
-                          <p className="text-xs text-red-600 mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
+                          <p className="text-xs text-brand-600 mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
                         )}
                       </div>
                     )}
@@ -1222,9 +1222,9 @@ export default function NuevoTramitePage() {
                 </div>
                 <div className="border-t pt-6">
                   <h3 className="font-black text-lg text-gray-900 mb-2">Depósito del Capital (CBU)</h3>
-                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-red-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito inicial del 25% del capital social en una cuenta bancaria. Este dinero luego será reintegrado a los CBU informados.</p>
-                    <p className="text-sm font-bold text-red-900 mt-3">Requisitos de CBU:</p>
+                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-brand-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito inicial del 25% del capital social en una cuenta bancaria. Este dinero luego será reintegrado a los CBU informados.</p>
+                    <p className="text-sm font-bold text-brand-900 mt-3">Requisitos de CBU:</p>
                     <ul className="text-xs text-gray-700 mt-2 space-y-1 ml-4">
                       <li>• El CBU Principal deberá ser del Administrador Titular</li>
                       <li>• El CBU Secundario deberá corresponder a otra cuenta del Administrador Titular o a otro Administrador</li>
@@ -1331,8 +1331,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 5 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">5</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">5</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Socios</h2>
@@ -1361,7 +1361,7 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-red-600 text-white border-2 border-red-600 hover:bg-red-700 hover:border-red-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
+                          className="w-8 h-8 rounded-full bg-brand-600 text-white border-2 border-brand-600 hover:bg-brand-700 hover:border-brand-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
                         >
                           −
                         </button>
@@ -1389,7 +1389,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-red-600 text-white border-2 border-red-600 hover:bg-red-700 hover:border-red-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
+                          className="w-8 h-8 rounded-full bg-brand-600 text-white border-2 border-brand-600 hover:bg-brand-700 hover:border-brand-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
                         >
                           +
                         </button>
@@ -1440,7 +1440,7 @@ export default function NuevoTramitePage() {
                         const faltaAsignar = capitalTotal - totalAportes
                         const diferencia = Math.abs(faltaAsignar)
                         return (
-                          <p className={diferencia <= 1 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                          <p className={diferencia <= 1 ? 'text-green-600 font-medium' : 'text-brand-600 font-medium'}>
                             <span className="font-semibold">{diferencia <= 1 ? '✓ Capital completo' : 'Falta asignar'}:</span> $
                             {diferencia <= 1 ? '0' : Math.round(faltaAsignar).toLocaleString('es-AR')}
                           </p>
@@ -1449,8 +1449,8 @@ export default function NuevoTramitePage() {
                     </div>
                   </div>
 
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-red-900">
+                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-brand-900">
                       💡 <strong>Requisitos importantes:</strong> Es fundamental que los accionistas designados tengan un domicilio fiscal registrado ante ARCA y su CUIT habilitado. En caso de no cumplir con estos requisitos, deberá regularizarse la situación para continuar con el trámite.
                     </p>
                   </div>
@@ -1640,7 +1640,7 @@ export default function NuevoTramitePage() {
                               }}
                               className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
                                 socio.tipoAporte === 'MONTO'
-                                  ? 'border-red-600 bg-red-50 text-red-900 font-medium'
+                                  ? 'border-brand-600 bg-brand-50 text-brand-900 font-medium'
                                   : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                               }`}
                             >
@@ -1655,7 +1655,7 @@ export default function NuevoTramitePage() {
                               }}
                               className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
                                 socio.tipoAporte === 'PORCENTAJE'
-                                  ? 'border-red-600 bg-red-50 text-red-900 font-medium'
+                                  ? 'border-brand-600 bg-brand-50 text-brand-900 font-medium'
                                   : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                               }`}
                             >
@@ -1730,8 +1730,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 6 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">6</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">6</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Administración</h2>
@@ -1745,8 +1745,8 @@ export default function NuevoTramitePage() {
                     Define quiénes administrarán la sociedad
                   </p>
 
-                  <div className="bg-red-50 border-2 border-red-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-red-900">
+                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm text-brand-900">
                       ℹ️ <strong>Requisitos de administradores:</strong> Es obligatoria la designación de como mínimo un Administrador Titular y un Suplente. Los Administradores pueden o no ser socios de la Sociedad.
                     </p>
                   </div>
@@ -2076,8 +2076,8 @@ export default function NuevoTramitePage() {
             {pasoActual === 7 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-red-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-red-700 font-black text-xl">7</span>
+                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-brand-700 font-black text-xl">7</span>
                   </div>
                   <div className="min-w-0">
                     <h2 className="text-2xl md:text-3xl font-black text-gray-900">Cierre de Ejercicio</h2>
@@ -2109,7 +2109,7 @@ export default function NuevoTramitePage() {
                       required
                       className="max-w-xs"
                     />
-                    <p className="text-xs text-red-600 mt-1">Este campo es obligatorio</p>
+                    <p className="text-xs text-brand-600 mt-1">Este campo es obligatorio</p>
                     <p className="text-xs text-gray-500 mt-1">
                       Ingresa el día y mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
                     </p>
@@ -2163,7 +2163,7 @@ export default function NuevoTramitePage() {
               </Button>
 
               {pasoActual < 7 ? (
-                <Button onClick={handleSiguiente} className="gap-2 bg-red-700 hover:bg-red-800 w-full sm:w-auto rounded-xl shadow-lg shadow-red-200 h-12 px-6 font-semibold">
+                <Button onClick={handleSiguiente} className="gap-2 bg-brand-700 hover:bg-brand-800 w-full sm:w-auto rounded-xl shadow-lg shadow-brand-200 h-12 px-6 font-semibold">
                   Siguiente
                   <ChevronRight className="h-5 w-5" />
                 </Button>

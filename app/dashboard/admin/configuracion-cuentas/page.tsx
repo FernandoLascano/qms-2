@@ -117,7 +117,7 @@ export default function ConfiguracionCuentasPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-red-900">Configuración de Cuentas Bancarias</h2>
+          <h2 className="text-3xl font-bold text-brand-900">Configuración de Cuentas Bancarias</h2>
           <p className="text-gray-600 mt-1">
             Gestiona las cuentas bancarias pre-configuradas para transferencias
           </p>
@@ -239,7 +239,7 @@ export default function ConfiguracionCuentasPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => eliminarCuenta(cuenta.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-brand-600 hover:text-brand-700 hover:bg-brand-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -254,7 +254,7 @@ export default function ConfiguracionCuentasPage() {
               <Button
                 onClick={guardarCuentas}
                 disabled={guardando}
-                className="gap-2 bg-red-600 hover:bg-red-700"
+                className="gap-2 bg-brand-600 hover:bg-brand-700"
               >
                 <Save className="h-4 w-4" />
                 {guardando ? 'Guardando...' : 'Guardar Cambios'}

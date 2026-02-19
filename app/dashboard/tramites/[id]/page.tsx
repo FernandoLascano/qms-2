@@ -84,7 +84,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       case 'ESPERANDO_APROBACION':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'CANCELADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -112,7 +112,7 @@ async function TramiteDetallePage({ params }: PageProps) {
           </Button>
         </Link>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-red-900">
+          <h2 className="text-3xl font-bold text-brand-900">
             {tramite.denominacionAprobada || tramite.denominacionSocial1}
           </h2>
           <p className="text-gray-600 mt-1">
@@ -244,7 +244,7 @@ async function TramiteDetallePage({ params }: PageProps) {
 
       {/* Divisor */}
       <div className="border-t-2 border-gray-200 my-8">
-        <h3 className="text-xl font-bold text-red-900 mt-8 mb-4">
+        <h3 className="text-xl font-bold text-brand-900 mt-8 mb-4">
           📋 Información Detallada
         </h3>
         <p className="text-gray-600 mb-6">

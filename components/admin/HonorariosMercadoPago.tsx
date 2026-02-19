@@ -258,7 +258,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   setMonto(montos.mercadoPago.toString())
                   setMontoTransferencia(montos.transferencia.toString())
                 }}
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
                 disabled={generando}
               >
                 <option value="BASICO">Básico - ${MONTOS_POR_PLAN.BASICO.mercadoPago.toLocaleString('es-AR')}</option>
@@ -309,7 +309,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                       id="cuentaPreConfigurada"
                       value={cuentaSeleccionada}
                       onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-600"
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
                       disabled={generando}
                     >
                       <option value="">-- Seleccionar cuenta --</option>

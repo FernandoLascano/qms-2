@@ -71,12 +71,12 @@ export function GastosJurisdiccion() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Costos adicionales
           </span>
           <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
             Gastos según{' '}
-            <span className="text-red-700">jurisdicción</span>
+            <span className="text-brand-700">jurisdicción</span>
           </h2>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Además de nuestros honorarios, existen gastos de inscripción que varían según donde constituyas tu S.A.S.
@@ -103,7 +103,7 @@ export function GastosJurisdiccion() {
               {jurisdiccion === 'cordoba' && (
                 <motion.div
                   layoutId="jurisdiccionBg"
-                  className="absolute inset-0 bg-red-700 rounded-lg"
+                  className="absolute inset-0 bg-brand-700 rounded-lg"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}
@@ -121,7 +121,7 @@ export function GastosJurisdiccion() {
               {jurisdiccion === 'caba' && (
                 <motion.div
                   layoutId="jurisdiccionBg"
-                  className="absolute inset-0 bg-red-700 rounded-lg"
+                  className="absolute inset-0 bg-brand-700 rounded-lg"
                   transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                 />
               )}

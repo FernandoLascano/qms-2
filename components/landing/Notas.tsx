@@ -54,7 +54,7 @@ export function Notas() {
       <section className="py-20 md:py-28 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto"></div>
             <p className="text-gray-500 mt-4">Cargando notas...</p>
           </div>
         </div>
@@ -73,12 +73,12 @@ export function Notas() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Blog
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
             Recursos y{' '}
-            <span className="text-red-700">notas</span>
+            <span className="text-brand-700">notas</span>
           </h2>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Información actualizada sobre sociedades, trámites y legislación en Argentina
@@ -111,10 +111,10 @@ export function Notas() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
-                className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-red-200 hover:shadow-xl transition-all duration-300"
+                className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-brand-200 hover:shadow-xl transition-all duration-300"
               >
                 {/* Imagen */}
-                <div className="h-52 bg-gradient-to-br from-red-50 to-orange-50 overflow-hidden relative">
+                <div className="h-52 bg-gradient-to-br from-brand-50 to-orange-50 overflow-hidden relative">
                   {nota.imagenHero ? (
                     <img
                       src={nota.imagenHero}
@@ -124,13 +124,13 @@ export function Notas() {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center">
-                        <BookOpen className="w-8 h-8 text-red-300" />
+                        <BookOpen className="w-8 h-8 text-brand-300" />
                       </div>
                     </div>
                   )}
                   {/* Categoría badge sobre imagen */}
                   <div className="absolute top-4 left-4">
-                    <span className="text-xs font-bold text-white bg-red-700 px-3 py-1.5 rounded-full shadow-lg">
+                    <span className="text-xs font-bold text-white bg-brand-700 px-3 py-1.5 rounded-full shadow-lg">
                       {nota.categoria}
                     </span>
                   </div>
@@ -150,7 +150,7 @@ export function Notas() {
                   </div>
 
                   {/* Título */}
-                  <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-red-700 transition-colors leading-tight">
+                  <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-brand-700 transition-colors leading-tight">
                     <Link href={`/blog/${nota.slug}`}>
                       {nota.titulo}
                     </Link>
@@ -164,7 +164,7 @@ export function Notas() {
                   {/* Link */}
                   <Link
                     href={`/blog/${nota.slug}`}
-                    className="inline-flex items-center gap-2 text-red-700 font-semibold hover:text-red-800 transition-colors group/link"
+                    className="inline-flex items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
                   >
                     Leer artículo
                     <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
@@ -185,7 +185,7 @@ export function Notas() {
         >
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 border-2 border-red-700 text-red-700 px-8 py-3 rounded-xl hover:bg-red-50 transition-colors font-semibold"
+            className="inline-flex items-center gap-2 border-2 border-brand-700 text-brand-700 px-8 py-3 rounded-xl hover:bg-brand-50 transition-colors font-semibold"
           >
             Ver todas las notas
             <ArrowRight className="w-4 h-4" />

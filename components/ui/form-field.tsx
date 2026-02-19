@@ -52,11 +52,11 @@ export function FormField({
       <div className="flex items-center justify-between">
         <Label htmlFor={name} className={cn(
           'text-sm font-semibold',
-          hasError && 'text-red-600',
+          hasError && 'text-brand-600',
           hasSuccess && 'text-green-600'
         )}>
           {label}
-          {required && <span className="text-red-600 ml-1">*</span>}
+          {required && <span className="text-brand-600 ml-1">*</span>}
         </Label>
         {hasSuccess && (
           <CheckCircle className="h-4 w-4 text-green-600" />
@@ -79,18 +79,18 @@ export function FormField({
           pattern={pattern}
           autoComplete={autoComplete}
           className={cn(
-            hasError && 'border-red-500 focus:ring-red-500 focus:border-red-500',
+            hasError && 'border-brand-500 focus:ring-brand-500 focus:border-brand-500',
             hasSuccess && 'border-green-500 focus:ring-green-500 focus:border-green-500',
             !hasError && !hasSuccess && 'border-gray-300'
           )}
         />
         {hasError && (
-          <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-red-500 pointer-events-none" />
+          <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-500 pointer-events-none" />
         )}
       </div>
 
       {error && (
-        <p className="text-xs text-red-600 flex items-center gap-1">
+        <p className="text-xs text-brand-600 flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>

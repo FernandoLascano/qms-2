@@ -35,9 +35,9 @@ export function TramitesPorMesChart({ data }: TramitesPorMesChartProps) {
           <Line 
             type="monotone" 
             dataKey="cantidad" 
-            stroke="#b91c1c" 
+            stroke="#991D23" 
             strokeWidth={3}
-            dot={{ fill: '#b91c1c', r: 5 }}
+            dot={{ fill: '#991D23', r: 5 }}
             activeDot={{ r: 7 }}
           />
         </LineChart>

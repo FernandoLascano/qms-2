@@ -493,24 +493,24 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                     key={doc.id}
                     className={`p-4 border-2 rounded-lg ${
                       estaRechazado
-                        ? 'bg-red-50 border-red-200'
+                        ? 'bg-brand-50 border-brand-200'
                         : 'bg-yellow-50 border-yellow-200'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <Clock className={`h-6 w-6 flex-shrink-0 mt-0.5 ${
-                        estaRechazado ? 'text-red-600' : 'text-yellow-600'
+                        estaRechazado ? 'text-brand-600' : 'text-yellow-600'
                       }`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className={`font-semibold ${
-                            estaRechazado ? 'text-red-900' : 'text-yellow-900'
+                            estaRechazado ? 'text-brand-900' : 'text-yellow-900'
                           }`}>
                             {doc.nombre}
                           </h4>
                           <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                             estaRechazado
-                              ? 'bg-red-600 text-white'
+                              ? 'bg-brand-600 text-white'
                               : 'bg-yellow-600 text-white'
                           }`}>
                             {estaRechazado ? 'Rechazado' : 'Esperando Validación'}
@@ -519,7 +519,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                         {documentoFirmado && (
                           <>
                             <p className={`text-xs mb-1 ${
-                              estaRechazado ? 'text-red-700' : 'text-yellow-700'
+                              estaRechazado ? 'text-brand-700' : 'text-yellow-700'
                             }`}>
                               {estaRechazado ? (
                                 <>⚠️ Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
@@ -528,7 +528,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                               )}
                             </p>
                             {estaRechazado && documentoFirmado.observaciones && (
-                              <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded text-xs text-red-900">
+                              <div className="mt-2 p-2 bg-brand-100 border border-brand-300 rounded text-xs text-brand-900">
                                 <strong>Comentarios:</strong> {documentoFirmado.observaciones}
                               </div>
                             )}
@@ -555,7 +555,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                                     handleSubirFirmado(doc)
                                   }}
                                   disabled={subiendo[doc.id] || !archivosSeleccionados[doc.id]}
-                                  className="gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
                                   size="sm"
                                   type="button"
                                 >

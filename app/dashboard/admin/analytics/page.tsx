@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto mb-4"></div>
           <p className="text-gray-600">Cargando métricas...</p>
         </div>
       </div>
@@ -152,23 +152,23 @@ export default function AnalyticsPage() {
   if (error) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-red-900 mb-4">❌ Error al cargar Analytics</h2>
-          <p className="text-red-700 mb-2"><strong>Error:</strong> {error.error}</p>
+        <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-brand-900 mb-4">❌ Error al cargar Analytics</h2>
+          <p className="text-brand-700 mb-2"><strong>Error:</strong> {error.error}</p>
           {error.mensaje && (
-            <p className="text-red-600 mb-2"><strong>Mensaje:</strong> {error.mensaje}</p>
+            <p className="text-brand-600 mb-2"><strong>Mensaje:</strong> {error.mensaje}</p>
           )}
           {error.detalles && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-red-700 font-semibold">Ver detalles técnicos</summary>
-              <pre className="mt-2 p-4 bg-red-100 rounded text-xs overflow-auto max-h-64">
+              <summary className="cursor-pointer text-brand-700 font-semibold">Ver detalles técnicos</summary>
+              <pre className="mt-2 p-4 bg-brand-100 rounded text-xs overflow-auto max-h-64">
                 {error.detalles}
               </pre>
             </details>
           )}
           <button
             onClick={fetchData}
-            className="mt-4 bg-red-700 text-white px-6 py-2 rounded-lg hover:bg-red-800 transition"
+            className="mt-4 bg-brand-700 text-white px-6 py-2 rounded-lg hover:bg-brand-800 transition"
           >
             🔄 Reintentar
           </button>
@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
         <p className="text-gray-600">No hay datos disponibles</p>
         <button
           onClick={fetchData}
-          className="mt-4 bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800"
+          className="mt-4 bg-brand-700 text-white px-4 py-2 rounded-lg hover:bg-brand-800"
         >
           Cargar datos
         </button>
@@ -196,11 +196,11 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Métricas
           </span>
           <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Dashboard de <span className="text-red-700">Analytics</span>
+            Dashboard de <span className="text-brand-700">Analytics</span>
           </h1>
           <p className="text-gray-500 mt-2 text-lg">
             Última actualización: {format(new Date(), "d 'de' MMMM, HH:mm", { locale: es })}
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
           )}
           <button
             onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)}
-            className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition cursor-pointer shadow-lg shadow-red-200 font-semibold"
+            className="flex items-center gap-2 bg-brand-700 text-white px-6 py-3 rounded-xl hover:bg-brand-800 transition cursor-pointer shadow-lg shadow-brand-200 font-semibold"
           >
             <Download className="w-5 h-5" />
             Exportar PDF Completo
@@ -230,7 +230,7 @@ export default function AnalyticsPage() {
             <select
               value={periodo}
               onChange={(e) => setPeriodo(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-300 transition-all"
             >
               <option value="dia">Hoy</option>
               <option value="semana">Última semana</option>
@@ -244,7 +244,7 @@ export default function AnalyticsPage() {
             <select
               value={jurisdiccion}
               onChange={(e) => setJurisdiccion(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-red-200 focus:border-red-300 transition-all"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 focus:ring-2 focus:ring-brand-200 focus:border-brand-300 transition-all"
             >
               <option value="todas">Todas</option>
               <option value="cordoba">Córdoba</option>
@@ -471,7 +471,7 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-red-700 h-2 rounded-full transition-all"
+                      className="bg-brand-700 h-2 rounded-full transition-all"
                       style={{ width: `${porcentaje}%` }}
                     />
                   </div>
@@ -486,7 +486,7 @@ export default function AnalyticsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-gray-700">Registro → Trámite:</span>
-              <span className="text-xl font-bold text-red-700">{data.clientes?.tasaRegistroATramite || 0}%</span>
+              <span className="text-xl font-bold text-brand-700">{data.clientes?.tasaRegistroATramite || 0}%</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gray-200">
               <span className="text-gray-700">Trámite → Completado:</span>

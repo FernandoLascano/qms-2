@@ -94,7 +94,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
   ]
 
   const getEstadoColor = (estado: string, reportadoVencido: boolean) => {
-    if (reportadoVencido) return 'bg-red-50 border-red-300'
+    if (reportadoVencido) return 'bg-brand-50 border-brand-300'
     if (estado === 'PAGADO') return 'bg-green-50 border-green-300'
     if (estado === 'VENCIDO') return 'bg-orange-50 border-orange-300'
     return 'bg-blue-50 border-blue-300'
@@ -125,7 +125,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                         <CheckCircle className="h-4 w-4 text-green-600" />
                       )}
                       {enlace.reportadoVencido && (
-                        <XCircle className="h-4 w-4 text-red-600" />
+                        <XCircle className="h-4 w-4 text-brand-600" />
                       )}
                     </div>
                     <p className="text-xs text-gray-600 mb-2">
@@ -135,7 +135,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                       )}
                     </p>
                     {enlace.reportadoVencido && (
-                      <p className="text-xs text-red-600 font-medium">
+                      <p className="text-xs text-brand-600 font-medium">
                         ⚠️ Cliente reportó que el enlace está vencido
                       </p>
                     )}

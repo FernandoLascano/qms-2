@@ -2,9 +2,9 @@ import { Check, X } from 'lucide-react'
 
 export function Comparativa() {
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-red-50">
+    <section id="comparativa" className="py-20 bg-gradient-to-b from-white to-brand-50">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-4 text-red-900">S.A.S. vs Otros Tipos Societarios</h2>
+        <h2 className="text-4xl font-bold text-center mb-4 text-brand-900">S.A.S. vs Otros Tipos Societarios</h2>
         <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
           Compará y entendé por qué la S.A.S. es la mejor opción para tu emprendimiento
         </p>
@@ -14,7 +14,7 @@ export function Comparativa() {
             <thead>
               <tr className="bg-gray-900 text-white">
                 <th className="py-4 px-6 text-left font-semibold">Característica</th>
-                <th className="py-4 px-6 text-center font-semibold bg-red-700">S.A.S.</th>
+                <th className="py-4 px-6 text-center font-semibold bg-brand-700">S.A.S.</th>
                 <th className="py-4 px-6 text-center font-semibold">S.R.L.</th>
                 <th className="py-4 px-6 text-center font-semibold">S.A.</th>
               </tr>
@@ -22,10 +22,10 @@ export function Comparativa() {
             <tbody className="divide-y divide-gray-200">
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Cantidad mínima de socios</td>
-                <td className="py-4 px-6 text-center bg-red-50">
+                <td className="py-4 px-6 text-center bg-brand-50">
                   <div className="flex flex-col items-center">
-                    <Check className="w-6 h-6 text-red-700 mb-1" />
-                    <span className="text-sm font-semibold text-red-900">1 socio</span>
+                    <Check className="w-6 h-6 text-brand-700 mb-1" />
+                    <span className="text-sm font-semibold text-brand-900">1 socio</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-center">
@@ -38,10 +38,10 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Tiempo de constitución</td>
-                <td className="py-4 px-6 text-center bg-red-50">
+                <td className="py-4 px-6 text-center bg-brand-50">
                   <div className="flex flex-col items-center">
-                    <Check className="w-6 h-6 text-red-700 mb-1" />
-                    <span className="text-sm font-semibold text-red-900">5 días</span>
+                    <Check className="w-6 h-6 text-brand-700 mb-1" />
+                    <span className="text-sm font-semibold text-brand-900">5 días</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-center">
@@ -54,10 +54,10 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Costo de constitución</td>
-                <td className="py-4 px-6 text-center bg-red-50">
+                <td className="py-4 px-6 text-center bg-brand-50">
                   <div className="flex flex-col items-center">
-                    <Check className="w-6 h-6 text-red-700 mb-1" />
-                    <span className="text-sm font-semibold text-red-900">Bajo</span>
+                    <Check className="w-6 h-6 text-brand-700 mb-1" />
+                    <span className="text-sm font-semibold text-brand-900">Bajo</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-center">
@@ -70,21 +70,21 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Trámite 100% digital</td>
-                <td className="py-4 px-6 text-center bg-red-50">
-                    <Check className="w-6 h-6 text-red-700 mx-auto" />
+                <td className="py-4 px-6 text-center bg-brand-50">
+                    <Check className="w-6 h-6 text-brand-700 mx-auto" />
                 </td>
                 <td className="py-4 px-6 text-center">
-                  <X className="w-6 h-6 text-red-500 mx-auto" />
+                  <X className="w-6 h-6 text-brand-500 mx-auto" />
                 </td>
                 <td className="py-4 px-6 text-center">
-                  <X className="w-6 h-6 text-red-500 mx-auto" />
+                  <X className="w-6 h-6 text-brand-500 mx-auto" />
                 </td>
               </tr>
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Capital mínimo</td>
-                <td className="py-4 px-6 text-center bg-red-50">
-                  <span className="text-sm font-semibold text-red-900">2 SMVM (~$280K)</span>
+                <td className="py-4 px-6 text-center bg-brand-50">
+                  <span className="text-sm font-semibold text-brand-900">2 SMVM (~$280K)</span>
                 </td>
                 <td className="py-4 px-6 text-center">
                   <span className="text-sm text-gray-900">$100K (ley)</span>
@@ -96,10 +96,10 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Transferencia de participaciones</td>
-                <td className="py-4 px-6 text-center bg-red-50">
+                <td className="py-4 px-6 text-center bg-brand-50">
                   <div className="flex flex-col items-center">
-                    <Check className="w-6 h-6 text-red-700 mb-1" />
-                    <span className="text-sm font-semibold text-red-900">Muy simple</span>
+                    <Check className="w-6 h-6 text-brand-700 mb-1" />
+                    <span className="text-sm font-semibold text-brand-900">Muy simple</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-center">
@@ -112,8 +112,8 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Fiscalización estatal</td>
-                <td className="py-4 px-6 text-center bg-red-50">
-                  <span className="text-sm font-semibold text-red-900">No</span>
+                <td className="py-4 px-6 text-center bg-brand-50">
+                  <span className="text-sm font-semibold text-brand-900">No</span>
                 </td>
                 <td className="py-4 px-6 text-center">
                   <span className="text-sm text-gray-900">No</span>
@@ -125,10 +125,10 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Modificación de estatuto</td>
-                <td className="py-4 px-6 text-center bg-red-50">
+                <td className="py-4 px-6 text-center bg-brand-50">
                   <div className="flex flex-col items-center">
-                    <Check className="w-6 h-6 text-red-700 mb-1" />
-                    <span className="text-sm font-semibold text-red-900">Ágil</span>
+                    <Check className="w-6 h-6 text-brand-700 mb-1" />
+                    <span className="text-sm font-semibold text-brand-900">Ágil</span>
                   </div>
                 </td>
                 <td className="py-4 px-6 text-center">
@@ -141,8 +141,8 @@ export function Comparativa() {
 
               <tr className="hover:bg-gray-50 transition">
                 <td className="py-4 px-6 font-medium text-gray-900">Ideal para</td>
-                <td className="py-4 px-6 text-center bg-red-50">
-                  <span className="text-sm font-semibold text-red-900">Startups, PyMEs, Emprendedores</span>
+                <td className="py-4 px-6 text-center bg-brand-50">
+                  <span className="text-sm font-semibold text-brand-900">Startups, PyMEs, Emprendedores</span>
                 </td>
                 <td className="py-4 px-6 text-center">
                   <span className="text-sm text-gray-900">PyMEs familiares</span>
@@ -162,7 +162,7 @@ export function Comparativa() {
           </p>
             <a
               href="#planes"
-              className="inline-block bg-red-700 text-white px-8 py-3 rounded-lg hover:bg-red-800 transition font-semibold"
+              className="inline-block bg-brand-700 text-white px-8 py-3 rounded-lg hover:bg-brand-800 transition font-semibold"
             >
               Ver Planes y Empezar
             </a>

@@ -99,11 +99,11 @@ export default function AdminBlogPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Contenido
           </span>
           <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Gestión de <span className="text-red-700">Blog</span>
+            Gestión de <span className="text-brand-700">Blog</span>
           </h1>
           <p className="text-gray-500 mt-2 text-lg">
             Administra las notas y artículos del sitio
@@ -111,7 +111,7 @@ export default function AdminBlogPage() {
         </div>
         <Link
           href="/dashboard/admin/blog/nuevo"
-          className="flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition-all shadow-lg shadow-red-200 font-semibold"
+          className="flex items-center gap-2 bg-brand-700 text-white px-6 py-3 rounded-xl hover:bg-brand-800 transition-all shadow-lg shadow-brand-200 font-semibold"
         >
           <Plus className="w-5 h-5" />
           Crear Nota
@@ -129,7 +129,7 @@ export default function AdminBlogPage() {
               placeholder="Buscar por título o categoría..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-200 focus:border-red-300"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-200 focus:border-brand-300"
             />
           </div>
 
@@ -139,7 +139,7 @@ export default function AdminBlogPage() {
               onClick={() => setFilter('todos')}
               className={`px-4 py-2 rounded-xl font-medium transition cursor-pointer ${
                 filter === 'todos'
-                  ? 'bg-red-700 text-white shadow-lg shadow-red-200'
+                  ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -173,7 +173,7 @@ export default function AdminBlogPage() {
       <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto"></div>
             <p className="text-gray-500 mt-4">Cargando posts...</p>
           </div>
         ) : filteredPosts.length === 0 ? (
@@ -212,7 +212,7 @@ export default function AdminBlogPage() {
                     </div>
 
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-3 flex-wrap">
-                      <span className="font-semibold text-red-700">{post.categoria}</span>
+                      <span className="font-semibold text-brand-700">{post.categoria}</span>
                       <span className="text-gray-300">·</span>
                       <span>Slug: /{post.slug}</span>
                       <span className="text-gray-300">·</span>
@@ -248,7 +248,7 @@ export default function AdminBlogPage() {
 
                     <button
                       onClick={() => deletePost(post.id)}
-                      className="p-2.5 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition cursor-pointer"
+                      className="p-2.5 bg-brand-100 text-brand-700 rounded-xl hover:bg-brand-200 transition cursor-pointer"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>

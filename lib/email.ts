@@ -55,6 +55,7 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
 // ============================================================
 
 const BASE_URL = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
+const LOGO_URL = `${BASE_URL}/assets/img/qms-logo-white.png`
 
 // Colores de la marca
 const COLORS = {
@@ -147,9 +148,10 @@ function baseTemplate(content: string, preheader?: string): string {
           <!-- Header con Logo -->
           <tr>
             <td class="header" style="background: linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%); padding: 32px 40px; text-align: center;">
-              <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: white; letter-spacing: -0.5px;">
-                Quiero<span style="font-weight: 800;">Mi</span>SAS
-              </h1>
+              <img src="${LOGO_URL}" alt="QuieroMiSAS" width="180" style="height: auto; margin: 0 auto; display: block;" />
+              <p style="margin: 12px 0 0 0; color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; letter-spacing: 0.5px;">
+                Tu empresa lista en 5 días
+              </p>
             </td>
           </tr>
 

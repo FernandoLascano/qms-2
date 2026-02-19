@@ -35,7 +35,7 @@ async function TramitesPage() {
       case 'ESPERANDO_APROBACION':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'CANCELADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -65,18 +65,18 @@ async function TramitesPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Gestión
           </span>
           <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Mis <span className="text-red-700">Trámites</span>
+            Mis <span className="text-brand-700">Trámites</span>
           </h2>
           <p className="text-gray-500 mt-2 text-lg">
             Gestiona y consulta todos tus trámites de constitución
           </p>
         </div>
         <Link href="/tramite/nuevo" className="w-full sm:w-auto">
-          <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 w-full sm:w-auto rounded-xl shadow-lg shadow-red-200 h-12 px-6 text-base font-semibold">
+          <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 w-full sm:w-auto rounded-xl shadow-lg shadow-brand-200 h-12 px-6 text-base font-semibold">
             <Plus className="h-5 w-5" />
             Nuevo Trámite
           </Button>
@@ -98,7 +98,7 @@ async function TramitesPage() {
                 Comenzá tu primer trámite de constitución de S.A.S. y te guiaremos en cada paso del proceso.
               </p>
               <Link href="/tramite/nuevo">
-                <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200">
+                <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200">
                   <Plus className="h-5 w-5" />
                   Iniciar Mi Primer Trámite
                 </Button>
@@ -128,12 +128,12 @@ async function TramitesPage() {
                   : `/dashboard/tramites/${tramite.id}`}
                 className="group"
               >
-                <Card className="hover:shadow-xl hover:border-red-200 transition-all duration-200">
+                <Card className="hover:shadow-xl hover:border-brand-200 transition-all duration-200">
                   <CardHeader className="border-b border-gray-100">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-red-700 transition-colors">
+                          <CardTitle className="text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">
                             {tramite.denominacionAprobada || tramite.denominacionSocial1}
                           </CardTitle>
                           <span className={`px-4 py-1.5 rounded-full text-xs font-semibold border ${getEstadoColor(tramite.estadoGeneral)}`}>
@@ -149,13 +149,13 @@ async function TramitesPage() {
                             <Building2 className="h-4 w-4" />
                             {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
                           </span>
-                          <span className="flex items-center gap-1.5 font-semibold text-red-700">
+                          <span className="flex items-center gap-1.5 font-semibold text-brand-700">
                             <DollarSign className="h-4 w-4" />
                             Plan {tramite.plan}
                           </span>
                         </CardDescription>
                       </div>
-                      <Button variant="outline" size="sm" className="rounded-xl border-gray-300 group-hover:border-red-300 group-hover:text-red-700">
+                      <Button variant="outline" size="sm" className="rounded-xl border-gray-300 group-hover:border-brand-300 group-hover:text-brand-700">
                         {!tramite.formularioCompleto ? 'Continuar' : 'Ver Detalle'}
                       </Button>
                     </div>
@@ -186,11 +186,11 @@ async function TramitesPage() {
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-600">Progreso del trámite</span>
-                        <span className="text-sm font-bold text-red-700">{Math.round(progreso)}%</span>
+                        <span className="text-sm font-bold text-brand-700">{Math.round(progreso)}%</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2.5">
                         <div
-                          className="bg-gradient-to-r from-red-600 to-green-500 h-2.5 rounded-full transition-all duration-500"
+                          className="bg-gradient-to-r from-brand-600 to-green-500 h-2.5 rounded-full transition-all duration-500"
                           style={{ width: `${progreso}%` }}
                         />
                       </div>

@@ -50,18 +50,18 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
 
   return (
     <>
-      <Card className="border-red-200 bg-red-50/50">
+      <Card className="border-brand-200 bg-brand-50/50">
         <CardHeader>
-          <CardTitle className="text-red-900 flex items-center gap-2">
+          <CardTitle className="text-brand-900 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Zona de Peligro
           </CardTitle>
-          <CardDescription className="text-red-700">
+          <CardDescription className="text-brand-700">
             Acciones irreversibles - usar con precaución
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white border border-red-200 rounded-lg">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white border border-brand-200 rounded-lg">
             <div>
               <h4 className="font-semibold text-gray-900">Eliminar este trámite</h4>
               <p className="text-sm text-gray-600">
@@ -87,11 +87,11 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-full">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                  <div className="p-2 bg-brand-100 rounded-full">
+                    <AlertTriangle className="h-6 w-6 text-brand-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-red-900">Eliminar Trámite</CardTitle>
+                    <CardTitle className="text-brand-900">Eliminar Trámite</CardTitle>
                     <CardDescription>Esta acción es permanente e irreversible</CardDescription>
                   </div>
                 </div>
@@ -108,11 +108,11 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-800 font-medium mb-2">
+              <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+                <p className="text-sm text-brand-800 font-medium mb-2">
                   Se eliminarán permanentemente:
                 </p>
-                <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+                <ul className="text-sm text-brand-700 list-disc list-inside space-y-1">
                   <li>El trámite <strong>"{denominacion}"</strong></li>
                   <li>Todos los documentos subidos</li>
                   <li>Registros de pagos y enlaces de pago</li>
@@ -131,7 +131,7 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
 
               <div>
                 <p className="text-sm font-medium text-gray-700 mb-2">
-                  Para confirmar, escribe <strong className="text-red-600">{textoConfirmacion}</strong>:
+                  Para confirmar, escribe <strong className="text-brand-600">{textoConfirmacion}</strong>:
                 </p>
                 <Input
                   value={confirmacion}

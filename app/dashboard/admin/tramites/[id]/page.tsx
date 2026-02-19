@@ -122,7 +122,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
             Administración
           </p>
-          <h2 className={`text-2xl md:text-3xl font-black ${tramite.sociedadInscripta ? 'text-green-900' : 'text-red-900'}`}>
+          <h2 className={`text-2xl md:text-3xl font-black ${tramite.sociedadInscripta ? 'text-green-900' : 'text-brand-900'}`}>
             {tramite.sociedadInscripta ? '✅ Trámite Completado' : 'Gestión de Trámite'}
           </h2>
           <p className="text-gray-500 mt-1 font-medium">
@@ -157,7 +157,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-8 mb-1">
           Formulario
         </p>
-        <h3 className="text-xl font-black text-red-900 mb-2">
+        <h3 className="text-xl font-black text-brand-900 mb-2">
           Información Detallada del Formulario
         </h3>
         <p className="text-gray-500 mb-6">

@@ -157,7 +157,7 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
             <MessageCircle className="h-5 w-5 text-blue-600" />
             <CardTitle>Chat del Trámite</CardTitle>
             {mensajesNoLeidos > 0 && (
-              <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+              <span className="px-2 py-0.5 bg-brand-500 text-white text-xs font-bold rounded-full">
                 {mensajesNoLeidos}
               </span>
             )}

@@ -37,7 +37,7 @@ async function DocumentosPage() {
       case 'APROBADO':
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'RECHAZADO':
-        return <XCircle className="h-5 w-5 text-red-600" />
+        return <XCircle className="h-5 w-5 text-brand-600" />
       case 'EN_REVISION':
         return <Clock className="h-5 w-5 text-blue-600" />
       default:
@@ -50,7 +50,7 @@ async function DocumentosPage() {
       case 'APROBADO':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'RECHAZADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       case 'EN_REVISION':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       default:
@@ -88,18 +88,18 @@ async function DocumentosPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Archivos
           </span>
           <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Mis <span className="text-red-700">Documentos</span>
+            Mis <span className="text-brand-700">Documentos</span>
           </h1>
           <p className="text-gray-500 mt-2 text-lg">
             Gestiona todos los documentos de tus trámites
           </p>
         </div>
         <Link href="/dashboard/documentos/subir">
-          <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200 font-semibold">
+          <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200 font-semibold">
             <Upload className="h-5 w-5" />
             Subir Documento
           </Button>
@@ -182,7 +182,7 @@ async function DocumentosPage() {
                 Comienza subiendo los documentos necesarios para tu trámite de constitución.
               </p>
               <Link href="/dashboard/documentos/subir">
-                <Button size="lg" className="gap-2 bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200">
+                <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200">
                   <Upload className="h-5 w-5" />
                   Subir Mi Primer Documento
                 </Button>
@@ -217,7 +217,7 @@ async function DocumentosPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
-                        <span className="font-medium text-red-700">{getTipoTexto(doc.tipo)}</span>
+                        <span className="font-medium text-brand-700">{getTipoTexto(doc.tipo)}</span>
                         <span className="text-gray-300">•</span>
                         <span>{doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1}</span>
                         <span className="text-gray-300">•</span>
@@ -234,7 +234,7 @@ async function DocumentosPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a href={doc.url} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-200 hover:border-red-300 hover:text-red-700">
+                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-200 hover:border-brand-300 hover:text-brand-700">
                         <Download className="h-4 w-4" />
                         Descargar
                       </Button>

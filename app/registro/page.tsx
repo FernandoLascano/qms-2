@@ -77,7 +77,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 to-white flex items-center justify-center p-4 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo y Header */}
         <motion.div
@@ -88,16 +88,16 @@ export default function RegistroPage() {
         >
           <Link href="/" className="inline-block mb-4">
             <img
-              src="/assets/img/logo4.png"
+              src="/assets/img/qms-logo-reg.png"
               alt="QuieroMiSAS Logo"
               className="h-16 w-auto mx-auto"
             />
           </Link>
-          <span className="block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Registro
           </span>
           <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
-            Crear <span className="text-red-700">cuenta</span>
+            Crear <span className="text-brand-700">cuenta</span>
           </h1>
           <p className="text-gray-500">
             Registrate para comenzar tu trámite
@@ -116,7 +116,7 @@ export default function RegistroPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium"
+                className="bg-brand-50 border border-brand-200 text-brand-700 p-4 rounded-xl text-sm font-medium"
               >
                 {error}
               </motion.div>
@@ -139,7 +139,7 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -161,7 +161,7 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function RegistroPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <p className="text-xs text-gray-400 pl-1">Debe tener al menos 6 caracteres</p>
@@ -227,7 +227,7 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -235,7 +235,7 @@ export default function RegistroPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-red-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
+              className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
             >
               {loading ? (
                 <>
@@ -253,7 +253,7 @@ export default function RegistroPage() {
             <div className="text-center pt-5 border-t border-gray-100">
               <p className="text-sm text-gray-500">
                 ¿Ya tenés cuenta?{' '}
-                <Link href="/login" className="text-red-700 hover:text-red-800 font-semibold transition">
+                <Link href="/login" className="text-brand-700 hover:text-brand-800 font-semibold transition">
                   Ingresá aquí
                 </Link>
               </p>
@@ -270,7 +270,7 @@ export default function RegistroPage() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-700 transition font-medium"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 transition font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al inicio

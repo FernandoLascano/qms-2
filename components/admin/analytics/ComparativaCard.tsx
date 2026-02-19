@@ -32,8 +32,8 @@ export function ComparativaCard({
 
   const cambioAbsoluto = Math.abs(cambio)
   const TrendIcon = esPositivo ? TrendingUp : TrendingDown
-  const colorTendencia = esPositivo ? 'text-green-600' : 'text-red-600'
-  const bgTendencia = esPositivo ? 'bg-green-50' : 'bg-red-50'
+  const colorTendencia = esPositivo ? 'text-green-600' : 'text-brand-600'
+  const bgTendencia = esPositivo ? 'bg-green-50' : 'bg-brand-50'
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">

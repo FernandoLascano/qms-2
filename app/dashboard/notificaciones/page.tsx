@@ -27,7 +27,7 @@ const TIPOS_NOTIFICACION = [
   { value: 'INFO', label: 'Info', color: 'bg-gray-100 text-gray-700 border-gray-300' },
   { value: 'EXITO', label: 'Éxito', color: 'bg-green-100 text-green-700 border-green-300' },
   { value: 'ALERTA', label: 'Alerta', color: 'bg-orange-100 text-orange-700 border-orange-300' },
-  { value: 'ERROR', label: 'Error', color: 'bg-red-100 text-red-700 border-red-300' },
+  { value: 'ERROR', label: 'Error', color: 'bg-brand-100 text-brand-700 border-brand-300' },
   { value: 'ACCION_REQUERIDA', label: 'Acción Requerida', color: 'bg-purple-100 text-purple-700 border-purple-300' },
   { value: 'MENSAJE', label: 'Mensaje', color: 'bg-blue-100 text-blue-700 border-blue-300' }
 ]
@@ -56,8 +56,8 @@ export default function NotificacionesPage() {
         }
       case 'ERROR':
         return {
-          badge: 'bg-red-100 text-red-700 border-red-200',
-          bg: 'bg-red-50',
+          badge: 'bg-brand-100 text-brand-700 border-brand-200',
+          bg: 'bg-brand-50',
           icon: '✕'
         }
       case 'ALERTA':
@@ -180,11 +180,11 @@ export default function NotificacionesPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Centro de alertas
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          <span className="text-red-700">Notificaciones</span>
+          <span className="text-brand-700">Notificaciones</span>
         </h1>
         <p className="text-gray-500 mt-2 text-lg">
           {count > 0 ? `Tenés ${count} notificación${count > 1 ? 'es' : ''} sin leer` : 'Todas las notificaciones leídas'}
@@ -233,7 +233,7 @@ export default function NotificacionesPage() {
                   onClick={() => setLeidaFiltro(filtro.value)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
                     leidaFiltro === filtro.value
-                      ? 'bg-red-100 text-red-700 border-red-300 ring-2 ring-offset-2 ring-red-300'
+                      ? 'bg-brand-100 text-brand-700 border-brand-300 ring-2 ring-offset-2 ring-brand-300'
                       : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -295,7 +295,7 @@ export default function NotificacionesPage() {
                   <div className="flex gap-4">
                     {/* Icono - Mejorado para mayor visibilidad */}
                     <div
-                      className={`flex-shrink-0 w-14 h-14 rounded-xl ${config.bg} flex items-center justify-center text-2xl font-bold shadow-md border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('red') ? 'border-red-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}
+                      className={`flex-shrink-0 w-14 h-14 rounded-xl ${config.bg} flex items-center justify-center text-2xl font-bold shadow-md border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('brand') ? 'border-brand-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}
                     >
                       {config.icon}
                     </div>

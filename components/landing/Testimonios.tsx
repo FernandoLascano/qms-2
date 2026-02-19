@@ -53,12 +53,12 @@ export function Testimonios() {
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Testimonios
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
             Historias de{' '}
-            <span className="text-red-700">éxito</span>
+            <span className="text-brand-700">éxito</span>
           </h2>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Emprendedores que confiaron en nosotros y hoy tienen su empresa funcionando
@@ -78,19 +78,19 @@ export function Testimonios() {
               <div
                 className={`relative bg-white rounded-2xl p-8 h-full transition-all duration-300 ${
                   testimonio.destacado
-                    ? 'shadow-xl border-2 border-red-100 hover:border-red-200 hover:shadow-2xl'
+                    ? 'shadow-xl border-2 border-brand-100 hover:border-brand-200 hover:shadow-2xl'
                     : 'shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200'
                 }`}
               >
                 {/* Icono de comillas decorativo */}
-                <div className={`absolute -top-4 -left-2 ${testimonio.destacado ? 'text-red-200' : 'text-gray-200'}`}>
+                <div className={`absolute -top-4 -left-2 ${testimonio.destacado ? 'text-brand-200' : 'text-gray-200'}`}>
                   <Quote className="w-12 h-12 fill-current" />
                 </div>
 
                 {/* Badge destacado */}
                 {testimonio.destacado && (
                   <div className="absolute -top-3 right-6">
-                    <span className="bg-red-700 text-white text-xs font-bold px-3 py-1 rounded-full">
+                    <span className="bg-brand-700 text-white text-xs font-bold px-3 py-1 rounded-full">
                       DESTACADO
                     </span>
                   </div>
@@ -103,7 +103,7 @@ export function Testimonios() {
                       key={i}
                       className={`w-5 h-5 ${
                         testimonio.destacado
-                          ? 'fill-red-500 text-red-500'
+                          ? 'fill-brand-500 text-brand-500'
                           : 'fill-amber-400 text-amber-400'
                       }`}
                     />
@@ -120,7 +120,7 @@ export function Testimonios() {
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md ${
                       testimonio.destacado
-                        ? 'bg-gradient-to-br from-red-600 to-red-800'
+                        ? 'bg-gradient-to-br from-brand-600 to-brand-800'
                         : 'bg-gradient-to-br from-gray-700 to-gray-900'
                     }`}
                   >
@@ -129,7 +129,7 @@ export function Testimonios() {
                   <div>
                     <p className="font-bold text-gray-900">{testimonio.nombre}</p>
                     <p className="text-sm text-gray-500">{testimonio.puesto}</p>
-                    <p className={`text-sm font-semibold ${testimonio.destacado ? 'text-red-700' : 'text-gray-700'}`}>
+                    <p className={`text-sm font-semibold ${testimonio.destacado ? 'text-brand-700' : 'text-gray-700'}`}>
                       {testimonio.empresa}
                     </p>
                   </div>
@@ -157,7 +157,7 @@ export function Testimonios() {
                   className="text-center group"
                 >
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 mb-4 group-hover:bg-white/20 transition-colors">
-                    <stat.icon className="w-6 h-6 text-red-400" />
+                    <stat.icon className="w-6 h-6 text-brand-400" />
                   </div>
                   <div className="text-3xl md:text-4xl font-black text-white mb-1">
                     {stat.valor}

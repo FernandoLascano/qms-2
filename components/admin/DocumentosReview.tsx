@@ -98,7 +98,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
       case 'APROBADO':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'RECHAZADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       case 'EN_REVISION':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       default:
@@ -158,7 +158,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                       <span>{(doc.tamanio / 1024 / 1024).toFixed(2)} MB</span>
                     </div>
                     {doc.observaciones && (
-                      <p className="text-sm text-red-600 mt-2 italic">
+                      <p className="text-sm text-brand-600 mt-2 italic">
                         {doc.observaciones}
                       </p>
                     )}

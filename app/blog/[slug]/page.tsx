@@ -78,7 +78,7 @@ export default function PostPage() {
           <ul key={index} className="space-y-3 mb-6 ml-4">
             {section.items?.map((item: string, i: number) => (
               <li key={i} className="text-gray-600 leading-relaxed text-lg flex items-start gap-3">
-                <span className="w-2 h-2 bg-red-700 rounded-full mt-2.5 flex-shrink-0"></span>
+                <span className="w-2 h-2 bg-brand-700 rounded-full mt-2.5 flex-shrink-0"></span>
                 {item}
               </li>
             ))}
@@ -86,7 +86,7 @@ export default function PostPage() {
         )
       case 'quote':
         return (
-          <blockquote key={index} className="border-l-4 border-red-700 pl-6 my-8 bg-red-50 py-4 pr-4 rounded-r-xl">
+          <blockquote key={index} className="border-l-4 border-brand-700 pl-6 my-8 bg-brand-50 py-4 pr-4 rounded-r-xl">
             <p className="text-gray-700 italic text-lg leading-relaxed">
               {section.text || section.content}
             </p>
@@ -101,7 +101,7 @@ export default function PostPage() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-700 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto"></div>
           <p className="text-gray-500 mt-4">Cargando artículo...</p>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function PostPage() {
             <p className="text-gray-500 mb-8">El artículo que buscás no existe o fue eliminado.</p>
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 bg-red-700 text-white px-6 py-3 rounded-xl hover:bg-red-800 transition-colors font-semibold"
+              className="inline-flex items-center gap-2 bg-brand-700 text-white px-6 py-3 rounded-xl hover:bg-brand-800 transition-colors font-semibold"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver al blog
@@ -149,11 +149,11 @@ export default function PostPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <Link href="/" className="hover:text-red-700 transition">
+            <Link href="/" className="hover:text-brand-700 transition">
               Inicio
             </Link>
             <span>/</span>
-            <Link href="/blog" className="hover:text-red-700 transition">
+            <Link href="/blog" className="hover:text-brand-700 transition">
               Blog
             </Link>
             <span>/</span>
@@ -190,7 +190,7 @@ export default function PostPage() {
         >
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-4 mb-6">
-            <span className="text-xs font-bold text-white bg-red-700 px-4 py-2 rounded-full">
+            <span className="text-xs font-bold text-white bg-brand-700 px-4 py-2 rounded-full">
               {post.categoria}
             </span>
             <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -213,7 +213,7 @@ export default function PostPage() {
           </h1>
 
           {/* Description */}
-          <div className="border-l-4 border-red-700 pl-6 mb-8 bg-red-50 py-4 pr-4 rounded-r-xl">
+          <div className="border-l-4 border-brand-700 pl-6 mb-8 bg-brand-50 py-4 pr-4 rounded-r-xl">
             <p className="text-xl text-gray-700 leading-relaxed">
               {post.descripcion}
             </p>
@@ -274,7 +274,7 @@ export default function PostPage() {
             </p>
             <Link
               href="/registro"
-              className="inline-flex items-center gap-2 bg-red-700 text-white px-8 py-4 rounded-xl hover:bg-red-800 transition-colors font-bold shadow-lg"
+              className="inline-flex items-center gap-2 bg-brand-700 text-white px-8 py-4 rounded-xl hover:bg-brand-800 transition-colors font-bold shadow-lg"
             >
               Comenzar ahora
               <ArrowRight className="w-5 h-5" />
@@ -285,7 +285,7 @@ export default function PostPage() {
           <div className="mt-10 text-center">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-red-700 font-semibold hover:text-red-800 transition-colors"
+              className="inline-flex items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Volver al blog

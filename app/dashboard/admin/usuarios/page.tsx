@@ -172,7 +172,7 @@ export default function UsuariosAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-600" />
       </div>
     )
   }
@@ -181,11 +181,11 @@ export default function UsuariosAdminPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Administración
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Gestión de <span className="text-red-700">Usuarios</span>
+          Gestión de <span className="text-brand-700">Usuarios</span>
         </h1>
         <p className="text-gray-500 mt-2 text-lg">
           Administra usuarios, contraseñas y permisos
@@ -260,13 +260,13 @@ export default function UsuariosAdminPage() {
                 placeholder="Buscar por nombre o email..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="pl-10 rounded-xl border-gray-200 focus:ring-2 focus:ring-red-200 focus:border-red-300"
+                className="pl-10 rounded-xl border-gray-200 focus:ring-2 focus:ring-brand-200 focus:border-brand-300"
               />
             </div>
             <select
               value={filtroRol}
               onChange={(e) => setFiltroRol(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-medium focus:ring-2 focus:ring-red-200 focus:border-red-300"
+              className="px-4 py-2.5 border border-gray-200 rounded-xl bg-white text-sm font-medium focus:ring-2 focus:ring-brand-200 focus:border-brand-300"
             >
               <option value="TODOS">Todos los roles</option>
               <option value="CLIENTE">Clientes</option>
@@ -301,12 +301,12 @@ export default function UsuariosAdminPage() {
                   {/* Info del usuario */}
                   <div className="flex items-start gap-4 flex-1">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      usuario.rol === 'ADMIN' ? 'bg-purple-200' : 'bg-red-100'
+                      usuario.rol === 'ADMIN' ? 'bg-purple-200' : 'bg-brand-100'
                     }`}>
                       {usuario.rol === 'ADMIN' ? (
                         <ShieldCheck className="h-6 w-6 text-purple-700" />
                       ) : (
-                        <span className="text-red-700 font-bold text-lg">
+                        <span className="text-brand-700 font-bold text-lg">
                           {usuario.name?.charAt(0).toUpperCase() || '?'}
                         </span>
                       )}
@@ -368,7 +368,7 @@ export default function UsuariosAdminPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setModalEliminar(usuario)}
-                        className="gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        className="gap-1 text-brand-600 hover:text-brand-700 hover:bg-brand-50 border-brand-200"
                       >
                         <Trash2 className="h-4 w-4" />
                         <span className="hidden sm:inline">Eliminar</span>
@@ -389,21 +389,21 @@ export default function UsuariosAdminPage() {
           <Card className="w-full max-w-md rounded-2xl shadow-2xl">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 rounded-full">
-                  <AlertTriangle className="h-6 w-6 text-red-600" />
+                <div className="p-2 bg-brand-100 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-brand-600" />
                 </div>
                 <div>
-                  <CardTitle className="text-red-900">Eliminar Usuario</CardTitle>
+                  <CardTitle className="text-brand-900">Eliminar Usuario</CardTitle>
                   <CardDescription>Esta acción no se puede deshacer</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-800">
+              <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
+                <p className="text-sm text-brand-800">
                   <strong>Atención:</strong> Se eliminarán permanentemente:
                 </p>
-                <ul className="text-sm text-red-700 mt-2 list-disc list-inside">
+                <ul className="text-sm text-brand-700 mt-2 list-disc list-inside">
                   <li>El usuario y su cuenta</li>
                   <li>Todos sus trámites ({modalEliminar._count.tramites})</li>
                   <li>Documentos, pagos y notificaciones</li>

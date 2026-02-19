@@ -181,7 +181,7 @@ export default function ConfiguracionAdminPage() {
   if (loadingData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-red-700" />
+        <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
       </div>
     )
   }
@@ -197,11 +197,11 @@ export default function ConfiguracionAdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Sistema
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Configuración del <span className="text-red-700">Sistema</span>
+          Configuración del <span className="text-brand-700">Sistema</span>
         </h1>
         <p className="text-gray-500 mt-2 text-lg">
           Administrá las configuraciones globales de la plataforma
@@ -217,7 +217,7 @@ export default function ConfiguracionAdminPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap font-medium ${
                 activeTab === tab.id
-                  ? 'bg-red-700 text-white shadow-lg shadow-red-200'
+                  ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -233,7 +233,7 @@ export default function ConfiguracionAdminPage() {
         <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-red-700" />
+              <Bell className="h-5 w-5 text-brand-700" />
               Configuración de Notificaciones
             </CardTitle>
             <CardDescription>
@@ -294,7 +294,7 @@ export default function ConfiguracionAdminPage() {
         <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-red-700" />
+              <Mail className="h-5 w-5 text-brand-700" />
               Configuración de Email
             </CardTitle>
             <CardDescription>
@@ -369,7 +369,7 @@ export default function ConfiguracionAdminPage() {
                     </span>
                   )}
                   {smtpStatus === 'error' && (
-                    <span className="flex items-center gap-1 text-red-600 text-sm">
+                    <span className="flex items-center gap-1 text-brand-600 text-sm">
                       <XCircle className="h-4 w-4" />
                       Error de conexión
                     </span>
@@ -396,7 +396,7 @@ export default function ConfiguracionAdminPage() {
                       id="testEmailType"
                       value={testEmailType}
                       onChange={(e) => setTestEmailType(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white text-gray-900"
                     >
                       <option value="welcome">Bienvenida (Registro)</option>
                       <option value="nuevoTramite">Nuevo Trámite Iniciado</option>
@@ -409,7 +409,7 @@ export default function ConfiguracionAdminPage() {
                 </div>
                 <Button
                   onClick={sendTestEmail}
-                  className="bg-red-700 hover:bg-red-800"
+                  className="bg-brand-700 hover:bg-brand-800"
                   disabled={testingEmail || !testEmail}
                 >
                   {testingEmail ? (
@@ -435,7 +435,7 @@ export default function ConfiguracionAdminPage() {
         <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-red-700" />
+              <Clock className="h-5 w-5 text-brand-700" />
               Configuración del Sistema
             </CardTitle>
             <CardDescription>
@@ -481,7 +481,7 @@ export default function ConfiguracionAdminPage() {
         <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-red-700" />
+              <DollarSign className="h-5 w-5 text-brand-700" />
               Configuración de Pagos
             </CardTitle>
             <CardDescription>
@@ -604,7 +604,7 @@ export default function ConfiguracionAdminPage() {
         <Card className="shadow-lg rounded-2xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-red-700" />
+              <Settings className="h-5 w-5 text-brand-700" />
               Configuración General
             </CardTitle>
             <CardDescription>
@@ -665,7 +665,7 @@ export default function ConfiguracionAdminPage() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          className="bg-red-700 hover:bg-red-800 rounded-xl shadow-lg shadow-red-200 px-6 font-semibold"
+          className="bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200 px-6 font-semibold"
           disabled={loading}
         >
           {loading ? (

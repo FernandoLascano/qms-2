@@ -92,7 +92,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
       case 'APROBADO':
         return 'bg-green-100 text-green-800 border-green-200'
       case 'RECHAZADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       case 'EN_REVISION':
         return 'bg-blue-100 text-blue-800 border-blue-200'
       default:
@@ -176,8 +176,8 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                     </div>
 
                     {comprobante.observaciones && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
-                        <p className="text-sm text-red-600 flex items-center gap-1">
+                      <div className="bg-brand-50 border border-brand-200 rounded p-2 mt-2">
+                        <p className="text-sm text-brand-600 flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
                           <strong>Observación:</strong> {comprobante.observaciones}
                         </p>

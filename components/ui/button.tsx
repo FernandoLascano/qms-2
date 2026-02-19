@@ -12,10 +12,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
     
     const variants = {
-      default: "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600",
-      outline: "border-2 border-red-600 text-red-600 hover:bg-red-50 focus-visible:ring-red-600",
-      ghost: "text-red-600 hover:bg-red-50 focus-visible:ring-red-600",
-      destructive: "bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-700"
+      default: "bg-brand-600 text-white hover:bg-brand-700 focus-visible:ring-brand-600",
+      outline: "border-2 border-brand-600 text-brand-600 hover:bg-brand-50 focus-visible:ring-brand-600",
+      ghost: "text-brand-600 hover:bg-brand-50 focus-visible:ring-brand-600",
+      destructive: "bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-700"
     }
     
     const sizes = {

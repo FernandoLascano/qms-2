@@ -31,7 +31,7 @@ const ESTADOS = [
   { value: 'ESPERANDO_CLIENTE', label: 'Esperando Cliente', color: 'bg-orange-100 text-orange-800' },
   { value: 'ESPERANDO_APROBACION', label: 'Esperando Aprobación', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'COMPLETADO', label: 'Completado', color: 'bg-green-100 text-green-800' },
-  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-red-100 text-red-800' },
+  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-brand-100 text-brand-800' },
 ]
 
 export default function EstadoManager({ tramiteId, estadoActual, etapas }: EstadoManagerProps) {

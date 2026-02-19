@@ -71,7 +71,7 @@ async function AdminTramitesPage() {
       case 'ESPERANDO_APROBACION':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200'
       case 'CANCELADO':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-brand-100 text-brand-800 border-brand-200'
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200'
     }
@@ -132,7 +132,7 @@ async function AdminTramitesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-red-900">Gestión de Trámites</h2>
+          <h2 className="text-3xl font-bold text-brand-900">Gestión de Trámites</h2>
           <p className="text-gray-600 mt-1">
             Administra todos los trámites de la plataforma
           </p>

@@ -75,8 +75,8 @@ export default function RootLayout({
               "alternateName": "Martínez Wehbe & Asociados",
               "description": "Servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina. 100% online, rápido y económico.",
               "url": "https://www.quieromisas.com",
-              "logo": "https://www.quieromisas.com/assets/img/logo4.png",
-              "image": "https://www.quieromisas.com/assets/img/logo4.png",
+              "logo": "https://www.quieromisas.com/assets/img/qms-logo-reg.png",
+              "image": "https://www.quieromisas.com/assets/img/qms-logo-reg.png",
               "address": {
                 "@type": "PostalAddress",
                 "addressLocality": "Córdoba",

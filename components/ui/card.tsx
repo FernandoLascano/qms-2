@@ -41,7 +41,7 @@ const CardTitle = React.forwardRef<
     className={cn(
       "leading-none tracking-tight",
       variant === 'default'
-        ? "text-xl font-black text-red-900"
+        ? "text-xl font-black text-brand-900"
         : "text-base font-semibold text-gray-800",
       className
     )}

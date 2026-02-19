@@ -93,7 +93,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
             </CardDescription>
           </div>
           <div className="text-right">
-            <p className={`text-3xl font-bold ${progresoPercentage === 100 ? 'text-green-700' : 'text-red-700'}`}>{progresoPercentage}%</p>
+            <p className={`text-3xl font-bold ${progresoPercentage === 100 ? 'text-green-700' : 'text-brand-700'}`}>{progresoPercentage}%</p>
             <p className={`text-xs ${progresoPercentage === 100 ? 'text-green-600' : 'text-gray-500'}`}>Completado</p>
           </div>
         </div>
@@ -103,7 +103,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
         <div className="mb-4">
           <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-red-600 to-green-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-brand-600 to-green-500 transition-all duration-500"
               style={{ width: `${progresoPercentage}%` }}
             />
           </div>
@@ -133,20 +133,20 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
 
             {/* Etapa Actual (bien visible) */}
             {etapaActual && (
-              <div className="p-4 bg-red-50 border-2 border-red-500 rounded-lg shadow-sm">
+              <div className="p-4 bg-brand-50 border-2 border-brand-500 rounded-lg shadow-sm">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-100 rounded-full flex-shrink-0">
-                    <Clock className="h-5 w-5 text-red-700 animate-pulse" />
+                  <div className="p-2 bg-brand-100 rounded-full flex-shrink-0">
+                    <Clock className="h-5 w-5 text-brand-700 animate-pulse" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="text-base font-bold text-red-900">{etapaActual.titulo}</h4>
-                      <span className="px-2 py-1 text-xs font-semibold bg-red-700 text-white rounded-full whitespace-nowrap">
+                      <h4 className="text-base font-bold text-brand-900">{etapaActual.titulo}</h4>
+                      <span className="px-2 py-1 text-xs font-semibold bg-brand-700 text-white rounded-full whitespace-nowrap">
                         En curso
                       </span>
                     </div>
-                    <p className="text-sm text-red-800 mb-2">{etapaActual.descripcion}</p>
-                    <p className="text-xs text-red-700 font-medium">
+                    <p className="text-sm text-brand-800 mb-2">{etapaActual.descripcion}</p>
+                    <p className="text-xs text-brand-700 font-medium">
                       ⏳ Trabajando en esta etapa...
                     </p>
                   </div>
@@ -169,7 +169,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
             <Button
               variant="outline"
               onClick={() => setExpandido(true)}
-              className="w-full mt-4 gap-2 border-red-300 text-red-700 hover:bg-red-50 hover:border-red-500"
+              className="w-full mt-4 gap-2 border-brand-300 text-brand-700 hover:bg-brand-50 hover:border-brand-500"
             >
               <ChevronDown className="h-4 w-4" />
               Ver todas las etapas ({etapas.length})
@@ -192,21 +192,21 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
                     ${etapa.completado 
                       ? 'bg-green-100 border-2 border-green-500' 
                       : esActual
-                      ? 'bg-red-100 border-2 border-red-500 animate-pulse'
+                      ? 'bg-brand-100 border-2 border-brand-500 animate-pulse'
                       : 'bg-gray-100 border-2 border-gray-300'
                     }
                   `}>
                     {etapa.completado ? (
                       <CheckCircle className="h-5 w-5 text-green-600" />
                     ) : esActual ? (
-                      <Clock className="h-5 w-5 text-red-600" />
+                      <Clock className="h-5 w-5 text-brand-600" />
                     ) : (
                       <Circle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
                   {index < etapas.length - 1 && (
                     <div className={`w-0.5 h-12 flex-shrink-0 ${
-                      etapa.completado ? 'bg-green-500' : esActual ? 'bg-red-500' : 'bg-gray-300'
+                      etapa.completado ? 'bg-green-500' : esActual ? 'bg-brand-500' : 'bg-gray-300'
                     }`} />
                   )}
                 </div>
@@ -218,7 +218,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
                     ${etapa.completado 
                       ? 'bg-green-50 border-green-200' 
                       : esActual
-                      ? 'bg-red-50 border-red-500 shadow-md'
+                      ? 'bg-brand-50 border-brand-500 shadow-md'
                       : 'bg-gray-50 border-gray-200'
                     }
                   `}>
@@ -227,20 +227,20 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
                         <span className="text-xl flex-shrink-0">{etapa.icono}</span>
                         <h4 className={`font-semibold text-sm break-words ${
                           etapa.completado ? 'text-green-900' :
-                          esActual ? 'text-red-900' : 'text-gray-600'
+                          esActual ? 'text-brand-900' : 'text-gray-600'
                         }`}>
                           {etapa.titulo}
                         </h4>
                       </div>
                       {esActual && (
-                        <span className="px-2 py-1 text-xs font-medium bg-red-700 text-white rounded-full whitespace-nowrap flex-shrink-0">
+                        <span className="px-2 py-1 text-xs font-medium bg-brand-700 text-white rounded-full whitespace-nowrap flex-shrink-0">
                           En curso
                         </span>
                       )}
                     </div>
                     <p className={`text-sm break-words ${
                       etapa.completado ? 'text-green-700' :
-                      esActual ? 'text-red-800' : 'text-gray-500'
+                      esActual ? 'text-brand-800' : 'text-gray-500'
                     }`}>
                       {etapa.descripcion}
                     </p>
@@ -250,7 +250,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
                       </p>
                     )}
                     {esActual && (
-                      <p className="text-xs text-red-700 mt-2 font-medium">
+                      <p className="text-xs text-brand-700 mt-2 font-medium">
                         ⏳ Trabajando en esta etapa...
                       </p>
                     )}
@@ -264,7 +264,7 @@ export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
             <Button
               variant="outline"
               onClick={() => setExpandido(false)}
-              className="w-full mt-4 gap-2 border-red-300 text-red-700 hover:bg-red-50 hover:border-red-500"
+              className="w-full mt-4 gap-2 border-brand-300 text-brand-700 hover:bg-brand-50 hover:border-brand-500"
             >
               <ChevronUp className="h-4 w-4" />
               Ver resumen

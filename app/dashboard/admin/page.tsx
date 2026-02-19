@@ -95,11 +95,11 @@ async function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Administración
         </span>
         <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Panel de <span className="text-red-700">Control</span>
+          Panel de <span className="text-brand-700">Control</span>
         </h2>
         <p className="text-gray-500 mt-2 text-lg">
           Gestiona todos los trámites y usuarios de la plataforma
@@ -242,17 +242,17 @@ async function AdminDashboardPage() {
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {/* Ver Trámites */}
           <Link href="/dashboard/admin/tramites" className="group">
-            <Card className="hover:shadow-xl hover:border-red-300 transition-all duration-200 h-full">
+            <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
               <CardHeader>
                 <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center group-hover:bg-red-700 transition-colors">
-                    <FileText className="h-6 w-6 text-red-700 group-hover:text-white transition-colors" />
+                  <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center group-hover:bg-brand-700 transition-colors">
+                    <FileText className="h-6 w-6 text-brand-700 group-hover:text-white transition-colors" />
                   </div>
                   <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                     {totalTramites}
                   </span>
                 </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-red-700 transition-colors">
+                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-brand-700 transition-colors">
                   Ver Trámites
                 </CardTitle>
               </CardHeader>
@@ -434,7 +434,7 @@ async function AdminDashboardPage() {
           </div>
           <Link
             href="/dashboard/admin/tramites"
-            className="text-sm font-semibold text-red-700 hover:text-red-800 flex items-center gap-1 transition"
+            className="text-sm font-semibold text-brand-700 hover:text-brand-800 flex items-center gap-1 transition"
           >
             Ver todos
             <ArrowRight className="w-4 h-4" />
@@ -497,12 +497,12 @@ async function AdminDashboardPage() {
                   href={`/dashboard/admin/tramites/${tramite.id}`}
                   className="group"
                 >
-                  <Card className="hover:shadow-xl hover:border-red-300 transition-all duration-200">
+                  <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200">
                     <CardContent className="p-5">
                       {/* Header con denominación y estado */}
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-red-700 transition-colors truncate">
+                          <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-brand-700 transition-colors truncate">
                             {tramite.denominacionSocial1}
                           </h4>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -520,7 +520,7 @@ async function AdminDashboardPage() {
 
                       {/* Info del cliente */}
                       <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-                        <div className="w-9 h-9 bg-gradient-to-br from-red-600 to-red-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-red-200">
+                        <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-200">
                           <span className="text-white font-bold text-sm">
                             {tramite.user.name.charAt(0).toUpperCase()}
                           </span>
@@ -533,7 +533,7 @@ async function AdminDashboardPage() {
                             {tramite.user.email}
                           </p>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-red-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
                       </div>
                     </CardContent>
                   </Card>

@@ -69,7 +69,8 @@ export function Contacto() {
       icon: MapPin,
       title: 'Dirección',
       lines: [
-        'Ituzaingó 87, 4to y 5to Piso (Centro)',
+        { label: 'Oficina Centro', text: ' Ituzaingo 87, 5to Piso, B° Centro' },
+        { label: 'Oficina Norte', text: ' Pasaje Chagas 6043, B° Villa Belgrano' },
         'Córdoba, Argentina'
       ]
     },
@@ -98,11 +99,11 @@ export function Contacto() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Contacto
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
-            ¿Tenés alguna <span className="text-red-700">consulta</span>?
+            ¿Tenés alguna <span className="text-brand-700">consulta</span>?
           </h2>
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Escribinos y te responderemos a la brevedad
@@ -128,8 +129,8 @@ export function Contacto() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                 >
-                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-6 h-6 text-red-700" />
+                  <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <item.icon className="w-6 h-6 text-brand-700" />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 mb-1">{item.title}</h3>
@@ -138,12 +139,19 @@ export function Contacto() {
                         <a
                           key={i}
                           href={item.href}
-                          className="block text-gray-600 hover:text-red-700 transition-colors"
+                          className="block text-gray-600 hover:text-brand-700 transition-colors"
                         >
-                          {line}
+                          {typeof line === 'string' ? line : `${line.label}:${line.text}`}
                         </a>
                       ) : (
-                        <p key={i} className="text-gray-600">{line}</p>
+                        <p key={i} className="text-gray-600">
+                          {typeof line === 'string' ? line : (
+                            <>
+                              <span className="font-semibold text-gray-900">{line.label}:</span>
+                              {line.text}
+                            </>
+                          )}
+                        </p>
                       )
                     ))}
                   </div>
@@ -199,7 +207,7 @@ export function Contacto() {
                     <p className="text-gray-600 mb-6">Te responderemos a la brevedad.</p>
                     <button
                       onClick={() => setSuccess(false)}
-                      className="text-red-700 font-semibold hover:text-red-800 transition-colors"
+                      className="text-brand-700 font-semibold hover:text-brand-800 transition-colors"
                     >
                       Enviar otro mensaje
                     </button>
@@ -210,7 +218,7 @@ export function Contacto() {
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm"
+                        className="flex items-center gap-3 bg-brand-50 border border-brand-200 text-brand-700 p-4 rounded-xl text-sm"
                       >
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         {error}
@@ -231,7 +239,7 @@ export function Contacto() {
                           onChange={handleChange}
                           required
                           disabled={loading}
-                          className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </div>
 
@@ -248,7 +256,7 @@ export function Contacto() {
                           onChange={handleChange}
                           required
                           disabled={loading}
-                          className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -266,7 +274,7 @@ export function Contacto() {
                         onChange={handleChange}
                         required
                         disabled={loading}
-                        className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full h-12 px-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
 
@@ -283,14 +291,14 @@ export function Contacto() {
                         onChange={handleChange}
                         required
                         disabled={loading}
-                        className="w-full px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full px-4 py-3 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                       />
                     </div>
 
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 bg-red-700 hover:bg-red-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-red-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {loading ? (
                         <>

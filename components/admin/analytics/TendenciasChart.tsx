@@ -30,13 +30,13 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
             {tramitesTendencia > 0 ? (
               <TrendingUp className="h-5 w-5 text-green-600" />
             ) : tramitesTendencia < 0 ? (
-              <TrendingDown className="h-5 w-5 text-red-600" />
+              <TrendingDown className="h-5 w-5 text-brand-600" />
             ) : (
               <Minus className="h-5 w-5 text-gray-400" />
             )}
             <span className={`font-bold ${
               tramitesTendencia > 0 ? 'text-green-600' : 
-              tramitesTendencia < 0 ? 'text-red-600' : 
+              tramitesTendencia < 0 ? 'text-brand-600' : 
               'text-gray-600'
             }`}>
               {tramitesTendencia > 0 ? '+' : ''}{tramitesTendencia.toFixed(1)}%
@@ -53,13 +53,13 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
             {ingresosTendencia > 0 ? (
               <TrendingUp className="h-5 w-5 text-green-600" />
             ) : ingresosTendencia < 0 ? (
-              <TrendingDown className="h-5 w-5 text-red-600" />
+              <TrendingDown className="h-5 w-5 text-brand-600" />
             ) : (
               <Minus className="h-5 w-5 text-gray-400" />
             )}
             <span className={`font-bold ${
               ingresosTendencia > 0 ? 'text-green-600' : 
-              ingresosTendencia < 0 ? 'text-red-600' : 
+              ingresosTendencia < 0 ? 'text-brand-600' : 
               'text-gray-600'
             }`}>
               {ingresosTendencia > 0 ? '+' : ''}{ingresosTendencia.toFixed(1)}%

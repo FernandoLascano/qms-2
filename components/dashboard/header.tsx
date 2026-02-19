@@ -38,8 +38,8 @@ export function Header() {
       <div className="flex h-16 md:h-20 items-center justify-between px-4 md:px-8">
         {/* Left side - Page info */}
         <div className="flex items-center gap-4 ml-12 md:ml-0">
-          <div className="hidden md:flex h-12 w-12 rounded-xl bg-red-50 items-center justify-center">
-            <PageIcon className="h-6 w-6 text-red-700" />
+          <div className="hidden md:flex h-12 w-12 rounded-xl bg-brand-50 items-center justify-center">
+            <PageIcon className="h-6 w-6 text-brand-700" />
           </div>
           <div>
             <h1 className="text-lg md:text-xl font-bold text-gray-900">{currentPage.title}</h1>
@@ -52,7 +52,7 @@ export function Header() {
           {/* Quick action button */}
           <Link
             href="/tramite/nuevo"
-            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-red-700 hover:bg-red-800 text-white text-sm font-semibold rounded-xl shadow-lg shadow-red-200 transition-all duration-200"
+            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-200 transition-all duration-200"
           >
             <FileText className="h-4 w-4" />
             Nuevo Trámite
@@ -67,7 +67,7 @@ export function Header() {
               <p className="text-sm font-semibold text-gray-900 truncate max-w-[150px]">{session?.user?.name}</p>
               <p className="text-xs text-gray-500 truncate max-w-[150px]">{session?.user?.email}</p>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-lg shadow-red-200">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-200">
               <User className="h-5 w-5 text-white" />
             </div>
           </div>

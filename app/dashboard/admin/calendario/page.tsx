@@ -22,11 +22,11 @@ export default async function CalendarioPage() {
           </Button>
         </Link>
         <div>
-          <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
             Agenda
           </span>
           <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Calendario de <span className="text-red-700">Eventos</span>
+            Calendario de <span className="text-brand-700">Eventos</span>
           </h1>
           <p className="text-gray-500 mt-2 text-lg">
             Gestiona reuniones, vencimientos y fechas importantes

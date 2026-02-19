@@ -54,11 +54,11 @@ async function SociedadesPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-red-700 font-semibold text-sm tracking-wider uppercase mb-2">
+        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
           Registro
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Sociedades <span className="text-red-700">Constituidas</span>
+          Sociedades <span className="text-brand-700">Constituidas</span>
         </h1>
         <p className="text-gray-500 mt-2 text-lg">
           Listado completo de todas las sociedades inscriptas

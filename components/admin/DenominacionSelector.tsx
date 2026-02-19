@@ -392,22 +392,22 @@ export default function DenominacionSelector({
                 </Dialog>
               </div>
 
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-4">
+              <div className="bg-brand-50 border-2 border-brand-200 rounded-lg p-4 mt-4">
                 <Dialog open={dialogRechazar} onOpenChange={setDialogRechazar}>
                   <DialogTrigger asChild>
                     <Button
                       variant="destructive"
-                      className="w-full bg-red-600 hover:bg-red-700 shadow-md transition-all active:scale-95"
+                      className="w-full bg-brand-600 hover:bg-brand-700 shadow-md transition-all active:scale-95"
                       disabled={rechazando}
                     >
                       <XCircle className="h-5 w-5 mr-2" />
                       Rechazar Todas y Solicitar 3 Nuevas Denominaciones
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-2 border-red-100">
+                  <DialogContent className="border-2 border-brand-100">
                     <DialogHeader>
-                      <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                        <XCircle className="h-8 w-8 text-red-600" />
+                      <div className="mx-auto w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mb-4">
+                        <XCircle className="h-8 w-8 text-brand-600" />
                       </div>
                       <DialogTitle className="text-2xl text-center font-bold text-gray-900">
                         Rechazar Todas las Denominaciones
@@ -415,7 +415,7 @@ export default function DenominacionSelector({
                       <DialogDescription className="text-center text-gray-600 pt-2">
                         Se le solicitará al cliente que envíe 3 nuevas alternativas de denominación.
                         <br />
-                        Es <span className="font-bold text-red-700">obligatorio</span> explicar los motivos del rechazo.
+                        Es <span className="font-bold text-brand-700">obligatorio</span> explicar los motivos del rechazo.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -428,7 +428,7 @@ export default function DenominacionSelector({
                         onChange={(e) => setMotivoRechazo(e.target.value)}
                         placeholder="Explica detalladamente por qué se rechazan las denominaciones (ej: homonimia con empresas existentes, términos no permitidos, etc.)"
                         rows={6}
-                        className="resize-none text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-red-500 focus:ring-red-500"
+                        className="resize-none text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-brand-500 focus:ring-brand-500"
                       />
                     </div>
                     <DialogFooter className="sm:justify-center gap-2">
@@ -445,7 +445,7 @@ export default function DenominacionSelector({
                       </Button>
                       <Button
                         onClick={handleRechazarTodas}
-                        className="bg-red-600 hover:bg-red-700 font-bold px-8 shadow-md"
+                        className="bg-brand-600 hover:bg-brand-700 font-bold px-8 shadow-md"
                         disabled={rechazando || !motivoRechazo.trim()}
                       >
                         {rechazando ? 'Procesando...' : 'Confirmar Rechazo'}

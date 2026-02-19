@@ -30,7 +30,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
       case 'EXITO':
         return <CheckCircle className="h-5 w-5 text-green-600" />
       case 'ALERTA':
-        return <AlertCircle className="h-5 w-5 text-red-600" />
+        return <AlertCircle className="h-5 w-5 text-brand-600" />
       default:
         return <Info className="h-5 w-5 text-blue-600" />
     }
@@ -43,7 +43,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
       case 'EXITO':
         return 'border-green-200 bg-green-50'
       case 'ALERTA':
-        return 'border-red-200 bg-red-50'
+        return 'border-brand-200 bg-brand-50'
       default:
         return 'border-blue-200 bg-blue-50'
     }
@@ -84,7 +84,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
                       comprobante.{' '}
                       <a 
                         href="#deposito-capital" 
-                        className="text-red-700 font-semibold underline cursor-pointer hover:text-red-800"
+                        className="text-brand-700 font-semibold underline cursor-pointer hover:text-brand-800"
                         onClick={(e) => {
                           e.preventDefault()
                           const target = document.querySelector('#deposito-capital')

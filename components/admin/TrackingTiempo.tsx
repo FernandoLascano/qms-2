@@ -98,7 +98,7 @@ export default function TrackingTiempo() {
             <CardTitle className="text-sm font-medium text-gray-600">Tiempo Promedio Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">
+            <div className="text-3xl font-bold text-brand-600">
               {Math.round(data.tiempoPromedioTotal * 10) / 10} días
             </div>
             <p className="text-xs text-gray-500 mt-1">

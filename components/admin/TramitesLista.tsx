@@ -217,7 +217,7 @@ export default function TramitesLista({ tramites }: TramitesListaProps) {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-gray-700">Progreso del trámite</span>
-                      <span className={`text-xs font-bold ${esCompletado ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`text-xs font-bold ${esCompletado ? 'text-green-600' : 'text-brand-600'}`}>
                         {progreso}%
                       </span>
                     </div>
@@ -226,7 +226,7 @@ export default function TramitesLista({ tramites }: TramitesListaProps) {
                         className={`h-2.5 rounded-full transition-all ${
                           esCompletado
                             ? 'bg-gradient-to-r from-green-500 to-green-600'
-                            : 'bg-gradient-to-r from-red-600 to-red-700'
+                            : 'bg-gradient-to-r from-brand-600 to-brand-700'
                         }`}
                         style={{ width: `${progreso}%` }}
                       />

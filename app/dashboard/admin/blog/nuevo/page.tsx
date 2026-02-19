@@ -292,7 +292,7 @@ export default function NuevoPostPage() {
             <ArrowLeft className="w-6 h-6 text-gray-900" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-red-900">Crear Nueva Nota</h1>
+            <h1 className="text-3xl font-bold text-brand-900">Crear Nueva Nota</h1>
             <p className="text-gray-600 mt-1">Completa todos los campos para optimizar el SEO</p>
           </div>
         </div>
@@ -375,7 +375,7 @@ export default function NuevoPostPage() {
                 name="titulo"
                 value={formData.titulo}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 required
               />
             </div>
@@ -389,7 +389,7 @@ export default function NuevoPostPage() {
                 name="slug"
                 value={formData.slug}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 required
               />
               <p className="text-sm text-gray-500 mt-1">URL: /blog/{formData.slug}</p>
@@ -404,7 +404,7 @@ export default function NuevoPostPage() {
                 value={formData.descripcion}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 required
               />
             </div>
@@ -416,7 +416,7 @@ export default function NuevoPostPage() {
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 >
                   <option value="Emprendimiento">Emprendimiento</option>
                   <option value="Guías">Guías</option>
@@ -435,7 +435,7 @@ export default function NuevoPostPage() {
                   value={formData.autor}
                   onChange={handleInputChange}
                   placeholder="QuieroMiSAS"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
               </div>
 
@@ -447,7 +447,7 @@ export default function NuevoPostPage() {
                   value={formData.lectura}
                   onChange={handleInputChange}
                   placeholder="5 min"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
               </div>
             </div>
@@ -467,7 +467,7 @@ export default function NuevoPostPage() {
                 value={formData.imagenHero}
                 onChange={handleInputChange}
                 placeholder="/assets/img/nota.png"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
 
@@ -479,7 +479,7 @@ export default function NuevoPostPage() {
                 value={formData.imagenAlt}
                 onChange={handleInputChange}
                 placeholder="Descripción de la imagen para SEO"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -499,12 +499,12 @@ export default function NuevoPostPage() {
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   placeholder="Agregar tag..."
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition cursor-pointer"
+                  className="px-4 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -513,13 +513,13 @@ export default function NuevoPostPage() {
                 {formData.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm flex items-center gap-2"
+                    className="px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-sm flex items-center gap-2"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="hover:text-red-900 cursor-pointer"
+                      className="hover:text-brand-900 cursor-pointer"
                     >
                       ×
                     </button>
@@ -555,7 +555,7 @@ export default function NuevoPostPage() {
                 name="metaTitle"
                 value={formData.metaTitle}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
 
@@ -567,7 +567,7 @@ export default function NuevoPostPage() {
                 onChange={handleInputChange}
                 rows={2}
                 placeholder="Descripción para Google (150-160 caracteres)"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
               <p className="text-sm text-gray-500 mt-1">
                 {formData.metaDescription.length}/160 caracteres
@@ -583,12 +583,12 @@ export default function NuevoPostPage() {
                   onChange={(e) => setNewKeyword(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
                   placeholder="Agregar keyword..."
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={addKeyword}
-                  className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition cursor-pointer"
+                  className="px-4 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -663,7 +663,7 @@ export default function NuevoPostPage() {
                   <button
                     type="button"
                     onClick={() => removeSection(index)}
-                    className="text-red-600 hover:text-red-800 cursor-pointer"
+                    className="text-brand-600 hover:text-brand-800 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -678,12 +678,12 @@ export default function NuevoPostPage() {
                           value={item}
                           onChange={(e) => updateListItem(index, itemIndex, e.target.value)}
                           placeholder={`Item ${itemIndex + 1}`}
-                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                         />
                         <button
                           type="button"
                           onClick={() => removeListItem(index, itemIndex)}
-                          className="px-2 text-red-600 hover:text-red-800 cursor-pointer"
+                          className="px-2 text-brand-600 hover:text-brand-800 cursor-pointer"
                         >
                           ×
                         </button>
@@ -702,7 +702,7 @@ export default function NuevoPostPage() {
                     value={section.text || ''}
                     onChange={(e) => updateSection(index, { text: e.target.value })}
                     rows={section.type === 'h2' ? 1 : 3}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   />
                 )}
               </div>
@@ -721,7 +721,7 @@ export default function NuevoPostPage() {
                 name="publicado"
                 checked={formData.publicado}
                 onChange={handleInputChange}
-                className="w-5 h-5 text-red-700 border-gray-300 rounded focus:ring-red-500"
+                className="w-5 h-5 text-brand-700 border-gray-300 rounded focus:ring-brand-500"
               />
               <span className="text-gray-700">Publicar inmediatamente</span>
             </label>
@@ -758,7 +758,7 @@ export default function NuevoPostPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-3 bg-red-700 text-white rounded-lg hover:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="w-5 h-5" />
             {loading ? 'Guardando...' : 'Guardar Nota'}
@@ -794,7 +794,7 @@ export default function NuevoPostPage() {
 
               {/* Categoría y Fecha */}
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full">
+                <span className="px-3 py-1 bg-brand-100 text-brand-700 rounded-full">
                   {formData.categoria}
                 </span>
                 <span>{formData.lectura}</span>
@@ -858,7 +858,7 @@ export default function NuevoPostPage() {
                     }
                     if (section.type === 'quote') {
                       return (
-                        <blockquote key={index} className="border-l-4 border-red-700 pl-4 italic text-gray-700 mb-4 my-6">
+                        <blockquote key={index} className="border-l-4 border-brand-700 pl-4 italic text-gray-700 mb-4 my-6">
                           {section.text || <span className="text-gray-400">[Cita vacía]</span>}
                         </blockquote>
                       )
