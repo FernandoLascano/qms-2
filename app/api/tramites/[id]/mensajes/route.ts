@@ -49,8 +49,7 @@ export async function GET(
     })
 
     return NextResponse.json(mensajes)
-  } catch (error) {
-    console.error('Error al obtener mensajes:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener mensajes' },
       { status: 500 }
@@ -135,8 +134,7 @@ export async function POST(
     }
 
     return NextResponse.json(mensaje)
-  } catch (error) {
-    console.error('Error al crear mensaje:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al crear mensaje' },
       { status: 500 }

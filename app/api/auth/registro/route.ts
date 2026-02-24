@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     // Enviar email de bienvenida (no fallar si hay error)
     try {
       await enviarEmailBienvenida(user.email, user.name)
-    } catch (emailError) {
-      console.error("Error al enviar email de bienvenida:", emailError)
+    } catch {
+      // Error al enviar email de bienvenida (no crítico)
     }
 
     return NextResponse.json(
@@ -60,8 +60,6 @@ export async function POST(request: Request) {
       { status: 201 }
     )
   } catch (error: any) {
-    console.error("Error en registro:", error)
-
     if (error?.code === 'P2002') {
       return NextResponse.json(
         { error: "El email ya está registrado" },

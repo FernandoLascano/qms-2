@@ -117,9 +117,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             }
           })
         }
-      } catch (error) {
+      } catch {
         // No fallar si no se puede crear el evento (puede ser que el modelo aún no exista)
-        console.error('Error al crear evento automático:', error)
       }
     }
 
@@ -181,8 +180,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 id
               )
             }
-          } catch (emailError) {
-            console.error("Error al enviar email de etapa completada (no crítico):", emailError)
+          } catch {
+            // Email sending failed (non-critical)
           }
         }
       }
@@ -190,8 +189,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al actualizar etapa:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar etapa' },
       { status: 500 }

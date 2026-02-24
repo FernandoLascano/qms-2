@@ -72,15 +72,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           `Después de realizar el examen de homonimia, sugerimos utilizar la denominación: "${denominacion}" para tu sociedad. Te contactaremos para coordinar el pago de la tasa de reserva de nombre.`,
           id
         )
-      } catch (emailError) {
-        console.error('Error al enviar email de denominación sugerida:', emailError)
+      } catch {
+        // Error al enviar email de denominación sugerida (no crítico)
       }
     }
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al aprobar denominación:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al aprobar denominación' },
       { status: 500 }

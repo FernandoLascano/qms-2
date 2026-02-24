@@ -40,8 +40,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ evento, success: true })
 
-  } catch (error) {
-    console.error('Error al actualizar evento:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar evento' },
       { status: 500 }
@@ -69,8 +68,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al eliminar evento:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al eliminar evento' },
       { status: 500 }

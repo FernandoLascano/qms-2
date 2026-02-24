@@ -162,8 +162,8 @@ export async function POST(request: Request, { params }: RouteParams) {
               mensajeEmail,
               pago.tramiteId
             )
-          } catch (emailError) {
-            console.error('Error al enviar email al admin:', emailError)
+          } catch {
+            // Email sending failed (non-critical)
           }
         }
       })
@@ -186,8 +186,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       documentoId: documento.id
     })
 
-  } catch (error) {
-    console.error('Error al subir comprobante:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al subir comprobante' },
       { status: 500 }

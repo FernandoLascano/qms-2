@@ -24,14 +24,6 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'contacto@quieromisas.com'
     const fromName = process.env.SMTP_FROM_NAME || 'QuieroMiSAS'
 
-    console.log('📧 [NODEMAILER] Enviando email:', {
-      to,
-      subject,
-      from: fromEmail,
-      host: process.env.SMTP_HOST || 'email-smtp.us-east-1.amazonaws.com',
-      hasPassword: !!process.env.SMTP_PASSWORD
-    })
-
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: Array.isArray(to) ? to.join(', ') : to,
@@ -40,12 +32,8 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
       text: text || html.replace(/<[^>]*>/g, '')
     })
 
-    console.log('✅ [NODEMAILER] Email enviado:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
-    console.error('❌ [NODEMAILER] Error:', error.message)
-    console.error('❌ [NODEMAILER] Code:', error.code)
-    console.error('❌ [NODEMAILER] Response:', error.response)
     return { success: false, error: error.message }
   }
 }
@@ -306,7 +294,7 @@ export const emailTemplates = {
   // 1. BIENVENIDA AL REGISTRARSE
   // ============================================================
   welcome: (nombre: string) => ({
-    subject: '¡Bienvenido a QuieroMiSAS! 🚀 Tu empresa te espera',
+    subject: '¡Bienvenido a QuieroMiSAS! Tu empresa te espera',
     html: baseTemplate(`
       <!-- Ilustración de bienvenida -->
       <div style="text-align: center; margin-bottom: 32px;">
@@ -425,7 +413,7 @@ export const emailTemplates = {
       <!-- Timeline de pasos -->
       <div style="background: ${COLORS.light}; border-radius: 12px; padding: 24px; margin: 24px 0;">
         <p style="color: ${COLORS.secondary}; font-weight: 600; margin: 0 0 20px 0; font-size: 15px;">
-          ⏳ Próximos pasos
+          Próximos pasos
         </p>
         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
           ${timelineStep(1, 'Validación de datos', 'Revisamos toda la información ingresada', true)}
@@ -442,7 +430,7 @@ export const emailTemplates = {
       <!-- Nota -->
       <div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 16px; margin-top: 24px;">
         <p style="color: #92400E; font-size: 13px; margin: 0;">
-          🔔 <strong>Importante:</strong> Te enviaremos un email cada vez que haya una actualización en tu trámite. También podés ver el estado en tiempo real desde tu panel.
+          <strong>Importante:</strong> Te enviaremos un email cada vez que haya una actualización en tu trámite. También podés ver el estado en tiempo real desde tu panel.
         </p>
       </div>
     `, `Tu trámite para constituir ${denominacion} fue iniciado. Te acompañamos en cada paso.`)
@@ -469,7 +457,7 @@ export const emailTemplates = {
     const pasosCompletados = config.pasoActual || 1
 
     return {
-      subject: `📋 Actualización: ${nuevoEstado} - ${denominacion}`,
+      subject: `Actualización: ${nuevoEstado} - ${denominacion}`,
       html: baseTemplate(`
         <!-- Título -->
         <h1 style="color: ${COLORS.secondary}; font-size: 24px; font-weight: 700; margin: 0 0 8px 0; text-align: center;">
@@ -492,7 +480,7 @@ export const emailTemplates = {
         <!-- Timeline actualizado -->
         <div style="border-radius: 12px; padding: 24px; margin: 24px 0; border: 1px solid ${COLORS.border};">
           <p style="color: ${COLORS.secondary}; font-weight: 600; margin: 0 0 20px 0; font-size: 15px;">
-            📊 Progreso de tu trámite
+            Progreso de tu trámite
           </p>
           <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
             ${timelineStep(1, 'Validación de datos', 'Información verificada', true, pasosCompletados >= 1)}
@@ -531,7 +519,7 @@ export const emailTemplates = {
     urlAccion: string,
     fechaLimite?: string
   ) => ({
-    subject: `⚠️ Acción requerida: ${accion} - ${denominacion}`,
+    subject: `Acción requerida: ${accion} - ${denominacion}`,
     html: baseTemplate(`
       <!-- Alerta -->
       <div style="text-align: center; margin-bottom: 24px;">
@@ -562,7 +550,7 @@ export const emailTemplates = {
         ${fechaLimite ? `
           <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(146, 64, 14, 0.2);">
             <p style="color: #78350F; font-size: 13px; margin: 0; font-weight: 600;">
-              ⏰ Fecha límite: ${fechaLimite}
+              Fecha límite: ${fechaLimite}
             </p>
           </div>
         ` : ''}
@@ -590,7 +578,7 @@ export const emailTemplates = {
   // 5. TRÁMITE COMPLETADO
   // ============================================================
   tramiteCompletado: (nombre: string, denominacion: string, cuit?: string) => ({
-    subject: `🎉 ¡Felicitaciones! ${denominacion} ya está constituida`,
+    subject: `¡Felicitaciones! ${denominacion} ya está constituida`,
     html: baseTemplate(`
       <!-- Celebración -->
       <div style="text-align: center; margin-bottom: 24px;">
@@ -634,7 +622,7 @@ export const emailTemplates = {
       <!-- Timeline completado -->
       <div style="background: ${COLORS.light}; border-radius: 12px; padding: 24px; margin: 24px 0;">
         <p style="color: ${COLORS.secondary}; font-weight: 600; margin: 0 0 20px 0; font-size: 15px;">
-          ✅ Proceso completado
+          Proceso completado
         </p>
         <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
           ${timelineStep(1, 'Validación de datos', 'Completado', false, true)}
@@ -648,7 +636,7 @@ export const emailTemplates = {
       <!-- Próximos pasos -->
       <div style="border: 2px solid ${COLORS.primary}; border-radius: 12px; padding: 24px; margin: 24px 0;">
         <p style="color: ${COLORS.primary}; font-weight: 600; margin: 0 0 16px 0; font-size: 15px;">
-          🚀 ¿Qué sigue ahora?
+          ¿Qué sigue ahora?
         </p>
         <ul style="color: ${COLORS.text}; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li>Descargá tu documentación desde el panel</li>
@@ -677,13 +665,13 @@ export const emailTemplates = {
   // 6. NOTIFICACIÓN PARA ADMIN - NUEVO TRÁMITE
   // ============================================================
   adminNuevoTramite: (cliente: string, email: string, denominacion: string, plan: string, tramiteId?: string) => ({
-    subject: `🆕 Nuevo trámite: ${denominacion} - ${plan}`,
+    subject: `Nuevo trámite: ${denominacion} - ${plan}`,
     html: baseTemplate(`
       <!-- Header -->
       <div style="text-align: center; margin-bottom: 24px;">
         <div style="background: linear-gradient(135deg, ${COLORS.info} 0%, #2563EB 100%); border-radius: 12px; padding: 16px; display: inline-block;">
           <p style="color: white; font-size: 14px; font-weight: 600; margin: 0;">
-            📥 NUEVO TRÁMITE RECIBIDO
+            NUEVO TRÁMITE RECIBIDO
           </p>
         </div>
       </div>
@@ -707,7 +695,7 @@ export const emailTemplates = {
       <!-- Recordatorio -->
       <div style="background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 8px; padding: 16px; margin-top: 24px;">
         <p style="color: #92400E; font-size: 13px; margin: 0;">
-          ⏰ <strong>Recordatorio:</strong> Validar los datos y comenzar el proceso de reserva de denominación.
+          <strong>Recordatorio:</strong> Validar los datos y comenzar el proceso de reserva de denominación.
         </p>
       </div>
     `, `Nuevo trámite recibido: ${denominacion} de ${cliente}`)
@@ -717,7 +705,7 @@ export const emailTemplates = {
   // 7. RECORDATORIO DE PAGO
   // ============================================================
   recordatorioPago: (nombre: string, denominacion: string, monto: string, fechaLimite: string, urlPago: string) => ({
-    subject: `⏰ Recordatorio: Pago pendiente para ${denominacion}`,
+    subject: `Recordatorio: Pago pendiente para ${denominacion}`,
     html: baseTemplate(`
       <!-- Icono -->
       <div style="text-align: center; margin-bottom: 24px;">
@@ -747,7 +735,7 @@ export const emailTemplates = {
         </p>
         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${COLORS.border};">
           <p style="color: #B45309; font-size: 14px; margin: 0; font-weight: 600;">
-            ⏰ Fecha límite: ${fechaLimite}
+            Fecha límite: ${fechaLimite}
           </p>
         </div>
       </div>
@@ -761,7 +749,7 @@ export const emailTemplates = {
           Métodos de pago disponibles:
         </p>
         <p style="color: ${COLORS.text}; font-size: 14px; margin: 0;">
-          💳 Tarjeta de crédito/débito · 🏦 Transferencia bancaria · 📱 Mercado Pago
+          Tarjeta de crédito/débito · Transferencia bancaria · Mercado Pago
         </p>
       </div>
     `, `Recordatorio de pago pendiente para ${denominacion}`)
@@ -772,10 +760,8 @@ export const emailTemplates = {
 export async function verifyEmailConnection() {
   try {
     await transporter.verify()
-    console.log('Conexión SMTP verificada correctamente')
     return { success: true }
   } catch (error: any) {
-    console.error('Error al verificar conexión SMTP:', error)
     return { success: false, error: error.message }
   }
 }

@@ -64,8 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ eventos })
 
-  } catch (error) {
-    console.error('Error al obtener eventos:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener eventos' },
       { status: 500 }
@@ -132,10 +131,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ evento, success: true })
 
-  } catch (error) {
-    console.error('Error al crear evento:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al crear evento', details: error instanceof Error ? error.message : 'Error desconocido' },
+      { error: 'Error al crear evento' },
       { status: 500 }
     )
   }

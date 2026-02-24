@@ -54,8 +54,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al actualizar estado:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar estado' },
       { status: 500 }

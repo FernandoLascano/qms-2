@@ -53,7 +53,6 @@ export async function POST(request: Request) {
 
     // Verificar firma si está configurada
     if (process.env.MERCADOPAGO_WEBHOOK_SECRET && !verificarFirma(request, rawBody)) {
-      console.error('Webhook MP: firma inválida')
       return NextResponse.json({ error: 'Firma inválida' }, { status: 401 })
     }
 
@@ -149,8 +148,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error en webhook de Mercado Pago:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error procesando webhook' },
       { status: 500 }

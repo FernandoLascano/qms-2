@@ -52,10 +52,9 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json({ message: 'Contraseña actualizada correctamente' })
-  } catch (error: any) {
-    console.error('Error al cambiar contraseña:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al cambiar contraseña', detalles: error.message },
+      { error: 'Error al cambiar contraseña' },
       { status: 500 }
     )
   }

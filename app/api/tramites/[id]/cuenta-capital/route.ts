@@ -69,8 +69,8 @@ export async function GET(request: Request, { params }: RouteParams) {
           const metadata = JSON.parse(metadataMatch[1])
           fechaActivacion = metadata.fechaActivacion || null
         }
-      } catch (e) {
-        console.error('Error al parsear metadata:', e)
+      } catch {
+        // Metadata parsing failed
       }
     }
 
@@ -85,8 +85,7 @@ export async function GET(request: Request, { params }: RouteParams) {
         fechaActivacion: fechaActivacion
       }
     })
-  } catch (error) {
-    console.error('Error al obtener cuenta de capital:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

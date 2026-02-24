@@ -62,15 +62,14 @@ export async function POST(request: Request, { params }: RouteParams) {
           mensaje,
           id
         )
-      } catch (emailError) {
-        console.error("Error al enviar email de notificación (no crítico):", emailError)
+      } catch {
+        // Error al enviar email de notificación (no crítico)
       }
     }
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al enviar observación:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al enviar observación' },
       { status: 500 }

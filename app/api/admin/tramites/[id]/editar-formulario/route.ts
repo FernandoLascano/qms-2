@@ -99,8 +99,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error al editar formulario:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar la información del formulario' },
       { status: 500 }

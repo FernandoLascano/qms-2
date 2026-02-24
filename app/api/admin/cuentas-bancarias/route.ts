@@ -27,8 +27,7 @@ export async function GET() {
     const cuentas = JSON.parse(configuracion.valor || '[]')
     return NextResponse.json({ cuentas })
 
-  } catch (error) {
-    console.error('Error al obtener cuentas bancarias:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener cuentas bancarias' },
       { status: 500 }
@@ -66,8 +65,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al guardar cuentas bancarias:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al guardar cuentas bancarias' },
       { status: 500 }

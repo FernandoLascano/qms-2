@@ -324,8 +324,8 @@ export async function POST(request: Request) {
         tramite.id,
         data.denominacion1
       )
-    } catch (emailError) {
-      console.error("Error al enviar email de confirmación:", emailError)
+    } catch {
+      // Email sending failed (non-critical)
     }
 
     // Enviar email a todos los admins sobre el nuevo trámite (no fallar si hay error)
@@ -341,12 +341,12 @@ export async function POST(request: Request) {
             data.denominacion1,
             tramite.id
           )
-        } catch (adminEmailError) {
-          console.error(`Error al enviar email a admin ${admin.email}:`, adminEmailError)
+        } catch {
+          // Admin email sending failed (non-critical)
         }
       }))
-    } catch (adminEmailError) {
-      console.error("Error al enviar emails a admins:", adminEmailError)
+    } catch {
+      // Admin emails sending failed (non-critical)
     }
 
     // Crear historial de estado
@@ -367,8 +367,7 @@ export async function POST(request: Request) {
       }
     })
 
-  } catch (error) {
-    console.error('Error al crear trámite:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al crear el trámite. Intenta nuevamente.' },
       { status: 500 }
@@ -413,8 +412,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ tramites })
 
-  } catch (error) {
-    console.error('Error al obtener trámites:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener trámites' },
       { status: 500 }

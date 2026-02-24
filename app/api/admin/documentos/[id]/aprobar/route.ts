@@ -93,8 +93,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
             documento.tramiteId || undefined
           )
-        } catch (emailError) {
-          console.error('Error al enviar email de pago aprobado:', emailError)
+        } catch {
+          // Email no crítico
         }
       }
     } else if (documento.tipo === 'COMPROBANTE_DEPOSITO') {
@@ -126,8 +126,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         if (documento.tramiteId) {
           if (conceptoPago === 'DEPOSITO_CAPITAL') {
             // Depósito de capital: obtener el monto desde la cuenta bancaria guardada
-            console.log('🔍 Buscando cuenta bancaria para trámite:', documento.tramiteId)
-
             // Buscar por ID compuesto (nuevo formato) o por tramiteId + tipo (fallback)
             let cuenta = await prisma.cuentaBancaria.findUnique({
               where: {
@@ -146,18 +144,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             }
 
             if (cuenta) {
-              console.log('✅ Cuenta bancaria encontrada, monto:', cuenta.montoEsperado)
               monto = cuenta.montoEsperado
             } else {
               // Fallback: calcular 25% del capital social del trámite
-              console.log('⚠️ No se encontró cuenta bancaria, calculando 25% del capital')
               const tramite = await prisma.tramite.findUnique({
                 where: { id: documento.tramiteId },
                 select: { capitalSocial: true }
               })
               if (tramite?.capitalSocial) {
                 monto = tramite.capitalSocial * 0.25
-                console.log('✅ Monto calculado:', monto)
               }
             }
           } else {
@@ -251,13 +246,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
                 documento.tramiteId || undefined
               )
-            } catch (emailError) {
-              console.error('Error al enviar email de pago aprobado:', emailError)
+            } catch {
+              // Email no crítico
             }
           }
         }
-      } catch (error) {
-        console.error('Error al registrar pago automático desde comprobante:', error)
+      } catch {
+        // Error registrando pago automático, continuar
       }
     }
 
@@ -278,8 +273,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al aprobar documento:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al aprobar documento' },
       { status: 500 }

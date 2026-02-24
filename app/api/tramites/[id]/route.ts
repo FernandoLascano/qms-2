@@ -28,19 +28,6 @@ export async function GET(
       }
     })
     
-    // Log para debugging
-    if (tramite) {
-      console.log('Trámite encontrado:', {
-        id: tramite.id,
-        tieneDatosUsuario: !!tramite.datosUsuario,
-        plan: tramite.plan,
-        jurisdiccion: tramite.jurisdiccion,
-        denominacion1: tramite.denominacionSocial1,
-        formularioCompleto: tramite.formularioCompleto,
-        estadoGeneral: tramite.estadoGeneral
-      })
-    }
-
     if (!tramite) {
       return NextResponse.json(
         { error: 'Trámite no encontrado' },
@@ -50,8 +37,7 @@ export async function GET(
 
     return NextResponse.json({ tramite })
 
-  } catch (error) {
-    console.error('Error al obtener trámite:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener trámite' },
       { status: 500 }

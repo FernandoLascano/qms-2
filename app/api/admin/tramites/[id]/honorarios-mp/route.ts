@@ -78,7 +78,6 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Validar que las URLs sean válidas
     if (!successUrl || !failureUrl || !pendingUrl) {
-      console.error('Error construyendo URLs:', { successUrl, failureUrl, pendingUrl })
       return NextResponse.json(
         { error: 'Error construyendo URLs de retorno' },
         { status: 500 }

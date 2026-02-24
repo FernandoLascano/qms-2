@@ -58,7 +58,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             fechaPago: null
           }
         })
-        console.log(`Enlace de pago ${enlacePago.id} vuelto a PENDIENTE por rechazo de comprobante`)
       }
     }
 
@@ -92,15 +91,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           observaciones,
           documento.tramiteId
         )
-      } catch (emailError) {
-        console.error("Error al enviar email de documento rechazado (no crítico):", emailError)
+      } catch {
+        // Non-critical: email sending failed
       }
     }
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al rechazar documento:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al rechazar documento' },
       { status: 500 }

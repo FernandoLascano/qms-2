@@ -24,8 +24,7 @@ export async function POST(request: Request) {
     const response = await chatWithAssistant(recentMessages, apiKey)
 
     return NextResponse.json({ message: response })
-  } catch (error) {
-    console.error('Error en chat:', error)
+  } catch {
     return NextResponse.json(
       { error: 'No pude procesar tu consulta. Probá de nuevo o contactanos.' },
       { status: 500 }

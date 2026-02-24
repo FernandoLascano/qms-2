@@ -1,7 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 // Extraer el project ID de la URL de la base de datos
-// DATABASE_URL: postgresql://postgres:xxx@db.PROJECT_ID.supabase.co:5432/postgres
 const getProjectId = () => {
   const dbUrl = process.env.DATABASE_URL || ''
   const match = dbUrl.match(/db\.([^.]+)\.supabase\.co/)
@@ -17,7 +16,7 @@ function getSupabaseClient(): SupabaseClient {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ''
 
     if (!supabaseServiceKey) {
-      throw new Error('SUPABASE_SERVICE_KEY no está configurado. Obtenerlo de: https://supabase.com/dashboard/project/' + getProjectId() + '/settings/api')
+      throw new Error('SUPABASE_SERVICE_KEY no está configurado')
     }
 
     supabaseClient = createClient(supabaseUrl, supabaseServiceKey, {
@@ -40,7 +39,6 @@ async function ensureBucketExists() {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets()
 
     if (listError) {
-      console.error('Error listando buckets:', listError)
       return false
     }
 
@@ -48,20 +46,17 @@ async function ensureBucketExists() {
 
     if (!bucketExists) {
       const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
-        public: true, // Archivos públicos para poder visualizarlos
+        public: true,
         fileSizeLimit: 52428800 // 50MB
       })
 
       if (createError) {
-        console.error('Error creando bucket:', createError)
         return false
       }
-      console.log(`Bucket "${BUCKET_NAME}" creado exitosamente`)
     }
 
     return true
-  } catch (error) {
-    console.error('Error en ensureBucketExists:', error)
+  } catch {
     return false
   }
 }
@@ -82,13 +77,11 @@ export async function uploadToSupabase(
     // Limpiar el nombre del archivo
     const cleanFileName = fileName
       .replace(/[^a-zA-Z0-9.-]/g, '_')
-      .replace(/\.+/g, '.') // Evitar múltiples puntos consecutivos
+      .replace(/\.+/g, '.')
 
     // Generar path único
     const timestamp = Date.now()
     const filePath = `${folder}/${timestamp}-${cleanFileName}`
-
-    console.log(`📤 Subiendo archivo a Supabase: ${filePath}`)
 
     // Subir el archivo
     const { data, error } = await supabase.storage
@@ -99,7 +92,6 @@ export async function uploadToSupabase(
       })
 
     if (error) {
-      console.error('Error al subir a Supabase Storage:', error)
       return null
     }
 
@@ -108,14 +100,11 @@ export async function uploadToSupabase(
       .from(BUCKET_NAME)
       .getPublicUrl(filePath)
 
-    console.log(`✅ Archivo subido exitosamente: ${publicUrl}`)
-
     return {
       url: publicUrl,
       path: filePath
     }
-  } catch (error) {
-    console.error('Error en uploadToSupabase:', error)
+  } catch {
     return null
   }
 }
@@ -129,13 +118,11 @@ export async function deleteFromSupabase(path: string): Promise<boolean> {
       .remove([path])
 
     if (error) {
-      console.error('Error al eliminar de Supabase Storage:', error)
       return false
     }
 
     return true
-  } catch (error) {
-    console.error('Error en deleteFromSupabase:', error)
+  } catch {
     return false
   }
 }
@@ -149,13 +136,11 @@ export async function getSignedUrlSupabase(path: string, expiresIn: number = 360
       .createSignedUrl(path, expiresIn)
 
     if (error) {
-      console.error('Error generando signed URL:', error)
       return null
     }
 
     return data.signedUrl
-  } catch (error) {
-    console.error('Error en getSignedUrlSupabase:', error)
+  } catch {
     return null
   }
 }

@@ -133,10 +133,9 @@ Responde ÚNICAMENTE con un JSON válido:
       try {
         const jsonResponse = JSON.parse(responseText)
         return NextResponse.json(jsonResponse)
-      } catch (parseError) {
-        console.error('Error parsing JSON:', responseText)
+      } catch {
         return NextResponse.json(
-          { error: 'Error al parsear respuesta de IA', raw: responseText },
+          { error: 'Error al parsear respuesta de IA' },
           { status: 500 }
         )
       }
@@ -145,14 +144,9 @@ Responde ÚNICAMENTE con un JSON válido:
     // Para mejorar texto, devolver directamente
     return NextResponse.json({ texto: responseText })
 
-  } catch (error: any) {
-    console.error('Error generando contenido con IA:', error)
+  } catch {
     return NextResponse.json(
-      {
-        error: 'Error al generar contenido',
-        detalles: error.message,
-        stack: error.stack
-      },
+      { error: 'Error al generar contenido' },
       { status: 500 }
     )
   }

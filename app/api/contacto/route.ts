@@ -144,7 +144,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.success) {
-      console.error('Error al enviar email de contacto:', result.error)
       return NextResponse.json(
         { error: 'Error al enviar el mensaje. Intenta nuevamente.' },
         { status: 500 }
@@ -156,8 +155,7 @@ export async function POST(request: NextRequest) {
       message: 'Mensaje enviado correctamente'
     })
 
-  } catch (error: any) {
-    console.error('Error en API de contacto:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

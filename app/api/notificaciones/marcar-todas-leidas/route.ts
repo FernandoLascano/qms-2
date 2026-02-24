@@ -23,8 +23,7 @@ export async function PATCH() {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error al marcar todas las notificaciones como leídas:', error)
+  } catch {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

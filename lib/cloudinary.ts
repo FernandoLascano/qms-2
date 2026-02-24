@@ -34,7 +34,6 @@ export async function uploadToCloudinary(
         },
         (error, result) => {
           if (error) {
-            console.error('Error al subir a Cloudinary:', error)
             reject(error)
             return
           }
@@ -50,8 +49,7 @@ export async function uploadToCloudinary(
       )
       uploadStream.end(buffer)
     })
-  } catch (error) {
-    console.error('Error en uploadToCloudinary:', error)
+  } catch {
     return null
   }
 }
@@ -67,8 +65,7 @@ export function getSignedUrl(publicId: string, resourceType: 'image' | 'video' |
       expires_at: Math.floor(Date.now() / 1000) + 3600 // 1 hora
     })
     return signedUrl
-  } catch (error) {
-    console.error('Error generando signed URL:', error)
+  } catch {
     return ''
   }
 }
@@ -91,8 +88,7 @@ export function extractPublicIdFromUrl(url: string): { publicId: string; resourc
       return { publicId, resourceType }
     }
     return null
-  } catch (error) {
-    console.error('Error extrayendo public_id:', error)
+  } catch {
     return null
   }
 }

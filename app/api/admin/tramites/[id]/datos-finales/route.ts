@@ -70,7 +70,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     )
 
     if (!uploadResult?.url) {
-      console.error('Error al subir resolución a Supabase Storage')
       return NextResponse.json(
         { error: 'Error al subir el archivo de resolución' },
         { status: 500 }
@@ -132,15 +131,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         matricula,
         id
       )
-    } catch (error) {
-      console.error('Error al enviar email:', error)
+    } catch {
       // No fallar si el email no se envía
     }
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al actualizar datos finales:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al actualizar datos' },
       { status: 500 }

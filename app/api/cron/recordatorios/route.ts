@@ -116,9 +116,8 @@ export async function GET(request: Request) {
         }
 
         resultados.pagosPendientes++
-      } catch (error: any) {
-        console.error(`Error enviando recordatorio de pago ${enlace.id}:`, error)
-        resultados.errores.push(`Pago ${enlace.id}: ${error.message}`)
+      } catch {
+        resultados.errores.push(`Pago ${enlace.id}: error al enviar recordatorio`)
       }
     }
 
@@ -185,9 +184,8 @@ export async function GET(request: Request) {
         }
 
         resultados.pagosPendientes++
-      } catch (error: any) {
-        console.error(`Error enviando recordatorio de pago MP ${pago.id}:`, error)
-        resultados.errores.push(`Pago MP ${pago.id}: ${error.message}`)
+      } catch {
+        resultados.errores.push(`Pago MP ${pago.id}: error al enviar recordatorio`)
       }
     }
 
@@ -238,9 +236,8 @@ export async function GET(request: Request) {
         })
 
         resultados.documentosRechazados++
-      } catch (error: any) {
-        console.error(`Error enviando recordatorio de documento ${documento.id}:`, error)
-        resultados.errores.push(`Documento ${documento.id}: ${error.message}`)
+      } catch {
+        resultados.errores.push(`Documento ${documento.id}: error al enviar recordatorio`)
       }
     }
 
@@ -307,9 +304,8 @@ export async function GET(request: Request) {
         })
 
         resultados.tramitesEstancados++
-      } catch (error: any) {
-        console.error(`Error enviando recordatorio de trámite estancado ${tramite.id}:`, error)
-        resultados.errores.push(`Trámite estancado ${tramite.id}: ${error.message}`)
+      } catch {
+        resultados.errores.push(`Trámite estancado ${tramite.id}: error al enviar recordatorio`)
       }
     }
 
@@ -374,9 +370,8 @@ export async function GET(request: Request) {
           })
 
           resultados.denominacionesPorVencer++
-        } catch (error: any) {
-          console.error(`Error enviando alerta de denominación ${tramite.id}:`, error)
-          resultados.errores.push(`Denominación ${tramite.id}: ${error.message}`)
+        } catch {
+          resultados.errores.push(`Denominación ${tramite.id}: error al enviar alerta`)
         }
       }
     }
@@ -386,8 +381,7 @@ export async function GET(request: Request) {
       mensaje: 'Recordatorios procesados exitosamente',
       resultados
     })
-  } catch (error: any) {
-    console.error('Error en cron recordatorios:', error)
+  } catch {
     return NextResponse.json(
       {
         error: 'Error al procesar recordatorios',

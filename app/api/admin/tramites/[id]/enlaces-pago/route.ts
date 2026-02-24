@@ -80,15 +80,14 @@ export async function POST(request: Request, { params }: RouteParams) {
           parseFloat(monto),
           id
         )
-      } catch (emailError) {
-        console.error("Error al enviar email de pago pendiente (no crítico):", emailError)
+      } catch {
+        // Email sending failed (non-critical)
       }
     }
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al enviar enlace:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al enviar enlace' },
       { status: 500 }

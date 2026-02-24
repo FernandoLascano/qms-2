@@ -38,8 +38,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error al marcar notificación como leída:', error)
+  } catch {
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 })
   }
 }

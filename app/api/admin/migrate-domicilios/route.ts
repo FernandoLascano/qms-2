@@ -75,10 +75,8 @@ export async function POST(request: NextRequest) {
             }
           })
           actualizados++
-          console.log(`✅ Trámite ${tramite.id} (${tramite.denominacionSocial1}) actualizado`)
         }
-      } catch (error) {
-        console.error(`❌ Error al actualizar trámite ${tramite.id}:`, error)
+      } catch {
         errores++
       }
     }
@@ -91,10 +89,9 @@ export async function POST(request: NextRequest) {
       errores
     })
 
-  } catch (error) {
-    console.error('Error en la migración:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al ejecutar la migración', details: error instanceof Error ? error.message : 'Error desconocido' },
+      { error: 'Error al ejecutar la migración' },
       { status: 500 }
     )
   }

@@ -51,8 +51,8 @@ export async function GET(request: Request, { params }: RouteParams) {
           metadata = JSON.parse(metadataMatch[1])
           // Remover metadata del mensaje para mostrar solo el mensaje limpio
           mensajeLimpio = notif.mensaje.replace(/__METADATA__.*?__END__\n\n/, '')
-        } catch (e) {
-          console.error('Error al parsear metadata:', e)
+        } catch {
+          // Metadata parsing failed
         }
       }
 
@@ -84,8 +84,7 @@ export async function GET(request: Request, { params }: RouteParams) {
     })
 
     return NextResponse.json(notificacionesConMetadata)
-  } catch (error) {
-    console.error('Error al obtener historial de capital:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error interno del servidor' },
       { status: 500 }

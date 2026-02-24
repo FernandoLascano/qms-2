@@ -50,8 +50,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     return NextResponse.json({ success: true })
 
-  } catch (error) {
-    console.error('Error al marcar como pagado:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al marcar como pagado' },
       { status: 500 }

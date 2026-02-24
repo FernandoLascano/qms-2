@@ -52,10 +52,9 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json(updatedUser)
-  } catch (error: any) {
-    console.error('Error al actualizar perfil:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al actualizar perfil', detalles: error.message },
+      { error: 'Error al actualizar perfil' },
       { status: 500 }
     )
   }

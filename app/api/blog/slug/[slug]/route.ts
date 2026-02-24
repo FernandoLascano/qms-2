@@ -28,10 +28,9 @@ export async function GET(
     }
 
     return NextResponse.json(post)
-  } catch (error: any) {
-    console.error('Error al obtener post:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al obtener post', detalles: error.message },
+      { error: 'Error al obtener post' },
       { status: 500 }
     )
   }

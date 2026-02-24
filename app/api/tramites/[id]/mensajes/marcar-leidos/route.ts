@@ -33,8 +33,7 @@ export async function PATCH(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error al marcar mensajes como leídos:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al marcar mensajes como leídos' },
       { status: 500 }

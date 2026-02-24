@@ -66,7 +66,6 @@ export async function POST(request: Request) {
     )
 
     if (!uploadResult?.url) {
-      console.error('Error: Supabase upload failed')
       return NextResponse.json(
         { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
@@ -164,8 +163,8 @@ export async function POST(request: Request) {
             mensajeEmail,
             tramiteId
           )
-        } catch (emailError) {
-          console.error('Error al enviar email al admin:', emailError)
+        } catch {
+          // Non-critical: email sending failed
         }
       }
     }
@@ -179,13 +178,9 @@ export async function POST(request: Request) {
       }
     })
 
-  } catch (error) {
-    console.error('Error al subir documento:', error)
+  } catch {
     return NextResponse.json(
-      { 
-        error: 'Error al subir el documento', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Error al subir el documento' },
       { status: 500 }
     )
   }

@@ -489,8 +489,7 @@ export async function GET(request: Request) {
       }
     })
 
-  } catch (error) {
-    console.error('Error en analytics:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener métricas' },
       { status: 500 }

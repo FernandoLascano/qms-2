@@ -10,18 +10,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('=== CONFIRMAR PAGO - INICIO ===')
-
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      console.error('No hay sesión de usuario')
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    console.log('Usuario:', session.user.email)
-
     const { id } = await params
-    console.log('Enlace ID:', id)
 
     // Verificar que el enlace existe y pertenece al usuario
     const enlace = await prisma.enlacePago.findFirst({
@@ -42,29 +36,22 @@ export async function PATCH(
     })
 
     if (!enlace) {
-      console.error('Enlace no encontrado')
       return NextResponse.json({ error: 'Enlace no encontrado' }, { status: 404 })
     }
-
-    console.log('Enlace encontrado:', enlace.concepto)
 
     // Obtener el archivo del FormData
     const formData = await req.formData()
     const file = formData.get('comprobante') as File
 
     if (!file) {
-      console.error('No se proporcionó archivo')
       return NextResponse.json({ error: 'No se proporcionó comprobante' }, { status: 400 })
     }
-
-    console.log('Archivo recibido:', file.name, 'Tamaño:', file.size)
 
     // Convertir el archivo a buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
     // Subir a Supabase Storage
-    console.log('Subiendo a Supabase Storage...')
     const uploadResult = await uploadToSupabase(
       buffer,
       `comprobantes/${enlace.tramiteId}`,
@@ -73,7 +60,6 @@ export async function PATCH(
     )
 
     if (!uploadResult?.url) {
-      console.error('Error: Supabase upload failed')
       return NextResponse.json(
         { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
@@ -81,7 +67,6 @@ export async function PATCH(
     }
 
     const fileUrl = uploadResult.url
-    console.log('Archivo subido a Supabase:', fileUrl)
 
     // Crear documento con el comprobante
     await prisma.documento.create({
@@ -146,7 +131,7 @@ export async function PATCH(
           const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
           const clienteNombre = tramite?.user?.name || 'Cliente'
           const mensajeEmail = `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
-          
+
           await enviarEmailNotificacion(
             admin.email,
             admin.name || 'Administrador',
@@ -154,8 +139,8 @@ export async function PATCH(
             mensajeEmail,
             enlace.tramiteId
           )
-        } catch (emailError) {
-          console.error('Error al enviar email al admin:', emailError)
+        } catch {
+          // Email no crítico
         }
       }
     }
@@ -173,14 +158,10 @@ export async function PATCH(
       }
     })
 
-    console.log('=== CONFIRMAR PAGO - ÉXITO ===')
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('=== ERROR AL CONFIRMAR PAGO ===')
-    console.error('Error:', error)
-    console.error('Stack:', error.stack)
+  } catch {
     return NextResponse.json(
-      { error: error.message || 'Error al confirmar pago' },
+      { error: 'Error al confirmar pago' },
       { status: 500 }
     )
   }

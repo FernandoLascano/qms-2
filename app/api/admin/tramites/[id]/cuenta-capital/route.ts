@@ -127,14 +127,13 @@ export async function POST(request: Request, { params }: RouteParams) {
           mensajeNotificacion,
           id
         )
-      } catch (emailError) {
-        console.error('Error al enviar email de depósito de capital:', emailError)
+      } catch {
+        // Email sending failed (non-critical)
       }
     }
 
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error al guardar cuenta de capital:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al guardar los datos bancarios' },
       { status: 500 }

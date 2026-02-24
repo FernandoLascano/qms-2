@@ -196,8 +196,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
-  } catch (error) {
-    console.error('Error al obtener tracking de tiempo:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener tracking de tiempo' },
       { status: 500 }

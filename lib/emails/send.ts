@@ -10,27 +10,14 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, subject, template, data }: SendEmailParams) {
   try {
-    console.log('📧 [EMAIL] Iniciando envío:', {
-      to,
-      subject,
-      template,
-      smtpHost: process.env.SMTP_HOST || 'no configurado',
-      smtpUser: process.env.SMTP_USER || 'no configurado'
-    })
-
-    // Obtener la template correspondiente
     const templateFunction = templates[template]
 
     if (!templateFunction) {
-      console.error('❌ [EMAIL] Template no encontrada:', template, 'Disponibles:', Object.keys(templates))
       throw new Error(`Template "${template}" no encontrada`)
     }
 
-    // Generar el HTML del email
     const html = templateFunction(data as any)
-    console.log('✅ [EMAIL] HTML generado, longitud:', html.length)
 
-    // Enviar via Nodemailer (SMTP DonWeb/Ferozo)
     const nodemailerResult = await sendEmailNodemailer({
       to,
       subject,
@@ -38,16 +25,12 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
     })
 
     if (nodemailerResult.success) {
-      console.log('✅ [EMAIL] Enviado via Nodemailer:', nodemailerResult.messageId)
       return { success: true, result: nodemailerResult }
     } else {
-      console.error('❌ [EMAIL] Error Nodemailer:', nodemailerResult.error)
       throw new Error(nodemailerResult.error || 'Error al enviar email via Nodemailer')
     }
 
   } catch (error: any) {
-    console.error('❌ [EMAIL] Error general:', error.message)
-    console.error('❌ [EMAIL] Stack:', error.stack)
     return { success: false, error: error.message }
   }
 }

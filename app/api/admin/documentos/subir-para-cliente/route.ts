@@ -8,7 +8,7 @@ import { enviarEmailNotificacion } from '@/lib/emails/send'
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id || session.user.rol !== 'ADMIN') {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -23,8 +23,6 @@ export async function POST(request: Request) {
     const nombre = formData.get('nombre') as string
     const descripcion = formData.get('descripcion') as string
     const tipo = formData.get('tipo') as string || 'DOCUMENTO_PARA_FIRMAR'
-
-    console.log('📤 Subiendo documento a Cloudinary:', { nombre, tramiteId, userId, fileName: file?.name })
 
     if (!file) {
       return NextResponse.json(
@@ -56,9 +54,6 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    console.log('📁 Tamaño del archivo:', buffer.length, 'bytes')
-    console.log('☁️ Subiendo a Supabase Storage...')
-
     // Subir a Supabase Storage
     const uploadResult = await uploadToSupabase(
       buffer,
@@ -68,7 +63,6 @@ export async function POST(request: Request) {
     )
 
     if (!uploadResult?.url) {
-      console.error('❌ Error al subir a Supabase Storage')
       return NextResponse.json(
         { error: 'Error al subir el archivo. Por favor intenta de nuevo.' },
         { status: 500 }
@@ -76,31 +70,21 @@ export async function POST(request: Request) {
     }
 
     const fileUrl = uploadResult.url
-    console.log('✅ Archivo subido a Supabase:', fileUrl)
 
     // Crear registro en la base de datos
-    try {
-      await prisma.documento.create({
-        data: {
-          tramiteId: tramiteId,
-          userId: userId,
-          nombre: nombre,
-          descripcion: descripcion || 'Documento para firmar',
-          url: fileUrl,
-          tamanio: buffer.length,
-          mimeType: file.type || 'application/pdf',
-          tipo: tipo as any, // DOCUMENTO_PARA_FIRMAR, ESTATUTO_PARA_FIRMAR, o ACTA_PARA_FIRMAR
-          estado: 'PENDIENTE'
-        }
-      })
-      console.log('✅ Documento registrado en BD')
-    } catch (error: any) {
-      console.error('❌ Error al crear documento en BD:', error)
-      return NextResponse.json(
-        { error: `Error al registrar documento: ${error.message}` },
-        { status: 500 }
-      )
-    }
+    await prisma.documento.create({
+      data: {
+        tramiteId: tramiteId,
+        userId: userId,
+        nombre: nombre,
+        descripcion: descripcion || 'Documento para firmar',
+        url: fileUrl,
+        tamanio: buffer.length,
+        mimeType: file.type || 'application/pdf',
+        tipo: tipo as any,
+        estado: 'PENDIENTE'
+      }
+    })
 
     // Notificar al cliente
     const mensajeNotificacion = `Los documentos "${nombre}" están listos. Descargalos, firmalos y subí las versiones firmadas.${descripcion ? ` Instrucciones: ${descripcion}` : ''}`
@@ -111,12 +95,11 @@ export async function POST(request: Request) {
           userId: userId,
           tramiteId: tramiteId,
           tipo: 'ACCION_REQUERIDA',
-          titulo: '📄 Documentos Listos para Firmar',
+          titulo: 'Documentos Listos para Firmar',
           mensaje: mensajeNotificacion,
           link: `/dashboard/tramites/${tramiteId}#documentos`
         }
       })
-      console.log('✅ Notificación enviada')
 
       // Enviar email al usuario
       const usuario = await prisma.user.findUnique({
@@ -131,13 +114,12 @@ export async function POST(request: Request) {
             mensajeNotificacion,
             tramiteId
           )
-          console.log('✅ Email enviado al usuario')
-        } catch (emailError) {
-          console.error('⚠️ Error al enviar email:', emailError)
+        } catch {
+          // Email no crítico
         }
       }
-    } catch (error: any) {
-      console.error('⚠️ Error al crear notificación:', error)
+    } catch {
+      // Notificación no crítica
     }
 
     // Marcar etapa de documentos enviados
@@ -148,12 +130,9 @@ export async function POST(request: Request) {
           documentosRevisados: true
         }
       })
-      console.log('✅ Etapa actualizada')
-    } catch (error: any) {
-      console.error('⚠️ Error al actualizar etapa:', error)
+    } catch {
+      // Actualización de etapa no crítica
     }
-
-    console.log('🎉 Documento subido exitosamente')
 
     return NextResponse.json({
       success: true,
@@ -161,10 +140,9 @@ export async function POST(request: Request) {
       storagePath: uploadResult.path
     })
 
-  } catch (error: any) {
-    console.error('💥 Error general al subir documento:', error)
+  } catch {
     return NextResponse.json(
-      { error: error.message || 'Error al subir documento' },
+      { error: 'Error al subir documento' },
       { status: 500 }
     )
   }

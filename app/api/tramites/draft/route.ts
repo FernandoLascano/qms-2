@@ -17,15 +17,6 @@ export async function POST(request: Request) {
 
     const data = await request.json()
     
-    // Log para debugging (remover en producción)
-    console.log('Datos recibidos:', {
-      tieneJurisdiccion: !!data.jurisdiccion,
-      tienePlan: !!data.plan,
-      tieneSocios: !!data.socios,
-      tieneAdministradores: !!data.administradores,
-      tramiteId: data.tramiteId
-    })
-    
     // Si viene un tramiteId específico, usar ese trámite
     let existingDraft = null
     if (data.tramiteId) {
@@ -156,9 +147,7 @@ export async function POST(request: Request) {
           }
         })
       } catch (error: any) {
-        // Si falla por el campo datosUsuario, intentar sin él
         if (error.message?.includes('datosUsuario')) {
-          console.warn('Campo datosUsuario no disponible, guardando sin él...')
           tramite = await prisma.tramite.update({
             where: { id: existingDraft.id },
             data: {
@@ -207,17 +196,6 @@ export async function POST(request: Request) {
           formularioCompleto: false,
         }
         
-        console.log('Intentando crear trámite con datos:', {
-          jurisdiccion: datosCreacion.jurisdiccion,
-          plan: datosCreacion.plan,
-          denominacionSocial1: datosCreacion.denominacionSocial1,
-          objetoSocial: datosCreacion.objetoSocial.substring(0, 50) + '...',
-          capitalSocial: datosCreacion.capitalSocial,
-          domicilioLegal: datosCreacion.domicilioLegal,
-          tieneSocios: Array.isArray(datosCreacion.socios) && datosCreacion.socios.length > 0,
-          tieneAdministradores: Array.isArray(datosCreacion.administradores) && datosCreacion.administradores.length > 0
-        })
-        
         try {
           // Intentar con datosUsuario primero
           tramite = await (prisma.tramite.create as any)({
@@ -226,7 +204,6 @@ export async function POST(request: Request) {
         } catch (error: any) {
           // Si falla por el campo datosUsuario, intentar sin él
           if (error.message?.includes('datosUsuario')) {
-            console.warn('Campo datosUsuario no disponible, creando sin él...')
             const { datosUsuario, ...datosSinUsuario } = datosCreacion
             tramite = await prisma.tramite.create({
               data: datosSinUsuario
@@ -236,13 +213,9 @@ export async function POST(request: Request) {
           }
         }
         
-        console.log('Trámite creado exitosamente:', tramite.id)
-      } catch (error: any) {
-        console.error('Error al crear borrador:', error)
-        console.error('Stack trace:', error.stack)
-        // Si falla, intentar con valores mínimos
+      } catch {
         return NextResponse.json(
-          { error: 'Error al guardar borrador', details: error.message, stack: process.env.NODE_ENV === 'development' ? error.stack : undefined },
+          { error: 'Error al guardar borrador' },
           { status: 500 }
         )
       }
@@ -254,13 +227,9 @@ export async function POST(request: Request) {
       message: 'Borrador guardado'
     })
 
-  } catch (error) {
-    console.error('Error al guardar borrador:', error)
+  } catch {
     return NextResponse.json(
-      { 
-        error: 'Error al guardar borrador', 
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Error al guardar borrador' },
       { status: 500 }
     )
   }
@@ -295,8 +264,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ draft })
 
-  } catch (error) {
-    console.error('Error al obtener borrador:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener borrador' },
       { status: 500 }

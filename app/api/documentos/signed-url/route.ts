@@ -72,8 +72,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ error: 'Se requiere documentoId o url' }, { status: 400 })
-  } catch (error) {
-    console.error('Error generando signed URL:', error)
+  } catch {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

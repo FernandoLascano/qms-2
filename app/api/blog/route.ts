@@ -33,10 +33,9 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(posts)
-  } catch (error: any) {
-    console.error('Error al obtener posts:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al obtener posts', detalles: error.message },
+      { error: 'Error al obtener posts' },
       { status: 500 }
     )
   }
@@ -79,10 +78,9 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(post)
-  } catch (error: any) {
-    console.error('Error al crear post:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al crear post', detalles: error.message },
+      { error: 'Error al crear post' },
       { status: 500 }
     )
   }

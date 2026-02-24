@@ -49,8 +49,7 @@ export async function GET(
 
     // Redirigir a la URL de Cloudinary
     return NextResponse.redirect(documento.url)
-  } catch (error) {
-    console.error('Error al obtener documento:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener documento' },
       { status: 500 }

@@ -25,10 +25,9 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(config)
-  } catch (error: any) {
-    console.error('Error al obtener configuración:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al obtener configuración', detalles: error.message },
+      { error: 'Error al obtener configuración' },
       { status: 500 }
     )
   }
@@ -78,10 +77,9 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json(config)
-  } catch (error: any) {
-    console.error('Error al actualizar configuración:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al actualizar configuración', detalles: error.message },
+      { error: 'Error al actualizar configuración' },
       { status: 500 }
     )
   }

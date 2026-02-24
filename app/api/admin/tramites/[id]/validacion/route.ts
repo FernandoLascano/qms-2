@@ -95,8 +95,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         observaciones || undefined,
         id
       )
-    } catch (emailError) {
-      console.error("Error al enviar email de validación (no crítico):", emailError)
+    } catch {
+      // Error al enviar email de validación (no crítico)
     }
 
     // Crear historial de estado
@@ -116,24 +116,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       tramite: tramiteActualizado
     })
 
-  } catch (error) {
-    console.error('Error al actualizar validación:', error)
-    console.error('Error completo:', JSON.stringify(error, null, 2))
-    
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
-
-    const message =
-      error instanceof Error ? error.message : 'Error desconocido al actualizar validación'
-
+  } catch {
     return NextResponse.json(
-      { 
-        error: 'Error al actualizar validación', 
-        details: message,
-        stack: error instanceof Error ? error.stack : undefined
-      },
+      { error: 'Error al actualizar validación' },
       { status: 500 }
     )
   }

@@ -28,10 +28,9 @@ export async function GET(
     })
 
     return NextResponse.json(post)
-  } catch (error: any) {
-    console.error('Error al obtener post:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al obtener post', detalles: error.message },
+      { error: 'Error al obtener post' },
       { status: 500 }
     )
   }
@@ -61,10 +60,9 @@ export async function PATCH(
     })
 
     return NextResponse.json(post)
-  } catch (error: any) {
-    console.error('Error al actualizar post:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al actualizar post', detalles: error.message },
+      { error: 'Error al actualizar post' },
       { status: 500 }
     )
   }
@@ -99,10 +97,9 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('Error al eliminar post:', error)
+  } catch {
     return NextResponse.json(
-      { error: 'Error al eliminar post', detalles: error.message },
+      { error: 'Error al eliminar post' },
       { status: 500 }
     )
   }
