@@ -64,9 +64,8 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Verificar que NEXTAUTH_URL esté configurado
     const baseUrl = process.env.NEXTAUTH_URL
     if (!baseUrl) {
-      console.error('NEXTAUTH_URL no está configurado en las variables de entorno')
       return NextResponse.json(
-        { error: 'Error de configuración: NEXTAUTH_URL no está configurado. Agrega NEXTAUTH_URL="http://localhost:3000" a tu archivo .env' },
+        { error: 'Error de configuración del servidor' },
         { status: 500 }
       )
     }
@@ -120,25 +119,9 @@ export async function POST(request: Request, { params }: RouteParams) {
         preference.back_urls.success.trim() !== '' &&
         !preference.back_urls.success.includes('localhost')) {
       preference.auto_return = 'approved'
-    } else {
-      console.log('No se agregará auto_return (URL es localhost o no está definida)')
     }
 
-    console.log('Preferencia completa:', JSON.stringify(preference, null, 2))
-    console.log('back_urls.success existe?', !!preference.back_urls?.success)
-    console.log('back_urls.success valor:', preference.back_urls?.success)
-
-    console.log('Creando preferencia de Mercado Pago con:', {
-      monto: monto,
-      concepto: conceptoTexto,
-      nextauthUrl: process.env.NEXTAUTH_URL,
-      hasAccessToken: !!accessToken
-    })
-
-    // Serializar y verificar el JSON antes de enviarlo
     const jsonBody = JSON.stringify(preference)
-    console.log('JSON a enviar a Mercado Pago:', jsonBody)
-    console.log('back_urls en JSON:', JSON.parse(jsonBody).back_urls)
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
@@ -151,18 +134,8 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     if (!response.ok) {
       const error = await response.json()
-      console.error('Error de Mercado Pago:', JSON.stringify(error, null, 2))
-      
-      // Extraer mensaje de error más específico
-      let errorMessage = 'Error al crear preferencia de pago en Mercado Pago'
-      if (error.message) {
-        errorMessage = error.message
-      } else if (error.cause && Array.isArray(error.cause) && error.cause.length > 0) {
-        errorMessage = error.cause[0].description || error.cause[0].message || errorMessage
-      }
-      
       return NextResponse.json(
-        { error: errorMessage, details: error },
+        { error: 'Error al crear preferencia de pago en Mercado Pago' },
         { status: 500 }
       )
     }
@@ -219,8 +192,8 @@ export async function POST(request: Request, { params }: RouteParams) {
           parseFloat(monto),
           id
         )
-      } catch (emailError) {
-        console.error("Error al enviar email de pago pendiente (no crítico):", emailError)
+      } catch {
+        // Email no crítico, continuar silenciosamente
       }
     }
 
@@ -230,7 +203,6 @@ export async function POST(request: Request, { params }: RouteParams) {
     })
 
   } catch (error) {
-    console.error('Error al generar link de pago:', error)
     return NextResponse.json(
       { error: 'Error al generar link de pago' },
       { status: 500 }
