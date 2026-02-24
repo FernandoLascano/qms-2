@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Verificar firma del webhook de Mercado Pago
 function verificarFirma(request: Request, rawBody: string): boolean {
@@ -48,6 +49,9 @@ function verificarFirma(request: Request, rawBody: string): boolean {
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = await rateLimit(request, 'webhook', 30, '1 m')
+    if (rateLimitResponse) return rateLimitResponse
+
     const rawBody = await request.text()
     const body = JSON.parse(rawBody)
 

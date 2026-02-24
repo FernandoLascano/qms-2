@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 import { chatWithAssistant } from '@/lib/ai/assistant'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResponse = await rateLimit(request, 'chat', 10, '1 m')
+    if (rateLimitResponse) return rateLimitResponse
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
       return NextResponse.json(
