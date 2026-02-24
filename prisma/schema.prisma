@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // USUARIOS Y AUTENTICACIÓN
@@ -119,6 +120,11 @@ model Tramite {
   enlacesPago      EnlacePago[]
   eventos          Evento[]
   cuentasBancarias CuentaBancaria[]
+
+  @@index([userId])
+  @@index([estadoGeneral])
+  @@index([createdAt])
+  @@index([userId, estadoGeneral])
 }
 
 enum Jurisdiccion {
@@ -176,6 +182,10 @@ model Documento {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tramiteId])
+  @@index([userId])
+  @@index([estado])
 }
 
 enum TipoDocumento {
@@ -240,6 +250,10 @@ model Pago {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tramiteId])
+  @@index([userId])
+  @@index([estado])
 }
 
 enum ConceptoPago {
@@ -309,6 +323,10 @@ model Notificacion {
   link String?
 
   createdAt DateTime @default(now())
+
+  @@index([userId, leida])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum TipoNotificacion {
@@ -333,6 +351,8 @@ model Mensaje {
   leido     Boolean @default(false)
 
   createdAt DateTime @default(now())
+
+  @@index([tramiteId])
 }
 
 // HISTORIAL DE ESTADOS
@@ -347,6 +367,8 @@ model HistorialEstado {
   descripcion String?
 
   createdAt DateTime @default(now())
+
+  @@index([tramiteId])
 }
 
 // CONFIGURACIÓN DEL SISTEMA
@@ -416,6 +438,9 @@ model EnlacePago {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([tramiteId])
+  @@index([estado])
 }
 
 enum EstadoEnlacePago {

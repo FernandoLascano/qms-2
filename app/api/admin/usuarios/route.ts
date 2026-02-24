@@ -31,31 +31,30 @@ export async function GET() {
       }
     })
 
-    // Agregar información adicional de cada usuario
-    const usuariosConInfo = await Promise.all(
-      usuarios.map(async (user) => {
-        // Obtener el último trámite del usuario
-        const ultimoTramite = await prisma.tramite.findFirst({
-          where: { userId: user.id },
-          orderBy: { createdAt: 'desc' },
-          select: {
-            denominacionSocial1: true,
-            estadoGeneral: true,
-            createdAt: true
-          }
-        })
+    // Obtener último trámite de cada usuario en UNA sola query (evita N+1)
+    const userIds = usuarios.map(u => u.id)
+    const ultimosTramites = await prisma.tramite.findMany({
+      where: { userId: { in: userIds } },
+      orderBy: { createdAt: 'desc' },
+      distinct: ['userId'],
+      select: {
+        userId: true,
+        denominacionSocial1: true,
+        estadoGeneral: true,
+        createdAt: true
+      }
+    })
 
-        return {
-          ...user,
-          ultimoTramite
-        }
-      })
-    )
+    const tramiteMap = new Map(ultimosTramites.map(t => [t.userId, t]))
+
+    const usuariosConInfo = usuarios.map(user => ({
+      ...user,
+      ultimoTramite: tramiteMap.get(user.id) || null
+    }))
 
     return NextResponse.json(usuariosConInfo)
 
-  } catch (error) {
-    console.error('Error al obtener usuarios:', error)
+  } catch {
     return NextResponse.json(
       { error: 'Error al obtener usuarios' },
       { status: 500 }

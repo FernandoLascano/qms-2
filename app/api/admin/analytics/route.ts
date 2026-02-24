@@ -12,8 +12,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    console.log('Analytics - Usuario autenticado:', session.user.email)
-
     const { searchParams } = new URL(request.url)
     const periodo = searchParams.get('periodo') || 'mes' // dia, semana, mes, año
     const jurisdiccion = searchParams.get('jurisdiccion') // cordoba, caba, todas
@@ -75,24 +73,25 @@ export async function GET(request: Request) {
       })
     ])
 
-    // Trámites por mes (últimos 6 meses)
+    // Trámites por mes (últimos 6 meses) - una sola query en vez de 6
+    const seismesesAtras = startOfMonth(subMonths(new Date(), 5))
+    const tramitesPorMesRaw = await prisma.tramite.findMany({
+      where: {
+        createdAt: { gte: seismesesAtras },
+        ...jurisdiccionFilter
+      },
+      select: { createdAt: true }
+    })
+
     const tramitesPorMes = []
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i)
       const inicio = startOfMonth(mes)
       const fin = endOfMonth(mes)
-      
-      const count = await prisma.tramite.count({
-        where: {
-          createdAt: { gte: inicio, lte: fin },
-          ...jurisdiccionFilter
-        }
-      })
-      
-      tramitesPorMes.push({
-        mes: format(mes, 'MMM'),
-        cantidad: count
-      })
+      const count = tramitesPorMesRaw.filter(
+        t => t.createdAt >= inicio && t.createdAt <= fin
+      ).length
+      tramitesPorMes.push({ mes: format(mes, 'MMM'), cantidad: count })
     }
 
     // 2. MÉTRICAS DE INGRESOS
@@ -266,26 +265,25 @@ export async function GET(request: Request) {
       ? (tramitesCompletados / tramitesTotales) * 100 
       : 0
 
-    // 8. INGRESOS POR MES (últimos 6 meses)
+    // 8. INGRESOS POR MES (últimos 6 meses) - una sola query en vez de 6
+    const pagosPorMesRaw = await prisma.pago.findMany({
+      where: {
+        estado: 'APROBADO',
+        fechaPago: { gte: seismesesAtras },
+        tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
+      },
+      select: { fechaPago: true, monto: true }
+    })
+
     const ingresosPorMes = []
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i)
       const inicio = startOfMonth(mes)
       const fin = endOfMonth(mes)
-      
-      const ingreso = await prisma.pago.aggregate({
-        where: {
-          estado: 'APROBADO',
-          fechaPago: { gte: inicio, lte: fin },
-          tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
-        },
-        _sum: { monto: true }
-      })
-      
-      ingresosPorMes.push({
-        mes: format(mes, 'MMM'),
-        ingresos: ingreso._sum.monto || 0
-      })
+      const ingresos = pagosPorMesRaw
+        .filter(p => p.fechaPago && p.fechaPago >= inicio && p.fechaPago <= fin)
+        .reduce((sum, p) => sum + p.monto, 0)
+      ingresosPorMes.push({ mes: format(mes, 'MMM'), ingresos })
     }
 
     // 9. COMPARATIVAS VS MES ANTERIOR
@@ -491,15 +489,10 @@ export async function GET(request: Request) {
       }
     })
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error en analytics:', error)
-    console.error('Stack:', error?.stack)
     return NextResponse.json(
-      { 
-        error: 'Error al obtener métricas',
-        mensaje: error?.message || 'Error desconocido',
-        detalles: process.env.NODE_ENV === 'development' ? error?.stack : undefined
-      },
+      { error: 'Error al obtener métricas' },
       { status: 500 }
     )
   }

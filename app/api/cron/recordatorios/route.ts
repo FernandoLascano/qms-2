@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
 import {
   enviarRecordatorioPago,
   enviarRecordatorioDocumento,
@@ -7,15 +8,22 @@ import {
   enviarAlertaDenominacion
 } from '@/lib/emails/send'
 
-// Verificar token de seguridad para cron jobs
+// Verificar token de seguridad para cron jobs (timing-safe)
 function verificarAutorizacion(request: Request) {
   const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET || 'dev-secret-change-in-production'
-  
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret || !authHeader) return false
+
+  const token = authHeader.replace('Bearer ', '')
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(token),
+      Buffer.from(cronSecret)
+    )
+  } catch {
     return false
   }
-  return true
 }
 
 export async function GET(request: Request) {
@@ -26,8 +34,6 @@ export async function GET(request: Request) {
       { status: 401 }
     )
   }
-
-  console.log('🔔 Iniciando verificación de recordatorios automáticos...')
 
   const resultados = {
     pagosPendientes: 0,
@@ -375,19 +381,16 @@ export async function GET(request: Request) {
       }
     }
 
-    console.log('✅ Verificación de recordatorios completada:', resultados)
-
     return NextResponse.json({
       success: true,
       mensaje: 'Recordatorios procesados exitosamente',
       resultados
     })
   } catch (error: any) {
-    console.error('❌ Error general en verificación de recordatorios:', error)
+    console.error('Error en cron recordatorios:', error)
     return NextResponse.json(
       {
         error: 'Error al procesar recordatorios',
-        detalles: error.message,
         resultados
       },
       { status: 500 }

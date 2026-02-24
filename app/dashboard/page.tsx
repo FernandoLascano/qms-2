@@ -23,19 +23,22 @@ async function DashboardPage() {
       pagos: {
         where: {
           estado: 'PENDIENTE'
-        }
+        },
+        select: { id: true, monto: true }
       },
       enlacesPago: {
         where: {
           estado: 'PENDIENTE'
-        }
+        },
+        select: { id: true, monto: true }
       },
       documentos: {
         where: {
           tipo: {
             in: ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR']
           }
-        }
+        },
+        select: { id: true, nombre: true }
       },
       notificaciones: {
         where: {
@@ -44,12 +47,14 @@ async function DashboardPage() {
         take: 5,
         orderBy: {
           createdAt: 'desc'
-        }
+        },
+        select: { id: true, titulo: true }
       }
     },
     orderBy: {
       createdAt: 'desc'
-    }
+    },
+    take: 20
   })
 
   // Filtrar duplicados: si hay un trámite completado y un borrador con la misma denominación, mostrar solo el completado

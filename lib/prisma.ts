@@ -27,7 +27,6 @@ if (process.env.DATABASE_URL?.includes('supabase') || process.env.DATABASE_URL?.
     
     // Actualizar la variable de entorno temporalmente para esta instancia
     process.env.DATABASE_URL = dbUrl
-    console.log('ℹ️ Agregado sslmode=require a DATABASE_URL para Supabase')
   }
   
   // Configurar opciones de conexión para Supabase
@@ -35,14 +34,6 @@ if (process.env.DATABASE_URL?.includes('supabase') || process.env.DATABASE_URL?.
     db: {
       url: dbUrl
     }
-  }
-}
-
-// Si estamos en producción y usamos Supabase, agregar configuración SSL
-if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL?.includes('supabase')) {
-  // Supabase pooler ya maneja SSL, pero podemos ser explícitos
-  if (!process.env.DATABASE_URL.includes('sslmode')) {
-    console.warn('⚠️ DATABASE_URL de Supabase detectada. Asegúrate de usar el pooler con SSL.')
   }
 }
 

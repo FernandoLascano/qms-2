@@ -14,15 +14,18 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    // Retornar solo los datos públicos
+    // Retornar solo los datos públicos con cache
     return NextResponse.json({
       precioPlanBasico: config.precioPlanBasico,
       precioPlanEmprendedor: config.precioPlanEmprendedor,
       precioPlanPremium: config.precioPlanPremium,
       smvm: config.smvm
+    }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      }
     })
-  } catch (error: any) {
-    console.error('Error al obtener configuración pública:', error)
+  } catch {
 
     // En caso de error, retornar valores por defecto
     return NextResponse.json({

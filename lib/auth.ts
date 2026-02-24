@@ -22,14 +22,6 @@ export const authOptions: NextAuthOptions = {
           // Normalizar email: trim y lowercase
           const normalizedEmail = credentials.email.trim().toLowerCase()
 
-          // Asegurar conexión a la base de datos
-          try {
-            await prisma.$connect()
-          } catch (connectError: any) {
-            console.error('[AUTH] Error de conexión a la base de datos:', connectError.message)
-            throw new Error("Error de conexión. Por favor intenta nuevamente.")
-          }
-
           const user = await prisma.user.findUnique({
             where: {
               email: normalizedEmail
@@ -37,12 +29,10 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!user) {
-            console.error(`[AUTH] Usuario no encontrado: ${normalizedEmail}`)
             throw new Error("Email o contraseña incorrectos")
           }
 
           if (!user.password) {
-            console.error(`[AUTH] Usuario sin contraseña: ${normalizedEmail}`)
             throw new Error("Email o contraseña incorrectos")
           }
 
@@ -52,26 +42,24 @@ export const authOptions: NextAuthOptions = {
           )
 
           if (!isCorrectPassword) {
-            console.error(`[AUTH] Contraseña incorrecta para: ${normalizedEmail}`)
             throw new Error("Email o contraseña incorrectos")
           }
 
-          console.log(`[AUTH] Login exitoso: ${normalizedEmail}`)
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             rol: user.rol,
           }
-        } catch (error: any) {
-          console.error('[AUTH] Error en authorize:', error.message)
+        } catch (error) {
           throw error
         }
       }
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 horas
   },
   pages: {
     signIn: "/login",

@@ -1,19 +1,70 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import crypto from 'crypto'
+
+// Verificar firma del webhook de Mercado Pago
+function verificarFirma(request: Request, rawBody: string): boolean {
+  const xSignature = request.headers.get('x-signature')
+  const xRequestId = request.headers.get('x-request-id')
+  const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET
+
+  // Si no hay secret configurado, validar el pago contra la API de MP directamente
+  if (!webhookSecret) {
+    return true // Fallback: se valida abajo consultando la API de MP
+  }
+
+  if (!xSignature || !xRequestId) {
+    return false
+  }
+
+  // Parsear x-signature (formato: ts=xxx,v1=xxx)
+  const parts = xSignature.split(',')
+  const tsEntry = parts.find(p => p.trim().startsWith('ts='))
+  const v1Entry = parts.find(p => p.trim().startsWith('v1='))
+
+  if (!tsEntry || !v1Entry) {
+    return false
+  }
+
+  const ts = tsEntry.split('=')[1]
+  const hash = v1Entry.split('=')[1]
+
+  // Construir el manifest para verificar
+  const manifest = `id:${xRequestId};request-id:${xRequestId};ts:${ts};`
+  const computedHash = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(manifest)
+    .digest('hex')
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(hash),
+      Buffer.from(computedHash)
+    )
+  } catch {
+    return false
+  }
+}
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
+    const rawBody = await request.text()
+    const body = JSON.parse(rawBody)
+
+    // Verificar firma si está configurada
+    if (process.env.MERCADOPAGO_WEBHOOK_SECRET && !verificarFirma(request, rawBody)) {
+      console.error('Webhook MP: firma inválida')
+      return NextResponse.json({ error: 'Firma inválida' }, { status: 401 })
+    }
 
     // Mercado Pago envía notificaciones de tipo "payment"
     if (body.type === 'payment') {
       const paymentId = body.data.id
 
-      // Obtener información del pago desde Mercado Pago
+      // Obtener información del pago desde Mercado Pago (doble verificación)
       const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
 
       if (!accessToken) {
-        console.error('MERCADOPAGO_ACCESS_TOKEN no configurado')
         return NextResponse.json({ error: 'Configuración faltante' }, { status: 500 })
       }
 
@@ -24,7 +75,6 @@ export async function POST(request: Request) {
       })
 
       if (!response.ok) {
-        console.error('Error al obtener pago de Mercado Pago')
         return NextResponse.json({ error: 'Error al obtener pago' }, { status: 500 })
       }
 
@@ -35,7 +85,6 @@ export async function POST(request: Request) {
         // Extraer tramiteId y concepto del external_reference
         const externalReference = payment.external_reference
         if (!externalReference) {
-          console.error('No se encontró external_reference')
           return NextResponse.json({ error: 'Referencia no encontrada' }, { status: 400 })
         }
 
@@ -54,7 +103,6 @@ export async function POST(request: Request) {
         })
 
         if (!pago) {
-          console.error('Pago no encontrado en la base de datos')
           return NextResponse.json({ error: 'Pago no encontrado' }, { status: 404 })
         }
 
@@ -74,8 +122,8 @@ export async function POST(request: Request) {
               userId: pago.tramite.userId,
               tramiteId: tramiteId,
               tipo: 'EXITO',
-              titulo: '✅ Pago de Honorarios Confirmado',
-              mensaje: `Hemos recibido tu pago de ${concepto} por $${pago.monto.toLocaleString('es-AR')}. ¡Gracias!`
+              titulo: 'Pago de Honorarios Confirmado',
+              mensaje: `Hemos recibido tu pago de ${concepto} por $${pago.monto.toLocaleString('es-AR')}.`
             }
           })
         }
@@ -85,19 +133,17 @@ export async function POST(request: Request) {
           where: { rol: 'ADMIN' }
         })
 
-        for (const admin of admins) {
-          await prisma.notificacion.create({
+        await Promise.all(admins.map(admin =>
+          prisma.notificacion.create({
             data: {
               userId: admin.id,
               tramiteId: tramiteId,
               tipo: 'EXITO',
-              titulo: '💰 Pago de Honorarios Recibido',
+              titulo: 'Pago de Honorarios Recibido',
               mensaje: `El cliente pagó ${concepto} por $${pago.monto.toLocaleString('es-AR')} (Trámite #${tramiteId.substring(0, 8)}).`
             }
           })
-        }
-
-        console.log(`Pago confirmado: ${pago.id}`)
+        ))
       }
     }
 
@@ -111,4 +157,3 @@ export async function POST(request: Request) {
     )
   }
 }
-

@@ -21,8 +21,6 @@ export async function GET(request: NextRequest) {
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
     async start(controller) {
-      console.log(`📡 SSE conectado para usuario ${userId}`)
-
       let interval: NodeJS.Timeout | null = null
       let isClosed = false
 
@@ -33,8 +31,7 @@ export async function GET(request: NextRequest) {
         try {
           const message = `data: ${JSON.stringify(data)}\n\n`
           controller.enqueue(encoder.encode(message))
-        } catch (error) {
-          console.error('Error al enviar evento SSE:', error)
+        } catch {
           cleanup()
         }
       }
@@ -55,7 +52,6 @@ export async function GET(request: NextRequest) {
           // El controller ya podría estar cerrado
         }
 
-        console.log(`📡 SSE desconectado para usuario ${userId}`)
       }
 
       // Enviar evento inicial de conexión
@@ -117,14 +113,13 @@ export async function GET(request: NextRequest) {
             notifications: notificacionesFormateadas,
             timestamp: new Date().toISOString()
           })
-        } catch (error) {
-          console.error('Error al obtener notificaciones:', error)
+        } catch {
           // No cerrar la conexión por un error de DB temporal
         }
       }
 
-      // Verificar notificaciones cada 30 segundos (reducido de 5s para optimizar recursos)
-      interval = setInterval(checkNotifications, 30000)
+      // Verificar notificaciones cada 60 segundos (optimizado para reducir CPU)
+      interval = setInterval(checkNotifications, 60000)
 
       // Verificar inmediatamente
       await checkNotifications()

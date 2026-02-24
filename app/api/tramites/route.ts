@@ -6,23 +6,17 @@ import { enviarEmailTramiteEnviado } from '@/lib/emails/send'
 
 export async function POST(request: Request) {
   try {
-    console.log('=== INICIO DEL POST ===')
-    
     // Verificar autenticación
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.id) {
-      console.log('Usuario no autenticado')
       return NextResponse.json(
         { error: 'No autenticado', details: 'Debes iniciar sesión para crear un trámite' },
         { status: 401 }
       )
     }
 
-    console.log('Usuario autenticado:', session.user.id)
-
     const data = await request.json()
-    console.log('Datos recibidos:', JSON.stringify(data, null, 2))
 
     // VALIDACIÓN DE CAMPOS REQUERIDOS
     const erroresValidacion = []
@@ -96,7 +90,6 @@ export async function POST(request: Request) {
 
     // Si hay errores, devolver respuesta con detalles
     if (erroresValidacion.length > 0) {
-      console.log('Errores de validación:', erroresValidacion)
       return NextResponse.json(
         {
           error: 'Formulario incompleto',
@@ -112,28 +105,21 @@ export async function POST(request: Request) {
     })
 
     if (!usuario) {
-      console.log('Usuario no encontrado en BD')
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
       )
     }
 
-    console.log('Usuario encontrado:', usuario.email)
-
     // Preparar objeto social
     const objetoSocialFinal = data.objetoSocial === 'PERSONALIZADO' 
       ? data.objetoPersonalizado 
       : 'La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades: Compra, venta y permuta, explotación, arrendamientos y administración de bienes inmuebles, urbanos y rurales y la realización de operaciones de propiedad horizontal. Realizar toda clase de operaciones financieras por todos los medios autorizados por la legislación vigente. Se excluyen las operaciones comprendidas en la Ley de Entidades Financiera. Importación y exportación de bienes y servicios. Actuar como fiduciante, fiduciaria, beneficiaria, fideicomisaria, por cuenta propia o por cuenta de terceros y/o asociada a terceros, en todo tipo de emprendimientos. El objeto social comprende además la realización de toda actividad que se relacione directa o indirectamente con el objeto principal.'
 
-    console.log('Objeto social final:', objetoSocialFinal)
-
     // Preparar domicilio legal
     const domicilioLegal = data.sinDomicilio 
       ? 'A informar' 
       : `${data.domicilio || ''}, ${data.ciudad || ''}, ${data.departamento || ''}, ${data.provincia || ''}`
-
-    console.log('Domicilio legal:', domicilioLegal)
 
     // Preparar datos del usuario como JSON (incluyendo campos adicionales del formulario)
     const datosUsuarioJSON = {
@@ -154,16 +140,12 @@ export async function POST(request: Request) {
       objetoPersonalizado: data.objetoPersonalizado || ''
     }
 
-    console.log('Datos usuario JSON:', datosUsuarioJSON)
-
     // Preparar capital social
     let capitalSocial = 0
     try {
       const capitalStr = String(data.capitalSocial || '0')
       capitalSocial = parseFloat(capitalStr.replace(/\./g, '').replace(',', '.'))
-      console.log('Capital social parseado:', capitalSocial)
-    } catch (err) {
-      console.error('Error al parsear capital social:', err)
+    } catch {
       capitalSocial = 635600
     }
 
@@ -181,8 +163,7 @@ export async function POST(request: Request) {
             if (isNaN(aporteCapital)) {
               aporteCapital = 0
             }
-          } catch (err) {
-            console.error('Error al parsear aporte capital del socio:', err)
+          } catch {
             aporteCapital = 0
           }
           
@@ -229,8 +210,6 @@ export async function POST(request: Request) {
         }))
       : []
 
-    console.log('Buscando borrador existente...')
-    
     // Buscar si existe un borrador con la misma denominación y que pertenezca al usuario
     const borradorExistente = await prisma.tramite.findFirst({
       where: {
@@ -247,7 +226,6 @@ export async function POST(request: Request) {
     let tramite
     
     if (borradorExistente) {
-      console.log('Actualizando borrador existente:', borradorExistente.id)
       // Actualizar el borrador existente en lugar de crear uno nuevo
       tramite = await prisma.tramite.update({
         where: { id: borradorExistente.id },
@@ -278,7 +256,6 @@ export async function POST(request: Request) {
         }
       })
     } else {
-      console.log('Creando nuevo trámite...')
       // Crear el trámite solo si no existe un borrador
       tramite = await prisma.tramite.create({
         data: {
@@ -310,10 +287,7 @@ export async function POST(request: Request) {
       })
     }
 
-    console.log('Trámite creado exitosamente:', tramite.id)
-
     // Crear notificación para el usuario
-    console.log('Creando notificación...')
     await prisma.notificacion.create({
       data: {
         userId: usuario.id,
@@ -344,21 +318,18 @@ export async function POST(request: Request) {
 
     // Enviar email de confirmación al usuario (no fallar si hay error)
     try {
-      console.log('📧 Enviando email de confirmación a:', usuario.email)
-      const emailResult = await enviarEmailTramiteEnviado(
+      await enviarEmailTramiteEnviado(
         usuario.email,
         usuario.name || data.nombre || 'Usuario',
         tramite.id,
         data.denominacion1
       )
-      console.log('📧 Resultado del email:', emailResult)
     } catch (emailError) {
-      console.error("❌ Error al enviar email de confirmación:", emailError)
+      console.error("Error al enviar email de confirmación:", emailError)
     }
 
     // Enviar email a todos los admins sobre el nuevo trámite (no fallar si hay error)
     try {
-      console.log('📧 Enviando emails a admins sobre nuevo trámite')
       const { enviarEmailNuevoTramiteAdmin } = await import('@/lib/emails/send')
       
       await Promise.all(admins.map(async (admin) => {
@@ -370,17 +341,15 @@ export async function POST(request: Request) {
             data.denominacion1,
             tramite.id
           )
-          console.log(`📧 Email enviado a admin: ${admin.email}`)
         } catch (adminEmailError) {
-          console.error(`❌ Error al enviar email a admin ${admin.email}:`, adminEmailError)
+          console.error(`Error al enviar email a admin ${admin.email}:`, adminEmailError)
         }
       }))
     } catch (adminEmailError) {
-      console.error("❌ Error al enviar emails a admins:", adminEmailError)
+      console.error("Error al enviar emails a admins:", adminEmailError)
     }
 
     // Crear historial de estado
-    console.log('Creando historial...')
     await prisma.historialEstado.create({
       data: {
         tramiteId: tramite.id,
@@ -390,8 +359,6 @@ export async function POST(request: Request) {
       }
     })
 
-    console.log('=== TODO EXITOSO ===')
-    
     return NextResponse.json({
       success: true,
       tramite: {
@@ -401,17 +368,9 @@ export async function POST(request: Request) {
     })
 
   } catch (error) {
-    console.error('=== ERROR EN EL POST ===')
-    console.error('Error completo:', error)
-    console.error('Mensaje:', error instanceof Error ? error.message : 'Unknown error')
-    console.error('Stack:', error instanceof Error ? error.stack : 'No stack')
-    
+    console.error('Error al crear trámite:', error)
     return NextResponse.json(
-      { 
-        error: 'Error al crear el trámite', 
-        details: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : null
-      },
+      { error: 'Error al crear el trámite. Intenta nuevamente.' },
       { status: 500 }
     )
   }
@@ -420,7 +379,22 @@ export async function POST(request: Request) {
 // Endpoint para obtener trámites del usuario
 export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'No autenticado' },
+        { status: 401 }
+      )
+    }
+
+    // Si es admin, puede ver todos; si no, solo los propios
+    const where = session.user.rol === 'ADMIN'
+      ? {}
+      : { userId: session.user.id }
+
     const tramites = await prisma.tramite.findMany({
+      where,
       include: {
         user: {
           select: {
@@ -432,9 +406,9 @@ export async function GET(request: Request) {
         },
         pagos: true,
         documentos: true,
-        notificaciones: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      take: 50
     })
 
     return NextResponse.json({ tramites })
