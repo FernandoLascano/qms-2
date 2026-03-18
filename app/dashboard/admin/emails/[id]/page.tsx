@@ -240,11 +240,11 @@ export default function EmailDetailPage() {
         <div className="p-6">
           {email.bodyHtml ? (
             <div
-              className="prose prose-sm max-w-none"
+              className="prose prose-sm max-w-none [&_*]:!text-gray-800 [&_a]:!text-brand-700"
               dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
             />
           ) : (
-            <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans leading-relaxed">
+            <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed">
               {email.bodyText || 'Sin contenido'}
             </pre>
           )}
