@@ -138,9 +138,9 @@ export async function POST(request: NextRequest) {
 </html>
     `
 
-    // Enviar email a contacto@quieromisas.com
+    // Enviar email al equipo
     const result = await sendEmail({
-      to: 'contacto@quieromisas.com',
+      to: 'fernandolascano@martinezwehbe.com',
       subject: `Consulta web: ${asunto} - ${nombre}`,
       html: htmlContent,
       text: `Nueva consulta de contacto\n\nNombre: ${nombre}\nEmail: ${email}\nAsunto: ${asunto}\n\nMensaje:\n${mensaje}`

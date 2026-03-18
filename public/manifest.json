@@ -1,0 +1,17 @@
+{
+  "name": "QuieroMiSAS - Constituir SAS Online en Argentina",
+  "short_name": "QuieroMiSAS",
+  "description": "Constituí tu SAS 100% online en Argentina. CUIT y matrícula en 5 días hábiles.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "lang": "es-AR",
+  "icons": [
+    {
+      "src": "/assets/img/qms-logo-reg.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

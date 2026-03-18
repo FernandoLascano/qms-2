@@ -100,9 +100,9 @@ export default function HomePage() {
               <StaggeredText
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 tracking-tight leading-[1.1]"
                 words={[
-                  { text: 'Tu' },
-                  { text: 'empresa' },
-                  { text: 'lista', withUnderline: true },
+                  { text: 'Constituí' },
+                  { text: 'tu' },
+                  { text: 'SAS', withUnderline: true },
                   { lineBreak: true },
                   { text: 'en' },
                   { text: '5', highlight: true },

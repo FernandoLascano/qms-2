@@ -1,22 +1,32 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Blog y Recursos | QuieroMiSAS - Guías sobre S.A.S. y Sociedades en Argentina',
-  description: 'Artículos, guías y recursos sobre constitución de S.A.S., trámites societarios, legislación y emprendimiento en Argentina. Información actualizada por expertos.',
+  title: 'Blog sobre SAS y Sociedades en Argentina | QuieroMiSAS',
+  description: 'Guías, comparativas y novedades sobre constitución de SAS, SRL y SA en Argentina. Requisitos, costos, plazos y todo lo que necesitás saber para crear tu empresa.',
   keywords: [
     'blog SAS Argentina',
-    'guías sociedades',
+    'guías sociedades Argentina',
     'trámites societarios',
-    'constituir empresa',
-    'legislación Argentina',
+    'constituir empresa Argentina',
+    'SAS vs SRL',
+    'requisitos SAS',
+    'costos constituir SAS',
     'IPJ Córdoba',
     'IGJ CABA',
-    'recursos emprendedores'
+    'crear empresa Argentina'
   ],
   openGraph: {
-    title: 'Blog y Recursos - QuieroMiSAS',
-    description: 'Guías y artículos sobre S.A.S. y sociedades en Argentina',
+    title: 'Blog sobre SAS y Sociedades en Argentina | QuieroMiSAS',
+    description: 'Guías, comparativas y novedades sobre constitución de SAS, SRL y SA en Argentina. Requisitos, costos y plazos.',
     type: 'website',
+    images: [
+      {
+        url: 'https://www.quieromisas.com/assets/img/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'QuieroMiSAS Blog - Guías sobre SAS en Argentina',
+      }
+    ],
   },
   alternates: {
     canonical: 'https://www.quieromisas.com/blog',
