@@ -15,56 +15,11 @@ async function AdminDashboardPage() {
     redirect('/dashboard')
   }
 
-  // Obtener todos los trámites para calcular correctamente
-  const todosTramites = await prisma.tramite.findMany({
-    select: {
-      id: true,
-      formularioCompleto: true,
-      denominacionReservada: true,
-      capitalDepositado: true,
-      tasaPagada: true,
-      documentosFirmados: true,
-      tramiteIngresado: true,
-      sociedadInscripta: true
-    }
-  })
-
-  // Función para calcular progreso (igual que en panel de usuario)
-  const calcularProgreso = (tramite: {
-    formularioCompleto: boolean
-    denominacionReservada: boolean
-    capitalDepositado: boolean
-    tasaPagada: boolean
-    documentosFirmados: boolean
-    tramiteIngresado: boolean
-    sociedadInscripta: boolean
-  }) => {
-    const etapas = [
-      tramite.formularioCompleto,
-      tramite.denominacionReservada,
-      tramite.capitalDepositado,
-      tramite.tasaPagada,
-      tramite.documentosFirmados,
-      tramite.tramiteIngresado,
-      tramite.sociedadInscripta
-    ]
-    const completadas = etapas.filter(e => e).length
-    return Math.round((completadas / etapas.length) * 100)
-  }
-
-  // Calcular estadísticas basadas en progreso (igual que panel de usuario)
-  const totalTramites = todosTramites.length
-  const enProceso = todosTramites.filter(t => {
-    const progreso = calcularProgreso(t)
-    return t.formularioCompleto && progreso < 100
-  }).length
-  const completados = todosTramites.filter(t => {
-    const progreso = calcularProgreso(t)
-    return progreso === 100 || t.sociedadInscripta
-  }).length
-
-  // Obtener otras estadísticas
+  // Obtener todas las estadísticas en paralelo con queries livianas (solo counts)
   const [
+    totalTramites,
+    completados,
+    enProceso,
     tramitesIniciados,
     tramitesEsperandoCliente,
     totalUsuarios,
@@ -72,6 +27,9 @@ async function AdminDashboardPage() {
     tramitesPendientesValidacion,
     tramitesRecientes
   ] = await Promise.all([
+    prisma.tramite.count(),
+    prisma.tramite.count({ where: { sociedadInscripta: true } }),
+    prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
     prisma.tramite.count({ where: { estadoGeneral: 'INICIADO' } }),
     prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
     prisma.user.count(),
@@ -80,13 +38,12 @@ async function AdminDashboardPage() {
     prisma.tramite.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
+      select: {
+        id: true,
+        denominacionSocial1: true,
+        estadoGeneral: true,
+        createdAt: true,
+        user: { select: { name: true, email: true } }
       }
     })
   ])

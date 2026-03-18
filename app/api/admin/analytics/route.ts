@@ -73,26 +73,23 @@ export async function GET(request: Request) {
       })
     ])
 
-    // Trámites por mes (últimos 6 meses) - una sola query en vez de 6
+    // Trámites por mes (últimos 6 meses) - queries paralelas con count
     const seismesesAtras = startOfMonth(subMonths(new Date(), 5))
-    const tramitesPorMesRaw = await prisma.tramite.findMany({
-      where: {
-        createdAt: { gte: seismesesAtras },
-        ...jurisdiccionFilter
-      },
-      select: { createdAt: true }
-    })
-
-    const tramitesPorMes = []
+    const mesesPromises = []
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i)
       const inicio = startOfMonth(mes)
       const fin = endOfMonth(mes)
-      const count = tramitesPorMesRaw.filter(
-        t => t.createdAt >= inicio && t.createdAt <= fin
-      ).length
-      tramitesPorMes.push({ mes: format(mes, 'MMM'), cantidad: count })
+      mesesPromises.push(
+        prisma.tramite.count({
+          where: {
+            createdAt: { gte: inicio, lte: fin },
+            ...jurisdiccionFilter
+          }
+        }).then(count => ({ mes: format(mes, 'MMM'), cantidad: count }))
+      )
     }
+    const tramitesPorMes = await Promise.all(mesesPromises)
 
     // 2. MÉTRICAS DE INGRESOS
     const pagosPeriodo = await prisma.pago.aggregate({
@@ -265,26 +262,24 @@ export async function GET(request: Request) {
       ? (tramitesCompletados / tramitesTotales) * 100 
       : 0
 
-    // 8. INGRESOS POR MES (últimos 6 meses) - una sola query en vez de 6
-    const pagosPorMesRaw = await prisma.pago.findMany({
-      where: {
-        estado: 'APROBADO',
-        fechaPago: { gte: seismesesAtras },
-        tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
-      },
-      select: { fechaPago: true, monto: true }
-    })
-
-    const ingresosPorMes = []
+    // 8. INGRESOS POR MES (últimos 6 meses) - queries paralelas con aggregate
+    const ingresosPromises = []
     for (let i = 5; i >= 0; i--) {
       const mes = subMonths(new Date(), i)
       const inicio = startOfMonth(mes)
       const fin = endOfMonth(mes)
-      const ingresos = pagosPorMesRaw
-        .filter(p => p.fechaPago && p.fechaPago >= inicio && p.fechaPago <= fin)
-        .reduce((sum, p) => sum + p.monto, 0)
-      ingresosPorMes.push({ mes: format(mes, 'MMM'), ingresos })
+      ingresosPromises.push(
+        prisma.pago.aggregate({
+          where: {
+            estado: 'APROBADO',
+            fechaPago: { gte: inicio, lte: fin },
+            tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
+          },
+          _sum: { monto: true }
+        }).then(result => ({ mes: format(mes, 'MMM'), ingresos: result._sum.monto || 0 }))
+      )
     }
+    const ingresosPorMes = await Promise.all(ingresosPromises)
 
     // 9. COMPARATIVAS VS MES ANTERIOR
     const mesAnteriorInicio = startOfMonth(subMonths(new Date(), 1))

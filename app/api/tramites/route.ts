@@ -392,22 +392,36 @@ export async function GET(request: Request) {
       ? {}
       : { userId: session.user.id }
 
+    const { searchParams } = new URL(request.url)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const page = parseInt(searchParams.get('page') || '1')
+    const skip = (page - 1) * limit
+
     const tramites = await prisma.tramite.findMany({
       where,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true
-          }
-        },
-        pagos: true,
-        documentos: true,
+      select: {
+        id: true,
+        denominacionSocial1: true,
+        denominacionAprobada: true,
+        jurisdiccion: true,
+        plan: true,
+        estadoGeneral: true,
+        estadoValidacion: true,
+        formularioCompleto: true,
+        denominacionReservada: true,
+        capitalDepositado: true,
+        tasaPagada: true,
+        documentosFirmados: true,
+        tramiteIngresado: true,
+        sociedadInscripta: true,
+        createdAt: true,
+        updatedAt: true,
+        user: { select: { id: true, name: true, email: true, phone: true } },
+        _count: { select: { pagos: true, documentos: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 50
+      take: limit,
+      skip,
     })
 
     return NextResponse.json({ tramites })

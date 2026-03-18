@@ -41,7 +41,6 @@ export function useNotifications() {
       return
     }
 
-    console.log('🔔 Iniciando conexión SSE para notificaciones...')
 
     let eventSource: EventSource | null = null
     let reconnectTimer: NodeJS.Timeout | null = null
@@ -51,17 +50,12 @@ export function useNotifications() {
         eventSource = new EventSource('/api/notificaciones/stream')
 
         eventSource.onopen = () => {
-          console.log('✅ SSE conectado')
           setState(prev => ({ ...prev, isConnected: true, error: null }))
         }
 
         eventSource.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data)
-
-            if (data.type === 'connected') {
-              console.log('🔔 Servidor confirmó conexión')
-            }
 
             if (data.type === 'notifications') {
               const newCount = data.count
@@ -100,13 +94,11 @@ export function useNotifications() {
                 count: data.count
               }))
             }
-          } catch (error) {
-            console.error('Error al parsear evento SSE:', error)
+          } catch {
           }
         }
 
-        eventSource.onerror = (error) => {
-          console.error('❌ Error en SSE:', error)
+        eventSource.onerror = () => {
           setState(prev => ({
             ...prev,
             isConnected: false,
@@ -119,12 +111,11 @@ export function useNotifications() {
           // Esto reduce la carga en el servidor cuando hay problemas
           const reconnectDelay = Math.min(30000, 5000 * Math.pow(2, 0)) // Máximo 30s
           reconnectTimer = setTimeout(() => {
-            console.log('🔄 Reconectando SSE...')
             connect()
           }, reconnectDelay)
         }
       } catch (error) {
-        console.error('Error al crear EventSource:', error)
+        // EventSource creation failed
       }
     }
 
@@ -132,7 +123,6 @@ export function useNotifications() {
 
     // Limpiar al desmontar
     return () => {
-      console.log('🔌 Cerrando conexión SSE')
       eventSource?.close()
       if (reconnectTimer) {
         clearTimeout(reconnectTimer)
