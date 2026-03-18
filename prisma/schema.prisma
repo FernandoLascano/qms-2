@@ -120,6 +120,7 @@ model Tramite {
   enlacesPago      EnlacePago[]
   eventos          Evento[]
   cuentasBancarias CuentaBancaria[]
+  emails           Email[]
 
   @@index([userId])
   @@index([estadoGeneral])
@@ -572,6 +573,113 @@ model Config {
   // General
   mantenimientoMode Boolean @default(false)
 
+  // Auto-forward de emails
+  emailForwardingEnabled Boolean @default(true)
+  emailForwardingAddress String  @default("fernandolascano@martinezwehbe.com")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// SISTEMA DE EMAIL
+// ============================================================
+
+enum EmailDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum EmailStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+model Email {
+  id        String @id @default(cuid())
+  messageId String @unique // SES message ID
+
+  // Remitente y destinatarios
+  from     String
+  fromName String?
+  to       String[]
+  cc       String[]
+  replyTo  String?
+
+  // Contenido
+  subject  String
+  bodyText String? @db.Text
+  bodyHtml String? @db.Text
+
+  // Almacenamiento
+  s3Key String? // Referencia al email crudo en S3
+
+  // Clasificación
+  direction EmailDirection
+  status    EmailStatus    @default(UNREAD)
+
+  // Spam/Virus (de SES)
+  spamVerdict  String? // PASS, FAIL
+  virusVerdict String? // PASS, FAIL
+
+  // Auto-forward
+  isForwarded Boolean @default(false)
+
+  // Threading
+  parentEmailId String?
+  parentEmail   Email?  @relation("EmailThread", fields: [parentEmailId], references: [id])
+  replies       Email[] @relation("EmailThread")
+
+  // Vinculación con trámite
+  tramiteId String?
+  tramite   Tramite? @relation(fields: [tramiteId], references: [id])
+
+  // Adjuntos
+  attachments EmailAttachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([direction])
+  @@index([status])
+  @@index([from])
+  @@index([createdAt])
+  @@index([tramiteId])
+}
+
+model EmailAttachment {
+  id String @id @default(cuid())
+
+  emailId String
+  email   Email  @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  fileName String
+  mimeType String
+  size     Int    // bytes
+  s3Key    String // Almacenado en S3
+
+  createdAt DateTime @default(now())
+
+  @@index([emailId])
+}
+
+model EmailTemplate {
+  id String @id @default(cuid())
+
+  name        String  @unique // Clave interna (ej: "bienvenida")
+  displayName String          // Nombre visible (ej: "Email de Bienvenida")
+  subject     String          // Asunto con {{variables}}
+  bodyHtml    String  @db.Text // HTML con {{variables}}
+  variables   String[]         // Lista de variables esperadas
+  category    String           // "tramite", "pago", "general", "notificacion"
+
+  isSystem Boolean @default(false) // Proteger templates del sistema
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
 }
