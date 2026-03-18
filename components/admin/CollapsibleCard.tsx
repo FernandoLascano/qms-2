@@ -8,6 +8,7 @@ interface CollapsibleCardProps {
   title: string
   description?: string
   icon?: React.ReactNode
+  action?: React.ReactNode
   defaultOpen?: boolean
   children: React.ReactNode
 }
@@ -16,6 +17,7 @@ export default function CollapsibleCard({
   title,
   description,
   icon,
+  action,
   defaultOpen = false,
   children
 }: CollapsibleCardProps) {
@@ -28,16 +30,18 @@ export default function CollapsibleCard({
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {icon}
-            {/* Título más suave para secciones colapsables */}
             <h3 className="text-base font-semibold text-gray-800">{title}</h3>
           </div>
-          {isOpen ? (
-            <ChevronUp className="h-5 w-5 text-gray-500" />
-          ) : (
-            <ChevronDown className="h-5 w-5 text-gray-500" />
-          )}
+          <div className="flex items-center gap-1">
+            {action}
+            {isOpen ? (
+              <ChevronUp className="h-5 w-5 text-gray-500" />
+            ) : (
+              <ChevronDown className="h-5 w-5 text-gray-500" />
+            )}
+          </div>
         </div>
         {description && (
           <CardDescription>{description}</CardDescription>
@@ -51,4 +55,3 @@ export default function CollapsibleCard({
     </Card>
   )
 }
-

@@ -27,7 +27,7 @@ import CuentaCapital from '@/components/admin/CuentaCapital'
 import ValidacionTramite from '@/components/admin/ValidacionTramite'
 import ReportingPagos from '@/components/admin/ReportingPagos'
 import EliminarTramite from '@/components/admin/EliminarTramite'
-import EditarFormulario from '@/components/admin/EditarFormulario'
+import { EditDenominaciones, EditObjetoSocial, EditDomicilio, EditInfoGeneral, EditSocios, EditAdministradores } from '@/components/admin/EditableSections'
 
 interface PageProps {
   params: Promise<{
@@ -89,6 +89,21 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
 
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []
+
+  const editProps = {
+    tramiteId: tramite.id,
+    tramite: {
+      denominacionSocial1: tramite.denominacionSocial1,
+      denominacionSocial2: tramite.denominacionSocial2,
+      denominacionSocial3: tramite.denominacionSocial3,
+      objetoSocial: tramite.objetoSocial,
+      domicilioLegal: tramite.domicilioLegal,
+      capitalSocial: tramite.capitalSocial,
+      socios,
+      administradores,
+      datosUsuario: (tramite.datosUsuario as any) || {},
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -169,6 +184,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       <CollapsibleCard
         title="Información General"
         icon={<FileText className="h-5 w-5 text-gray-600" />}
+        action={<EditInfoGeneral {...editProps} />}
       >
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
@@ -238,6 +254,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         title="Denominaciones Propuestas"
         description="Opciones de nombre para la sociedad"
         icon={<Tag className="h-5 w-5 text-gray-600" />}
+        action={<EditDenominaciones {...editProps} />}
       >
         <div className="space-y-2">
           {(() => {
@@ -288,6 +305,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         <CollapsibleCard
           title="Objeto Social"
           icon={<Briefcase className="h-5 w-5 text-gray-600" />}
+          action={<EditObjetoSocial {...editProps} />}
         >
           <div className="mb-3">
             {(() => {
@@ -318,6 +336,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         <CollapsibleCard
           title="Domicilio Legal"
           icon={<MapPin className="h-5 w-5 text-gray-600" />}
+          action={<EditDomicilio {...editProps} />}
         >
           <p className="text-sm text-gray-700">
             {tramite.domicilioLegal}
@@ -325,26 +344,12 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         </CollapsibleCard>
       </div>
 
-      {/* Editar Formulario - Componente para correcciones excepcionales */}
-      <EditarFormulario
-        tramiteId={tramite.id}
-        tramite={{
-          denominacionSocial1: tramite.denominacionSocial1,
-          denominacionSocial2: tramite.denominacionSocial2,
-          denominacionSocial3: tramite.denominacionSocial3,
-          objetoSocial: tramite.objetoSocial,
-          domicilioLegal: tramite.domicilioLegal,
-          capitalSocial: tramite.capitalSocial,
-          socios: tramite.socios,
-          administradores: tramite.administradores
-        }}
-      />
-
       {/* Socios / Accionistas - INFORMACIÓN COMPLETA */}
       <CollapsibleCard
         title={`Socios / Accionistas (${socios.length})`}
         description="Información completa para documentación"
         icon={<Users className="h-5 w-5 text-gray-600" />}
+        action={<EditSocios {...editProps} />}
       >
           <div className="space-y-4">
             {socios.map((socio: any, index: number) => {
@@ -480,6 +485,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         title={`Órgano de Administración (${administradores.length})`}
         description="Información completa para documentación"
         icon={<User className="h-5 w-5 text-gray-600" />}
+        action={<EditAdministradores {...editProps} />}
       >
           <div className="space-y-4">
             {administradores.map((admin: any, index: number) => (
