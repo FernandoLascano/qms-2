@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight } from 'lucide-react'
+import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
@@ -28,10 +28,11 @@ export function Sidebar() {
         { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
         { name: 'Sociedades', href: '/dashboard/admin/sociedades', icon: Building2 },
         { name: 'Usuarios', href: '/dashboard/admin/usuarios', icon: Users },
+        { name: 'Email', href: '/dashboard/admin/emails', icon: Mail },
         { name: 'Blog', href: '/dashboard/admin/blog', icon: BookOpen },
         { name: 'Calendario', href: '/dashboard/admin/calendario', icon: Calendar },
         { name: 'Configuración Sistema', href: '/dashboard/admin/configuracion', icon: Settings },
-        ...navigation.slice(1, -1), // Excluir "Inicio" y "Configuración" normal para admins
+        ...navigation.slice(1, -1), // Excluir "Inicio" y "Configuración" normal
         { name: 'Mi Cuenta', href: '/dashboard/configuracion', icon: User }
       ]
     : navigation
@@ -75,11 +76,12 @@ export function Sidebar() {
             Administración
           </p>
         )}
-        {navItems.slice(0, isAdmin ? 7 : navItems.length).map((item) => {
+        {navItems.slice(0, isAdmin ? 8 : navItems.length).map((item) => {
           const isActive = pathname === item.href ||
             (item.href === '/dashboard/admin' && pathname === '/dashboard/admin') ||
             (item.href === '/dashboard/admin/analytics' && pathname?.startsWith('/dashboard/admin/analytics')) ||
             (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades')) ||
+            (item.href === '/dashboard/admin/emails' && pathname?.startsWith('/dashboard/admin/emails')) ||
             (item.href === '/dashboard/admin/blog' && pathname?.startsWith('/dashboard/admin/blog')) ||
             (item.href === '/dashboard/admin/calendario' && pathname?.startsWith('/dashboard/admin/calendario')) ||
             (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion')) ||
@@ -115,7 +117,7 @@ export function Sidebar() {
             <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Mi cuenta
             </p>
-            {navItems.slice(7).map((item) => {
+            {navItems.slice(8).map((item) => {
               const isActive = pathname === item.href ||
                 (item.href !== '/dashboard/admin' && pathname?.startsWith(item.href))
               return (

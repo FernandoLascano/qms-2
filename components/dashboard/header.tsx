@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { User, Home, FileText, Upload, Bell, Settings, Shield, BarChart3, Building2, BookOpen, Calendar, Users, Clock, CreditCard } from 'lucide-react'
+import { User, Home, FileText, Upload, Bell, Settings, Shield, BarChart3, Building2, BookOpen, Calendar, Users, Clock, CreditCard, Mail } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import Link from 'next/link'
@@ -17,6 +17,7 @@ const pageInfo: Record<string, { title: string; description: string; icon: Lucid
   '/dashboard/admin/analytics': { title: 'Analytics', description: 'Métricas y estadísticas', icon: BarChart3 },
   '/dashboard/admin/sociedades': { title: 'Sociedades', description: 'Gestión de sociedades', icon: Building2 },
   '/dashboard/admin/usuarios': { title: 'Usuarios', description: 'Gestión de usuarios', icon: Users },
+  '/dashboard/admin/emails': { title: 'Email', description: 'Bandeja de correo electrónico', icon: Mail },
   '/dashboard/admin/blog': { title: 'Blog', description: 'Gestión de artículos', icon: BookOpen },
   '/dashboard/admin/calendario': { title: 'Calendario', description: 'Eventos y recordatorios', icon: Calendar },
   '/dashboard/admin/configuracion': { title: 'Configuración Sistema', description: 'Configuración del sistema', icon: Settings },
