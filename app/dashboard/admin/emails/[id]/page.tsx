@@ -133,9 +133,9 @@ export default function EmailDetailPage() {
       {/* Email Header */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3">
+          <div className="space-y-4">
+            <div>
+              <div className="flex items-center gap-2 flex-wrap mb-3">
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${
                   email.direction === 'INBOUND'
                     ? 'bg-green-100 text-green-700'
@@ -162,10 +162,10 @@ export default function EmailDetailPage() {
                   </Link>
                 )}
               </div>
-              <h1 className="text-xl font-black text-gray-900">{email.subject}</h1>
+              <h1 className="text-lg sm:text-xl font-black text-gray-900">{email.subject}</h1>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {email.direction === 'INBOUND' && email.status !== 'REPLIED' && (
                 <button
                   onClick={() => setShowReply(true)}

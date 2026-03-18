@@ -210,27 +210,23 @@ export default function EmailsPage() {
               <Link
                 key={email.id}
                 href={`/dashboard/admin/emails/${email.id}`}
-                className={`flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition group ${
+                className={`flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition group ${
                   email.status === 'UNREAD' ? 'bg-brand-50/30' : ''
                 }`}
               >
-                {/* Status indicator */}
-                <div className="flex-shrink-0">
-                  {email.status === 'UNREAD' ? (
-                    <Circle className="w-3 h-3 text-brand-600 fill-brand-600" />
-                  ) : (
-                    <div className="w-3 h-3" />
-                  )}
-                </div>
-
-                {/* Direction icon */}
-                <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${
-                  email.direction === 'INBOUND' ? 'bg-green-100' : 'bg-purple-100'
-                }`}>
-                  {email.direction === 'INBOUND' ? (
-                    <Inbox className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <Send className="w-4 h-4 text-purple-600" />
+                {/* Status + Direction (combined on mobile) */}
+                <div className="flex-shrink-0 relative">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    email.direction === 'INBOUND' ? 'bg-green-100' : 'bg-purple-100'
+                  }`}>
+                    {email.direction === 'INBOUND' ? (
+                      <Inbox className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Send className="w-4 h-4 text-purple-600" />
+                    )}
+                  </div>
+                  {email.status === 'UNREAD' && (
+                    <Circle className="w-2.5 h-2.5 text-brand-600 fill-brand-600 absolute -top-0.5 -right-0.5" />
                   )}
                 </div>
 
@@ -246,7 +242,7 @@ export default function EmailsPage() {
                       }
                     </p>
                     {email.tramite && (
-                      <span className="flex-shrink-0 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                      <span className="hidden sm:inline-flex flex-shrink-0 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
                         {email.tramite.denominacionSocial1}
                       </span>
                     )}
@@ -256,23 +252,20 @@ export default function EmailsPage() {
                   }`}>
                     {email.subject}
                   </p>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">
+                  <p className="hidden sm:block text-xs text-gray-400 truncate mt-0.5">
                     {getPreview(email.bodyText)}
                   </p>
                 </div>
 
                 {/* Meta */}
-                <div className="flex-shrink-0 flex items-center gap-3">
+                <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
                   {email.attachments.length > 0 && (
-                    <Paperclip className="w-4 h-4 text-gray-400" />
+                    <Paperclip className="w-4 h-4 text-gray-400 hidden sm:block" />
                   )}
                   {email.status === 'REPLIED' && (
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                    <span className="hidden sm:inline-flex text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
                       Respondido
                     </span>
-                  )}
-                  {email.status === 'ARCHIVED' && (
-                    <Archive className="w-4 h-4 text-gray-400" />
                   )}
                   <span className="text-xs text-gray-400 whitespace-nowrap">
                     {formatDate(email.createdAt)}
