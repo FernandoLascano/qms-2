@@ -15,7 +15,6 @@ import { Contacto } from '@/components/landing/Contacto'
 import { OtrosServicios } from '@/components/landing/OtrosServicios'
 import { DesdeTodasLasProvincias } from '@/components/landing/DesdeTodasLasProvincias'
 import { StaggeredText } from '@/components/landing/StaggeredText'
-import { HeroBackground } from '@/components/landing/HeroBackground'
 import { AnimatedList } from '@/components/landing/AnimatedList'
 import { ParallaxCard } from '@/components/landing/ParallaxCard'
 import Navbar from '@/components/Navbar'
@@ -460,9 +459,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Constituí desde cualquier provincia */}
-      <DesdeTodasLasProvincias />
-
       {/* ¿Qué es una S.A.S.? - SEO */}
       <QueEsSAS />
 
@@ -471,6 +467,9 @@ export default function HomePage() {
 
       {/* Gastos por Jurisdicción */}
       <GastosJurisdiccion />
+
+      {/* Constituí desde cualquier provincia */}
+      <DesdeTodasLasProvincias />
 
       {/* Otros Servicios */}
       <OtrosServicios />
