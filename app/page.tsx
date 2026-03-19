@@ -69,8 +69,7 @@ export default function HomePage() {
         <div className="absolute top-20 right-0 w-96 h-96 bg-brand-100/30 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-brand-50/50 rounded-full blur-3xl" />
 
-        {/* Fondo dot-grid sobre los blurs para que sea visible */}
-        <HeroBackground variant="dot-grid" />
+        {/* Fondo limpio sin pattern */}
 
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 md:pt-16 md:pb-24">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-7xl mx-auto">

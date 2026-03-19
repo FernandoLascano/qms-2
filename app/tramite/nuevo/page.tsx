@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { FormField } from '@/components/ui/form-field'
 import { useFormValidation, validators } from '@/hooks/useFormValidation'
 import { HelpTooltip } from '@/components/ui/help-tooltip'
+import JurisdiccionSelector from '@/components/JurisdiccionSelector'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
@@ -931,33 +932,10 @@ export default function NuevoTramitePage() {
 
                 <div className="border-t pt-6">
                   <h3 className="font-black text-lg text-gray-900 mb-4">Jurisdicción *</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { id: 'CORDOBA', nombre: 'Córdoba (IPJ)' },
-                      { id: 'CABA', nombre: 'CABA (IGJ)' }
-                    ].map(jurisdiccion => (
-                      <div
-                        key={jurisdiccion.id}
-                        onClick={() => setFormData(prev => ({ 
-                          ...prev, 
-                          jurisdiccion: jurisdiccion.id as any,
-                          provincia: jurisdiccion.id === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'
-                        }))}
-                        className={`border-2 rounded-lg p-4 cursor-pointer transition ${
-                          formData.jurisdiccion === jurisdiccion.id
-                            ? 'border-brand-600 bg-brand-50'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-gray-900">{jurisdiccion.nombre}</span>
-                          {formData.jurisdiccion === jurisdiccion.id && (
-                            <Check className="h-5 w-5 text-brand-600" />
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <JurisdiccionSelector
+                    value={formData.jurisdiccion}
+                    onChange={(id, provincia) => setFormData(prev => ({ ...prev, jurisdiccion: id as any, provincia }))}
+                  />
                 </div>
               </div>
             )}

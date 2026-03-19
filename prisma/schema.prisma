@@ -403,14 +403,22 @@ model GastoJurisdiccion {
   id           String       @id @default(cuid())
   jurisdiccion Jurisdiccion @unique
 
-  tasaRetributiva    Float
-  tasaReservaNombre  Float?
-  publicacionBoletin Float?
-  certificacionFirma Float?
+  // Datos de display
+  nombre      String   // Ej: "Córdoba (IPJ)", "CABA (IGJ)"
+  habilitada  Boolean  @default(true) // Si se puede elegir en el formulario
+
+  // Gastos como texto (permite "Bonificado", "No aplica", "~$60.000", etc.)
+  gastos Json // Array de { concepto: string, valor: string }
+
+  // Total estimado para mostrar
+  totalEstimado String? // Ej: "~$166.850"
+
+  // Orden de display
+  orden Int @default(0)
 
   observaciones String? @db.Text
 
-  vigenciaDesde DateTime
+  vigenciaDesde DateTime @default(now())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
