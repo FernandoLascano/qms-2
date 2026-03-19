@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 
@@ -21,6 +21,22 @@ export function Contacto() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+
+  // Leer asunto desde el hash de la URL (viene de OtrosServicios)
+  useEffect(() => {
+    const checkHash = () => {
+      const hash = window.location.hash
+      if (hash.includes('contacto?asunto=')) {
+        const asunto = decodeURIComponent(hash.split('asunto=')[1] || '')
+        if (asunto) {
+          setFormData(prev => ({ ...prev, asunto: `Consulta: ${asunto}` }))
+        }
+      }
+    }
+    checkHash()
+    window.addEventListener('hashchange', checkHash)
+    return () => window.removeEventListener('hashchange', checkHash)
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({

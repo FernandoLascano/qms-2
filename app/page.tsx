@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Clock, Shield, Zap, Users, TrendingUp, Star, ChevronRight } from 'lucide-react'
-import { motion, useInView, useMotionValue, useTransform, animate } from 'framer-motion'
-import { useRef, useEffect, useState } from 'react'
+import { ArrowRight, CheckCircle2, Shield, Zap, Users, Star, ChevronRight } from 'lucide-react'
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
 import { FAQ } from '@/components/landing/FAQ'
 import { Planes } from '@/components/landing/Planes'
 import { AsistenteChat } from '@/components/landing/AsistenteChat'
@@ -15,45 +15,19 @@ import { Contacto } from '@/components/landing/Contacto'
 import { OtrosServicios } from '@/components/landing/OtrosServicios'
 import { DesdeTodasLasProvincias } from '@/components/landing/DesdeTodasLasProvincias'
 import { StaggeredText } from '@/components/landing/StaggeredText'
-import { ParallaxCard } from '@/components/landing/ParallaxCard'
+
 import Navbar from '@/components/Navbar'
 
-// Componente de contador animado
-function AnimatedCounter({ value, suffix = '', duration = 2 }: { value: number; suffix?: string; duration?: number }) {
-  const count = useMotionValue(0)
-  const rounded = useTransform(count, (latest) => Math.round(latest))
-  const [displayValue, setDisplayValue] = useState(0)
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
-
-  useEffect(() => {
-    if (isInView) {
-      const controls = animate(count, value, { duration })
-      return controls.stop
-    }
-  }, [isInView, value, count, duration])
-
-  useEffect(() => {
-    const unsubscribe = rounded.on('change', (latest) => setDisplayValue(latest))
-    return unsubscribe
-  }, [rounded])
-
-  return (
-    <span ref={ref}>
-      {displayValue.toLocaleString('es-AR')}{suffix}
-    </span>
-  )
-}
 
 export default function HomePage() {
-  const benefitsRef = useRef(null)
+
   const stepsRef = useRef(null)
-  const statsRef = useRef(null)
-  const ctaRef = useRef(null)
-  const benefitsInView = useInView(benefitsRef, { once: true, margin: "-100px" })
+
+
+
   const stepsInView = useInView(stepsRef, { once: true, margin: "-100px" })
-  const statsInView = useInView(statsRef, { once: true, margin: "-100px" })
-  const ctaInView = useInView(ctaRef, { once: true, margin: "-100px" })
+
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -255,117 +229,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Barra de estadísticas animadas */}
-      <section className="bg-gray-900 py-8" ref={statsRef}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            {[
-              { value: 500, suffix: '+', label: 'Empresas constituidas' },
-              { value: 5, suffix: ' días', label: 'Tiempo promedio' },
-              { value: 98, suffix: '%', label: 'Clientes satisfechos' },
-              { value: 24, suffix: '/7', label: 'Soporte disponible' }
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                className="text-center"
-                initial={{ opacity: 0, y: 20 }}
-                animate={statsInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <p className="text-3xl md:text-4xl font-black text-white mb-1">
-                  <AnimatedCounter value={stat.value} suffix={stat.suffix} />
-                </p>
-                <p className="text-sm text-gray-400">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Beneficios - Nuevo diseño con cards más sofisticadas */}
-      <section id="beneficios" className="py-20 md:py-28 bg-white" ref={benefitsRef}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
-              Por qué elegirnos
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
-              La forma más simple de{' '}
-              <span className="text-brand-700">constituir tu empresa</span>
-            </h2>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-              Nos encargamos de todo el proceso legal mientras vos te enfocás en tu negocio
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              {
-                icon: Clock,
-                iconBg: 'bg-brand-100',
-                iconColor: 'text-brand-600',
-                title: 'Ultra rápido',
-                description: 'Tu S.A.S. inscripta en solo 5 días hábiles. CUIT y matrícula listos.',
-                highlight: '5 días'
-              },
-              {
-                icon: Shield,
-                iconBg: 'bg-emerald-100',
-                iconColor: 'text-emerald-600',
-                title: 'Sin complicaciones',
-                description: 'Solo completás un formulario online. Nosotros hacemos el resto.',
-                highlight: '100% online'
-              },
-              {
-                icon: TrendingUp,
-                iconBg: 'bg-blue-100',
-                iconColor: 'text-blue-600',
-                title: 'Precio justo',
-                description: 'Costos menores que S.R.L. o S.A. Transparencia total.',
-                highlight: 'Económico'
-              },
-              {
-                icon: Users,
-                iconBg: 'bg-purple-100',
-                iconColor: 'text-purple-600',
-                title: 'Seguimiento real',
-                description: 'Panel online para ver el estado de tu trámite 24/7.',
-                highlight: 'Tiempo real'
-              }
-            ].map((benefit, index) => {
-              const Icon = benefit.icon
-              return (
-                <ParallaxCard key={benefit.title} intensity={0.15 + index * 0.05}>
-                  <motion.div
-                    className="group relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-gray-200 transition-all duration-300 h-full"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={benefitsInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                    whileHover={{ y: -8, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.1)" }}
-                  >
-                    <div className={`w-14 h-14 ${benefit.iconBg} rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-7 h-7 ${benefit.iconColor}`} />
-                    </div>
-
-                    <span className="inline-block text-xs font-bold text-brand-600 bg-brand-50 px-2 py-1 rounded-full mb-3">
-                      {benefit.highlight}
-                    </span>
-
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{benefit.title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed">{benefit.description}</p>
-                  </motion.div>
-                </ParallaxCard>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Cómo Funciona - Timeline visual moderno */}
       <section id="procedimiento" className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white" ref={stepsRef}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -541,7 +404,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ¿Qué es una S.A.S.? - SEO */}
+      {/* ¿Qué es una S.A.S.? - SEO + ventajas */}
       <QueEsSAS />
 
       {/* Planes y Precios */}
@@ -553,94 +416,20 @@ export default function HomePage() {
       {/* Constituí desde cualquier provincia */}
       <DesdeTodasLasProvincias />
 
-      {/* Otros Servicios */}
-      <OtrosServicios />
-
-      {/* Testimonios */}
+      {/* Testimonios - prueba social */}
       <Testimonios />
+
+      {/* Otros Servicios - después de testimonios */}
+      <OtrosServicios />
 
       {/* FAQ - Preguntas Frecuentes */}
       <FAQ />
 
-      {/* Notas y Blog - Para SEO */}
+      {/* Notas y Blog - SEO */}
       <Notas />
 
       {/* Contacto */}
       <Contacto />
-
-      {/* CTA Final - Diseño impactante */}
-      <section className="relative py-24 overflow-hidden" ref={ctaRef}>
-        {/* Background con patrón */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-900 to-brand-900" />
-        <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }} />
-
-        <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
-              ¿Listo para dar el<br />
-              <span className="text-brand-400">siguiente paso</span>?
-            </h2>
-
-            <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-              Unite a más de 500 emprendedores que ya confiaron en nosotros
-            </p>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={ctaInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <Link href="/registro">
-                <motion.button
-                  className="group bg-white text-gray-900 px-10 py-5 rounded-xl font-bold text-lg inline-flex items-center justify-center gap-3 shadow-2xl cursor-pointer"
-                  whileHover={{ scale: 1.02, boxShadow: "0 25px 50px -12px rgba(255, 255, 255, 0.2)" }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Iniciar mi trámite ahora
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </motion.button>
-              </Link>
-
-              <motion.a
-                href="https://wa.me/5493514284037"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border-2 border-white/30 text-white px-10 py-5 rounded-xl font-semibold text-lg inline-flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Hablar con un asesor
-              </motion.a>
-            </motion.div>
-
-            {/* Trust badges */}
-            <motion.div
-              className="mt-12 flex flex-wrap justify-center gap-8"
-              initial={{ opacity: 0 }}
-              animate={ctaInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              {[
-                { icon: Shield, text: 'Datos protegidos' },
-                { icon: CheckCircle2, text: 'Garantía total' },
-                { icon: Clock, text: 'Soporte 24/7' }
-              ].map((item) => (
-                <div key={item.text} className="flex items-center gap-2 text-gray-400">
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-sm">{item.text}</span>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
 
       {/* Asistente IA */}
       <AsistenteChat />

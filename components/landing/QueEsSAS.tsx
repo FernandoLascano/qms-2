@@ -57,7 +57,7 @@ export function QueEsSAS() {
   return (
     <section ref={sectionRef} className="py-20 md:py-28 bg-white overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
           <motion.div
             className="text-center mb-16"

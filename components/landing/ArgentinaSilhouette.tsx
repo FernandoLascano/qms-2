@@ -26,7 +26,7 @@ export function ArgentinaSilhouette() {
       {/* Punto pulsante en Córdoba - basado en label_point cx=500.2 cy=279.7 sobre viewBox 1000x1000 = 50%, 28% */}
       <motion.div
         className="absolute"
-        style={{ top: '33%', left: '52%' }}
+        style={{ top: '38%', left: '50%' }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1, duration: 0.5, type: 'spring', bounce: 0.5 }}

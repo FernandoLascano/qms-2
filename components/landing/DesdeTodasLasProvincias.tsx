@@ -20,7 +20,7 @@ export function DesdeTodasLasProvincias() {
   return (
     <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50" ref={ref}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             className="bg-white rounded-3xl border-2 border-brand-100 shadow-xl overflow-hidden"
             initial={{ opacity: 0, y: 40 }}

@@ -77,13 +77,15 @@ const faqs: FAQItem[] = [
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [showAll, setShowAll] = useState(false)
+  const visibleFaqs = showAll ? faqs : faqs.slice(0, 6)
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
     <section ref={sectionRef} id="faq" className="py-20 md:py-28 bg-gray-50 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
           <motion.div
             className="text-center mb-12"
@@ -105,7 +107,7 @@ export function FAQ() {
 
           {/* Lista de preguntas */}
           <div className="space-y-3">
-            {faqs.map((faq, index) => (
+            {visibleFaqs.map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -169,6 +171,24 @@ export function FAQ() {
               </motion.div>
             ))}
           </div>
+
+          {/* Ver más preguntas */}
+          {!showAll && faqs.length > 6 && (
+            <motion.div
+              className="text-center mt-8"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: 0.5 }}
+            >
+              <button
+                onClick={() => setShowAll(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-brand-300 hover:text-brand-700 transition-all cursor-pointer"
+              >
+                <ChevronDown className="w-4 h-4" />
+                Ver las {faqs.length - 6} preguntas restantes
+              </button>
+            </motion.div>
+          )}
 
           {/* CTA de contacto */}
           <motion.div

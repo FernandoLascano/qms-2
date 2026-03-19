@@ -103,7 +103,7 @@ export function GastosJurisdiccion() {
         </motion.div>
 
         {/* Cards de Gastos */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {/* Banner de no disponible */}
           {!current.habilitada && (
             <motion.div

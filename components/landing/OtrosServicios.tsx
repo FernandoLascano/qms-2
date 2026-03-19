@@ -60,20 +60,30 @@ export function OtrosServicios() {
         </motion.div>
 
         {/* Grid más denso: 4 columnas en desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-6xl mx-auto">
           {servicios.map((item, index) => (
-            <motion.div
+            <motion.a
               key={item.name}
+              href={`#contacto?asunto=${encodeURIComponent(item.name)}`}
+              onClick={(e) => {
+                e.preventDefault()
+                // Setear hash con el asunto para que el formulario lo lea
+                window.location.hash = `contacto?asunto=${encodeURIComponent(item.name)}`
+                const contacto = document.getElementById('contacto')
+                if (contacto) {
+                  contacto.scrollIntoView({ behavior: 'smooth' })
+                }
+              }}
               initial={{ opacity: 0, y: 10 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.3, delay: index * 0.03 }}
-              className="group flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200"
+              className="group flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-brand-300 hover:shadow-md transition-all duration-200 cursor-pointer"
             >
               <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-4 h-4" />
               </div>
-              <span className="font-medium text-gray-900 text-xs sm:text-sm leading-tight">{item.name}</span>
-            </motion.div>
+              <span className="font-medium text-gray-900 text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
+            </motion.a>
           ))}
         </div>
       </div>
