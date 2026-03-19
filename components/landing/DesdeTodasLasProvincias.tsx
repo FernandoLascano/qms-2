@@ -4,6 +4,7 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { MapPin, Zap, DollarSign, Monitor, FileCheck, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { ArgentinaSilhouette } from './ArgentinaSilhouette'
 
 export function DesdeTodasLasProvincias() {
   const ref = useRef(null)
@@ -102,38 +103,44 @@ export function DesdeTodasLasProvincias() {
                 </motion.div>
               </div>
 
-              {/* Columna derecha - Visual */}
-              <div className="hidden lg:flex bg-gradient-to-br from-brand-700 via-brand-800 to-gray-900 items-center justify-center p-12 relative overflow-hidden">
-                {/* Patrón de fondo */}
-                <div className="absolute inset-0 opacity-10" style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-                }} />
+              {/* Columna derecha - Mapa de Argentina */}
+              <div className="hidden lg:flex bg-gradient-to-br from-brand-700 via-brand-800 to-gray-900 items-center justify-center p-8 relative overflow-hidden rounded-r-3xl">
+                <ArgentinaSilhouette />
 
-                <div className="relative text-center">
-                  {/* Ícono de mapa */}
-                  <div className="w-24 h-24 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-8 backdrop-blur-sm border border-white/20">
-                    <MapPin className="w-12 h-12 text-white" />
-                  </div>
-
-                  <p className="text-white/90 text-xl font-bold mb-2">
-                    Inscribí en Córdoba
-                  </p>
-                  <p className="text-white/70 text-lg mb-8">
-                    Operá en todo Argentina
-                  </p>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+                {/* Stats superpuestos */}
+                <div className="absolute bottom-8 left-8 right-8">
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.div
+                      className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/10 text-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={inView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ delay: 2.2 }}
+                    >
                       <p className="text-3xl font-black text-white">5</p>
                       <p className="text-white/70 text-xs mt-1">días hábiles</p>
-                    </div>
-                    <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm border border-white/10">
+                    </motion.div>
+                    <motion.div
+                      className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/10 text-center"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={inView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ delay: 2.4 }}
+                    >
                       <p className="text-3xl font-black text-white">50%</p>
                       <p className="text-white/70 text-xs mt-1">más económico</p>
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
+
+                {/* Textos superpuestos */}
+                <motion.div
+                  className="absolute top-8 left-8 right-8 text-center"
+                  initial={{ opacity: 0 }}
+                  animate={inView ? { opacity: 1 } : {}}
+                  transition={{ delay: 1.8 }}
+                >
+                  <p className="text-white/90 text-lg font-bold">Inscribí en Córdoba</p>
+                  <p className="text-white/60 text-sm">Operá en todo Argentina</p>
+                </motion.div>
               </div>
             </div>
           </motion.div>
