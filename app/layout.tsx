@@ -50,23 +50,19 @@ export const metadata: Metadata = {
     title: 'Constituir SAS Online en Argentina | Tu Empresa en 5 Días',
     description: 'Constituí tu SAS 100% online en Córdoba y CABA. Desde $285.000. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.',
     siteName: 'QuieroMiSAS',
-    images: [
-      {
-        url: 'https://www.quieromisas.com/assets/img/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'QuieroMiSAS - Constituí tu SAS online en Argentina',
-      }
-    ],
+    images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Constituir SAS Online en Argentina | QuieroMiSAS',
     description: 'Constituí tu SAS 100% online en Córdoba y CABA. Desde $285.000. CUIT y matrícula en 5 días hábiles.',
-    images: ['https://www.quieromisas.com/assets/img/og-image.png'],
+    images: ['/opengraph-image'],
   },
   alternates: {
     canonical: 'https://www.quieromisas.com',
+  },
+  verification: {
+    google: 'Fb9746BUHbwNsQqEI8c6ELfh6ekKpop4tvtpMZ8IEto',
   },
   manifest: '/manifest.json',
 };
