@@ -687,3 +687,16 @@ model EmailTemplate {
 
   @@index([category])
 }
+
+// CONSULTAS DEL ASISTENTE CHAT
+model ConsultaChat {
+  id String @id @default(cuid())
+
+  pregunta  String @db.Text
+  respuesta String @db.Text
+  ip        String? // Para analytics, no identificación
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
