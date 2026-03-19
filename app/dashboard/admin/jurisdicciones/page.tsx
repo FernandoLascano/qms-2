@@ -29,6 +29,12 @@ export default function JurisdiccionesPage() {
   // Estado local para edición
   const [editData, setEditData] = useState<Jurisdiccion | null>(null)
 
+  // Estado para crear nueva
+  const [showNew, setShowNew] = useState(false)
+  const [newCodigo, setNewCodigo] = useState('')
+  const [newNombre, setNewNombre] = useState('')
+  const [creando, setCreando] = useState(false)
+
   useEffect(() => {
     fetchData()
   }, [])
@@ -138,11 +144,85 @@ export default function JurisdiccionesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <span className="text-sm font-semibold text-brand-700 uppercase tracking-wider">Configuración</span>
-        <h1 className="text-2xl font-black text-gray-900 mt-1">Jurisdicciones y Gastos</h1>
-        <p className="text-gray-500 mt-1">Administrá las jurisdicciones disponibles y sus costos de inscripción</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div>
+          <span className="text-sm font-semibold text-brand-700 uppercase tracking-wider">Configuración</span>
+          <h1 className="text-2xl font-black text-gray-900 mt-1">Jurisdicciones y Gastos</h1>
+          <p className="text-gray-500 mt-1">Administrá las jurisdicciones disponibles y sus costos de inscripción</p>
+        </div>
+        <button
+          onClick={() => setShowNew(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          Nueva jurisdicción
+        </button>
       </div>
+
+      {/* Crear nueva jurisdicción */}
+      {showNew && (
+        <div className="bg-white rounded-2xl border border-brand-200 shadow-sm p-6">
+          <h3 className="font-bold text-gray-900 mb-4">Nueva Jurisdicción</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Código (interno)</label>
+              <input
+                value={newCodigo}
+                onChange={e => setNewCodigo(e.target.value.toUpperCase().replace(/[^A-Z_]/g, ''))}
+                placeholder="Ej: MENDOZA, SANTA_FE"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <p className="text-xs text-gray-400 mt-1">Solo letras mayúsculas y guiones bajos</p>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre visible</label>
+              <input
+                value={newNombre}
+                onChange={e => setNewNombre(e.target.value)}
+                placeholder="Ej: Mendoza (DPJ)"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() => { setShowNew(false); setNewCodigo(''); setNewNombre('') }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={async () => {
+                if (!newCodigo.trim() || !newNombre.trim()) { toast.error('Completá código y nombre'); return }
+                setCreando(true)
+                try {
+                  const res = await fetch('/api/admin/jurisdicciones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jurisdiccion: newCodigo, nombre: newNombre }),
+                  })
+                  if (res.ok) {
+                    toast.success('Jurisdicción creada. Editá los gastos y habilitala cuando esté lista.')
+                    setShowNew(false)
+                    setNewCodigo('')
+                    setNewNombre('')
+                    fetchData()
+                  } else {
+                    const err = await res.json()
+                    toast.error(err.error || 'Error al crear')
+                  }
+                } catch { toast.error('Error de conexión') }
+                finally { setCreando(false) }
+              }}
+              disabled={creando || !newCodigo.trim() || !newNombre.trim()}
+              className="flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 disabled:opacity-50 cursor-pointer"
+            >
+              {creando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Crear jurisdicción
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Lista de jurisdicciones */}
       <div className="space-y-6">

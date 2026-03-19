@@ -18,6 +18,28 @@ interface Props {
 const provinciaMap: Record<string, string> = {
   CORDOBA: 'Córdoba',
   CABA: 'Ciudad Autónoma de Buenos Aires',
+  MENDOZA: 'Mendoza',
+  SANTA_FE: 'Santa Fe',
+  BUENOS_AIRES: 'Buenos Aires',
+  TUCUMAN: 'Tucumán',
+  ENTRE_RIOS: 'Entre Ríos',
+  SALTA: 'Salta',
+  MISIONES: 'Misiones',
+  SAN_JUAN: 'San Juan',
+  CHACO: 'Chaco',
+  CORRIENTES: 'Corrientes',
+  SANTIAGO_DEL_ESTERO: 'Santiago del Estero',
+  SAN_LUIS: 'San Luis',
+  JUJUY: 'Jujuy',
+  RIO_NEGRO: 'Río Negro',
+  NEUQUEN: 'Neuquén',
+  FORMOSA: 'Formosa',
+  CHUBUT: 'Chubut',
+  LA_PAMPA: 'La Pampa',
+  CATAMARCA: 'Catamarca',
+  LA_RIOJA: 'La Rioja',
+  SANTA_CRUZ: 'Santa Cruz',
+  TIERRA_DEL_FUEGO: 'Tierra del Fuego',
 }
 
 export default function JurisdiccionSelector({ value, onChange }: Props) {

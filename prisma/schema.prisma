@@ -43,7 +43,7 @@ model Tramite {
   user   User   @relation(fields: [userId], references: [id])
 
   // Datos básicos
-  jurisdiccion  Jurisdiccion
+  jurisdiccion  String
   plan          Plan
   estadoGeneral EstadoTramite @default(INICIADO)
 
@@ -128,10 +128,6 @@ model Tramite {
   @@index([userId, estadoGeneral])
 }
 
-enum Jurisdiccion {
-  CORDOBA
-  CABA
-}
 
 enum Plan {
   BASICO
@@ -401,7 +397,7 @@ model PlanPrecio {
 // GASTOS POR JURISDICCIÓN
 model GastoJurisdiccion {
   id           String       @id @default(cuid())
-  jurisdiccion Jurisdiccion @unique
+  jurisdiccion String @unique
 
   // Datos de display
   nombre      String   // Ej: "Córdoba (IPJ)", "CABA (IGJ)"
