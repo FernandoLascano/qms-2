@@ -5,56 +5,85 @@ import { motion } from 'framer-motion'
 export function ArgentinaSilhouette() {
   return (
     <div className="relative w-full h-full flex items-center justify-center">
+      {/* Mapa SVG real de Argentina */}
       <svg
-        viewBox="0 0 400 700"
-        className="w-full h-full max-h-[400px] opacity-20"
+        viewBox="0 0 1000 1000"
+        className="w-full h-full max-h-[380px] drop-shadow-2xl"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Silueta simplificada de Argentina */}
+        {/* Todas las provincias en blanco semi-transparente excepto Córdoba */}
+        <g opacity="0.15" fill="white" stroke="rgba(255,255,255,0.3)" strokeWidth="0.8">
+          <path d="M607.1 332.7l-1.1 0.2-1.9 0.8-1 0-0.8-0.4-2.2-2-0.3-0.1-1-0.3-0.4-0.2-1.2-1-1.5-0.9-0.3-0.3-0.4-0.2-0.6-0.1-2.1 0-0.2 0-0.1-0.2-0.1-0.2-0.1-0.1-0.2-0.2-0.1-0.1-0.2 0-0.1 0.1-0.1 0-0.1 0.1-0.2-0.1-0.1-0.1-0.1-0.2-0.1 0-0.1-0.2 0-0.7 0-0.3-0.2-0.4-0.1 0-0.2 0-0.3 0.1-0.1 0-0.1 0.3-0.1 0-1.8 0-1-0.5-0.8-1-0.9-0.6-1.1 0.4-0.6 0.2-0.7-0.2-2.8-1.5-0.3-0.3-0.8-1.2-0.3-0.4-0.4-0.2-1-0.6-0.4 0-0.4-0.2-3.5-2.5-2.7-2.8-1-0.6-0.6-0.3-0.5-0.5-0.1-0.1-0.2-0.5-0.4-0.4-0.2-0.2-0.2-0.1-0.3-0.1-0.3-0.2-1.3-0.9-1.2-1.5-0.1-0.2-0.5-1.7-0.1-0.2-0.1-0.1-0.2-0.2-0.1 0-0.4-0.6-1.1-2.3-0.3-0.9-0.1-1-0.2-2.2-0.1-0.5-0.3-0.4-0.7-1.2-0.2-0.4 0-0.4 0.1-0.5 0.6-1.6 0.1-0.5 0.1-0.5-0.2-1.5 0.1-0.5 0.1-0.5 0.4-1.5 0.1-0.4 0-0.6-0.2-1.4 0.1-0.5 0.1-0.4 0.7-1.2 0.1-0.5-0.1-0.5-0.2-0.5-0.6-0.8-0.2-0.6-0.1-0.6 0-0.6 0.2-0.5 0.6-0.8 0.2-0.4 0-0.2 0.1-0.8 0.3-0.7 0-0.4z" />
+          <path d="M398.9 121.6l0.1-0.1 0.4-0.2 0.3 0 0.4 0.1 0.4 0 0.5-0.1 0.4-0.2 0.2-0.3 0-0.5-0.4-0.6-0.7-0.6-0.5-0.6 0.1-0.9z" />
+          <path d="M467.4 52.4l0 0.5-0.1 0.3-0.3 0.4-0.2 0.4z" />
+          <path d="M665.6 190.8l-0.1-0.1-1.6-1.1-0.7-0.6z" />
+          <path d="M620.3 252.7l-0.2 0-1.1-0.9-2.4-2.5z" />
+          <path d="M385.7 182.1l0.3 0 5.6 0.5z" />
+          <path d="M375 196.8l1.4 0.4z" />
+          <path d="M362.5 290.8l0.2-0.1 3.2-0.5z" />
+          <path d="M358.9 386.4l0.1 0.2z" />
+          <path d="M329.1 515.8l0.2 0 2.6 0.2z" />
+          <path d="M333.6 658.4l0.1 0 41.7 0 26.2 0 16.2 0z" />
+          <path d="M395.7 948.6l0.2-1.2 0-2z" />
+          <path d="M568.8 314l1 0.6 2.7 2.8z" />
+          <path d="M609.8 349l-0.1 0.3z" />
+          <path d="M581.9 242.9l0.2 1.1z" />
+          <path d="M449.5 146.8l6.1 1z" />
+          <path d="M482 146l0.1-0.8z" />
+          <path d="M435.5 280.1l1.4 0.3z" />
+          <path d="M404.1 423.4l0-18.9z" />
+          <path d="M526.5 98l0-12.8z" />
+          <path d="M504.5 133.1l6.4-8.2z" />
+          <path d="M331.2 543.2l0.2 0 10.9-0.1 37.9 0.1z" />
+        </g>
+
+        {/* Córdoba destacada */}
         <motion.path
-          d="M220 30 L240 25 L260 35 L270 30 L280 40 L275 55 L285 60 L290 75 L280 85 L285 95 L275 105 L280 115 L270 120 L275 135 L265 145 L270 155 L260 165 L265 180 L255 190 L260 200 L250 215 L255 225 L245 240 L250 255 L240 265 L245 280 L235 290 L240 305 L230 315 L235 330 L225 340 L230 355 L220 365 L225 380 L215 395 L220 410 L210 425 L215 440 L205 455 L210 470 L195 485 L200 500 L185 515 L190 530 L175 545 L180 560 L165 575 L160 590 L150 600 L155 615 L145 625 L140 640 L130 650 L125 660 L115 665 L120 670 L110 675 L140 670 L145 660 L155 665 L160 655 L170 660 L175 650 L185 645 L190 635 L195 640 L200 625 L205 615 L210 620 L215 605 L220 595 L225 600 L230 585 L235 575 L240 580 L245 565 L250 555 L245 540 L250 525 L245 510 L250 495 L245 480 L250 465 L255 450 L250 435 L255 420 L260 405 L255 390 L260 375 L265 360 L260 345 L265 330 L270 315 L265 300 L270 285 L275 270 L270 255 L275 240 L280 225 L275 210 L280 195 L285 180 L280 165 L275 150 L270 140 L265 130 L260 120 L250 110 L245 95 L240 80 L235 65 L230 50 L225 40 Z"
-          fill="white"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 2, ease: 'easeInOut' }}
+          d="M463 238.1l4.5-1.2 1-0.6 1.8-1.9 2.2-2.5 0.2-0.4 0.1-0.5-0.6-5.5 0.2-0.8 1.4-0.5 6-1.5 3.9-1.1 2.3-0.5 0.8 0 4.1 1 0.2 0.1 0 0.1 0.1 0.3-0.1 0.6 0 0.3 0.1 0.2 0.3 0.2 1.5 0.9 0.1 0.1 0.2 0.3 0.2 0.2 0.1 0.1 1.3 0.2 0.2 0.1 0.1 0.1 0.3 0.2 0.2 0.2 0.2 0.1 0.2 0 1.2 0.1 0.4 0 2.4-0.4 0.3 0.1 1.5 0.4 0.2 0.1 0.8-0.2 0.2 0 0.1 0.1 0.1 0.1 0 0.1 0 0.1 0 0.1-0.1 0.7 0 0.1 0.1 0.2 0.2 0 0.7 0.1 0.2 0.1 0.2 0.1 0 0.1 0 0.2 0 0.4 0.1 0.1 0.1 0.2 0.5 0.1 11.8 0 7-0.1 3.4 0.2 1 0.6 3.2 8.4-1 6.3 0.1 0.6 0.1 0.4 4.6 5.1 1 1.4-0.2 1.4-5.3 19.9-0.4 0.8-0.9 0.8-0.8 0.8-0.3 0.3 0 0.3 0 0.1 0.3 0.6 0.1 0.1 0 0.1 0 0.2 0 0.3-0.1 1.1 0 0.3 0.1 1.5 0.1 0.1 0 0.1 0 0.1 0.3 0.5 0.2 0.2 0.1 0.1 0 0.2 0 0.2-0.3 0.7-0.2 0.4-0.1 0.4-0.1 0.6 0 2 0.5 0.6 0.5 0.4 0.6 0.8 0.2 0.1 0.6 0.3 0.4 0.3 0.1 0.1 0.1 0.2 0.6 2.1 0.1 0.4 0.5 0.8 1.5 1.1 0.2 0.3 0.3 0.3 0.1 0.2 0.1 0.5 0.2 0.8 0 0.8 0.1 0.1 0.1 0.2 0.1 0.1 0.2 0.2 0.1 0.1 0.1 0.2 0 0.3-0.1 0.2 0 0.1 0 0.2-0.1 0.2-0.1 0.1-0.3 0.4 0 0.1 0 0.2 0.1 0.1 0.2 0 0.6 0.1 0.1 0.1 0.2 0 0.1 0.1 0 0.1 0.6 1.1 0.4 0.8 0 0.2 0.1 0.1 0.6 0.4 0.1 0.1 0 0.2 0.2 0.3 0 0.2 0 0.2 0 0.2-0.1 0.4-0.3 0.6-0.1 0.5 0 1.5 0 0.6-0.1 0.5-0.1 0.1-0.3 0.6-0.7 0.8-0.3 0.3-0.3 0.1-0.1 0.1-0.1 0-0.3 0.1-0.2 0-0.3-0.1-0.5 0.8-4.7 7.6-6.3 10.3-8.4 13.7-10.1-0.1-0.7 0.9-0.1 4.1-0.1 10.7-11.8 0-11 0-12.4 0 0-0.1 0-26-1-18.8 0.1-0.2 0.1-0.3 0.6-1.1 0.1-0.1 0-0.1 0.1-0.1 0.2 0 0.5-0.1 0.1-0.1 0.2-0.1 0.1-0.2 0-0.1 0-0.2-0.2-0.5 0-0.4 0.1-0.3 0.5-1.1 0.1-0.3 0-0.2-0.1-0.4-0.1-0.3 0.1-0.2 0-0.2 0.8-1.5 0.1-0.2 0-0.2 0-0.9 0.1-0.2 0-0.2 0.3-0.5 0.1-0.2 0-0.1 0-0.4 0-0.3 0-0.1 0.1-0.2 0.3-0.3 0.1-0.1 0.1-0.2 0.1-0.2 0.1-1 0.5-1.1 0.1-0.7 0.1-0.8 0-0.2-0.1-0.2-0.1-0.5-0.1-0.4-0.1-0.5-0.5-0.9-0.1-0.3 0-0.2 0-0.6 0.1-0.6 0-0.7 0-0.7-0.1-0.3 0-0.3-0.1 0-0.1-0.1-0.2-0.1-0.1 0-0.1 0-0.4 0.1-2.1 0.6-2.2 0.3-0.3-0.1-0.1-0.1-0.1-0.1 0-0.2 0-0.2 0-1-0.1-0.3 0-0.1-0.3-0.5-0.2-0.4-0.2-0.5 0-0.3 0-0.3 0-0.4 0-0.1-0.1-0.4-0.1-0.2-0.1-0.2-0.6-0.5-0.6-0.7-5.8-3.6-1-0.5-0.7-0.2-1.8 0 0-6.4-0.1-8.5 0-4.2 0.2-1.5 1.4-4.1 0.3-0.8 0.4-1.2 1.7-5.1 0-0.4 0.2-0.7 0.5-1.7 0.3-0.9 0.1-0.3 0.4-0.7 0.3-0.7 1.7-5z"
+          fill="rgba(255,255,255,0.45)"
+          stroke="rgba(255,255,255,0.7)"
+          strokeWidth="1.5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
         />
       </svg>
 
-      {/* Marcador pulsante en Córdoba */}
+      {/* Marcador pulsante en Córdoba - posición basada en label_point cx=500.2 cy=279.7 del SVG */}
       <motion.div
         className="absolute"
-        style={{ top: '42%', left: '42%' }}
+        style={{ top: '28%', left: '50%' }}
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.5, type: 'spring', bounce: 0.5 }}
+        transition={{ delay: 1.2, duration: 0.5, type: 'spring', bounce: 0.5 }}
       >
-        {/* Pulso */}
+        {/* Pulsos */}
         <motion.div
-          className="absolute inset-0 w-12 h-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30"
-          animate={{ scale: [1, 2.5, 1], opacity: [0.6, 0, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+          className="absolute w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20"
+          animate={{ scale: [1, 3, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut' }}
         />
         <motion.div
-          className="absolute inset-0 w-8 h-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/40"
-          animate={{ scale: [1, 2, 1], opacity: [0.8, 0, 0.8] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.3 }}
+          className="absolute w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/30"
+          animate={{ scale: [1, 2.5, 1], opacity: [0.7, 0, 0.7] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut', delay: 0.4 }}
         />
 
-        {/* Pin */}
+        {/* Pin central */}
         <div className="relative -translate-x-1/2 -translate-y-1/2">
-          <div className="w-5 h-5 rounded-full bg-white shadow-lg shadow-white/50 border-2 border-white/80" />
+          <div className="w-4 h-4 rounded-full bg-white shadow-lg shadow-white/50" />
         </div>
 
         {/* Label */}
         <motion.div
-          className="absolute left-8 top-1/2 -translate-y-1/2 whitespace-nowrap"
+          className="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 2, duration: 0.5 }}
+          transition={{ delay: 1.8, duration: 0.5 }}
         >
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
-            <p className="text-white font-bold text-xs">Córdoba</p>
+          <div className="bg-white/15 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-white/20">
+            <p className="text-white font-bold text-sm">Córdoba</p>
           </div>
         </motion.div>
       </motion.div>
