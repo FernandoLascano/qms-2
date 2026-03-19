@@ -47,10 +47,13 @@ export const KNOWLEDGE_BASE = `
 - Todos los costos informados con transparencia antes de comenzar.
 
 ## JURISDICCIONES Y DOMICILIO
-- Trabajamos en Córdoba (IPJ) y CABA (IGJ).
-- La sede social debe estar en Córdoba o CABA.
-- Si no tenés domicilio donde fijarla, contactar para ayuda.
-- Empresa inscripta puede operar en todo el territorio argentino.
+- Actualmente trabajamos en Córdoba (IPJ). CABA (IGJ) temporalmente no disponible.
+- IMPORTANTE: NO hace falta ser de Córdoba para constituir la SAS en Córdoba. Personas de CUALQUIER provincia de Argentina (Buenos Aires, Chubut, Mendoza, Salta, Tucumán, etc.) pueden constituir su SAS en Córdoba.
+- La SAS inscripta en Córdoba es válida y opera en TODO el territorio argentino.
+- El cliente solo necesita declarar su domicilio fiscal donde tenga su actividad comercial y tributar en esa provincia.
+- La sede social se fija en Córdoba. Si no tienen domicilio en Córdoba, los ayudamos.
+- ¿Por qué Córdoba? Proceso más rápido (5 días), gastos más bajos, 100% digital, publicación en boletín oficial bonificada.
+- Si preguntan desde otra provincia, SIEMPRE explicar que pueden constituir en Córdoba sin problema.
 
 ## EXTRANJEROS
 - Sí, pueden ser accionistas o administradores.

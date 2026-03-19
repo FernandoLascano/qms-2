@@ -15,7 +15,6 @@ import { Contacto } from '@/components/landing/Contacto'
 import { OtrosServicios } from '@/components/landing/OtrosServicios'
 import { DesdeTodasLasProvincias } from '@/components/landing/DesdeTodasLasProvincias'
 import { StaggeredText } from '@/components/landing/StaggeredText'
-import { AnimatedList } from '@/components/landing/AnimatedList'
 import { ParallaxCard } from '@/components/landing/ParallaxCard'
 import Navbar from '@/components/Navbar'
 
@@ -388,74 +387,108 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="max-w-4xl mx-auto">
-            <AnimatedList className="grid md:grid-cols-2 gap-8">
-              {[
-                {
-                  number: '01',
-                  title: 'Completá el formulario',
-                  description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad. Guardá tu progreso.',
-                  icon: '📝'
-                },
-                {
-                  number: '02',
-                  title: 'Subí documentación',
-                  description: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento de cada documento.',
-                  icon: '📎'
-                },
-                {
-                  number: '03',
-                  title: 'Pagá online',
-                  description: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.',
-                  icon: '💳'
-                },
-                {
-                  number: '04',
-                  title: 'Recibí tu S.A.S.',
-                  description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.',
-                  icon: '🎉'
-                }
-              ].map((step) => (
-                <div key={step.number} className="relative">
-                  <div className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-all duration-300 h-full">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <span className="text-4xl">{step.icon}</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-xs font-black text-brand-600 bg-brand-50 px-2 py-1 rounded">
-                            PASO {step.number}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
-                        <p className="text-gray-500 text-sm">{step.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </AnimatedList>
+          {/* Timeline horizontal */}
+          <div className="max-w-6xl mx-auto">
+            {/* Desktop: horizontal */}
+            <div className="hidden md:block relative">
+              {/* Línea horizontal */}
+              <div className="absolute top-10 left-0 right-0 h-0.5 bg-gray-200">
+                <motion.div
+                  className="h-full bg-brand-600 origin-left"
+                  initial={{ scaleX: 0 }}
+                  animate={stepsInView ? { scaleX: 1 } : {}}
+                  transition={{ duration: 1.5, ease: 'easeInOut', delay: 0.3 }}
+                />
+              </div>
 
-            {/* CTA después de pasos */}
-            <motion.div
-              className="text-center mt-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={stepsInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.8 }}
-            >
-              <Link href="/registro">
-                <motion.button
-                  className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-2 hover:bg-gray-800 transition-colors cursor-pointer"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+              <div className="grid grid-cols-4 gap-6">
+                {[
+                  { number: '01', title: 'Completá el formulario', description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad.', icon: '📝' },
+                  { number: '02', title: 'Subí documentación', description: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento en tiempo real.', icon: '📎' },
+                  { number: '03', title: 'Pagá online', description: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.', icon: '💳' },
+                  { number: '04', title: 'Recibí tu S.A.S.', description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.', icon: '🎉' }
+                ].map((step, index) => (
+                  <motion.div
+                    key={step.number}
+                    className="flex flex-col items-center text-center"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={stepsInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.3 }}
+                  >
+                    {/* Nodo */}
+                    <motion.div
+                      className="w-20 h-20 rounded-full bg-white border-4 border-brand-600 flex items-center justify-center shadow-lg mb-6 z-10 relative"
+                      initial={{ scale: 0 }}
+                      animate={stepsInView ? { scale: 1 } : {}}
+                      transition={{ duration: 0.4, delay: 0.5 + index * 0.3, type: 'spring', bounce: 0.4 }}
+                    >
+                      <span className="text-3xl">{step.icon}</span>
+                    </motion.div>
+
+                    {/* Contenido */}
+                    <motion.div
+                      className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 w-full"
+                      whileHover={{ y: -4 }}
+                    >
+                      <span className="inline-block text-xs font-black text-brand-600 bg-brand-50 px-3 py-1 rounded-full mb-3">
+                        PASO {step.number}
+                      </span>
+                      <h3 className="text-base font-bold text-gray-900 mb-2">{step.title}</h3>
+                      <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile: vertical simple */}
+            <div className="md:hidden space-y-6">
+              {[
+                { number: '01', title: 'Completá el formulario', description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad.', icon: '📝' },
+                { number: '02', title: 'Subí documentación', description: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento en tiempo real.', icon: '📎' },
+                { number: '03', title: 'Pagá online', description: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.', icon: '💳' },
+                { number: '04', title: 'Recibí tu S.A.S.', description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.', icon: '🎉' }
+              ].map((step, index) => (
+                <motion.div
+                  key={step.number}
+                  className="flex items-start gap-4"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={stepsInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.3 + index * 0.15 }}
                 >
-                  Empezar mi trámite
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </Link>
-            </motion.div>
+                  <div className="w-12 h-12 rounded-full bg-white border-4 border-brand-600 flex items-center justify-center shadow-md flex-shrink-0">
+                    <span className="text-xl">{step.icon}</span>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex-1">
+                    <span className="inline-block text-xs font-black text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full mb-2">
+                      PASO {step.number}
+                    </span>
+                    <h3 className="text-base font-bold text-gray-900 mb-1">{step.title}</h3>
+                    <p className="text-gray-500 text-sm">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
+
+          {/* CTA después de pasos */}
+          <motion.div
+            className="text-center mt-14"
+            initial={{ opacity: 0, y: 20 }}
+            animate={stepsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 1.8 }}
+          >
+            <Link href="/registro">
+              <motion.button
+                className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-2 hover:bg-gray-800 transition-colors cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Empezar mi trámite
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </Link>
+          </motion.div>
         </div>
       </section>
 
