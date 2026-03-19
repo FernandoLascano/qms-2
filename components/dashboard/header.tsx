@@ -18,6 +18,7 @@ const pageInfo: Record<string, { title: string; description: string; icon: Lucid
   '/dashboard/admin/sociedades': { title: 'Sociedades', description: 'Gestión de sociedades', icon: Building2 },
   '/dashboard/admin/usuarios': { title: 'Usuarios', description: 'Gestión de usuarios', icon: Users },
   '/dashboard/admin/emails': { title: 'Email', description: 'Bandeja de correo electrónico', icon: Mail },
+  '/dashboard/admin/consultas-chat': { title: 'Consultas Chat', description: 'Preguntas del asistente y análisis IA', icon: Bell },
   '/dashboard/admin/jurisdicciones': { title: 'Jurisdicciones', description: 'Gestión de jurisdicciones y gastos', icon: Settings },
   '/dashboard/admin/blog': { title: 'Blog', description: 'Gestión de artículos', icon: BookOpen },
   '/dashboard/admin/calendario': { title: 'Calendario', description: 'Eventos y recordatorios', icon: Calendar },
