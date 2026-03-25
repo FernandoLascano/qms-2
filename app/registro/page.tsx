@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 export default function RegistroPage() {
   const router = useRouter()
@@ -68,7 +69,7 @@ export default function RegistroPage() {
         return
       }
 
-      // Registro exitoso, redirigir al login
+      trackEvent.registro('email')
       router.push('/login?registered=true')
     } catch (error) {
       setError('Ocurrió un error. Intenta nuevamente.')

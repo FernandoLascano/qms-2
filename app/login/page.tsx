@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CheckCircle, Mail, Lock, ArrowLeft, LogIn, Loader2 } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 function LoginForm() {
   const router = useRouter()
@@ -41,6 +42,7 @@ function LoginForm() {
       }
 
       if (result?.ok) {
+        trackEvent.login('email')
         router.push('/dashboard')
         router.refresh()
       } else {

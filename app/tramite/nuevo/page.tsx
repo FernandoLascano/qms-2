@@ -17,6 +17,7 @@ import { Select } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
+import { trackEvent } from '@/lib/analytics'
 
 const PASOS = [
   { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
@@ -636,7 +637,11 @@ export default function NuevoTramitePage() {
 
       if (response.ok && result.success) {
         toast.success('¡Trámite creado exitosamente! Redirigiendo...')
-        // Redirigir inmediatamente al dashboard
+        trackEvent.enviarTramite({
+          tramite_id: result.tramite?.id,
+          plan: formData.plan,
+          jurisdiccion: formData.jurisdiccion,
+        })
         router.push('/dashboard')
       } else {
         console.error('Error del servidor:', result)

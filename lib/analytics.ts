@@ -2,6 +2,44 @@
 
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID
 
+function canSendGtag(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.gtag === 'function' &&
+    !!GA_TRACKING_ID
+  )
+}
+
+/**
+ * Eventos para embudo: registro → login → formulario completo.
+ * En GA4: Admin → Eventos → marcar como "Evento clave" (conversión) los que elijas.
+ * Recomendado marcar al menos: `tramite_formulario_completo` (meta principal) y `sign_up`.
+ */
+export const conversionAnalytics = {
+  signUpEmail: () => {
+    if (!canSendGtag()) return
+    window.gtag('event', 'sign_up', { method: 'email' })
+  },
+
+  loginEmail: () => {
+    if (!canSendGtag()) return
+    window.gtag('event', 'login', { method: 'email' })
+  },
+
+  tramiteFormularioCompleto: (params: {
+    tramite_id: string
+    plan?: string
+    jurisdiccion?: string
+  }) => {
+    if (!canSendGtag()) return
+    window.gtag('event', 'tramite_formulario_completo', {
+      tramite_id: params.tramite_id,
+      ...(params.plan ? { plan: params.plan } : {}),
+      ...(params.jurisdiccion ? { jurisdiccion: params.jurisdiccion } : {}),
+    })
+  },
+}
+
 // https://developers.google.com/analytics/devguides/collection/gtagjs/pages
 export const pageview = (url: string) => {
   if (typeof window !== 'undefined' && window.gtag) {
@@ -44,18 +82,16 @@ export const trackEvent = {
     label: ubicacion
   }),
   
-  // Registro y Login
-  registro: (metodo: 'email' | 'google') => event({
-    action: 'registro',
-    category: 'Auth',
-    label: metodo
-  }),
-  
-  login: (metodo: 'email' | 'google') => event({
-    action: 'login',
-    category: 'Auth',
-    label: metodo
-  }),
+  // Registro y Login (duplican eventos GA4 recomendados + categoría legacy)
+  registro: (metodo: 'email' | 'google') => {
+    if (metodo === 'email') conversionAnalytics.signUpEmail()
+    event({ action: 'registro', category: 'Auth', label: metodo })
+  },
+
+  login: (metodo: 'email' | 'google') => {
+    if (metodo === 'email') conversionAnalytics.loginEmail()
+    event({ action: 'login', category: 'Auth', label: metodo })
+  },
   
   // Trámites
   iniciarTramite: () => event({
@@ -71,11 +107,20 @@ export const trackEvent = {
     value: paso
   }),
   
-  enviarTramite: () => event({
-    action: 'enviar_tramite',
-    category: 'Tramites',
-    label: 'Trámite enviado para revisión'
-  }),
+  enviarTramite: (params?: { tramite_id: string; plan?: string; jurisdiccion?: string }) => {
+    if (params?.tramite_id) {
+      conversionAnalytics.tramiteFormularioCompleto({
+        tramite_id: params.tramite_id,
+        plan: params.plan,
+        jurisdiccion: params.jurisdiccion,
+      })
+    }
+    event({
+      action: 'enviar_tramite',
+      category: 'Tramites',
+      label: 'Trámite enviado para revisión',
+    })
+  },
   
   // Pagos
   iniciarPago: (monto: number, concepto: string) => event({
