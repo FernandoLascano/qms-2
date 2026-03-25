@@ -21,6 +21,7 @@ import { ComparativaCard } from '@/components/admin/analytics/ComparativaCard'
 import { TiemposPromedioPanel } from '@/components/admin/analytics/TiemposPromedioPanel'
 import { ExportButton } from '@/components/admin/analytics/ExportButton'
 import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
+import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
@@ -107,10 +108,48 @@ export default function AnalyticsPage() {
   const [error, setError] = useState<ErrorData | null>(null)
   const [periodo, setPeriodo] = useState('mes')
   const [jurisdiccion, setJurisdiccion] = useState('todas')
+  const [ga4Data, setGa4Data] = useState<Ga4DashboardData | null>(null)
+  const [ga4Loading, setGa4Loading] = useState(true)
+  const [ga4Error, setGa4Error] = useState<string | null>(null)
 
   useEffect(() => {
     fetchData()
   }, [periodo, jurisdiccion])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      setGa4Loading(true)
+      setGa4Error(null)
+      try {
+        const res = await fetch(`/api/admin/ga4?periodo=${periodo}`, {
+          credentials: 'same-origin',
+        })
+        const json = await res.json()
+        if (!res.ok) {
+          if (!cancelled) {
+            setGa4Data(null)
+            setGa4Error(json.mensaje || json.error || 'No se pudo cargar Google Analytics')
+          }
+          return
+        }
+        if (!cancelled) {
+          setGa4Data(json as Ga4DashboardData)
+          setGa4Error(null)
+        }
+      } catch (e: unknown) {
+        if (!cancelled) {
+          setGa4Data(null)
+          setGa4Error(e instanceof Error ? e.message : 'Error de red')
+        }
+      } finally {
+        if (!cancelled) setGa4Loading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [periodo])
 
   const fetchData = async () => {
     try {
@@ -138,58 +177,7 @@ export default function AnalyticsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando métricas...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-brand-900 mb-4">❌ Error al cargar Analytics</h2>
-          <p className="text-brand-700 mb-2"><strong>Error:</strong> {error.error}</p>
-          {error.mensaje && (
-            <p className="text-brand-600 mb-2"><strong>Mensaje:</strong> {error.mensaje}</p>
-          )}
-          {error.detalles && (
-            <details className="mt-4">
-              <summary className="cursor-pointer text-brand-700 font-semibold">Ver detalles técnicos</summary>
-              <pre className="mt-2 p-4 bg-brand-100 rounded text-xs overflow-auto max-h-64">
-                {error.detalles}
-              </pre>
-            </details>
-          )}
-          <button
-            onClick={fetchData}
-            className="mt-4 bg-brand-700 text-white px-6 py-2 rounded-lg hover:bg-brand-800 transition"
-          >
-            🔄 Reintentar
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (!data || !data.tramites) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">No hay datos disponibles</p>
-        <button
-          onClick={fetchData}
-          className="mt-4 bg-brand-700 text-white px-4 py-2 rounded-lg hover:bg-brand-800"
-        >
-          Cargar datos
-        </button>
-      </div>
-    )
-  }
+  const prismaReady = Boolean(data?.tramites && !loading && !error)
 
   return (
     <div className="space-y-8">
@@ -262,6 +250,56 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
+      <Ga4WebPanel data={ga4Data} loading={ga4Loading} error={ga4Error} />
+
+      {loading && !data && (
+        <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-200">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-700 mb-4" />
+          <p className="text-gray-600 text-sm">Cargando métricas del negocio (trámites, pagos)…</p>
+          <p className="text-gray-400 text-xs mt-2">El bloque de tráfico web (arriba) puede mostrarse antes.</p>
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="bg-brand-50 border-2 border-brand-200 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-brand-900 mb-4">Error al cargar métricas del negocio</h2>
+          <p className="text-brand-700 mb-2"><strong>Error:</strong> {error.error}</p>
+          {error.mensaje && (
+            <p className="text-brand-600 mb-2"><strong>Mensaje:</strong> {error.mensaje}</p>
+          )}
+          {error.detalles && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-brand-700 font-semibold">Ver detalles técnicos</summary>
+              <pre className="mt-2 p-4 bg-brand-100 rounded text-xs overflow-auto max-h-64">
+                {error.detalles}
+              </pre>
+            </details>
+          )}
+          <button
+            type="button"
+            onClick={fetchData}
+            className="mt-4 bg-brand-700 text-white px-6 py-2 rounded-lg hover:bg-brand-800 transition"
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && !data && (
+        <div className="text-center py-12 bg-white rounded-2xl border border-gray-200">
+          <p className="text-gray-600">No hay datos del negocio disponibles</p>
+          <button
+            type="button"
+            onClick={fetchData}
+            className="mt-4 bg-brand-700 text-white px-4 py-2 rounded-lg hover:bg-brand-800"
+          >
+            Cargar datos
+          </button>
+        </div>
+      )}
+
+      {prismaReady && data && (
+        <>
       {/* Métricas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
@@ -503,6 +541,9 @@ export default function AnalyticsPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
+
     </div>
   )
 }
