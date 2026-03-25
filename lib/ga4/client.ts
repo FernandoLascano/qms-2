@@ -1,4 +1,4 @@
-import { OAuth2Client, GoogleAuth } from 'google-auth-library'
+import { GoogleAuth } from 'google-auth-library'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
 
 const GA4_READONLY_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
@@ -9,6 +9,7 @@ export type Ga4ClientResult =
 
 /**
  * GA4 Data API con OAuth2 (refresh token). No usa claves JSON de service account.
+ * Usa GoogleAuth (no OAuth2Client suelto): google-gax exige getUniverseDomain() en auth.
  * Variables: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN
  */
 function trimEnv(v: string | undefined): string | undefined {
@@ -33,16 +34,17 @@ export function createGa4DataClient(): Ga4ClientResult {
     }
   }
 
-  const auth = new OAuth2Client(clientId, clientSecret)
-  auth.setCredentials({
-    refresh_token: refreshToken,
-    scope: GA4_READONLY_SCOPE,
+  const auth = new GoogleAuth({
+    credentials: {
+      type: 'authorized_user',
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+    },
+    scopes: [GA4_READONLY_SCOPE],
   })
 
-  // google-gax tipa `auth` como GoogleAuth; OAuth2Client funciona en runtime para refresh token.
-  const client = new BetaAnalyticsDataClient({
-    auth: auth as unknown as GoogleAuth,
-  })
+  const client = new BetaAnalyticsDataClient({ auth })
   return { ok: true, client }
 }
 
