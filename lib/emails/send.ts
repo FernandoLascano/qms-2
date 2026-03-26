@@ -46,6 +46,15 @@ export async function enviarEmailBienvenida(email: string, nombre: string) {
   })
 }
 
+export async function enviarEmailVerificacionCuenta(params: { email: string; nombre: string; verifyUrl: string }) {
+  return sendEmail({
+    to: params.email,
+    subject: 'Confirmá tu email para activar tu cuenta',
+    template: 'emailVerificarCuenta',
+    data: { nombre: params.nombre, verifyUrl: params.verifyUrl },
+  })
+}
+
 export async function enviarEmailTramiteEnviado(
   email: string,
   nombre: string,

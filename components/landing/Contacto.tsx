@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import Script from 'next/script'
 
 interface FormData {
   nombre: string
@@ -21,6 +22,24 @@ export function Contacto() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [website, setWebsite] = useState('')
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const captchaRequired = process.env.NODE_ENV === 'production'
+
+  useEffect(() => {
+    window.onTurnstileSuccessContacto = (token: string) => setTurnstileToken(token)
+    window.onTurnstileExpiredContacto = () => setTurnstileToken(null)
+    return () => {
+      try {
+        delete window.onTurnstileSuccessContacto
+        delete window.onTurnstileExpiredContacto
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
 
   // Leer asunto desde el hash de la URL (viene de OtrosServicios)
   useEffect(() => {
@@ -57,7 +76,7 @@ export function Contacto() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, turnstileToken, website }),
       })
 
       const data = await response.json()
@@ -107,6 +126,10 @@ export function Contacto() {
   return (
     <section id="contacto" className="py-20 md:py-28 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {siteKey && (
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+        )}
+
         {/* Header */}
         <motion.div
           className="text-center mb-12"
@@ -241,6 +264,20 @@ export function Contacto() {
                       </motion.div>
                     )}
 
+                    {/* Honeypot */}
+                    <div className="hidden" aria-hidden="true">
+                      <label htmlFor="website">Website</label>
+                      <input
+                        id="website"
+                        name="website"
+                        type="text"
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </div>
+
                     <div className="grid md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label htmlFor="nombre" className="text-sm font-semibold text-gray-700">
@@ -311,9 +348,28 @@ export function Contacto() {
                       />
                     </div>
 
+                    {/* Captcha anti-spam */}
+                    {captchaRequired && !siteKey && (
+                      <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-sm">
+                        Falta configurar el anti-spam. Definí <code className="font-mono">NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> y{' '}
+                        <code className="font-mono">TURNSTILE_SECRET_KEY</code> en Vercel.
+                      </div>
+                    )}
+
+                    {captchaRequired && siteKey && (
+                      <div className="flex justify-center">
+                        <div
+                          className="cf-turnstile"
+                          data-sitekey={siteKey}
+                          data-callback="onTurnstileSuccessContacto"
+                          data-expired-callback="onTurnstileExpiredContacto"
+                        />
+                      </div>
+                    )}
+
                     <button
                       type="submit"
-                      disabled={loading}
+                      disabled={loading || (captchaRequired && (!siteKey || !turnstileToken))}
                       className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {loading ? (
@@ -337,4 +393,11 @@ export function Contacto() {
       </div>
     </section>
   )
+}
+
+declare global {
+  interface Window {
+    onTurnstileSuccessContacto?: (token: string) => void
+    onTurnstileExpiredContacto?: () => void
+  }
 }

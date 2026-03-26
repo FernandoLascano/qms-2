@@ -18,6 +18,7 @@ function LoginForm() {
 
   // Verificar si viene de registro exitoso
   const isFromRegistration = searchParams.get('registered') === 'true'
+  const isFromVerification = searchParams.get('verified') === 'true'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +59,19 @@ function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {isFromVerification && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl text-sm font-medium flex items-center gap-3"
+        >
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="h-4 w-4" />
+          </div>
+          <span>Email verificado. Ya podés iniciar sesión.</span>
+        </motion.div>
+      )}
+
       {isFromRegistration && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}

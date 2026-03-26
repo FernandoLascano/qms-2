@@ -1,18 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
+import { verifyTurnstileToken } from '@/lib/turnstile'
 
 export async function POST(request: NextRequest) {
   try {
     const rateLimitResponse = await rateLimit(request, 'contact', 3, '1 m')
     if (rateLimitResponse) return rateLimitResponse
     const body = await request.json()
-    const { nombre, email, asunto, mensaje } = body
+    const { nombre, email, asunto, mensaje, turnstileToken, website } = body
 
     // Validaciones
     if (!nombre || !email || !asunto || !mensaje) {
       return NextResponse.json(
         { error: 'Todos los campos son obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    // Honeypot anti-bot
+    if (typeof website === 'string' && website.trim().length > 0) {
+      return NextResponse.json({ error: 'Solicitud inválida' }, { status: 400 })
+    }
+
+    // Captcha (Cloudflare Turnstile) - en prod requerido
+    const forwardedFor = request.headers.get('x-forwarded-for')
+    const remoteip = forwardedFor ? forwardedFor.split(',')[0]?.trim() : null
+    const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteip })
+    if (!turnstile.ok) {
+      return NextResponse.json(
+        { error: 'Anti-spam', details: turnstile.error, codes: turnstile.codes },
         { status: 400 }
       )
     }

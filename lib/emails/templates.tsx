@@ -373,6 +373,46 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
   })
 }
 
+// 1b. Verificación de email (activar cuenta)
+export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) => {
+  const content = `
+    <h2 style="margin: 0 0 12px 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">
+      Confirmá tu email
+    </h2>
+    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: 15px; line-height: 1.7;">
+      Para activar tu cuenta y poder completar tu trámite, necesitamos que confirmes tu dirección de email.
+    </p>
+
+    <div style="text-align: center; margin: 24px 0;">
+      <a
+        href="${verifyUrl}"
+        class="button"
+        style="display: inline-block; background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white}; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25);"
+      >
+        Verificar email →
+      </a>
+    </div>
+
+    <div style="background-color: ${colors.background}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 16px; margin-top: 16px;">
+      <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.6;">
+        Si el botón no funciona, copiá y pegá este link en tu navegador:
+        <br />
+        <span style="word-break: break-all; color: ${colors.primary}; font-weight: 600;">${verifyUrl}</span>
+      </p>
+    </div>
+
+    <p style="margin: 16px 0 0 0; color: ${colors.textLight}; font-size: 12px; line-height: 1.6;">
+      Este link expira en 24 horas.
+    </p>
+  `
+
+  return EmailLayout({
+    children: content,
+    nombre,
+    preheader: 'Confirmá tu email para activar tu cuenta en QuieroMiSAS.'
+  })
+}
+
 // 2. Email cuando se envía un trámite
 export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTemplateProps) => {
   const content = `

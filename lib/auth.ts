@@ -45,6 +45,10 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Email o contraseña incorrectos")
           }
 
+          if (!user.emailVerified) {
+            throw new Error("Verificá tu email para poder ingresar")
+          }
+
           return {
             id: user.id,
             email: user.email,

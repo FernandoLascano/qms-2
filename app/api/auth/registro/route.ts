@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs"
 import { enviarEmailBienvenida } from "@/lib/emails/send"
 import { rateLimit } from "@/lib/rate-limit"
 import { verifyTurnstileToken } from "@/lib/turnstile"
+import { buildEmailVerificationLink, createEmailVerificationToken } from "@/lib/email-verification"
+import { enviarEmailVerificacionCuenta } from "@/lib/emails/send"
 
 export async function POST(request: Request) {
   try {
@@ -61,9 +63,15 @@ export async function POST(request: Request) {
       }
     })
 
-    // Enviar email de bienvenida (no fallar si hay error)
+    // Verificación de email + bienvenida (no fallar si hay error)
     try {
-      await enviarEmailBienvenida(user.email, user.name)
+      const { token } = await createEmailVerificationToken({ userId: user.id })
+      const verifyUrl = buildEmailVerificationLink({ token })
+
+      await Promise.allSettled([
+        enviarEmailVerificacionCuenta({ email: user.email, nombre: user.name, verifyUrl }),
+        enviarEmailBienvenida(user.email, user.name),
+      ])
     } catch {
       // Error al enviar email de bienvenida (no crítico)
     }
