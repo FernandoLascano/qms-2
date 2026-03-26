@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2 } from 'lucide-react'
+import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff } from 'lucide-react'
 
 interface EmailDetail {
   id: string
@@ -57,6 +57,18 @@ export default function EmailDetailPage() {
   const handleArchive = async () => {
     if (!email) return
     const newStatus = email.status === 'ARCHIVED' ? 'READ' : 'ARCHIVED'
+    await fetch(`/api/admin/emails/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+    setEmail({ ...email, status: newStatus })
+  }
+
+  const handleToggleRead = async () => {
+    if (!email) return
+    if (email.status !== 'UNREAD' && email.status !== 'READ') return
+    const newStatus = email.status === 'UNREAD' ? 'READ' : 'UNREAD'
     await fetch(`/api/admin/emails/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -173,6 +185,25 @@ export default function EmailDetailPage() {
                 >
                   <Reply className="w-4 h-4" />
                   Responder
+                </button>
+              )}
+              {(email.status === 'UNREAD' || email.status === 'READ') && (
+                <button
+                  onClick={handleToggleRead}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                  title={email.status === 'UNREAD' ? 'Marcar como leído' : 'Marcar como no leído'}
+                >
+                  {email.status === 'UNREAD' ? (
+                    <>
+                      <Eye className="w-4 h-4" />
+                      Marcar leído
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="w-4 h-4" />
+                      Marcar no leído
+                    </>
+                  )}
                 </button>
               )}
               <button

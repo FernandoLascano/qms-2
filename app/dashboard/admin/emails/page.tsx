@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react'
 
 interface Email {
   id: string
@@ -78,6 +78,35 @@ export default function EmailsPage() {
     { key: 'INBOUND', label: 'Recibidos', icon: Inbox },
     { key: 'OUTBOUND', label: 'Enviados', icon: Send },
   ]
+
+  const toggleRead = async (e: React.MouseEvent, emailId: string, currentStatus: Email['status']) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (currentStatus !== 'UNREAD' && currentStatus !== 'READ') return
+
+    const nextStatus: Email['status'] = currentStatus === 'UNREAD' ? 'READ' : 'UNREAD'
+
+    // Optimistic update
+    setEmails(prev => prev.map(em => (em.id === emailId ? { ...em, status: nextStatus } : em)))
+
+    try {
+      const res = await fetch(`/api/admin/emails/${emailId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus }),
+      })
+      if (!res.ok) {
+        // rollback
+        setEmails(prev => prev.map(em => (em.id === emailId ? { ...em, status: currentStatus } : em)))
+      } else {
+        // refrescar contadores (unreadCount) y paginación si aplica
+        fetchEmails()
+      }
+    } catch {
+      setEmails(prev => prev.map(em => (em.id === emailId ? { ...em, status: currentStatus } : em)))
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -259,6 +288,26 @@ export default function EmailsPage() {
 
                 {/* Meta */}
                 <div className="flex-shrink-0 flex items-center gap-2 sm:gap-3">
+                  {(email.status === 'UNREAD' || email.status === 'READ') && (
+                    <button
+                      type="button"
+                      onClick={(e) => toggleRead(e, email.id, email.status)}
+                      className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-white hover:border-gray-300 transition cursor-pointer"
+                      title={email.status === 'UNREAD' ? 'Marcar como leído' : 'Marcar como no leído'}
+                    >
+                      {email.status === 'UNREAD' ? (
+                        <>
+                          <Eye className="w-3.5 h-3.5" />
+                          Leído
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="w-3.5 h-3.5" />
+                          No leído
+                        </>
+                      )}
+                    </button>
+                  )}
                   {email.attachments.length > 0 && (
                     <Paperclip className="w-4 h-4 text-gray-400 hidden sm:block" />
                   )}
