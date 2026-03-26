@@ -48,6 +48,8 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="x-apple-disable-message-reformatting">
         <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+        <meta name="color-scheme" content="light">
+        <meta name="supported-color-schemes" content="light">
         <title>QuieroMiSAS</title>
         <!--[if mso]>
         <noscript>
@@ -110,8 +112,12 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
                       src="${LOGO_URL}"
                       alt="QuieroMiSAS"
                       width="180"
-                      style="height: auto; margin: 0 auto;"
+                      style="height: auto; margin: 0 auto; display: block;"
                     />
+                    <!-- Fallback si el cliente bloquea imágenes -->
+                    <div style="margin-top: 10px; font-size: 18px; font-weight: 900; letter-spacing: 0.6px; color: ${colors.primary};">
+                      QUIEROMISAS
+                    </div>
                     <p style="margin: 10px 0 0 0; color: ${colors.textMuted}; font-size: 13px; font-weight: 600; letter-spacing: 0.3px;">
                       Tu empresa lista en 5 días
                     </p>
@@ -216,12 +222,13 @@ const CTAButton = (text: string, url: string, emoji?: string) => `
           style="
             display: inline-block;
             padding: 16px 32px;
-            color: ${colors.white};
+            color: ${colors.white} !important;
             font-size: 16px;
             font-weight: 800;
             text-decoration: none;
             background-color: ${colors.primary};
             border-radius: 12px;
+            line-height: 1.2;
           "
         >
           ${emoji ? `${emoji} ` : ''}${text}
@@ -407,7 +414,7 @@ export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) 
       <a
         href="${verifyUrl}"
         class="button"
-        style="display: inline-block; background-color: ${colors.primary}; background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white}; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25);"
+        style="display: inline-block; background-color: ${colors.primary}; background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white} !important; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25); line-height: 1.2;"
       >
         Verificar email →
       </a>
