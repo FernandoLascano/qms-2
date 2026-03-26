@@ -46,7 +46,8 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!user.emailVerified) {
-            throw new Error("Verificá tu email para poder ingresar")
+            // Este string viaja hasta el cliente como result.error.
+            throw new Error("EMAIL_NOT_VERIFIED")
           }
 
           return {

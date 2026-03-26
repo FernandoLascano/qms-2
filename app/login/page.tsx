@@ -37,7 +37,11 @@ function LoginForm() {
 
       if (result?.error) {
         console.error('Error de login:', result.error)
-        setError('Email o contraseña incorrectos')
+        if (result.error === 'EMAIL_NOT_VERIFIED') {
+          setError('Te falta verificar el email. Revisá tu casilla y abrí el link de confirmación.')
+        } else {
+          setError('Email o contraseña incorrectos')
+        }
         setLoading(false)
         return
       }
