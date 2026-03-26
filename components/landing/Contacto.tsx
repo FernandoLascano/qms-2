@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import Script from 'next/script'
@@ -23,6 +23,9 @@ export function Contacto() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileReady, setTurnstileReady] = useState(false)
+  const widgetIdRef = useRef<string | null>(null)
+  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
   const [website, setWebsite] = useState('')
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
@@ -40,6 +43,32 @@ export function Contacto() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!captchaRequired || !siteKey || !turnstileReady) return
+    if (!turnstileContainerRef.current) return
+
+    const turnstile = (window as any).turnstile as
+      | undefined
+      | { render: (el: HTMLElement, opts: Record<string, unknown>) => string; remove: (id: string) => void }
+
+    if (!turnstile?.render) return
+
+    try {
+      if (widgetIdRef.current) {
+        turnstile.remove(widgetIdRef.current)
+        widgetIdRef.current = null
+      }
+      setTurnstileToken(null)
+      widgetIdRef.current = turnstile.render(turnstileContainerRef.current, {
+        sitekey: siteKey,
+        callback: (token: string) => window.onTurnstileSuccessContacto?.(token),
+        'expired-callback': () => window.onTurnstileExpiredContacto?.(),
+      })
+    } catch {
+      // ignore
+    }
+  }, [captchaRequired, siteKey, turnstileReady])
 
   // Leer asunto desde el hash de la URL (viene de OtrosServicios)
   useEffect(() => {
@@ -127,7 +156,11 @@ export function Contacto() {
     <section id="contacto" className="py-20 md:py-28 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {siteKey && (
-          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onLoad={() => setTurnstileReady(true)}
+          />
         )}
 
         {/* Header */}
@@ -356,16 +389,7 @@ export function Contacto() {
                       </div>
                     )}
 
-                    {captchaRequired && siteKey && (
-                      <div className="flex justify-center">
-                        <div
-                          className="cf-turnstile"
-                          data-sitekey={siteKey}
-                          data-callback="onTurnstileSuccessContacto"
-                          data-expired-callback="onTurnstileExpiredContacto"
-                        />
-                      </div>
-                    )}
+                    {captchaRequired && siteKey && <div className="flex justify-center" ref={turnstileContainerRef} />}
 
                     <button
                       type="submit"

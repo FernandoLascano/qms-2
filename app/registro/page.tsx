@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
@@ -20,6 +20,9 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const [turnstileReady, setTurnstileReady] = useState(false)
+  const widgetIdRef = useRef<string | null>(null)
+  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Honeypot: bots suelen completar campos ocultos
   const [website, setWebsite] = useState('')
@@ -39,6 +42,33 @@ export default function RegistroPage() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (!captchaRequired || !siteKey || !turnstileReady) return
+    if (!turnstileContainerRef.current) return
+
+    const turnstile = (window as any).turnstile as
+      | undefined
+      | { render: (el: HTMLElement, opts: Record<string, unknown>) => string; remove: (id: string) => void }
+
+    if (!turnstile?.render) return
+
+    try {
+      if (widgetIdRef.current) {
+        turnstile.remove(widgetIdRef.current)
+        widgetIdRef.current = null
+      }
+      setTurnstileToken(null)
+
+      widgetIdRef.current = turnstile.render(turnstileContainerRef.current, {
+        sitekey: siteKey,
+        callback: (token: string) => (window as any).onTurnstileSuccess?.(token),
+        'expired-callback': () => (window as any).onTurnstileExpired?.(),
+      })
+    } catch {
+      // ignore
+    }
+  }, [captchaRequired, siteKey, turnstileReady])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -104,7 +134,11 @@ export default function RegistroPage() {
     <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
         {siteKey && (
-          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+          <Script
+            src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+            strategy="afterInteractive"
+            onLoad={() => setTurnstileReady(true)}
+          />
         )}
 
         {/* Logo y Header */}
@@ -282,16 +316,7 @@ export default function RegistroPage() {
               </div>
             )}
 
-            {captchaRequired && siteKey && (
-              <div className="flex justify-center">
-                <div
-                  className="cf-turnstile"
-                  data-sitekey={siteKey}
-                  data-callback="onTurnstileSuccess"
-                  data-expired-callback="onTurnstileExpired"
-                />
-              </div>
-            )}
+            {captchaRequired && siteKey && <div className="flex justify-center" ref={turnstileContainerRef} />}
 
             <button
               type="submit"
