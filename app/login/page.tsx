@@ -85,7 +85,11 @@ function LoginForm() {
           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
             <CheckCircle className="h-4 w-4" />
           </div>
-          <span>Cuenta creada exitosamente. Ya podés iniciar sesión.</span>
+          <span>
+            Cuenta creada exitosamente. Te enviamos un email para <strong>verificar tu cuenta</strong>.
+            <br />
+            Revisá tu casilla (y spam) y luego volvé para iniciar sesión.
+          </span>
         </motion.div>
       )}
 
