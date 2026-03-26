@@ -3,17 +3,34 @@ import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { enviarEmailBienvenida } from "@/lib/emails/send"
 import { rateLimit } from "@/lib/rate-limit"
+import { verifyTurnstileToken } from "@/lib/turnstile"
 
 export async function POST(request: Request) {
   try {
     const rateLimitResponse = await rateLimit(request, 'auth', 5, '1 m')
     if (rateLimitResponse) return rateLimitResponse
     const body = await request.json()
-    const { email, password, name, phone } = body
+    const { email, password, name, phone, turnstileToken, website } = body
 
     if (!email || !password || !name) {
       return NextResponse.json(
         { error: "Faltan datos requeridos" },
+        { status: 400 }
+      )
+    }
+
+    // Honeypot anti-bot: si viene con contenido, es spam.
+    if (typeof website === 'string' && website.trim().length > 0) {
+      return NextResponse.json({ error: "Solicitud inválida" }, { status: 400 })
+    }
+
+    // Captcha (Cloudflare Turnstile) validado server-side
+    const forwardedFor = request.headers.get('x-forwarded-for')
+    const remoteip = forwardedFor ? forwardedFor.split(',')[0]?.trim() : null
+    const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteip })
+    if (!turnstile.ok) {
+      return NextResponse.json(
+        { error: "Anti-spam", details: turnstile.error, codes: turnstile.codes },
         { status: 400 }
       )
     }

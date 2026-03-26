@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import Script from 'next/script'
 
 export default function RegistroPage() {
   const router = useRouter()
@@ -18,6 +19,26 @@ export default function RegistroPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  // Honeypot: bots suelen completar campos ocultos
+  const [website, setWebsite] = useState('')
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const captchaRequired = process.env.NODE_ENV === 'production'
+
+  useEffect(() => {
+    ;(window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token)
+    ;(window as any).onTurnstileExpired = () => setTurnstileToken(null)
+    return () => {
+      try {
+        delete (window as any).onTurnstileSuccess
+        delete (window as any).onTurnstileExpired
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -54,6 +75,8 @@ export default function RegistroPage() {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
+          turnstileToken,
+          website,
         }),
       })
 
@@ -80,6 +103,10 @@ export default function RegistroPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-md">
+        {siteKey && (
+          <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" strategy="afterInteractive" />
+        )}
+
         {/* Logo y Header */}
         <motion.div
           className="text-center mb-8"
@@ -122,6 +149,20 @@ export default function RegistroPage() {
                 {error}
               </motion.div>
             )}
+
+            {/* Honeypot (oculto). Humanos no deberían completarlo. */}
+            <div className="hidden" aria-hidden="true">
+              <label htmlFor="website">Website</label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
 
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-semibold text-gray-700">
@@ -233,9 +274,28 @@ export default function RegistroPage() {
               </div>
             </div>
 
+            {/* Captcha anti-spam */}
+            {captchaRequired && !siteKey && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-sm">
+                Falta configurar el anti-spam. Definí <code className="font-mono">NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> y{' '}
+                <code className="font-mono">TURNSTILE_SECRET_KEY</code> en Vercel.
+              </div>
+            )}
+
+            {captchaRequired && siteKey && (
+              <div className="flex justify-center">
+                <div
+                  className="cf-turnstile"
+                  data-sitekey={siteKey}
+                  data-callback="onTurnstileSuccess"
+                  data-expired-callback="onTurnstileExpired"
+                />
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (captchaRequired && (!siteKey || !turnstileToken))}
               className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
             >
               {loading ? (
