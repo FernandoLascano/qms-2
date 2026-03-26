@@ -5,7 +5,8 @@
 const BASE_URL = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
 
 // Logo URL (hosted on the website)
-const LOGO_URL = `${BASE_URL}/assets/img/qms-logo-white.png`
+// Nota: usar versión legible sobre fondo claro (mejor compatibilidad en clientes de email)
+const LOGO_URL = `${BASE_URL}/assets/img/qms-logo-reg.png`
 const ILLUSTRATION_WELCOME = `${BASE_URL}/assets/img/img_ppal.png`
 
 interface EmailTemplateProps {
@@ -103,7 +104,7 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
 
                 <!-- Header con Logo -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, ${colors.dark} 0%, ${colors.primaryDark} 100%); padding: 32px 40px; text-align: center;">
+                  <td style="background-color: ${colors.white}; padding: 28px 40px; text-align: center; border-bottom: 1px solid ${colors.border};">
                     <!-- Logo -->
                     <img
                       src="${LOGO_URL}"
@@ -111,7 +112,7 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
                       width="180"
                       style="height: auto; margin: 0 auto;"
                     />
-                    <p style="margin: 12px 0 0 0; color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; letter-spacing: 0.5px;">
+                    <p style="margin: 10px 0 0 0; color: ${colors.textMuted}; font-size: 13px; font-weight: 600; letter-spacing: 0.3px;">
                       Tu empresa lista en 5 días
                     </p>
                   </td>
@@ -202,8 +203,27 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
 const CTAButton = (text: string, url: string, emoji?: string) => `
   <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
     <tr>
-      <td style="background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%); border-radius: 12px; box-shadow: 0 4px 14px 0 rgba(185, 28, 28, 0.3);">
-        <a href="${url}" style="display: inline-block; padding: 16px 32px; color: ${colors.white}; font-size: 16px; font-weight: 700; text-decoration: none;">
+      <td
+        style="
+          background-color: ${colors.primary};
+          background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%);
+          border-radius: 12px;
+          box-shadow: 0 4px 14px 0 rgba(185, 28, 28, 0.3);
+        "
+      >
+        <a
+          href="${url}"
+          style="
+            display: inline-block;
+            padding: 16px 32px;
+            color: ${colors.white};
+            font-size: 16px;
+            font-weight: 800;
+            text-decoration: none;
+            background-color: ${colors.primary};
+            border-radius: 12px;
+          "
+        >
           ${emoji ? `${emoji} ` : ''}${text}
         </a>
       </td>
@@ -387,7 +407,7 @@ export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) 
       <a
         href="${verifyUrl}"
         class="button"
-        style="display: inline-block; background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white}; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25);"
+        style="display: inline-block; background-color: ${colors.primary}; background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white}; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25);"
       >
         Verificar email →
       </a>
