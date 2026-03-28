@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const rateLimitResponse = await rateLimit(request, 'chat', 10, '1 m')
     if (rateLimitResponse) return rateLimitResponse
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
       return NextResponse.json(
         { error: 'Servicio de chat no configurado.' },

@@ -1,4 +1,4 @@
-import OpenAI from 'openai'
+import { createAnthropicClient, getAnthropicModel, textFromMessage } from './anthropic'
 import { KNOWLEDGE_BASE } from './knowledge-base'
 
 const SYSTEM_PROMPT = `Sos el Asistente QMS, asistente virtual de QuieroMiSAS, plataforma para constituir S.A.S. en Argentina.
@@ -32,18 +32,21 @@ export async function chatWithAssistant(
   messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
   apiKey: string
 ): Promise<string> {
-  const openai = new OpenAI({ apiKey })
+  const client = createAnthropicClient(apiKey)
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...messages,
-    ],
+  const claudeMessages: { role: 'user' | 'assistant'; content: string }[] = []
+  for (const m of messages) {
+    if (m.role === 'system') continue
+    claudeMessages.push({ role: m.role, content: m.content })
+  }
+
+  const response = await client.messages.create({
+    model: getAnthropicModel(),
     max_tokens: 500,
+    system: SYSTEM_PROMPT,
+    messages: claudeMessages,
     temperature: 0.3,
   })
 
-  return response.choices[0]?.message?.content?.trim() ?? 'No pude generar una respuesta.'
-
+  return textFromMessage(response) || 'No pude generar una respuesta.'
 }

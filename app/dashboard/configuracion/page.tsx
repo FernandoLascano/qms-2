@@ -59,6 +59,8 @@ export default function ConfiguracionPage() {
     }
   }
 
+  const needsCurrentPassword = session?.user?.hasPassword !== false
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -72,6 +74,11 @@ export default function ConfiguracionPage() {
       return
     }
 
+    if (needsCurrentPassword && !passwordData.currentPassword) {
+      toast.error('Ingresá tu contraseña actual')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -79,7 +86,7 @@ export default function ConfiguracionPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
+          currentPassword: needsCurrentPassword ? passwordData.currentPassword : '',
           newPassword: passwordData.newPassword
         })
       })
@@ -90,6 +97,7 @@ export default function ConfiguracionPage() {
       }
 
       toast.success('Contraseña actualizada correctamente')
+      await update()
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -203,21 +211,25 @@ export default function ConfiguracionPage() {
               <CardTitle className="text-lg font-bold text-gray-900">Seguridad</CardTitle>
             </div>
             <CardDescription>
-              Cambiá tu contraseña
+              {needsCurrentPassword
+                ? 'Cambiá tu contraseña'
+                : 'Creá una contraseña para poder iniciar sesión también con email y contraseña.'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleChangePassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Contraseña actual</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                  required
-                />
-              </div>
+              {needsCurrentPassword && (
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Contraseña actual</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                    required
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="newPassword">Nueva contraseña</Label>

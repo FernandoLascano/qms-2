@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useTurnstileWidget } from '@/lib/hooks/use-turnstile-widget'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import Script from 'next/script'
@@ -23,52 +24,17 @@ export function Contacto() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState('')
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const [turnstileReady, setTurnstileReady] = useState(false)
-  const widgetIdRef = useRef<string | null>(null)
-  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
   const [website, setWebsite] = useState('')
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const captchaRequired = process.env.NODE_ENV === 'production'
 
-  useEffect(() => {
-    window.onTurnstileSuccessContacto = (token: string) => setTurnstileToken(token)
-    window.onTurnstileExpiredContacto = () => setTurnstileToken(null)
-    return () => {
-      try {
-        delete window.onTurnstileSuccessContacto
-        delete window.onTurnstileExpiredContacto
-      } catch {
-        // ignore
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!captchaRequired || !siteKey || !turnstileReady) return
-    if (!turnstileContainerRef.current) return
-
-    const turnstile = (window as any).turnstile as
-      | undefined
-      | { render: (el: HTMLElement, opts: Record<string, unknown>) => string; remove: (id: string) => void }
-
-    if (!turnstile?.render) return
-
-    try {
-      if (widgetIdRef.current) {
-        turnstile.remove(widgetIdRef.current)
-        widgetIdRef.current = null
-      }
-      setTurnstileToken(null)
-      widgetIdRef.current = turnstile.render(turnstileContainerRef.current, {
-        sitekey: siteKey,
-        callback: (token: string) => window.onTurnstileSuccessContacto?.(token),
-        'expired-callback': () => window.onTurnstileExpiredContacto?.(),
-      })
-    } catch {
-      // ignore
-    }
-  }, [captchaRequired, siteKey, turnstileReady])
+  const onTurnstileToken = useCallback((token: string | null) => setTurnstileToken(token), [])
+  const { setContainerRef, onScriptLoad } = useTurnstileWidget({
+    siteKey,
+    captchaRequired,
+    onTokenChange: onTurnstileToken,
+  })
 
   // Leer asunto desde el hash de la URL (viene de OtrosServicios)
   useEffect(() => {
@@ -159,7 +125,7 @@ export function Contacto() {
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
             strategy="afterInteractive"
-            onLoad={() => setTurnstileReady(true)}
+            onLoad={onScriptLoad}
           />
         )}
 
@@ -389,7 +355,7 @@ export function Contacto() {
                       </div>
                     )}
 
-                    {captchaRequired && siteKey && <div className="flex justify-center" ref={turnstileContainerRef} />}
+                    {captchaRequired && siteKey && <div className="flex justify-center min-h-[65px]" ref={setContainerRef} />}
 
                     <button
                       type="submit"
@@ -417,11 +383,4 @@ export function Contacto() {
       </div>
     </section>
   )
-}
-
-declare global {
-  interface Window {
-    onTurnstileSuccessContacto?: (token: string) => void
-    onTurnstileExpiredContacto?: () => void
-  }
 }

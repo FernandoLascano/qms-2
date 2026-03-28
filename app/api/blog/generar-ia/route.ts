@@ -13,19 +13,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verificar que la API key esté configurada
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.ANTHROPIC_API_KEY
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'API de OpenAI no configurada. Agregá OPENAI_API_KEY en las variables de entorno.' },
+        { error: 'IA no configurada. Agregá ANTHROPIC_API_KEY en las variables de entorno.' },
         { status: 503 }
       )
     }
 
-    // Importar OpenAI dinámicamente para evitar error en build
-    const OpenAI = (await import('openai')).default
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    })
+    const { completeWithClaude } = await import('@/lib/ai/anthropic')
 
     const { prompt, tipo } = await request.json()
 
@@ -103,23 +99,13 @@ Responde ÚNICAMENTE con un JSON válido:
         systemPrompt = 'Eres un asistente experto en crear contenido para blogs sobre S.A.S. y temas empresariales en Argentina.'
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o', // GPT-4 Turbo optimizado
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
-          role: 'user',
-          content: userPrompt
-        }
-      ],
+    let responseText = await completeWithClaude({
+      apiKey,
+      system: systemPrompt,
+      user: userPrompt,
       temperature: 0.7,
-      max_tokens: 4000
+      maxTokens: 4000,
     })
-
-    let responseText = completion.choices[0]?.message?.content?.trim()
 
     if (!responseText) {
       throw new Error('No se recibió respuesta de la IA')

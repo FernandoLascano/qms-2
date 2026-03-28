@@ -32,12 +32,25 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Verificar contraseña actual
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password)
+    if (user.password) {
+      if (!currentPassword || typeof currentPassword !== 'string') {
+        return NextResponse.json(
+          { error: 'Contraseña actual requerida' },
+          { status: 400 }
+        )
+      }
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password)
+      if (!isValidPassword) {
+        return NextResponse.json(
+          { error: 'Contraseña actual incorrecta' },
+          { status: 400 }
+        )
+      }
+    }
 
-    if (!isValidPassword) {
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
       return NextResponse.json(
-        { error: 'Contraseña actual incorrecta' },
+        { error: 'La nueva contraseña debe tener al menos 6 caracteres' },
         { status: 400 }
       )
     }

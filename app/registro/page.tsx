@@ -1,12 +1,22 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+const GoogleSignInButton = dynamic(
+  () => import('@/components/auth/google-sign-in-button').then((m) => m.GoogleSignInButton),
+  { ssr: false, loading: () => <div className="h-12 w-full rounded-xl bg-gray-100/90 animate-pulse" aria-hidden /> }
+)
+const AuthDivider = dynamic(
+  () => import('@/components/auth/google-sign-in-button').then((m) => m.AuthDivider),
+  { ssr: false, loading: () => <div className="h-6" aria-hidden /> }
+)
 import Script from 'next/script'
+import { useTurnstileWidget } from '@/lib/hooks/use-turnstile-widget'
 
 export default function RegistroPage() {
   const router = useRouter()
@@ -20,9 +30,6 @@ export default function RegistroPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
-  const [turnstileReady, setTurnstileReady] = useState(false)
-  const widgetIdRef = useRef<string | null>(null)
-  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
 
   // Honeypot: bots suelen completar campos ocultos
   const [website, setWebsite] = useState('')
@@ -30,45 +37,12 @@ export default function RegistroPage() {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const captchaRequired = process.env.NODE_ENV === 'production'
 
-  useEffect(() => {
-    ;(window as any).onTurnstileSuccess = (token: string) => setTurnstileToken(token)
-    ;(window as any).onTurnstileExpired = () => setTurnstileToken(null)
-    return () => {
-      try {
-        delete (window as any).onTurnstileSuccess
-        delete (window as any).onTurnstileExpired
-      } catch {
-        // ignore
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!captchaRequired || !siteKey || !turnstileReady) return
-    if (!turnstileContainerRef.current) return
-
-    const turnstile = (window as any).turnstile as
-      | undefined
-      | { render: (el: HTMLElement, opts: Record<string, unknown>) => string; remove: (id: string) => void }
-
-    if (!turnstile?.render) return
-
-    try {
-      if (widgetIdRef.current) {
-        turnstile.remove(widgetIdRef.current)
-        widgetIdRef.current = null
-      }
-      setTurnstileToken(null)
-
-      widgetIdRef.current = turnstile.render(turnstileContainerRef.current, {
-        sitekey: siteKey,
-        callback: (token: string) => (window as any).onTurnstileSuccess?.(token),
-        'expired-callback': () => (window as any).onTurnstileExpired?.(),
-      })
-    } catch {
-      // ignore
-    }
-  }, [captchaRequired, siteKey, turnstileReady])
+  const onTurnstileToken = useCallback((token: string | null) => setTurnstileToken(token), [])
+  const { setContainerRef, onScriptLoad } = useTurnstileWidget({
+    siteKey,
+    captchaRequired,
+    onTokenChange: onTurnstileToken,
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -137,7 +111,7 @@ export default function RegistroPage() {
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
             strategy="afterInteractive"
-            onLoad={() => setTurnstileReady(true)}
+            onLoad={onScriptLoad}
           />
         )}
 
@@ -183,6 +157,9 @@ export default function RegistroPage() {
                 {error}
               </motion.div>
             )}
+
+            <GoogleSignInButton disabled={loading} label="Registrarse con Google" />
+            <AuthDivider />
 
             {/* Honeypot (oculto). Humanos no deberían completarlo. */}
             <div className="hidden" aria-hidden="true">
@@ -316,7 +293,7 @@ export default function RegistroPage() {
               </div>
             )}
 
-            {captchaRequired && siteKey && <div className="flex justify-center" ref={turnstileContainerRef} />}
+            {captchaRequired && siteKey && <div className="flex justify-center min-h-[65px]" ref={setContainerRef} />}
 
             <button
               type="submit"

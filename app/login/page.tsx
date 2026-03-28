@@ -1,12 +1,21 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CheckCircle, Mail, Lock, ArrowLeft, LogIn, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+const GoogleSignInButton = dynamic(
+  () => import('@/components/auth/google-sign-in-button').then((m) => m.GoogleSignInButton),
+  { ssr: false, loading: () => <div className="h-12 w-full rounded-xl bg-gray-100/90 animate-pulse" aria-hidden /> }
+)
+const AuthDivider = dynamic(
+  () => import('@/components/auth/google-sign-in-button').then((m) => m.AuthDivider),
+  { ssr: false, loading: () => <div className="h-6" aria-hidden /> }
+)
 
 function LoginForm() {
   const router = useRouter()
@@ -102,6 +111,9 @@ function LoginForm() {
           {error}
         </motion.div>
       )}
+
+      <GoogleSignInButton disabled={loading} />
+      <AuthDivider />
 
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-semibold text-gray-700">

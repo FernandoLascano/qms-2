@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const apiKey = process.env.OPENAI_API_KEY
+    const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {
-      return NextResponse.json({ error: 'OpenAI no configurado' }, { status: 503 })
+      return NextResponse.json({ error: 'IA no configurada' }, { status: 503 })
     }
 
     // Obtener las últimas 200 consultas para analizar
@@ -72,15 +72,11 @@ export async function POST(request: NextRequest) {
 
     const preguntas = consultas.map(c => c.pregunta).join('\n- ')
 
-    const { default: OpenAI } = await import('openai')
-    const openai = new OpenAI({ apiKey })
+    const { completeWithClaude } = await import('@/lib/ai/anthropic')
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: `Sos un analista de preguntas frecuentes para QuieroMiSAS, un servicio de constitución de S.A.S. (Sociedad por Acciones Simplificada) en Argentina.
+    const analysis = await completeWithClaude({
+      apiKey,
+      system: `Sos un analista de preguntas frecuentes para QuieroMiSAS, un servicio de constitución de S.A.S. (Sociedad por Acciones Simplificada) en Argentina.
 
 Analizá las siguientes preguntas que hicieron los visitantes del sitio web y:
 
@@ -96,18 +92,11 @@ Contexto del servicio:
 - 100% online
 - Válida en todo el país
 
-Respondé en español argentino, formato markdown.`
-        },
-        {
-          role: 'user',
-          content: `Estas son las últimas ${consultas.length} preguntas que hicieron los visitantes:\n\n- ${preguntas}`
-        }
-      ],
+Respondé en español argentino, formato markdown.`,
+      user: `Estas son las últimas ${consultas.length} preguntas que hicieron los visitantes:\n\n- ${preguntas}`,
       temperature: 0.3,
-      max_tokens: 3000,
+      maxTokens: 3000,
     })
-
-    const analysis = completion.choices[0]?.message?.content || 'No se pudo generar el análisis.'
 
     return NextResponse.json({ analysis, totalConsultas: consultas.length })
   } catch {

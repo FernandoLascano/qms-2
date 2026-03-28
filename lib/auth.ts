@@ -1,12 +1,28 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+/** Login Google: GOOGLE_CLIENT_ID/SECRET o los mismos valores que GA4 (GOOGLE_OAUTH_*). */
+const googleClientId =
+  process.env.GOOGLE_CLIENT_ID ?? process.env.GOOGLE_OAUTH_CLIENT_ID
+const googleClientSecret =
+  process.env.GOOGLE_CLIENT_SECRET ?? process.env.GOOGLE_OAUTH_CLIENT_SECRET
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    ...(googleClientId && googleClientSecret
+      ? [
+          GoogleProvider({
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -38,7 +54,7 @@ export const authOptions: NextAuthOptions = {
 
           const isCorrectPassword = await bcrypt.compare(
             credentials.password,
-            user.password
+            user.password as string
           )
 
           if (!isCorrectPassword) {
@@ -69,11 +85,49 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
+  // Después de que el adaptador creó/vinculó el usuario (no usar callbacks.signIn: corre antes y falla con usuarios nuevos).
+  events: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "google" || !user?.id) return
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+        })
+      } catch {
+        // no bloquear el login si ya estaba verificado o hubo condición de carrera
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user, trigger }) {
       if (user) {
-        token.id = user.id
-        token.rol = user.rol
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: {
+            id: true,
+            rol: true,
+            name: true,
+            email: true,
+            phone: true,
+            emailVerified: true,
+            createdAt: true,
+            password: true,
+          },
+        })
+        if (dbUser) {
+          token.id = dbUser.id
+          token.rol = dbUser.rol
+          token.name = dbUser.name
+          token.email = dbUser.email
+          token.phone = dbUser.phone
+          token.emailVerified = dbUser.emailVerified
+          token.createdAt = dbUser.createdAt
+          token.hasPassword = !!dbUser.password
+        } else {
+          token.id = user.id
+          token.rol = (user as { rol?: string }).rol ?? "CLIENTE"
+        }
       }
 
       // Cuando se llama update() desde el cliente, refrescar datos del usuario
@@ -87,7 +141,8 @@ export const authOptions: NextAuthOptions = {
             phone: true,
             rol: true,
             emailVerified: true,
-            createdAt: true
+            createdAt: true,
+            password: true,
           }
         })
 
@@ -95,8 +150,10 @@ export const authOptions: NextAuthOptions = {
           token.name = updatedUser.name
           token.email = updatedUser.email
           token.phone = updatedUser.phone
+          token.rol = updatedUser.rol
           token.emailVerified = updatedUser.emailVerified
           token.createdAt = updatedUser.createdAt
+          token.hasPassword = !!updatedUser.password
         }
       }
 
@@ -105,10 +162,13 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.name = token.name as string
+        session.user.email = token.email as string
         session.user.rol = token.rol as string
         session.user.phone = token.phone as string
         session.user.emailVerified = token.emailVerified as Date
         session.user.createdAt = token.createdAt as Date
+        session.user.hasPassword = token.hasPassword as boolean
       }
       return session
     }
