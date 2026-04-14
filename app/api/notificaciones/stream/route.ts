@@ -5,7 +5,9 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
-export const maxDuration = 30 // Timeout de 30 segundos máximo
+// SSE de larga duración: 30s cortaba la conexión y llenaba los logs de timeouts.
+// El cliente puede reconectar cuando cierre; en Hobby Vercel capa el máximo real.
+export const maxDuration = 300
 
 // SSE endpoint para notificaciones en tiempo real
 export async function GET(request: NextRequest) {

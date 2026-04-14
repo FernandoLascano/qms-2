@@ -19,6 +19,9 @@ export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
+    // Buscar en Vercel Logs: WEBHOOK_SES_INBOUND (si no aparece, SNS no está pegándole a esta URL)
+    console.log('[WEBHOOK_SES_INBOUND] POST recibido')
+
     const body = await request.text()
     let message: Record<string, unknown>
 
