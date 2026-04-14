@@ -16,10 +16,11 @@ export const authOptions: NextAuthOptions = {
   providers: [
     ...(googleClientId && googleClientSecret
       ? [
+          // No allowDangerousEmailAccountLinking: evita que un Gmail ya usado (p. ej. admin)
+          // abra sesión en esa cuenta al “registrarse” otra vez con Google.
           GoogleProvider({
             clientId: googleClientId,
             clientSecret: googleClientSecret,
-            allowDangerousEmailAccountLinking: true,
           }),
         ]
       : []),
@@ -100,6 +101,38 @@ export const authOptions: NextAuthOptions = {
     },
   },
   callbacks: {
+    /**
+     * OAuth: `signIn` corre ANTES de crear el usuario (next-auth/core/routes/callback).
+     * Si `user` viene de getUserByAccount, `user.id` es nuestro id en DB; si no, suele ser
+     * perfil OAuth donde `id` puede ser el sub de Google — no validar por id hasta tener fila.
+     *
+     * Si ya existe fila con user.id y el email de Google no coincide → bloqueo (evita entrar
+     * como admin con otro correo en el picker cuando el sub seguía ligado al admin).
+     */
+    async signIn({ user, account, profile }) {
+      if (account?.provider !== "google") return true
+
+      const profileEmail =
+        typeof profile?.email === "string"
+          ? profile.email.trim().toLowerCase()
+          : ""
+      if (!profileEmail) return "/login?error=GoogleProfileEmail"
+
+      if (!user?.id) return true
+
+      const row = await prisma.user.findUnique({
+        where: { id: String(user.id) },
+        select: { email: true },
+      })
+      // Sin fila en DB con ese id → perfil nuevo (id aún puede ser sub de Google); sigue el flujo estándar
+      if (!row) return true
+
+      if (row.email.trim().toLowerCase() !== profileEmail) {
+        return "/login?error=GoogleEmailMismatch"
+      }
+
+      return true
+    },
     async jwt({ token, user, trigger }) {
       if (user) {
         const dbUser = await prisma.user.findUnique({

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -28,6 +28,36 @@ function LoginForm() {
   // Verificar si viene de registro exitoso
   const isFromRegistration = searchParams.get('registered') === 'true'
   const isFromVerification = searchParams.get('verified') === 'true'
+  const oauthError = searchParams.get('error')
+
+  useEffect(() => {
+    if (!oauthError) return
+    if (oauthError === 'OAuthAccountNotLinked') {
+      setError(
+        'Ese correo ya está registrado en la plataforma (otro método de acceso). ' +
+          'Iniciá sesión con email y contraseña, o usá otro correo para continuar con Google. ' +
+          'Si creías que ibas a crear una cuenta nueva, necesitás un Gmail distinto al de tu cuenta de equipo.'
+      )
+      return
+    }
+    if (oauthError === 'AccessDenied') {
+      setError('Acceso con Google cancelado o no autorizado.')
+      return
+    }
+    if (oauthError === 'GoogleEmailMismatch') {
+      setError(
+        'El correo de Google no coincide con la cuenta interna que se intentó usar. Suele pasar si esa cuenta de Google ya quedó vinculada a otra cuenta en el sistema. ' +
+          'Probá cerrar sesión en google.com, usar otro correo de Google, o entrá con email y contraseña. ' +
+          'Si sos administrador y probás con un Gmail distinto, cada uno debe ser una cuenta aparte en la plataforma.'
+      )
+      return
+    }
+    if (oauthError === 'GoogleProfileEmail' || oauthError === 'GoogleUserMissing') {
+      setError('Google no devolvió un email válido o hubo un problema al localizar el usuario. Reintentá con otro navegador o método de acceso.')
+      return
+    }
+    setError('No pudimos completar el inicio de sesión con Google. Probá de nuevo o usá email y contraseña.')
+  }, [oauthError])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
