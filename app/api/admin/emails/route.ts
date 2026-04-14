@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
         { from: { contains: search, mode: 'insensitive' } },
         { fromName: { contains: search, mode: 'insensitive' } },
         { bodyText: { contains: search, mode: 'insensitive' } },
+        { bodyHtml: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
         include: {
           attachments: { select: { id: true, fileName: true, mimeType: true, size: true } },
           tramite: { select: { id: true, denominacionSocial1: true } },
+          _count: { select: { replies: true } },
         },
       }),
       prisma.email.count({ where }),
@@ -89,9 +91,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { to, cc, subject, html, text, tramiteId, attachments } = await request.json()
+    const { to, cc, bcc, subject, html, text, tramiteId, attachments } = await request.json()
     const toList = normalizeRecipients(to)
     const ccList = normalizeRecipients(cc)
+    const bccList = normalizeRecipients(bcc)
 
     if (!toList.length || !subject || !html) {
       return NextResponse.json({ error: 'Faltan campos obligatorios (to, subject, html)' }, { status: 400 })
@@ -130,6 +133,7 @@ export async function POST(request: NextRequest) {
     const result = await sendEmail({
       to: toList,
       cc: ccList,
+      bcc: bccList.length ? bccList : undefined,
       subject,
       html,
       text: text || html.replace(/<[^>]*>/g, ''),
@@ -152,6 +156,7 @@ export async function POST(request: NextRequest) {
         fromName: process.env.SMTP_FROM_NAME || 'QuieroMiSAS',
         to: toList,
         cc: ccList,
+        bcc: bccList,
         subject,
         bodyHtml: html,
         bodyText: text || html.replace(/<[^>]*>/g, ''),

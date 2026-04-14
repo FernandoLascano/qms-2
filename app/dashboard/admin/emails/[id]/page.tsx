@@ -11,6 +11,7 @@ interface EmailDetail {
   fromName: string | null
   to: string[]
   cc: string[]
+  bcc?: string[]
   replyTo: string | null
   subject: string
   bodyText: string | null
@@ -39,6 +40,7 @@ export default function EmailDetailPage() {
   const [replySubject, setReplySubject] = useState('')
   const [replyTo, setReplyTo] = useState('')
   const [replyCc, setReplyCc] = useState('')
+  const [replyBcc, setReplyBcc] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<File[]>([])
   const [sending, setSending] = useState(false)
 
@@ -127,6 +129,7 @@ export default function EmailDetailPage() {
         ? {
             to: replyTo,
             cc: replyCc,
+            bcc: replyBcc,
             subject: (replySubject || `Fwd: ${email.subject}`).trim(),
             html,
             text: replyText,
@@ -137,6 +140,7 @@ export default function EmailDetailPage() {
             text: replyText,
             to: replyTo,
             cc: replyCc,
+            bcc: replyBcc,
             attachments: attachmentsPayload,
           }
 
@@ -151,6 +155,7 @@ export default function EmailDetailPage() {
         setComposerMode('reply')
         setReplyText('')
         setReplyCc('')
+        setReplyBcc('')
         setReplyAttachments([])
         fetchEmail()
       }
@@ -316,6 +321,9 @@ export default function EmailDetailPage() {
                 {email.cc.length > 0 && (
                   <p className="text-gray-500">CC: {email.cc.join(', ')}</p>
                 )}
+                {email.bcc && email.bcc.length > 0 && (
+                  <p className="text-gray-500">BCC: {email.bcc.join(', ')}</p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2 text-gray-400 ml-11">
@@ -327,7 +335,7 @@ export default function EmailDetailPage() {
 
         {/* Attachments */}
         {email.attachments.length > 0 && (
-          <div className="px-6 py-3 border-b border-gray-100">
+          <div className="px-6 py-3 border-b border-gray-100 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               <Paperclip className="w-4 h-4 text-gray-400" />
               {email.attachments.map(att => (
@@ -341,6 +349,18 @@ export default function EmailDetailPage() {
                   <Download className="w-3 h-3 text-gray-400" />
                 </a>
               ))}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {email.attachments
+                .filter(att => att.mimeType.startsWith('image/'))
+                .map(att => (
+                  <img
+                    key={att.id}
+                    src={`/api/admin/emails/attachments/${att.id}/download?inline=1`}
+                    alt={att.fileName}
+                    className="max-h-72 max-w-full rounded-lg border border-gray-200 object-contain bg-gray-50"
+                  />
+                ))}
             </div>
           </div>
         )}
@@ -439,6 +459,13 @@ export default function EmailDetailPage() {
                 onChange={(e) => setReplyCc(e.target.value)}
                 placeholder="cc@correo.com, otro@correo.com"
                 className="w-full p-3 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                value={replyBcc}
+                onChange={(e) => setReplyBcc(e.target.value)}
+                placeholder="bcc oculto@correo.com"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent sm:col-span-2"
               />
             </div>
             <div className="mt-3">

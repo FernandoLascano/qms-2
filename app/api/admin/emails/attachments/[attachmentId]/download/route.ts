@@ -46,10 +46,16 @@ export async function GET(
       return NextResponse.json({ error: 'Archivo vacío' }, { status: 404 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const inline = searchParams.get('inline') === '1'
+    const disposition = inline
+      ? `inline; filename="${encodeURIComponent(attachment.fileName)}"`
+      : `attachment; filename="${encodeURIComponent(attachment.fileName)}"`
+
     return new NextResponse(object.Body.transformToWebStream() as ReadableStream, {
       headers: {
         'Content-Type': attachment.mimeType || 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${encodeURIComponent(attachment.fileName)}"`,
+        'Content-Disposition': disposition,
         'Cache-Control': 'private, max-age=60',
       },
     })

@@ -18,6 +18,15 @@ interface Template {
   body: string
 }
 
+interface DbTemplate {
+  id: string
+  name: string
+  displayName: string
+  subject: string
+  bodyHtml: string
+  category: string
+}
+
 interface UploadAttachment {
   id: string
   file: File
@@ -29,6 +38,16 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const EMAIL_PRIMARY_RED = '#991B1B'
 const EMAIL_PRIMARY_RED_DARK = '#7F1D1D'
 const EMAIL_LOGO_URL = 'https://www.quieromisas.com/assets/img/qms-logo-white.png'
+const DRAFT_STORAGE_KEY = 'qms-admin-email-compose-draft'
+
+function htmlToPlainText(html: string) {
+  if (typeof document === 'undefined') {
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  }
+  const d = document.createElement('div')
+  d.innerHTML = html
+  return (d.textContent || '').replace(/\s+/g, ' ').trim()
+}
 
 const TEMPLATES: Template[] = [
   {
@@ -73,8 +92,10 @@ export default function ComposeEmailPage() {
   const router = useRouter()
   const [to, setTo] = useState<string[]>([])
   const [cc, setCc] = useState<string[]>([])
+  const [bcc, setBcc] = useState<string[]>([])
   const [toInput, setToInput] = useState('')
   const [ccInput, setCcInput] = useState('')
+  const [bccInput, setBccInput] = useState('')
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
   const [attachments, setAttachments] = useState<UploadAttachment[]>([])
@@ -82,6 +103,8 @@ export default function ComposeEmailPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [error, setError] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState('')
+  const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
+  const [draftRestored, setDraftRestored] = useState(false)
 
   // Destinatarios desde trámites
   const [tramites, setTramites] = useState<Tramite[]>([])
@@ -92,6 +115,60 @@ export default function ComposeEmailPage() {
   useEffect(() => {
     fetchTramites()
   }, [])
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/admin/email-templates')
+        if (res.ok) {
+          const data = await res.json()
+          setDbTemplates(Array.isArray(data.templates) ? data.templates : [])
+        }
+      } catch {
+        // ignore
+      }
+    })()
+  }, [])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY)
+      if (!raw) {
+        setDraftRestored(true)
+        return
+      }
+      const d = JSON.parse(raw) as {
+        to?: string[]
+        cc?: string[]
+        bcc?: string[]
+        subject?: string
+        body?: string
+      }
+      if (d.to?.length) setTo(d.to)
+      if (d.cc?.length) setCc(d.cc)
+      if (d.bcc?.length) setBcc(d.bcc)
+      if (d.subject) setSubject(d.subject)
+      if (d.body) setBody(d.body)
+    } catch {
+      // ignore
+    }
+    setDraftRestored(true)
+  }, [])
+
+  useEffect(() => {
+    if (!draftRestored) return
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(
+          DRAFT_STORAGE_KEY,
+          JSON.stringify({ to, cc, bcc, subject, body })
+        )
+      } catch {
+        // ignore
+      }
+    }, 600)
+    return () => clearTimeout(t)
+  }, [draftRestored, to, cc, bcc, subject, body])
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -129,6 +206,15 @@ export default function ComposeEmailPage() {
 
   const handleTemplateChange = (key: string) => {
     setSelectedTemplate(key)
+    if (key.startsWith('db:')) {
+      const id = key.slice(3)
+      const template = dbTemplates.find(t => t.id === id)
+      if (template) {
+        setSubject(template.subject)
+        setBody(htmlToPlainText(template.bodyHtml) || template.subject)
+      }
+      return
+    }
     const template = TEMPLATES.find(t => t.key === key)
     if (template) {
       setSubject(template.subject)
@@ -143,22 +229,26 @@ export default function ComposeEmailPage() {
       .filter(Boolean)
       .filter(v => EMAIL_REGEX.test(v))
 
-  const addRecipients = (rawValue: string, target: 'to' | 'cc') => {
+  const addRecipients = (rawValue: string, target: 'to' | 'cc' | 'bcc') => {
     const emails = normalizeEmails(rawValue)
     if (!emails.length) return
     if (target === 'to') {
       setTo(prev => Array.from(new Set([...prev, ...emails])))
       setToInput('')
       setRecipientSearch('')
-    } else {
+    } else if (target === 'cc') {
       setCc(prev => Array.from(new Set([...prev, ...emails])))
       setCcInput('')
+    } else {
+      setBcc(prev => Array.from(new Set([...prev, ...emails])))
+      setBccInput('')
     }
   }
 
-  const removeRecipient = (email: string, target: 'to' | 'cc') => {
+  const removeRecipient = (email: string, target: 'to' | 'cc' | 'bcc') => {
     if (target === 'to') setTo(prev => prev.filter(item => item !== email))
-    else setCc(prev => prev.filter(item => item !== email))
+    else if (target === 'cc') setCc(prev => prev.filter(item => item !== email))
+    else setBcc(prev => prev.filter(item => item !== email))
   }
 
   const selectRecipient = (email: string) => {
@@ -250,7 +340,11 @@ export default function ComposeEmailPage() {
       return
     }
 
-    if (to.some(email => !EMAIL_REGEX.test(email)) || cc.some(email => !EMAIL_REGEX.test(email))) {
+    if (
+      to.some(email => !EMAIL_REGEX.test(email)) ||
+      cc.some(email => !EMAIL_REGEX.test(email)) ||
+      bcc.some(email => !EMAIL_REGEX.test(email))
+    ) {
       setError('Hay uno o más emails inválidos')
       return
     }
@@ -272,6 +366,7 @@ export default function ComposeEmailPage() {
         body: JSON.stringify({
           to,
           cc,
+          bcc,
           subject: subject.trim(),
           html: buildHtml(body),
           text: body,
@@ -280,6 +375,11 @@ export default function ComposeEmailPage() {
       })
 
       if (res.ok) {
+        try {
+          localStorage.removeItem(DRAFT_STORAGE_KEY)
+        } catch {
+          // ignore
+        }
         router.push('/dashboard/admin/emails')
       } else {
         const data = await res.json().catch(() => ({}))
@@ -322,10 +422,20 @@ export default function ComposeEmailPage() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent cursor-pointer"
               >
                 <option value="">Escribir desde cero</option>
-                {TEMPLATES.map(t => (
-                  <option key={t.key} value={t.key}>{t.name}</option>
-                ))}
+                <optgroup label="Plantillas rápidas">
+                  {TEMPLATES.map(t => (
+                    <option key={t.key} value={t.key}>{t.name}</option>
+                  ))}
+                </optgroup>
+                {dbTemplates.length > 0 && (
+                  <optgroup label="Plantillas del sistema (BD)">
+                    {dbTemplates.map(t => (
+                      <option key={t.id} value={`db:${t.id}`}>{t.displayName}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
+              <p className="text-xs text-gray-500 mt-1">Las de BD son filas activas del modelo EmailTemplate (p. ej. sembradas por migración o SQL).</p>
             </div>
 
             {/* To - with autocomplete */}
@@ -421,6 +531,37 @@ export default function ComposeEmailPage() {
                     <span key={email} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                       {email}
                       <button type="button" onClick={() => removeRecipient(email, 'cc')} className="text-gray-500 hover:text-gray-700 cursor-pointer">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* BCC */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-1.5">BCC (copia oculta)</label>
+              <input
+                type="text"
+                value={bccInput}
+                onChange={(e) => setBccInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    addRecipients(bccInput, 'bcc')
+                  }
+                }}
+                onBlur={() => addRecipients(bccInput, 'bcc')}
+                placeholder="copia.oculta@empresa.com"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+              {bcc.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {bcc.map(email => (
+                    <span key={email} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 text-amber-900 text-xs font-medium border border-amber-200">
+                      {email}
+                      <button type="button" onClick={() => removeRecipient(email, 'bcc')} className="text-amber-700 hover:text-amber-900 cursor-pointer">
                         <X className="w-3 h-3" />
                       </button>
                     </span>

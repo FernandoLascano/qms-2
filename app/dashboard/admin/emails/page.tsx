@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react'
+import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight, Eye, EyeOff, MessageSquare } from 'lucide-react'
 
 interface Email {
   id: string
@@ -15,28 +15,35 @@ interface Email {
   status: 'UNREAD' | 'READ' | 'REPLIED' | 'ARCHIVED'
   spamVerdict: string | null
   isForwarded: boolean
+  parentEmailId: string | null
   attachments: { id: string; fileName: string; mimeType: string; size: number }[]
   tramite: { id: string; denominacionSocial1: string } | null
   createdAt: string
+  _count?: { replies: number }
 }
 
 type TabType = 'all' | 'INBOUND' | 'OUTBOUND'
+type StatusFilterType = 'all' | 'UNREAD' | 'ARCHIVED' | 'REPLIED'
 
 export default function EmailsPage() {
   const [emails, setEmails] = useState<Email[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<TabType>('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilterType>('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [unreadCount, setUnreadCount] = useState(0)
   const [total, setTotal] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [batchLoading, setBatchLoading] = useState(false)
 
   const fetchEmails = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (tab !== 'all') params.set('direction', tab)
+      if (statusFilter !== 'all') params.set('status', statusFilter)
       if (search) params.set('search', search)
       params.set('page', page.toString())
       params.set('limit', '20')
@@ -47,12 +54,13 @@ export default function EmailsPage() {
       setTotalPages(data.pages || 1)
       setUnreadCount(data.unreadCount || 0)
       setTotal(data.total || 0)
+      setSelectedIds(new Set())
     } catch {
       setEmails([])
     } finally {
       setLoading(false)
     }
-  }, [tab, search, page])
+  }, [tab, statusFilter, search, page])
 
   useEffect(() => {
     fetchEmails()
@@ -73,11 +81,36 @@ export default function EmailsPage() {
     return text.substring(0, 100).replace(/\s+/g, ' ').trim() + (text.length > 100 ? '...' : '')
   }
 
-  const tabs: { key: TabType; label: string; icon: any }[] = [
+  const tabs: { key: TabType; label: string; icon: typeof Mail }[] = [
     { key: 'all', label: 'Todos', icon: Mail },
     { key: 'INBOUND', label: 'Recibidos', icon: Inbox },
     { key: 'OUTBOUND', label: 'Enviados', icon: Send },
   ]
+
+  const statusChips: { key: StatusFilterType; label: string }[] = [
+    { key: 'all', label: 'Todos los estados' },
+    { key: 'UNREAD', label: 'No leídos' },
+    { key: 'REPLIED', label: 'Respondidos' },
+    { key: 'ARCHIVED', label: 'Archivados' },
+  ]
+
+  const runBatch = async (status: 'READ' | 'UNREAD' | 'ARCHIVED') => {
+    if (selectedIds.size === 0) return
+    setBatchLoading(true)
+    try {
+      const res = await fetch('/api/admin/emails/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(selectedIds), status }),
+      })
+      if (res.ok) {
+        setSelectedIds(new Set())
+        fetchEmails()
+      }
+    } finally {
+      setBatchLoading(false)
+    }
+  }
 
   const toggleRead = async (e: React.MouseEvent, emailId: string, currentStatus: Email['status']) => {
     e.preventDefault()
@@ -194,6 +227,7 @@ export default function EmailsPage() {
             {tabs.map(t => (
               <button
                 key={t.key}
+                type="button"
                 onClick={() => { setTab(t.key); setPage(1) }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition cursor-pointer ${
                   tab === t.key
@@ -207,12 +241,30 @@ export default function EmailsPage() {
             ))}
           </div>
 
+          <div className="flex flex-wrap gap-1.5 items-center">
+            <span className="text-xs text-gray-500 font-medium mr-1">Estado:</span>
+            {statusChips.map(s => (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => { setStatusFilter(s.key); setPage(1) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                  statusFilter === s.key
+                    ? 'bg-brand-700 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
           {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por asunto, remitente..."
+              placeholder="Buscar en asunto, remitente y cuerpo..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
               className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
@@ -220,6 +272,43 @@ export default function EmailsPage() {
           </div>
         </div>
       </div>
+
+      {selectedIds.size > 0 && (
+        <div className="flex flex-wrap items-center gap-2 p-3 bg-brand-50 border border-brand-200 rounded-xl text-sm">
+          <span className="font-semibold text-brand-900">{selectedIds.size} seleccionados</span>
+          <button
+            type="button"
+            disabled={batchLoading}
+            onClick={() => runBatch('READ')}
+            className="px-3 py-1.5 rounded-lg bg-white border border-brand-300 text-brand-800 font-medium hover:bg-brand-100 cursor-pointer disabled:opacity-50"
+          >
+            Marcar leído
+          </button>
+          <button
+            type="button"
+            disabled={batchLoading}
+            onClick={() => runBatch('UNREAD')}
+            className="px-3 py-1.5 rounded-lg bg-white border border-brand-300 text-brand-800 font-medium hover:bg-brand-100 cursor-pointer disabled:opacity-50"
+          >
+            No leído
+          </button>
+          <button
+            type="button"
+            disabled={batchLoading}
+            onClick={() => runBatch('ARCHIVED')}
+            className="px-3 py-1.5 rounded-lg bg-white border border-brand-300 text-brand-800 font-medium hover:bg-brand-100 cursor-pointer disabled:opacity-50"
+          >
+            Archivar
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-brand-700 font-medium hover:underline cursor-pointer"
+          >
+            Quitar selección
+          </button>
+        </div>
+      )}
 
       {/* Email List */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -236,13 +325,31 @@ export default function EmailsPage() {
         ) : (
           <div className="divide-y divide-gray-100">
             {emails.map((email) => (
-              <Link
+              <div
                 key={email.id}
-                href={`/dashboard/admin/emails/${email.id}`}
-                className={`flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 transition group ${
+                className={`flex items-stretch gap-0 border-b border-gray-50 last:border-0 ${
                   email.status === 'UNREAD' ? 'bg-brand-50/30' : ''
                 }`}
               >
+                <label className="flex items-center px-3 sm:px-4 cursor-pointer shrink-0">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-brand-700 focus:ring-brand-500"
+                    checked={selectedIds.has(email.id)}
+                    onChange={() => {
+                      setSelectedIds(prev => {
+                        const next = new Set(prev)
+                        if (next.has(email.id)) next.delete(email.id)
+                        else next.add(email.id)
+                        return next
+                      })
+                    }}
+                  />
+                </label>
+                <Link
+                  href={`/dashboard/admin/emails/${email.id}`}
+                  className="flex items-center gap-3 flex-1 min-w-0 px-2 sm:px-4 py-3 sm:py-4 hover:bg-gray-50/80 transition group"
+                >
                 {/* Status + Direction (combined on mobile) */}
                 <div className="flex-shrink-0 relative">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -273,6 +380,12 @@ export default function EmailsPage() {
                     {email.tramite && (
                       <span className="hidden sm:inline-flex flex-shrink-0 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
                         {email.tramite.denominacionSocial1}
+                      </span>
+                    )}
+                    {(email.parentEmailId || (email._count && email._count.replies > 0)) && (
+                      <span className="inline-flex items-center gap-0.5 text-xs text-gray-500" title="Conversación">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        {email._count && email._count.replies > 0 ? email._count.replies : ''}
                       </span>
                     )}
                   </div>
@@ -321,6 +434,7 @@ export default function EmailsPage() {
                   </span>
                 </div>
               </Link>
+              </div>
             ))}
           </div>
         )}

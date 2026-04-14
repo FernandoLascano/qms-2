@@ -31,7 +31,7 @@ export async function POST(
     }
 
     const { id } = await params
-    const { html, text, to, cc, attachments } = await request.json()
+    const { html, text, to, cc, bcc, attachments } = await request.json()
 
     if (!html) {
       return NextResponse.json({ error: 'El cuerpo del email es obligatorio' }, { status: 400 })
@@ -46,6 +46,7 @@ export async function POST(
     const replyTo = originalEmail.replyTo || originalEmail.from
     const toList = normalizeRecipients(to)
     const ccList = normalizeRecipients(cc)
+    const bccList = normalizeRecipients(bcc)
     const finalToList = toList.length ? toList : [replyTo]
     const subject = originalEmail.subject.startsWith('Re:')
       ? originalEmail.subject
@@ -84,6 +85,7 @@ export async function POST(
     const result = await sendEmail({
       to: finalToList,
       cc: ccList,
+      bcc: bccList.length ? bccList : undefined,
       replyTo: process.env.SMTP_FROM || 'contacto@quieromisas.com',
       subject,
       html,
@@ -107,6 +109,7 @@ export async function POST(
         fromName: process.env.SMTP_FROM_NAME || 'QuieroMiSAS',
         to: finalToList,
         cc: ccList,
+        bcc: bccList,
         subject,
         bodyHtml: html,
         bodyText: text || html.replace(/<[^>]*>/g, ''),

@@ -666,6 +666,7 @@ model Email {
   fromName String?
   to       String[]
   cc       String[]
+  bcc      String[] @default([])
   replyTo  String?
 
   // Contenido

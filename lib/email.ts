@@ -15,6 +15,7 @@ const transporter = nodemailer.createTransport({
 interface EmailOptions {
   to: string | string[]
   cc?: string | string[]
+  bcc?: string | string[]
   subject: string
   html: string
   text?: string
@@ -77,7 +78,7 @@ function withQmsSignatureText(text?: string): string {
   return `${base}${signature}`
 }
 
-export async function sendEmail({ to, cc, subject, html, text, replyTo, attachments }: EmailOptions) {
+export async function sendEmail({ to, cc, bcc, subject, html, text, replyTo, attachments }: EmailOptions) {
   try {
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'contacto@quieromisas.com'
     const fromName = process.env.SMTP_FROM_NAME || 'QuieroMiSAS'
@@ -88,6 +89,7 @@ export async function sendEmail({ to, cc, subject, html, text, replyTo, attachme
       from: `"${fromName}" <${fromEmail}>`,
       to: Array.isArray(to) ? to.join(', ') : to,
       cc: cc ? (Array.isArray(cc) ? cc.join(', ') : cc) : undefined,
+      bcc: bcc ? (Array.isArray(bcc) ? bcc.join(', ') : bcc) : undefined,
       replyTo,
       subject,
       html: htmlWithSignature,
