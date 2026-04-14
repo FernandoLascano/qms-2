@@ -14,12 +14,19 @@ const transporter = nodemailer.createTransport({
 
 interface EmailOptions {
   to: string | string[]
+  cc?: string | string[]
   subject: string
   html: string
   text?: string
+  replyTo?: string
+  attachments?: Array<{
+    filename: string
+    content: Buffer
+    contentType?: string
+  }>
 }
 
-export async function sendEmail({ to, subject, html, text }: EmailOptions) {
+export async function sendEmail({ to, cc, subject, html, text, replyTo, attachments }: EmailOptions) {
   try {
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'contacto@quieromisas.com'
     const fromName = process.env.SMTP_FROM_NAME || 'QuieroMiSAS'
@@ -27,9 +34,12 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
     const info = await transporter.sendMail({
       from: `"${fromName}" <${fromEmail}>`,
       to: Array.isArray(to) ? to.join(', ') : to,
+      cc: cc ? (Array.isArray(cc) ? cc.join(', ') : cc) : undefined,
+      replyTo,
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, '')
+      text: text || html.replace(/<[^>]*>/g, ''),
+      attachments
     })
 
     return { success: true, messageId: info.messageId }

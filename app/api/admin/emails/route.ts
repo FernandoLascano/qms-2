@@ -3,6 +3,23 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
+import { Prisma } from '@prisma/client'
+import { EmailDirection, EmailStatus } from '@prisma/client'
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
+const MAX_TOTAL_ATTACHMENTS_BYTES = 20 * 1024 * 1024
+
+function normalizeRecipients(input: unknown): string[] {
+  const values = Array.isArray(input) ? input : [input]
+  const splitValues = values
+    .flatMap((value) => (typeof value === 'string' ? value.split(',') : []))
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean)
+
+  const unique = Array.from(new Set(splitValues))
+  return unique.filter((email) => EMAIL_REGEX.test(email))
+}
 
 // GET - Listar emails con filtros y paginación
 export async function GET(request: NextRequest) {
@@ -20,10 +37,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const skip = (page - 1) * limit
 
-    const where: any = {}
+    const where: Prisma.EmailWhereInput = {}
 
-    if (direction) where.direction = direction
-    if (status) where.status = status
+    if (direction && Object.values(EmailDirection).includes(direction as EmailDirection)) {
+      where.direction = direction as EmailDirection
+    }
+    if (status && Object.values(EmailStatus).includes(status as EmailStatus)) {
+      where.status = status as EmailStatus
+    }
     if (search) {
       where.OR = [
         { subject: { contains: search, mode: 'insensitive' } },
@@ -68,18 +89,55 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { to, subject, html, text, tramiteId } = await request.json()
+    const { to, cc, subject, html, text, tramiteId, attachments } = await request.json()
+    const toList = normalizeRecipients(to)
+    const ccList = normalizeRecipients(cc)
 
-    if (!to || !subject || !html) {
+    if (!toList.length || !subject || !html) {
       return NextResponse.json({ error: 'Faltan campos obligatorios (to, subject, html)' }, { status: 400 })
+    }
+
+    const parsedAttachments: Array<{
+      filename: string
+      content: Buffer
+      contentType?: string
+      size: number
+    }> = []
+
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      let totalBytes = 0
+      for (const attachment of attachments) {
+        if (!attachment?.filename || !attachment?.contentBase64) continue
+        const content = Buffer.from(String(attachment.contentBase64), 'base64')
+        const size = content.byteLength
+        totalBytes += size
+        if (size > MAX_ATTACHMENT_BYTES) {
+          return NextResponse.json({ error: `El adjunto ${attachment.filename} supera el límite de 10 MB` }, { status: 400 })
+        }
+        if (totalBytes > MAX_TOTAL_ATTACHMENTS_BYTES) {
+          return NextResponse.json({ error: 'El total de adjuntos supera el límite de 20 MB' }, { status: 400 })
+        }
+        parsedAttachments.push({
+          filename: String(attachment.filename),
+          content,
+          contentType: attachment.contentType ? String(attachment.contentType) : undefined,
+          size,
+        })
+      }
     }
 
     // Enviar email
     const result = await sendEmail({
-      to: Array.isArray(to) ? to : [to],
+      to: toList,
+      cc: ccList,
       subject,
       html,
       text: text || html.replace(/<[^>]*>/g, ''),
+      attachments: parsedAttachments.map((item) => ({
+        filename: item.filename,
+        content: item.content,
+        contentType: item.contentType,
+      })),
     })
 
     if (!result.success) {
@@ -92,13 +150,22 @@ export async function POST(request: NextRequest) {
         messageId: result.messageId || `outbound-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         from: process.env.SMTP_FROM || 'contacto@quieromisas.com',
         fromName: process.env.SMTP_FROM_NAME || 'QuieroMiSAS',
-        to: Array.isArray(to) ? to : [to],
+        to: toList,
+        cc: ccList,
         subject,
         bodyHtml: html,
         bodyText: text || html.replace(/<[^>]*>/g, ''),
         direction: 'OUTBOUND',
         status: 'READ',
         tramiteId: tramiteId || null,
+        attachments: {
+          create: parsedAttachments.map((item) => ({
+            fileName: item.filename,
+            mimeType: item.contentType || 'application/octet-stream',
+            size: item.size,
+            s3Key: `outbound-inline/${result.messageId || 'unknown'}/${item.filename}`,
+          })),
+        },
       },
     })
 

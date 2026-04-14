@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X } from 'lucide-react'
 
 interface EmailDetail {
   id: string
@@ -35,6 +35,9 @@ export default function EmailDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showReply, setShowReply] = useState(false)
   const [replyText, setReplyText] = useState('')
+  const [replyTo, setReplyTo] = useState('')
+  const [replyCc, setReplyCc] = useState('')
+  const [replyAttachments, setReplyAttachments] = useState<File[]>([])
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
@@ -47,6 +50,9 @@ export default function EmailDetailPage() {
       if (!res.ok) { router.push('/dashboard/admin/emails'); return }
       const data = await res.json()
       setEmail(data)
+      if (data?.direction === 'INBOUND') {
+        setReplyTo((data.replyTo || data.from || '').toLowerCase())
+      }
     } catch {
       router.push('/dashboard/admin/emails')
     } finally {
@@ -81,6 +87,24 @@ export default function EmailDetailPage() {
     if (!replyText.trim() || !email) return
     setSending(true)
     try {
+      const attachmentsPayload = await Promise.all(
+        replyAttachments.map(async (file) => {
+          const bytes = await file.arrayBuffer()
+          let binary = ''
+          const view = new Uint8Array(bytes)
+          const chunkSize = 8192
+          for (let i = 0; i < view.length; i += chunkSize) {
+            binary += String.fromCharCode(...view.subarray(i, i + chunkSize))
+          }
+          return {
+            filename: file.name,
+            contentType: file.type || 'application/octet-stream',
+            size: file.size,
+            contentBase64: btoa(binary),
+          }
+        })
+      )
+
       const html = `
         <div style="font-family: sans-serif; font-size: 15px; line-height: 1.7; color: #374151;">
           ${replyText.split('\n').map(line => `<p style="margin: 0 0 8px 0;">${line || '&nbsp;'}</p>`).join('')}
@@ -93,12 +117,20 @@ export default function EmailDetailPage() {
       const res = await fetch(`/api/admin/emails/${id}/reply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html, text: replyText }),
+        body: JSON.stringify({
+          html,
+          text: replyText,
+          to: replyTo,
+          cc: replyCc,
+          attachments: attachmentsPayload,
+        }),
       })
 
       if (res.ok) {
         setShowReply(false)
         setReplyText('')
+        setReplyCc('')
+        setReplyAttachments([])
         fetchEmail()
       }
     } catch {
@@ -178,7 +210,7 @@ export default function EmailDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {email.direction === 'INBOUND' && email.status !== 'REPLIED' && (
+              {email.direction === 'INBOUND' && (
                 <button
                   onClick={() => setShowReply(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition cursor-pointer"
@@ -255,13 +287,15 @@ export default function EmailDetailPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Paperclip className="w-4 h-4 text-gray-400" />
               {email.attachments.map(att => (
-                <span
+                <a
                   key={att.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-medium text-gray-600"
+                  href={`/api/admin/emails/attachments/${att.id}/download`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-200 transition"
                 >
                   {att.fileName}
                   <span className="text-gray-400">({formatSize(att.size)})</span>
-                </span>
+                  <Download className="w-3 h-3 text-gray-400" />
+                </a>
               ))}
             </div>
           </div>
@@ -335,6 +369,46 @@ export default function EmailDetailPage() {
               className="w-full p-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
               autoFocus
             />
+            <div className="grid sm:grid-cols-2 gap-3 mt-3">
+              <input
+                type="text"
+                value={replyTo}
+                onChange={(e) => setReplyTo(e.target.value)}
+                placeholder="destinatario@correo.com"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                value={replyCc}
+                onChange={(e) => setReplyCc(e.target.value)}
+                placeholder="cc@correo.com, otro@correo.com"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+            </div>
+            <div className="mt-3">
+              <input
+                type="file"
+                multiple
+                onChange={(e) => setReplyAttachments(Array.from(e.target.files || []))}
+                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-gray-100 file:text-gray-700 file:cursor-pointer"
+              />
+              {replyAttachments.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {replyAttachments.map((file, idx) => (
+                    <span key={`${file.name}-${idx}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-gray-200 rounded-lg text-xs text-gray-600">
+                      {file.name}
+                      <button
+                        type="button"
+                        onClick={() => setReplyAttachments(prev => prev.filter((_, pIdx) => pIdx !== idx))}
+                        className="text-gray-400 hover:text-gray-700 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="flex justify-end gap-3 mt-3">
               <button
                 onClick={() => { setShowReply(false); setReplyText('') }}

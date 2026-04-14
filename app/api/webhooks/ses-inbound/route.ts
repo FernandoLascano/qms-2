@@ -17,7 +17,7 @@ const S3_BUCKET = 'quieromisas-emails-inbound'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
-    let message: any
+    let message: Record<string, unknown>
 
     try {
       message = JSON.parse(body)
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // Manejar confirmación de suscripción SNS
     if (message.Type === 'SubscriptionConfirmation') {
-      const subscribeUrl = message.SubscribeURL
+      const subscribeUrl = typeof message.SubscribeURL === 'string' ? message.SubscribeURL : ''
       if (subscribeUrl) {
         await fetch(subscribeUrl)
       }
@@ -36,6 +36,9 @@ export async function POST(request: NextRequest) {
 
     // Manejar notificación de email
     if (message.Type === 'Notification') {
+      if (typeof message.Message !== 'string') {
+        return NextResponse.json({ error: 'Invalid SNS message' }, { status: 400 })
+      }
       const snsMessage = JSON.parse(message.Message)
       const sesNotification = snsMessage.receipt || snsMessage
 
@@ -73,6 +76,7 @@ export async function POST(request: NextRequest) {
       let ccAddresses: string[] = []
       let replyTo = mail.commonHeaders?.replyTo?.[0] || null
       const attachmentRecords: { fileName: string; mimeType: string; size: number; s3Key: string }[] = []
+      let totalAttachmentsBytes = 0
 
       try {
         const s3Response = await s3.send(new GetObjectCommand({
@@ -127,6 +131,7 @@ export async function POST(request: NextRequest) {
                 size: att.size || att.content.length,
                 s3Key: attS3Key,
               })
+              totalAttachmentsBytes += att.size || att.content.length
             }
           }
         }
@@ -165,6 +170,8 @@ export async function POST(request: NextRequest) {
         const forwardingAddress = config?.emailForwardingAddress || 'fernandolascano@martinezwehbe.com'
 
         if (forwardingEnabled && forwardingAddress) {
+          const safeBodyText = bodyText.slice(0, 30000)
+          const allowHtmlForward = (bodyHtml?.length || 0) < 120000 && totalAttachmentsBytes < 8 * 1024 * 1024
           const forwardHtml = `
             <div style="background:#f3f4f6;padding:20px;font-family:sans-serif;">
               <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
@@ -176,9 +183,13 @@ export async function POST(request: NextRequest) {
                     <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">De:</td><td style="padding:8px 0;font-size:13px;"><strong>${fromName || fromAddress}</strong> &lt;${fromAddress}&gt;</td></tr>
                     <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Para:</td><td style="padding:8px 0;font-size:13px;">${Array.isArray(toAddresses) ? toAddresses.join(', ') : toAddresses}</td></tr>
                     <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Asunto:</td><td style="padding:8px 0;font-size:13px;"><strong>${subject}</strong></td></tr>
+                    ${attachmentRecords.length > 0 ? `<tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Adjuntos:</td><td style="padding:8px 0;font-size:13px;">${attachmentRecords.length} archivo(s), ${(totalAttachmentsBytes / 1024 / 1024).toFixed(2)} MB</td></tr>` : ''}
                   </table>
                   <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">
-                  ${bodyHtml || `<pre style="white-space:pre-wrap;font-family:sans-serif;">${bodyText}</pre>`}
+                  ${allowHtmlForward
+                    ? (bodyHtml || `<pre style="white-space:pre-wrap;font-family:sans-serif;">${safeBodyText}</pre>`)
+                    : `<p style="font-size:13px;color:#6b7280;">El contenido HTML completo no se incluyó para evitar rebotes por tamaño. Revisalo desde el panel de admin.</p><pre style="white-space:pre-wrap;font-family:sans-serif;">${safeBodyText}</pre>`
+                  }
                 </div>
               </div>
             </div>
@@ -188,7 +199,7 @@ export async function POST(request: NextRequest) {
             to: forwardingAddress,
             subject: `[FWD] ${subject} - de ${fromName || fromAddress}`,
             html: forwardHtml,
-            text: `Email reenviado\nDe: ${fromName || fromAddress} <${fromAddress}>\nAsunto: ${subject}\n\n${bodyText}`,
+            text: `Email reenviado\nDe: ${fromName || fromAddress} <${fromAddress}>\nAsunto: ${subject}\nAdjuntos: ${attachmentRecords.length}\n\n${safeBodyText}`,
           })
 
           await prisma.email.update({
