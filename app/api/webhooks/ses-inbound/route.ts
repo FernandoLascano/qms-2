@@ -170,36 +170,32 @@ export async function POST(request: NextRequest) {
         const forwardingAddress = config?.emailForwardingAddress || 'fernandolascano@martinezwehbe.com'
 
         if (forwardingEnabled && forwardingAddress) {
-          const safeBodyText = bodyText.slice(0, 30000)
-          const allowHtmlForward = (bodyHtml?.length || 0) < 120000 && totalAttachmentsBytes < 8 * 1024 * 1024
+          // Reenvio "ultra-liviano": evita rebotes por limites de tamano en casillas destino.
+          const safeBodyText = bodyText.slice(0, 5000)
+          const attachmentsLabel = `${attachmentRecords.length} archivo(s), ${(totalAttachmentsBytes / 1024 / 1024).toFixed(2)} MB`
+          const subjectShort = subject.slice(0, 180)
+          const fromLabel = `${fromName || fromAddress} <${fromAddress}>`
+          const toLabel = Array.isArray(toAddresses) ? toAddresses.join(', ') : String(toAddresses)
+
           const forwardHtml = `
-            <div style="background:#f3f4f6;padding:20px;font-family:sans-serif;">
-              <div style="max-width:600px;margin:0 auto;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-                <div style="background:#1f2937;padding:16px 24px;">
-                  <p style="color:white;margin:0;font-size:14px;">📧 Email reenviado desde QuieroMiSAS</p>
-                </div>
-                <div style="padding:24px;">
-                  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
-                    <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">De:</td><td style="padding:8px 0;font-size:13px;"><strong>${fromName || fromAddress}</strong> &lt;${fromAddress}&gt;</td></tr>
-                    <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Para:</td><td style="padding:8px 0;font-size:13px;">${Array.isArray(toAddresses) ? toAddresses.join(', ') : toAddresses}</td></tr>
-                    <tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Asunto:</td><td style="padding:8px 0;font-size:13px;"><strong>${subject}</strong></td></tr>
-                    ${attachmentRecords.length > 0 ? `<tr><td style="padding:8px 0;color:#6b7280;font-size:13px;">Adjuntos:</td><td style="padding:8px 0;font-size:13px;">${attachmentRecords.length} archivo(s), ${(totalAttachmentsBytes / 1024 / 1024).toFixed(2)} MB</td></tr>` : ''}
-                  </table>
-                  <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;">
-                  ${allowHtmlForward
-                    ? (bodyHtml || `<pre style="white-space:pre-wrap;font-family:sans-serif;">${safeBodyText}</pre>`)
-                    : `<p style="font-size:13px;color:#6b7280;">El contenido HTML completo no se incluyó para evitar rebotes por tamaño. Revisalo desde el panel de admin.</p><pre style="white-space:pre-wrap;font-family:sans-serif;">${safeBodyText}</pre>`
-                  }
-                </div>
-              </div>
+            <div style="font-family: sans-serif; color: #374151; line-height: 1.6;">
+              <p><strong>Nuevo email recibido en QuieroMiSAS</strong></p>
+              <p><strong>De:</strong> ${fromLabel}<br/>
+              <strong>Para:</strong> ${toLabel}<br/>
+              <strong>Asunto:</strong> ${subjectShort}<br/>
+              <strong>Adjuntos:</strong> ${attachmentsLabel}</p>
+              <p style="font-size: 13px; color: #6b7280;">
+                Se envia solo resumen para evitar rebotes por tamano. Revisar contenido completo y descargar adjuntos desde el panel de admin.
+              </p>
+              ${safeBodyText ? `<pre style="white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px;">${safeBodyText}</pre>` : ''}
             </div>
           `
 
           await sendEmail({
             to: forwardingAddress,
-            subject: `[FWD] ${subject} - de ${fromName || fromAddress}`,
+            subject: `[FWD] ${subjectShort} - de ${fromName || fromAddress}`,
             html: forwardHtml,
-            text: `Email reenviado\nDe: ${fromName || fromAddress} <${fromAddress}>\nAsunto: ${subject}\nAdjuntos: ${attachmentRecords.length}\n\n${safeBodyText}`,
+            text: `Nuevo email recibido en QuieroMiSAS\nDe: ${fromLabel}\nPara: ${toLabel}\nAsunto: ${subjectShort}\nAdjuntos: ${attachmentsLabel}\n\nResumen:\n${safeBodyText || '(sin cuerpo de texto)'}`,
           })
 
           await prisma.email.update({

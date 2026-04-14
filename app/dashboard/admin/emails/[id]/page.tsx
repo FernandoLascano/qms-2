@@ -52,6 +52,9 @@ export default function EmailDetailPage() {
       setEmail(data)
       if (data?.direction === 'INBOUND') {
         setReplyTo((data.replyTo || data.from || '').toLowerCase())
+      } else {
+        const fallbackRecipient = Array.isArray(data?.to) && data.to.length > 0 ? data.to[0] : ''
+        setReplyTo(String(fallbackRecipient).toLowerCase())
       }
     } catch {
       router.push('/dashboard/admin/emails')
@@ -210,7 +213,10 @@ export default function EmailDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {email.direction === 'INBOUND' && (
+              {(
+                (email.direction === 'INBOUND' && (email.replyTo || email.from)) ||
+                (email.direction === 'OUTBOUND' && email.to.length > 0)
+              ) && (
                 <button
                   onClick={() => setShowReply(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition cursor-pointer"
