@@ -14,6 +14,18 @@ const s3 = new S3Client({
 
 const S3_BUCKET = 'quieromisas-emails-inbound'
 
+/** Forma mínima del objeto `mail` en notificaciones SES (JSON en SNS). */
+type SesInboundMail = {
+  messageId?: unknown
+  source?: string
+  destination?: string[]
+  commonHeaders?: {
+    subject?: string
+    to?: string[] | string
+    replyTo?: string[]
+  }
+}
+
 /**
  * SES + acción "Publicar en SNS" en la regla de recepción: el aviso incluye el correo y
  * AWS limita ~150 KB; mensajes mayores rebotan con "Message length exceeds limit set by recipient".
@@ -105,15 +117,16 @@ export async function POST(request: NextRequest) {
       >
 
       // Extraer metadata del email
-      const mail = effectiveSnsMessage.mail as Record<string, unknown> | undefined
+      const mail = effectiveSnsMessage.mail as SesInboundMail | undefined
       if (!mail) {
         return NextResponse.json({ status: 'no mail data' })
       }
 
-      const messageId = mail.messageId
-      if (!messageId) {
+      const rawId = mail.messageId
+      if (typeof rawId !== 'string' || !rawId) {
         return NextResponse.json({ status: 'no messageId' })
       }
+      const messageId = rawId
 
       // Verificar que no sea duplicado
       const existing = await prisma.email.findUnique({
@@ -124,8 +137,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Extraer verdicts de spam/virus
-      const spamVerdict = sesNotification?.spamVerdict?.status || null
-      const virusVerdict = sesNotification?.virusVerdict?.status || null
+      const spamVerdict =
+        (sesNotification?.spamVerdict as { status?: string } | undefined)?.status ?? null
+      const virusVerdict =
+        (sesNotification?.virusVerdict as { status?: string } | undefined)?.status ?? null
 
       // Obtener email crudo de S3
       const s3Key = `emails/${messageId}`
@@ -134,7 +149,11 @@ export async function POST(request: NextRequest) {
       let fromAddress = mail.source || ''
       let fromName = ''
       let subject = mail.commonHeaders?.subject || '(Sin asunto)'
-      let toAddresses = mail.commonHeaders?.to || mail.destination || []
+      const headerTo = mail.commonHeaders?.to
+      let toAddresses =
+        (Array.isArray(headerTo) ? headerTo : headerTo ? [headerTo] : null) ||
+        mail.destination ||
+        []
       let ccAddresses: string[] = []
       let replyTo = mail.commonHeaders?.replyTo?.[0] || null
       const attachmentRecords: { fileName: string; mimeType: string; size: number; s3Key: string }[] = []
