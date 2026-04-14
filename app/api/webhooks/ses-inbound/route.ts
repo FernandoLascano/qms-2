@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
       const attachmentRecords: { fileName: string; mimeType: string; size: number; s3Key: string }[] = []
       let totalAttachmentsBytes = 0
       const sourceLower = String(mail.source || '').toLowerCase()
+      let parsedFromS3 = false
 
       try {
         const s3Response = await s3.send(new GetObjectCommand({
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
         if (s3Response.Body) {
           const rawEmail = await s3Response.Body.transformToByteArray()
           const parsed = await simpleParser(Buffer.from(rawEmail))
+          parsedFromS3 = true
 
           bodyText = parsed.text || ''
           bodyHtml = parsed.html || parsed.textAsHtml || ''
@@ -181,7 +183,7 @@ export async function POST(request: NextRequest) {
 
           // Evita rebotes de SES al remitente original cuando el inbound trae adjuntos:
           // el contenido completo queda en el panel de admin y no se hace forward SMTP.
-          if (attachmentRecords.length > 0) {
+          if (!parsedFromS3 || attachmentRecords.length > 0) {
             return NextResponse.json({ status: 'processed_without_forward', emailId: email.id })
           }
 
