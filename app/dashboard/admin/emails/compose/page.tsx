@@ -423,7 +423,7 @@ export default function ComposeEmailPage() {
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Escribí tu mensaje..."
                 rows={12}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none leading-relaxed"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none leading-relaxed"
               />
             </div>
 
