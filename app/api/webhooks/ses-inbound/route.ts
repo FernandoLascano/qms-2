@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       let replyTo = mail.commonHeaders?.replyTo?.[0] || null
       const attachmentRecords: { fileName: string; mimeType: string; size: number; s3Key: string }[] = []
       let totalAttachmentsBytes = 0
+      const sourceLower = String(mail.source || '').toLowerCase()
 
       try {
         const s3Response = await s3.send(new GetObjectCommand({
@@ -166,10 +167,18 @@ export async function POST(request: NextRequest) {
       // Auto-forward a email de trabajo
       try {
         const config = await prisma.config.findFirst()
-        const forwardingEnabled = config?.emailForwardingEnabled ?? true
+        const forwardingEnabled = config?.emailForwardingEnabled ?? false
         const forwardingAddress = config?.emailForwardingAddress || 'fernandolascano@martinezwehbe.com'
+        const isDeliveryReport =
+          sourceLower.includes('mailer-daemon@amazonses.com') ||
+          /\bdelivery status notification\b/i.test(subject)
 
         if (forwardingEnabled && forwardingAddress) {
+          // Evita loops de reportes de entrega (DSN) que se auto-rebotan.
+          if (isDeliveryReport) {
+            return NextResponse.json({ status: 'processed_dsn_no_forward', emailId: email.id })
+          }
+
           // Evita rebotes de SES al remitente original cuando el inbound trae adjuntos:
           // el contenido completo queda en el panel de admin y no se hace forward SMTP.
           if (attachmentRecords.length > 0) {

@@ -414,7 +414,7 @@ export default function EmailDetailPage() {
                 value={replySubject}
                 onChange={(e) => setReplySubject(e.target.value)}
                 placeholder="Asunto"
-                className="w-full p-3 mb-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full p-3 mb-3 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             )}
             <textarea
@@ -422,7 +422,7 @@ export default function EmailDetailPage() {
               onChange={(e) => setReplyText(e.target.value)}
               placeholder={composerMode === 'forward' ? 'Escribí el reenvío...' : 'Escribí tu respuesta...'}
               rows={6}
-              className="w-full p-4 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+              className="w-full p-4 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
               autoFocus
             />
             <div className="grid sm:grid-cols-2 gap-3 mt-3">
@@ -431,14 +431,14 @@ export default function EmailDetailPage() {
                 value={replyTo}
                 onChange={(e) => setReplyTo(e.target.value)}
                 placeholder="destinatario@correo.com"
-                className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
               <input
                 type="text"
                 value={replyCc}
                 onChange={(e) => setReplyCc(e.target.value)}
                 placeholder="cc@correo.com, otro@correo.com"
-                className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm font-medium bg-white text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
             <div className="mt-3">
