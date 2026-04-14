@@ -149,7 +149,7 @@ export default function EmailsPage() {
           <span className="text-sm font-semibold text-brand-700 uppercase tracking-wider">Correo Electrónico</span>
           <h1 className="text-2xl font-black text-gray-900 mt-1">Bandeja de Email</h1>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={fetchEmails}
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
@@ -157,6 +157,12 @@ export default function EmailsPage() {
             <RefreshCw className="w-4 h-4" />
             Actualizar
           </button>
+          <Link
+            href="/dashboard/admin/emails/plantillas"
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+          >
+            Plantillas
+          </Link>
           <Link
             href="/dashboard/admin/emails/compose"
             className="flex items-center gap-2 px-4 py-2.5 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition"

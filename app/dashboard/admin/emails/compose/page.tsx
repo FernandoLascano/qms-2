@@ -119,7 +119,7 @@ export default function ComposeEmailPage() {
   useEffect(() => {
     ;(async () => {
       try {
-        const res = await fetch('/api/admin/email-templates')
+        const res = await fetch('/api/admin/email-templates?scope=compose')
         if (res.ok) {
           const data = await res.json()
           setDbTemplates(Array.isArray(data.templates) ? data.templates : [])
@@ -435,7 +435,13 @@ export default function ComposeEmailPage() {
                   </optgroup>
                 )}
               </select>
-              <p className="text-xs text-gray-500 mt-1">Las de BD son filas activas del modelo EmailTemplate (p. ej. sembradas por migración o SQL).</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Gestioná plantillas en{' '}
+                <Link href="/dashboard/admin/emails/plantillas" className="text-brand-700 font-semibold hover:underline">
+                  Plantillas de correo
+                </Link>
+                .
+              </p>
             </div>
 
             {/* To - with autocomplete */}
