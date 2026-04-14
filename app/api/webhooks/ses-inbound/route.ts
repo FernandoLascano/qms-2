@@ -14,6 +14,14 @@ const s3 = new S3Client({
 
 const S3_BUCKET = 'quieromisas-emails-inbound'
 
+/**
+ * SES + acción "Publicar en SNS" en la regla de recepción: el aviso incluye el correo y
+ * AWS limita ~150 KB; mensajes mayores rebotan con "Message length exceeds limit set by recipient".
+ * Solución en AWS: dejar solo acción S3 en la regla y disparar el mismo topic SNS desde
+ * notificaciones de eventos del bucket (objeto creado bajo emails/) — payload chico.
+ * @see https://docs.aws.amazon.com/ses/latest/dg/receiving-email-action-sns.html
+ */
+
 /** Procesar MIME + S3 puede acercarse al límite por defecto de Vercel (10s en Hobby). */
 export const maxDuration = 60
 
@@ -47,11 +55,57 @@ export async function POST(request: NextRequest) {
       if (typeof message.Message !== 'string') {
         return NextResponse.json({ error: 'Invalid SNS message' }, { status: 400 })
       }
-      const snsMessage = JSON.parse(message.Message)
-      const sesNotification = snsMessage.receipt || snsMessage
+      const snsMessage = JSON.parse(message.Message) as Record<string, unknown>
+
+      // Evento S3 -> SNS (recomendado para adjuntos grandes; evita límite ~150KB de SES+SNS)
+      let effectiveSnsMessage: Record<string, unknown> = snsMessage
+      if (
+        Array.isArray(snsMessage.Records) &&
+        (snsMessage.Records[0] as { eventSource?: string })?.eventSource === 'aws:s3'
+      ) {
+        const rec = snsMessage.Records[0] as {
+          eventName?: string
+          s3?: { bucket?: { name?: string }; object?: { key?: string } }
+        }
+        const bucket = rec.s3?.bucket?.name
+        const rawKey = rec.s3?.object?.key
+        if (!bucket || !rawKey) {
+          return NextResponse.json({ error: 'S3 event inválido' }, { status: 400 })
+        }
+        if (bucket !== S3_BUCKET) {
+          return NextResponse.json({ status: 'ignored_wrong_bucket' })
+        }
+        const key = decodeURIComponent(String(rawKey).replace(/\+/g, ' '))
+        if (!key.startsWith('emails/')) {
+          return NextResponse.json({ status: 'ignored_not_inbound_prefix' })
+        }
+        const extractedId = key.slice('emails/'.length)
+        if (!extractedId) {
+          return NextResponse.json({ error: 'messageId vacío' }, { status: 400 })
+        }
+        const eventName = rec.eventName || ''
+        if (!String(eventName).startsWith('ObjectCreated')) {
+          return NextResponse.json({ status: 'ignored_not_object_created' })
+        }
+        console.log('[WEBHOOK_SES_INBOUND] Origen: evento S3 (adjuntos grandes OK)')
+        effectiveSnsMessage = {
+          mail: {
+            messageId: extractedId,
+            source: '',
+            destination: [],
+            commonHeaders: {},
+          },
+          receipt: {},
+        }
+      }
+
+      const sesNotification = (effectiveSnsMessage.receipt || effectiveSnsMessage) as Record<
+        string,
+        unknown
+      >
 
       // Extraer metadata del email
-      const mail = snsMessage.mail
+      const mail = effectiveSnsMessage.mail as Record<string, unknown> | undefined
       if (!mail) {
         return NextResponse.json({ status: 'no mail data' })
       }
