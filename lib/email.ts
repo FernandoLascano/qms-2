@@ -27,6 +27,8 @@ interface EmailOptions {
 }
 
 const QMS_LOGO_URL = process.env.EMAIL_LOGO_URL || 'https://www.quieromisas.com/assets/img/qms-logo-white.png'
+const QMS_PRIMARY_RED = '#991B1B'
+const QMS_PRIMARY_RED_DARK = '#7F1D1D'
 
 function withQmsSignature(html: string): string {
   // Evita duplicar firma si el HTML ya la contiene.
@@ -36,7 +38,7 @@ function withQmsSignature(html: string): string {
     <div data-qms-signature="true" style="margin-top:24px;padding-top:18px;border-top:1px solid #e5e7eb;">
       <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#111827;border-radius:12px;overflow:hidden;">
         <tr>
-          <td style="padding:16px 20px;background:linear-gradient(135deg,#DC2626 0%,#B91C1C 100%);text-align:center;">
+          <td style="padding:16px 20px;background:linear-gradient(135deg,${QMS_PRIMARY_RED} 0%,${QMS_PRIMARY_RED_DARK} 100%);text-align:center;">
             <img src="${QMS_LOGO_URL}" alt="QuieroMiSAS" width="150" style="height:auto;display:block;margin:0 auto;" />
           </td>
         </tr>
@@ -108,8 +110,8 @@ const LOGO_URL = `${BASE_URL}/assets/img/qms-logo-white.png`
 
 // Colores de la marca
 const COLORS = {
-  primary: '#DC2626',      // Rojo principal
-  primaryDark: '#B91C1C',  // Rojo oscuro
+  primary: '#991B1B',      // Rojo principal (marca)
+  primaryDark: '#7F1D1D',  // Rojo oscuro (marca)
   secondary: '#1F2937',    // Gris oscuro
   accent: '#F59E0B',       // Amarillo/dorado
   success: '#10B981',      // Verde éxito

@@ -26,6 +26,9 @@ interface UploadAttachment {
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
 const MAX_TOTAL_ATTACHMENTS_BYTES = 20 * 1024 * 1024
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_PRIMARY_RED = '#991B1B'
+const EMAIL_PRIMARY_RED_DARK = '#7F1D1D'
+const EMAIL_LOGO_URL = 'https://www.quieromisas.com/assets/img/qms-logo-white.png'
 
 const TEMPLATES: Template[] = [
   {
@@ -201,18 +204,41 @@ export default function ComposeEmailPage() {
   }
 
   const buildHtml = (text: string) => {
+    const signatureBlock = `
+      <div data-qms-signature="true" style="margin-top:24px;padding-top:18px;border-top:1px solid #e5e7eb;">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#111827;border-radius:12px;overflow:hidden;">
+          <tr>
+            <td style="padding:16px 20px;background:linear-gradient(135deg,${EMAIL_PRIMARY_RED} 0%,${EMAIL_PRIMARY_RED_DARK} 100%);text-align:center;">
+              <img src="${EMAIL_LOGO_URL}" alt="QuieroMiSAS" width="150" style="height:auto;display:block;margin:0 auto;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:14px 20px;text-align:center;">
+              <p style="margin:0;color:#E5E7EB;font-size:13px;line-height:1.6;">
+                QuieroMiSAS · Constitui tu empresa en 5 dias
+              </p>
+              <p style="margin:6px 0 0 0;color:#9CA3AF;font-size:12px;line-height:1.6;">
+                contacto@quieromisas.com · <a href="https://www.quieromisas.com" style="color:#FCA5A5;text-decoration:none;">www.quieromisas.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `
+
     return `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); padding: 24px 32px; border-radius: 16px 16px 0 0; text-align: center;">
-          <img src="https://www.quieromisas.com/assets/img/qms-logo-white.png" alt="QuieroMiSAS" width="160" style="height: auto;" />
+        <div style="background: linear-gradient(135deg, ${EMAIL_PRIMARY_RED} 0%, ${EMAIL_PRIMARY_RED_DARK} 100%); padding: 24px 32px; border-radius: 16px 16px 0 0; text-align: center;">
+          <img src="${EMAIL_LOGO_URL}" alt="QuieroMiSAS" width="160" style="height: auto;" />
         </div>
         <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none;">
           ${text.split('\n').map(line => `<p style="margin: 0 0 12px 0; font-size: 15px; line-height: 1.7; color: #374151;">${line || '&nbsp;'}</p>`).join('')}
         </div>
-        <div style="background: #1f2937; padding: 24px 32px; border-radius: 0 0 16px 16px; text-align: center;">
+        <div style="background: #1f2937; padding: 24px 32px; border-radius: 0 0 16px 16px; text-align: center; margin-bottom: 12px;">
           <p style="color: #9ca3af; font-size: 13px; margin: 0;">QuieroMiSAS · contacto@quieromisas.com</p>
           <p style="color: #6b7280; font-size: 11px; margin: 8px 0 0 0;">© ${new Date().getFullYear()} QuieroMiSAS. Todos los derechos reservados.</p>
         </div>
+        ${signatureBlock}
       </div>
     `
   }
