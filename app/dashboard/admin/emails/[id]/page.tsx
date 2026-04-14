@@ -34,7 +34,9 @@ export default function EmailDetailPage() {
   const [email, setEmail] = useState<EmailDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [showReply, setShowReply] = useState(false)
+  const [composerMode, setComposerMode] = useState<'reply' | 'forward'>('reply')
   const [replyText, setReplyText] = useState('')
+  const [replySubject, setReplySubject] = useState('')
   const [replyTo, setReplyTo] = useState('')
   const [replyCc, setReplyCc] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<File[]>([])
@@ -50,6 +52,7 @@ export default function EmailDetailPage() {
       if (!res.ok) { router.push('/dashboard/admin/emails'); return }
       const data = await res.json()
       setEmail(data)
+      setReplySubject(`Re: ${data?.subject || ''}`.replace(/^Re:\s*Re:/i, 'Re:'))
       if (data?.direction === 'INBOUND') {
         setReplyTo((data.replyTo || data.from || '').toLowerCase())
       } else {
@@ -86,7 +89,7 @@ export default function EmailDetailPage() {
     setEmail({ ...email, status: newStatus })
   }
 
-  const handleReply = async () => {
+  const handleSend = async () => {
     if (!replyText.trim() || !email) return
     setSending(true)
     try {
@@ -117,20 +120,35 @@ export default function EmailDetailPage() {
         </div>
       `
 
-      const res = await fetch(`/api/admin/emails/${id}/reply`, {
+      const endpoint = composerMode === 'forward'
+        ? '/api/admin/emails'
+        : `/api/admin/emails/${id}/reply`
+      const payload = composerMode === 'forward'
+        ? {
+            to: replyTo,
+            cc: replyCc,
+            subject: (replySubject || `Fwd: ${email.subject}`).trim(),
+            html,
+            text: replyText,
+            attachments: attachmentsPayload,
+          }
+        : {
+            html,
+            text: replyText,
+            to: replyTo,
+            cc: replyCc,
+            attachments: attachmentsPayload,
+          }
+
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          html,
-          text: replyText,
-          to: replyTo,
-          cc: replyCc,
-          attachments: attachmentsPayload,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (res.ok) {
         setShowReply(false)
+        setComposerMode('reply')
         setReplyText('')
         setReplyCc('')
         setReplyAttachments([])
@@ -218,13 +236,33 @@ export default function EmailDetailPage() {
                 (email.direction === 'OUTBOUND' && email.to.length > 0)
               ) && (
                 <button
-                  onClick={() => setShowReply(true)}
+                  onClick={() => {
+                    setComposerMode('reply')
+                    setReplySubject(`Re: ${email.subject}`.replace(/^Re:\s*Re:/i, 'Re:'))
+                    setShowReply(true)
+                  }}
                   className="flex items-center gap-2 px-4 py-2 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition cursor-pointer"
                 >
                   <Reply className="w-4 h-4" />
                   Responder
                 </button>
               )}
+              <button
+                onClick={() => {
+                  setComposerMode('forward')
+                  setReplySubject(`Fwd: ${email.subject}`.replace(/^Fwd:\s*Fwd:/i, 'Fwd:'))
+                  setReplyTo('')
+                  setReplyCc('')
+                  setReplyText(
+                    `\n\n---------- Mensaje reenviado ----------\nDe: ${email.fromName || email.from}\nPara: ${email.to.join(', ')}\nAsunto: ${email.subject}\n\n${email.bodyText || ''}`.trim()
+                  )
+                  setShowReply(true)
+                }}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                Reenviar
+              </button>
               {(email.status === 'UNREAD' || email.status === 'READ') && (
                 <button
                   onClick={handleToggleRead}
@@ -364,15 +402,27 @@ export default function EmailDetailPage() {
             <div className="flex items-center gap-2 mb-3">
               <Reply className="w-4 h-4 text-gray-400" />
               <p className="text-sm font-semibold text-gray-700">
-                Responder a {email.fromName || email.from}
+                {composerMode === 'forward'
+                  ? 'Reenviar mensaje'
+                  : `Responder a ${email.fromName || email.from}`
+                }
               </p>
             </div>
+            {composerMode === 'forward' && (
+              <input
+                type="text"
+                value={replySubject}
+                onChange={(e) => setReplySubject(e.target.value)}
+                placeholder="Asunto"
+                className="w-full p-3 mb-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              />
+            )}
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Escribí tu respuesta..."
+              placeholder={composerMode === 'forward' ? 'Escribí el reenvío...' : 'Escribí tu respuesta...'}
               rows={6}
-              className="w-full p-4 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+              className="w-full p-4 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
               autoFocus
             />
             <div className="grid sm:grid-cols-2 gap-3 mt-3">
@@ -381,14 +431,14 @@ export default function EmailDetailPage() {
                 value={replyTo}
                 onChange={(e) => setReplyTo(e.target.value)}
                 placeholder="destinatario@correo.com"
-                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
               <input
                 type="text"
                 value={replyCc}
                 onChange={(e) => setReplyCc(e.target.value)}
                 placeholder="cc@correo.com, otro@correo.com"
-                className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
             <div className="mt-3">
@@ -423,7 +473,7 @@ export default function EmailDetailPage() {
                 Cancelar
               </button>
               <button
-                onClick={handleReply}
+                onClick={handleSend}
                 disabled={!replyText.trim() || sending}
                 className="flex items-center gap-2 px-6 py-2 bg-brand-700 text-white rounded-xl text-sm font-semibold hover:bg-brand-800 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
@@ -432,7 +482,7 @@ export default function EmailDetailPage() {
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-                Enviar respuesta
+                {composerMode === 'forward' ? 'Reenviar email' : 'Enviar respuesta'}
               </button>
             </div>
           </div>

@@ -170,6 +170,12 @@ export async function POST(request: NextRequest) {
         const forwardingAddress = config?.emailForwardingAddress || 'fernandolascano@martinezwehbe.com'
 
         if (forwardingEnabled && forwardingAddress) {
+          // Evita rebotes de SES al remitente original cuando el inbound trae adjuntos:
+          // el contenido completo queda en el panel de admin y no se hace forward SMTP.
+          if (attachmentRecords.length > 0) {
+            return NextResponse.json({ status: 'processed_without_forward', emailId: email.id })
+          }
+
           // Reenvio "ultra-liviano": evita rebotes por limites de tamano en casillas destino.
           const safeBodyText = bodyText.slice(0, 5000)
           const attachmentsLabel = `${attachmentRecords.length} archivo(s), ${(totalAttachmentsBytes / 1024 / 1024).toFixed(2)} MB`

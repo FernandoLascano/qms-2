@@ -319,7 +319,7 @@ export default function ComposeEmailPage() {
                   onBlur={() => addRecipients(toInput, 'to')}
                   onFocus={() => setShowRecipients(true)}
                   placeholder="email@ejemplo.com (Enter para agregar)"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
                 {toInput && (
                   <button
@@ -387,7 +387,7 @@ export default function ComposeEmailPage() {
                 }}
                 onBlur={() => addRecipients(ccInput, 'cc')}
                 placeholder="otra@empresa.com"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
               {cc.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -411,7 +411,7 @@ export default function ComposeEmailPage() {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="Asunto del email"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
             </div>
 
@@ -423,7 +423,7 @@ export default function ComposeEmailPage() {
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Escribí tu mensaje..."
                 rows={12}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none leading-relaxed"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none leading-relaxed"
               />
             </div>
 
