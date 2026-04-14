@@ -71,7 +71,9 @@ export async function PUT(request: NextRequest) {
           precioPlanEmprendedor: body.precioPlanEmprendedor,
           precioPlanPremium: body.precioPlanPremium,
           smvm: body.smvm,
-          mantenimientoMode: body.mantenimientoMode
+          mantenimientoMode: body.mantenimientoMode,
+          emailForwardingEnabled: body.emailForwardingEnabled,
+          emailForwardingAddress: body.emailForwardingAddress
         }
       })
     }

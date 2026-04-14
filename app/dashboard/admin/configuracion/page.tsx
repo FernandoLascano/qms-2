@@ -20,7 +20,8 @@ import {
   Database,
   Send,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Forward
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -33,6 +34,8 @@ interface ConfigData {
   // Email
   emailRemitente: string
   emailNombreRemitente: string
+  emailForwardingEnabled: boolean
+  emailForwardingAddress: string
 
   // Sistema
   diasVencimientoReserva: number
@@ -70,6 +73,8 @@ export default function ConfiguracionAdminPage() {
     diasAlertaEstancamiento: 15,
     emailRemitente: 'noreply@quieromisas.com',
     emailNombreRemitente: 'QuieroMiSAS',
+    emailForwardingEnabled: true,
+    emailForwardingAddress: '',
     diasVencimientoReserva: 30,
     horasLimiteRespuesta: 48,
     mercadoPagoEnabled: true,
@@ -328,6 +333,45 @@ export default function ConfiguracionAdminPage() {
               <p className="text-sm text-gray-500">
                 Nombre que aparecerá en los correos enviados
               </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                    <Forward className="h-4 w-4 text-brand-700 shrink-0" />
+                    Reenvío de correos entrantes (SES)
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Si está activo, los mensajes que llegan a las direcciones configuradas en AWS (p. ej. contacto@) pueden reenviarse a una copia
+                    para revisión. Desactivalo para no reenviar automáticamente.
+                  </p>
+                </div>
+                <Switch
+                  checked={config.emailForwardingEnabled}
+                  onCheckedChange={(checked) =>
+                    setConfig({ ...config, emailForwardingEnabled: checked })
+                  }
+                  className="shrink-0"
+                />
+              </div>
+              {config.emailForwardingEnabled && (
+                <div className="space-y-2">
+                  <Label htmlFor="emailForwardingAddress">Email de reenvío</Label>
+                  <Input
+                    id="emailForwardingAddress"
+                    type="email"
+                    value={config.emailForwardingAddress}
+                    onChange={(e) =>
+                      setConfig({ ...config, emailForwardingAddress: e.target.value })
+                    }
+                    placeholder="tu@empresa.com"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Usado por el webhook de inbound cuando el reenvío está habilitado.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
