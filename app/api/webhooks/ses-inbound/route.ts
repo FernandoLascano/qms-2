@@ -14,6 +14,9 @@ const s3 = new S3Client({
 
 const S3_BUCKET = 'quieromisas-emails-inbound'
 
+/** Procesar MIME + S3 puede acercarse al límite por defecto de Vercel (10s en Hobby). */
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
@@ -36,6 +39,8 @@ export async function POST(request: NextRequest) {
 
     // Manejar notificación de email
     if (message.Type === 'Notification') {
+      const startedAt = Date.now()
+
       if (typeof message.Message !== 'string') {
         return NextResponse.json({ error: 'Invalid SNS message' }, { status: 400 })
       }
@@ -79,6 +84,7 @@ export async function POST(request: NextRequest) {
       let totalAttachmentsBytes = 0
       const sourceLower = String(mail.source || '').toLowerCase()
       let parsedFromS3 = false
+      let rawBytes = 0
 
       try {
         const s3Response = await s3.send(new GetObjectCommand({
@@ -88,6 +94,7 @@ export async function POST(request: NextRequest) {
 
         if (s3Response.Body) {
           const rawEmail = await s3Response.Body.transformToByteArray()
+          rawBytes = rawEmail.byteLength
           const parsed = await simpleParser(Buffer.from(rawEmail))
           parsedFromS3 = true
 
@@ -166,6 +173,20 @@ export async function POST(request: NextRequest) {
         },
       })
 
+      const logInboundDone = (outcome: string) => {
+        console.log(
+          JSON.stringify({
+            event: 'ses-inbound-done',
+            outcome,
+            messageId,
+            rawBytes,
+            attachmentCount: attachmentRecords.length,
+            parsedFromS3,
+            ms: Date.now() - startedAt,
+          })
+        )
+      }
+
       // Auto-forward a email de trabajo
       try {
         const config = await prisma.config.findFirst()
@@ -178,12 +199,14 @@ export async function POST(request: NextRequest) {
         if (forwardingEnabled && forwardingAddress) {
           // Evita loops de reportes de entrega (DSN) que se auto-rebotan.
           if (isDeliveryReport) {
+            logInboundDone('dsn_no_forward')
             return NextResponse.json({ status: 'processed_dsn_no_forward', emailId: email.id })
           }
 
           // Evita rebotes de SES al remitente original cuando el inbound trae adjuntos:
           // el contenido completo queda en el panel de admin y no se hace forward SMTP.
           if (!parsedFromS3 || attachmentRecords.length > 0) {
+            logInboundDone('no_forward_attachments_or_parse')
             return NextResponse.json({ status: 'processed_without_forward', emailId: email.id })
           }
 
@@ -219,9 +242,13 @@ export async function POST(request: NextRequest) {
             where: { id: email.id },
             data: { isForwarded: true },
           })
+          logInboundDone('forwarded_summary')
+        } else {
+          logInboundDone('forward_disabled')
         }
       } catch {
         // Forward failed - non-critical
+        logInboundDone('forward_error')
       }
 
       return NextResponse.json({ status: 'processed', emailId: email.id })
