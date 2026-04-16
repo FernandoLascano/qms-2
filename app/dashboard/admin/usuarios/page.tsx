@@ -16,6 +16,13 @@ interface Usuario {
   name: string
   email: string
   rol: string
+  referredAt?: string | null
+  referralSource?: string | null
+  partner?: {
+    id: string
+    nombre: string
+    slug: string
+  } | null
   createdAt: string
   _count: {
     tramites: number
@@ -321,6 +328,11 @@ export default function UsuariosAdminPage() {
                         }`}>
                           {usuario.rol}
                         </span>
+                        {usuario.partner && (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-brand-100 text-brand-700">
+                            Referido por {usuario.partner.nombre}
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-gray-600">{usuario.email}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">

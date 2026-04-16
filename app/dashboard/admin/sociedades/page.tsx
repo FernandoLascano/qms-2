@@ -27,7 +27,12 @@ async function SociedadesPage() {
       user: {
         select: {
           name: true,
-          email: true
+          email: true,
+          partner: {
+            select: {
+              nombre: true
+            }
+          }
         }
       }
     },
@@ -170,6 +175,11 @@ async function SociedadesPage() {
                               <span>
                                 <strong>Cliente:</strong> {sociedad.user.name}
                               </span>
+                              {sociedad.user.partner && (
+                                <span className="px-2 py-1 bg-brand-100 text-brand-700 text-xs font-semibold rounded-full">
+                                  Referido por {sociedad.user.partner.nombre}
+                                </span>
+                              )}
                               <span>
                                 <strong>Jurisdicción:</strong> {sociedad.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
                               </span>

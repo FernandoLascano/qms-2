@@ -37,6 +37,16 @@ export async function POST(request: Request) {
       )
     }
 
+    const { searchParams } = new URL(request.url)
+    const refFromQuery = searchParams.get('ref')
+    const cookieHeader = request.headers.get('cookie') || ''
+    const refFromCookie = cookieHeader
+      .split(';')
+      .map((part) => part.trim())
+      .find((part) => part.startsWith('partner_ref='))
+      ?.split('=')[1]
+    const refSlug = refFromQuery || (refFromCookie ? decodeURIComponent(refFromCookie) : null)
+
     // Verificar si el usuario ya existe
     const existingUser = await prisma.user.findUnique({
       where: { email: email.trim().toLowerCase() }
@@ -52,6 +62,17 @@ export async function POST(request: Request) {
     // Encriptar contraseña
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    let partnerId: string | null = null
+    if (refSlug) {
+      const partner = await prisma.partner.findUnique({
+        where: { slug: refSlug, activo: true },
+        select: { id: true },
+      })
+      partnerId = partner?.id || null
+    }
+
+    const autoVerifyEmail = process.env.NODE_ENV !== 'production' && process.env.DISABLE_LOCAL_AUTO_VERIFY_EMAIL !== 'true'
+
     // Crear usuario
     const user = await prisma.user.create({
       data: {
@@ -59,14 +80,19 @@ export async function POST(request: Request) {
         password: hashedPassword,
         name,
         phone: phone || null,
-        rol: "CLIENTE"
+        rol: "CLIENTE",
+        partnerId,
+        referredAt: partnerId ? new Date() : null,
+        referralSource: partnerId ? 'PARTNER_LINK' : null,
+        emailVerified: autoVerifyEmail ? new Date() : null,
       }
     })
 
     // Verificación de email + bienvenida (no fallar si hay error)
+    let verifyUrl: string | null = null
     try {
       const { token } = await createEmailVerificationToken({ userId: user.id })
-      const verifyUrl = buildEmailVerificationLink({ token })
+      verifyUrl = buildEmailVerificationLink({ token })
 
       await Promise.allSettled([
         enviarEmailVerificacionCuenta({ email: user.email, nombre: user.name, verifyUrl }),
@@ -82,13 +108,16 @@ export async function POST(request: Request) {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name
-        }
+          name: user.name,
+          emailVerified: user.emailVerified,
+        },
+        // Ayuda para pruebas locales cuando el proveedor SMTP no está configurado.
+        devVerifyUrl: process.env.NODE_ENV !== 'production' ? verifyUrl : undefined,
       },
       { status: 201 }
     )
-  } catch (error: any) {
-    if (error?.code === 'P2002') {
+  } catch (error: unknown) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
       return NextResponse.json(
         { error: "El email ya está registrado" },
         { status: 400 }

@@ -6,9 +6,10 @@ import { Menu, X } from 'lucide-react'
 
 interface NavbarProps {
   currentPage?: 'home' | 'blog'
+  hideAuthCtas?: boolean
 }
 
-export default function Navbar({ currentPage = 'home' }: NavbarProps) {
+export default function Navbar({ currentPage = 'home', hideAuthCtas = false }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -58,20 +59,22 @@ export default function Navbar({ currentPage = 'home' }: NavbarProps) {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            <Link
-              href="/login"
-              className="px-5 py-2 text-gray-700 hover:text-brand-700 transition-all duration-200 font-semibold text-sm border border-transparent hover:border-gray-200 rounded-lg"
-            >
-              Ingresar
-            </Link>
-            <Link
-              href="/registro"
-              className="bg-brand-700 text-white px-6 py-2.5 rounded-lg hover:bg-brand-800 transition-all duration-200 font-semibold text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-            >
-              Registrarse
-            </Link>
-          </div>
+          {!hideAuthCtas && (
+            <div className="hidden md:flex items-center space-x-3">
+              <Link
+                href="/login"
+                className="px-5 py-2 text-gray-700 hover:text-brand-700 transition-all duration-200 font-semibold text-sm border border-transparent hover:border-gray-200 rounded-lg"
+              >
+                Ingresar
+              </Link>
+              <Link
+                href="/registro"
+                className="bg-brand-700 text-white px-6 py-2.5 rounded-lg hover:bg-brand-800 transition-all duration-200 font-semibold text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Registrarse
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
@@ -126,22 +129,24 @@ export default function Navbar({ currentPage = 'home' }: NavbarProps) {
               >
                 FAQ
               </Link>
-              <div className="pt-3 mt-3 border-t border-gray-200 space-y-2 px-4">
-                <Link
-                  href="/login"
-                  className="block text-center px-4 py-2.5 text-gray-700 hover:text-brand-700 transition-all duration-200 font-semibold border border-gray-200 rounded-lg hover:border-brand-200"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Ingresar
-                </Link>
-                <Link
-                  href="/registro"
-                  className="block bg-brand-700 text-white px-4 py-2.5 rounded-lg hover:bg-brand-800 transition-all duration-200 font-semibold text-center shadow-md"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Registrarse
-                </Link>
-              </div>
+              {!hideAuthCtas && (
+                <div className="pt-3 mt-3 border-t border-gray-200 space-y-2 px-4">
+                  <Link
+                    href="/login"
+                    className="block text-center px-4 py-2.5 text-gray-700 hover:text-brand-700 transition-all duration-200 font-semibold border border-gray-200 rounded-lg hover:border-brand-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Ingresar
+                  </Link>
+                  <Link
+                    href="/registro"
+                    className="block bg-brand-700 text-white px-4 py-2.5 rounded-lg hover:bg-brand-800 transition-all duration-200 font-semibold text-center shadow-md"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Registrarse
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

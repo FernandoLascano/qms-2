@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { User, Home, FileText, Upload, Bell, Settings, Shield, BarChart3, Building2, BookOpen, Calendar, Users, Clock, CreditCard, Mail } from 'lucide-react'
+import { User, Home, FileText, Upload, Bell, Settings, Shield, BarChart3, Building2, BookOpen, Calendar, Users, Clock, CreditCard, Mail, Handshake } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import Link from 'next/link'
@@ -20,6 +20,7 @@ const pageInfo: Record<string, { title: string; description: string; icon: Lucid
   '/dashboard/admin/emails': { title: 'Email', description: 'Bandeja de correo electrónico', icon: Mail },
   '/dashboard/admin/consultas-chat': { title: 'Consultas Chat', description: 'Preguntas del asistente y análisis IA', icon: Bell },
   '/dashboard/admin/jurisdicciones': { title: 'Jurisdicciones', description: 'Gestión de jurisdicciones y gastos', icon: Settings },
+  '/dashboard/admin/partners': { title: 'Partners', description: 'Gestión de referidos y condiciones económicas', icon: Handshake },
   '/dashboard/admin/blog': { title: 'Blog', description: 'Gestión de artículos', icon: BookOpen },
   '/dashboard/admin/calendario': { title: 'Calendario', description: 'Eventos y recordatorios', icon: Calendar },
   '/dashboard/admin/configuracion': { title: 'Configuración Sistema', description: 'Configuración del sistema', icon: Settings },
@@ -33,7 +34,11 @@ export function Header() {
   const pathname = usePathname()
 
   // Obtener info de la página actual
-  const currentPage = pageInfo[pathname || ''] || { title: 'Dashboard', description: '', icon: Home }
+  const exactPage = pageInfo[pathname || '']
+  const matchedPrefix = Object.keys(pageInfo)
+    .filter((key) => pathname?.startsWith(key))
+    .sort((a, b) => b.length - a.length)[0]
+  const currentPage = exactPage || (matchedPrefix ? pageInfo[matchedPrefix] : { title: 'Dashboard', description: '', icon: Home })
   const PageIcon = currentPage.icon
 
   return (

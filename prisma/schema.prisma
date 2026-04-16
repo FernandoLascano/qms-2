@@ -16,6 +16,9 @@ model User {
   name          String
   phone         String?
   rol           Rol       @default(CLIENTE)
+  partnerId     String?
+  referredAt    DateTime?
+  referralSource String?
   emailVerified DateTime?
   image         String?
   createdAt     DateTime  @default(now())
@@ -31,8 +34,12 @@ model User {
   mensajes             Mensaje[]
   reunionesComoCliente Evento[]       @relation("ReunionesCliente")
   reunionesComoAdmin   Evento[]       @relation("ReunionesAdmin")
+  partner              Partner?       @relation(fields: [partnerId], references: [id])
+  partnerConversions   PartnerConversion[]
 
   emailVerificationTokens EmailVerificationToken[]
+
+  @@index([partnerId])
 }
 
 // NextAuth — OAuth / sesiones DB (JWT strategy sigue usando Account para proveedores)
@@ -90,6 +97,70 @@ enum Rol {
   CLIENTE
   ADMIN
   ABOGADO
+}
+
+enum PartnerDiscountType {
+  MONTO
+  PORCENTAJE
+}
+
+model Partner {
+  id                       String    @id @default(cuid())
+  nombre                   String
+  slug                     String    @unique
+  logoUrl                  String?
+  beneficios               Json?
+  activo                   Boolean   @default(true)
+  aplicaDescuento          Boolean   @default(false)
+  descuentoTipo            PartnerDiscountType?
+  descuentoValor           Float?
+  aplicaComision           Boolean   @default(false)
+  comisionPorcentaje       Float?
+  condicionesNotas         String?   @db.Text
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  users                    User[]
+  clicks                   ReferralClick[]
+  conversions              PartnerConversion[]
+
+  @@index([activo])
+}
+
+model ReferralClick {
+  id         String   @id @default(cuid())
+  partnerId  String
+  partner    Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  ip         String?
+  userAgent  String?
+  referrer   String?
+  landingPath String?
+  clickedAt  DateTime @default(now())
+
+  @@index([partnerId, clickedAt])
+}
+
+model PartnerConversion {
+  id                         String   @id @default(cuid())
+  partnerId                  String
+  partner                    Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  userId                     String   @unique
+  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pagoId                     String?
+  montoCobrado               Float
+  metodoPago                 String?
+  sourceType                 String
+  sourceId                   String?
+  descuentoAplicado          Boolean  @default(false)
+  descuentoTipoSnapshot      PartnerDiscountType?
+  descuentoValorSnapshot     Float?
+  comisionAplicada           Boolean  @default(false)
+  comisionPorcentajeSnapshot Float?
+  comisionEstimada           Float?
+  convertedAt                DateTime @default(now())
+
+  @@index([partnerId, convertedAt])
+  @@index([sourceType, sourceId])
 }
 
 // TRÁMITES DE CONSTITUCIÓN

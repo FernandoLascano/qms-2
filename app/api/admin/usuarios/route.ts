@@ -22,6 +22,15 @@ export async function GET() {
         name: true,
         email: true,
         rol: true,
+        referredAt: true,
+        referralSource: true,
+        partner: {
+          select: {
+            id: true,
+            nombre: true,
+            slug: true,
+          }
+        },
         createdAt: true,
         _count: {
           select: {

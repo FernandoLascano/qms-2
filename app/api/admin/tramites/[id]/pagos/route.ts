@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { registerPartnerConversion } from '@/lib/partners'
 
 interface RouteParams {
   params: Promise<{
@@ -36,7 +37,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     // Registrar pago
-    await prisma.pago.create({
+    const pago = await prisma.pago.create({
       data: {
         tramiteId: id,
         userId: tramite.userId,
@@ -47,6 +48,15 @@ export async function POST(request: Request, { params }: RouteParams) {
         metodoPago: 'TRANSFERENCIA',
         fechaPago: new Date()
       }
+    })
+
+    await registerPartnerConversion({
+      userId: tramite.userId,
+      montoCobrado: pago.monto,
+      metodoPago: pago.metodoPago,
+      sourceType: 'PAGO',
+      sourceId: pago.id,
+      pagoId: pago.id,
     })
 
     // Notificar al usuario

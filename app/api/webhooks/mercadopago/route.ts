@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { rateLimit } from '@/lib/rate-limit'
+import { registerPartnerConversion } from '@/lib/partners'
 
 // Verificar firma del webhook de Mercado Pago
 function verificarFirma(request: Request, rawBody: string): boolean {
@@ -116,6 +117,15 @@ export async function POST(request: Request) {
             estado: 'APROBADO',
             mercadoPagoPaymentId: payment.id.toString()
           }
+        })
+
+        await registerPartnerConversion({
+          userId: pago.userId,
+          montoCobrado: pago.monto,
+          metodoPago: 'MERCADO_PAGO',
+          sourceType: 'PAGO',
+          sourceId: pago.id,
+          pagoId: pago.id,
         })
 
         // Notificar al usuario

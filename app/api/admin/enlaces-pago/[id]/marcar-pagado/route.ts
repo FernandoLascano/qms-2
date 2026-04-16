@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { registerPartnerConversion } from '@/lib/partners'
 
 interface RouteParams {
   params: Promise<{
@@ -37,6 +38,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Notificar al usuario
     if (enlace.tramite) {
+      await registerPartnerConversion({
+        userId: enlace.tramite.userId,
+        montoCobrado: enlace.monto,
+        metodoPago: 'TRANSFERENCIA',
+        sourceType: 'ENLACE_PAGO',
+        sourceId: enlace.id,
+      })
+
       await prisma.notificacion.create({
         data: {
           userId: enlace.tramite.userId,
