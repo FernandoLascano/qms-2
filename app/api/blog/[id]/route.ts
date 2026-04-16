@@ -10,6 +10,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await getServerSession(authOptions)
+
     const post = await prisma.post.findUnique({
       where: { id }
     })
@@ -21,13 +23,17 @@ export async function GET(
       )
     }
 
-    // Incrementar vistas
-    await prisma.post.update({
+    // No contar vista cuando un admin abre el editor (evita inflar métricas)
+    if (session?.user?.rol === 'ADMIN') {
+      return NextResponse.json(post)
+    }
+
+    const updated = await prisma.post.update({
       where: { id },
       data: { vistas: { increment: 1 } }
     })
 
-    return NextResponse.json(post)
+    return NextResponse.json(updated)
   } catch {
     return NextResponse.json(
       { error: 'Error al obtener post' },

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ArrowLeft, Save, Eye, Plus, Trash2, Sparkles, Wand2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import { BlogHeroImageField } from '@/components/dashboard/blog-hero-image-field'
 
 interface Section {
   type: 'h2' | 'p' | 'list' | 'quote'
@@ -458,31 +459,16 @@ export default function NuevoPostPage() {
         <div className="bg-white rounded-xl shadow-md p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Imágenes</h2>
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">URL Imagen Principal</label>
-              <input
-                type="text"
-                name="imagenHero"
-                value={formData.imagenHero}
-                onChange={handleInputChange}
-                placeholder="/assets/img/nota.png"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text (SEO)</label>
-              <input
-                type="text"
-                name="imagenAlt"
-                value={formData.imagenAlt}
-                onChange={handleInputChange}
-                placeholder="Descripción de la imagen para SEO"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-              />
-            </div>
-          </div>
+          <BlogHeroImageField
+            imagenHero={formData.imagenHero}
+            imagenAlt={formData.imagenAlt}
+            onImagenHeroChange={(url) =>
+              setFormData((prev) => ({ ...prev, imagenHero: url }))
+            }
+            onImagenAltChange={(alt) =>
+              setFormData((prev) => ({ ...prev, imagenAlt: alt }))
+            }
+          />
         </div>
 
         {/* Tags */}
