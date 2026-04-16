@@ -59,6 +59,9 @@ export default function EmailsPage() {
       setEmails([])
     } finally {
       setLoading(false)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
+      }
     }
   }, [tab, statusFilter, search, page])
 

@@ -82,16 +82,24 @@ export async function POST(
     const tramite = await prisma.tramite.findFirst({
       where: {
         id,
-        OR: [
-          { userId: session.user.id },
-          { user: { rol: 'ADMIN' } }
-        ]
-      }
+        OR: [{ userId: session.user.id }, { user: { rol: 'ADMIN' } }],
+      },
+      select: { userId: true, denominacionSocial1: true },
     })
 
     if (!tramite && session.user.rol !== 'ADMIN') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
+
+    // Admin puede chatear en trámites de clientes aunque findFirst no devuelva fila (OR no matchea dueño)
+    const tramiteForNotify =
+      tramite ??
+      (session.user.rol === 'ADMIN'
+        ? await prisma.tramite.findUnique({
+            where: { id },
+            select: { userId: true, denominacionSocial1: true },
+          })
+        : null)
 
     const mensaje = await prisma.mensaje.create({
       data: {
@@ -112,25 +120,45 @@ export async function POST(
       }
     })
 
-    // Crear notificación para el destinatario
     const esAdmin = session.user.rol === 'ADMIN'
-    let destinatarioId: string | undefined = undefined
-    if (esAdmin && tramite) {
-      destinatarioId = tramite.userId
-    }
+    const textoCorto = contenido.trim().substring(0, 150)
 
-    if (destinatarioId) {
+    if (esAdmin && tramiteForNotify) {
       await prisma.notificacion.create({
         data: {
           tipo: 'MENSAJE',
-          titulo: esAdmin ? 'Nuevo mensaje del equipo' : 'Nuevo mensaje del cliente',
-          mensaje: contenido.substring(0, 100),
-          userId: destinatarioId,
+          titulo: 'Nuevo mensaje del equipo',
+          mensaje: textoCorto,
+          userId: tramiteForNotify.userId,
           tramiteId: id,
           leida: false,
-          link: esAdmin ? `/dashboard/tramites/${id}` : `/dashboard/admin/tramites/${id}`
-        }
+          link: `/dashboard/tramites/${id}`,
+        },
       })
+    } else if (!esAdmin && tramiteForNotify) {
+      const admins = await prisma.user.findMany({
+        where: { rol: 'ADMIN' },
+        select: { id: true },
+      })
+      const denom = tramiteForNotify.denominacionSocial1?.trim() || 'Trámite'
+      const titulo =
+        denom.length > 56 ? `Chat trámite: ${denom.slice(0, 53)}…` : `Chat trámite: ${denom}`
+      const nombre = session.user?.name?.trim() || 'Cliente'
+      await Promise.all(
+        admins.map((admin) =>
+          prisma.notificacion.create({
+            data: {
+              tipo: 'MENSAJE',
+              titulo,
+              mensaje: `${nombre}: ${textoCorto}`,
+              userId: admin.id,
+              tramiteId: id,
+              leida: false,
+              link: `/dashboard/admin/tramites/${id}`,
+            },
+          }),
+        ),
+      )
     }
 
     return NextResponse.json(mensaje)

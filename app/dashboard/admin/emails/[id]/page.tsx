@@ -65,6 +65,9 @@ export default function EmailDetailPage() {
       router.push('/dashboard/admin/emails')
     } finally {
       setLoading(false)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
+      }
     }
   }
 
@@ -77,6 +80,9 @@ export default function EmailDetailPage() {
       body: JSON.stringify({ status: newStatus }),
     })
     setEmail({ ...email, status: newStatus })
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
+    }
   }
 
   const handleToggleRead = async () => {
@@ -89,6 +95,9 @@ export default function EmailDetailPage() {
       body: JSON.stringify({ status: newStatus }),
     })
     setEmail({ ...email, status: newStatus })
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
+    }
   }
 
   const handleSend = async () => {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
@@ -20,6 +20,71 @@ export function Sidebar() {
   const { data: session } = useSession()
   const isAdmin = session?.user?.rol === 'ADMIN'
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [emailUnreadCount, setEmailUnreadCount] = useState(0)
+
+  const refreshEmailUnread = useCallback(() => {
+    if (!isAdmin) return
+    fetch('/api/admin/emails/unread-count')
+      .then((r) => r.json())
+      .then((d: { unreadCount?: number }) =>
+        setEmailUnreadCount(typeof d.unreadCount === 'number' ? d.unreadCount : 0),
+      )
+      .catch(() => {})
+  }, [isAdmin])
+
+  // Polling suave: 2 min, solo con pestaña visible (menos CPU del cliente y menos invocaciones serverless).
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const POLL_MS = 120_000
+    let interval: ReturnType<typeof setInterval> | null = null
+
+    const stopInterval = () => {
+      if (interval) {
+        clearInterval(interval)
+        interval = null
+      }
+    }
+
+    const startInterval = () => {
+      stopInterval()
+      interval = setInterval(() => {
+        void refreshEmailUnread()
+      }, POLL_MS)
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshEmailUnread()
+        startInterval()
+      } else {
+        stopInterval()
+      }
+    }
+
+    void refreshEmailUnread()
+    if (document.visibilityState === 'visible') {
+      startInterval()
+    }
+
+    document.addEventListener('visibilitychange', onVisibility)
+
+    const onRefresh = () => {
+      void refreshEmailUnread()
+    }
+    window.addEventListener('admin-email-unread-refresh', onRefresh)
+
+    return () => {
+      stopInterval()
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('admin-email-unread-refresh', onRefresh)
+    }
+  }, [isAdmin, refreshEmailUnread])
+
+  useEffect(() => {
+    if (!isAdmin || !pathname?.startsWith('/dashboard/admin/emails')) return
+    refreshEmailUnread()
+  }, [pathname, isAdmin, refreshEmailUnread])
 
   // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics, Sociedades, Blog, Calendario y Usuarios
   const navItems = isAdmin
@@ -109,8 +174,19 @@ export function Sidebar() {
                 isActive ? "" : "group-hover:scale-110"
               )} />
               <span className="flex-1">{item.name}</span>
+              {item.href === '/dashboard/admin/emails' && emailUnreadCount > 0 && (
+                <span
+                  className={cn(
+                    'shrink-0 min-w-[1.25rem] rounded-full px-1.5 py-0.5 text-center text-[11px] font-bold leading-none tabular-nums',
+                    isActive ? 'bg-white/25 text-white' : 'bg-red-600 text-white shadow-sm',
+                  )}
+                  title={`${emailUnreadCount} correo(s) entrante(s) sin leer`}
+                >
+                  {emailUnreadCount > 99 ? '99+' : emailUnreadCount}
+                </span>
+              )}
               {isActive && (
-                <ChevronRight className="h-4 w-4 opacity-70" />
+                <ChevronRight className="h-4 w-4 opacity-70 shrink-0" />
               )}
             </Link>
           )
