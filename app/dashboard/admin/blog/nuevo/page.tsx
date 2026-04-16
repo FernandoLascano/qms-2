@@ -6,10 +6,12 @@ import { toast } from 'sonner'
 import { ArrowLeft, Save, Eye, Plus, Trash2, Sparkles, Wand2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { BlogHeroImageField } from '@/components/dashboard/blog-hero-image-field'
+import { normalizeBlogSectionsForEditor, sectionEditorText } from '@/lib/blog-sections'
 
 interface Section {
   type: 'h2' | 'p' | 'list' | 'quote'
   text?: string
+  content?: string
   items?: string[]
 }
 
@@ -180,7 +182,7 @@ export default function NuevoPostPage() {
 
       // Rellenar el contenido
       if (data.contenido && Array.isArray(data.contenido)) {
-        setSections(data.contenido)
+        setSections(normalizeBlogSectionsForEditor(data.contenido))
       }
 
       toast.dismiss()
@@ -207,7 +209,9 @@ export default function NuevoPostPage() {
 
     try {
       const contenidoTexto = sections
-        .map(s => s.text || s.items?.join(', ') || '')
+        .map((s) =>
+          s.type === 'list' ? s.items?.join(', ') || '' : sectionEditorText(s),
+        )
         .join(' ')
         .substring(0, 500)
 
@@ -685,8 +689,13 @@ export default function NuevoPostPage() {
                   </div>
                 ) : (
                   <textarea
-                    value={section.text || ''}
-                    onChange={(e) => updateSection(index, { text: e.target.value })}
+                    value={sectionEditorText(section)}
+                    onChange={(e) =>
+                      updateSection(index, {
+                        text: e.target.value,
+                        content: undefined,
+                      })
+                    }
                     rows={section.type === 'h2' ? 1 : 3}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   />
@@ -818,14 +827,18 @@ export default function NuevoPostPage() {
                     if (section.type === 'h2') {
                       return (
                         <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4 first:mt-0">
-                          {section.text || <span className="text-gray-400 italic">[Subtítulo vacío]</span>}
+                          {sectionEditorText(section) || (
+                            <span className="text-gray-400 italic">[Subtítulo vacío]</span>
+                          )}
                         </h2>
                       )
                     }
                     if (section.type === 'p') {
                       return (
                         <p key={index} className="text-gray-700 mb-4 leading-relaxed">
-                          {section.text || <span className="text-gray-400 italic">[Párrafo vacío]</span>}
+                          {sectionEditorText(section) || (
+                            <span className="text-gray-400 italic">[Párrafo vacío]</span>
+                          )}
                         </p>
                       )
                     }
@@ -845,7 +858,9 @@ export default function NuevoPostPage() {
                     if (section.type === 'quote') {
                       return (
                         <blockquote key={index} className="border-l-4 border-brand-700 pl-4 italic text-gray-700 mb-4 my-6">
-                          {section.text || <span className="text-gray-400">[Cita vacía]</span>}
+                          {sectionEditorText(section) || (
+                            <span className="text-gray-400">[Cita vacía]</span>
+                          )}
                         </blockquote>
                       )
                     }
