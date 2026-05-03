@@ -106,7 +106,11 @@ export default function NuevoPartnerPage() {
 
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700">Logo del partner</p>
-          {logoUrl && <img src={logoUrl} alt="Logo partner" className="h-12 rounded-lg border border-gray-200" />}
+          {logoUrl && (
+            <div className="flex h-12 max-w-xs items-center justify-start rounded-lg border border-gray-200 bg-white px-2">
+              <img src={logoUrl} alt="Logo partner" className="h-full w-full object-contain object-left" />
+            </div>
+          )}
           <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:border-brand-300">
             {uploading ? 'Subiendo logo...' : 'Seleccionar logo'}
             <input

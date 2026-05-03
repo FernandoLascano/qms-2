@@ -2,6 +2,16 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
+import type { LucideIcon } from 'lucide-react'
+import {
+  BadgeCheck,
+  Gauge,
+  Headphones,
+  Puzzle,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+} from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { prisma } from '@/lib/prisma'
 import PartnerLandingClient from './PartnerLandingClient'
@@ -44,6 +54,17 @@ function formatPublicEconomicSummary(partner: {
   }
   return lines
 }
+
+/** Iconos sólo decorativos: dan ritmo visual sin etiquetas “Beneficio 1”. */
+const BENEFICIO_ICONS: LucideIcon[] = [
+  BadgeCheck,
+  ShieldCheck,
+  Sparkles,
+  Zap,
+  Headphones,
+  Puzzle,
+  Gauge,
+]
 
 function applyDiscount(basePrice: number, partner: {
   aplicaDescuento: boolean
@@ -202,11 +223,15 @@ export default async function PartnerPage({ params }: Props) {
 
             <div className="bg-gradient-to-b from-brand-50 to-white px-8 py-10 md:px-10 md:py-14">
               {partner.logoUrl && (
-                <img
-                  src={partner.logoUrl}
-                  alt={`Logo ${partner.nombre}`}
-                  className="h-16 w-auto"
-                />
+                <div className="flex h-16 w-full max-w-xs items-center justify-start sm:max-w-sm">
+                  <img
+                    src={partner.logoUrl}
+                    alt={`Logo ${partner.nombre}`}
+                    className="h-full max-h-16 w-full object-contain object-left"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
               )}
               <div className="mt-6 rounded-3xl border border-white bg-white p-6 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">
@@ -335,16 +360,32 @@ export default async function PartnerPage({ params }: Props) {
                 <h2 className="mt-2 text-3xl font-black text-gray-900">Beneficios incluidos en este convenio</h2>
               </div>
               <p className="max-w-xl text-sm text-gray-600">
-                Ademas del beneficio economico, estas ventajas ayudan a que el proceso sea mas claro, rapido y acompanado.
+                Además del beneficio económico, estas ventajas ayudan a que el proceso sea más claro, rápido y acompañado.
               </p>
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {beneficios.map((item, index) => (
-                <div key={item} className="rounded-2xl border border-gray-100 bg-gradient-to-b from-white to-gray-50 p-5">
-                  <div className="text-xs font-black uppercase tracking-[0.16em] text-brand-700">Beneficio {index + 1}</div>
-                  <div className="mt-3 text-base font-semibold text-gray-900">{item}</div>
-                </div>
-              ))}
+              {beneficios.map((item, index) => {
+                const Icon = BENEFICIO_ICONS[index % BENEFICIO_ICONS.length]
+                return (
+                  <div
+                    key={`${index}-${item}`}
+                    className="relative overflow-hidden rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50/90 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.85)] transition hover:border-brand-200/70 hover:shadow-md"
+                  >
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-brand-700/[0.06]"
+                    />
+                    <div className="relative flex gap-4">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-700/12 to-orange-400/10 text-brand-700 ring-1 ring-brand-700/10">
+                        <Icon className="h-7 w-7 stroke-[1.75]" aria-hidden />
+                      </div>
+                      <div className="min-w-0 flex-1 pt-0.5">
+                        <p className="text-base font-semibold leading-snug text-gray-900">{item}</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link

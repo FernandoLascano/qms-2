@@ -249,11 +249,13 @@ export default function PartnerDetailPage() {
               <div className="space-y-2">
                 <Label>Logo</Label>
                 {partner.logoUrl && (
-                  <img
-                    src={partner.logoUrl}
-                    alt={partner.nombre}
-                    className="h-16 rounded-lg border border-gray-200 bg-white object-contain"
-                  />
+                  <div className="flex h-16 max-w-xs items-center justify-start rounded-lg border border-gray-200 bg-white px-2">
+                    <img
+                      src={partner.logoUrl}
+                      alt={partner.nombre}
+                      className="h-full max-h-16 w-full object-contain object-left"
+                    />
+                  </div>
                 )}
                 <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:border-brand-300">
                   {uploading ? 'Subiendo logo...' : 'Seleccionar logo'}

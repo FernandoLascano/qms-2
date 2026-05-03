@@ -3,11 +3,27 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+function emptyPublicListDevFallback(publicoSolo: boolean) {
+  if (publicoSolo && process.env.NODE_ENV === 'development') {
+    return NextResponse.json([])
+  }
+  return null
+}
+
 // GET - Listar posts (público o admin)
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const publicoSolo = searchParams.get('publico') === 'true'
+
+  if (publicoSolo && !process.env.DATABASE_URL) {
+    console.warn(
+      '[GET /api/blog] DATABASE_URL no está definida; devolviendo lista vacía.'
+    )
+    const fallback = emptyPublicListDevFallback(publicoSolo)
+    if (fallback) return fallback
+  }
+
   try {
-    const { searchParams } = new URL(request.url)
-    const publicoSolo = searchParams.get('publico') === 'true'
     const destacados = searchParams.get('destacados') === 'true'
     const categoria = searchParams.get('categoria')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -33,7 +49,10 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(posts)
-  } catch {
+  } catch (err) {
+    console.error('[GET /api/blog]', err)
+    const fallback = emptyPublicListDevFallback(publicoSolo)
+    if (fallback) return fallback
     return NextResponse.json(
       { error: 'Error al obtener posts' },
       { status: 500 }
