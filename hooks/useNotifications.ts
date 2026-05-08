@@ -23,16 +23,17 @@ interface NotificationsState {
   error: string | null
 }
 
+const POLL_MS = 60_000
+
 export function useNotifications() {
   const { data: session } = useSession()
   const [state, setState] = useState<NotificationsState>({
     notifications: [],
     count: 0,
     isConnected: false,
-    error: null
+    error: null,
   })
 
-  // Ref para rastrear el conteo previo y detectar nuevas notificaciones
   const prevCountRef = useRef<number>(0)
   const isInitialLoadRef = useRef<boolean>(true)
 
@@ -41,135 +42,126 @@ export function useNotifications() {
       return
     }
 
+    let cancelled = false
+    let intervalId: ReturnType<typeof setInterval> | null = null
 
-    let eventSource: EventSource | null = null
-    let reconnectTimer: NodeJS.Timeout | null = null
+    const applyPayload = (data: {
+      type: string
+      count: number
+      notifications: Notificacion[]
+    }) => {
+      if (data.type !== 'notifications') return
 
-    const connect = () => {
-      try {
-        eventSource = new EventSource('/api/notificaciones/stream')
+      const newCount = data.count
+      const newNotifications = data.notifications
 
-        eventSource.onopen = () => {
-          setState(prev => ({ ...prev, isConnected: true, error: null }))
-        }
+      if (!isInitialLoadRef.current && newCount > prevCountRef.current) {
+        const nuevasNotificaciones = newNotifications.filter((n: Notificacion) => !n.leida)
 
-        eventSource.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data)
+        if (nuevasNotificaciones.length > 0) {
+          const ultimaNotificacion = nuevasNotificaciones[0]
 
-            if (data.type === 'notifications') {
-              const newCount = data.count
-              const newNotifications = data.notifications
-
-              // Detectar nuevas notificaciones comparando conteos
-              if (!isInitialLoadRef.current && newCount > prevCountRef.current) {
-                // Hay nuevas notificaciones, mostrar toast
-                const nuevasNotificaciones = newNotifications.filter((n: Notificacion) => !n.leida)
-
-                if (nuevasNotificaciones.length > 0) {
-                  const ultimaNotificacion = nuevasNotificaciones[0]
-
-                  toast.info(ultimaNotificacion.titulo, {
-                    description: ultimaNotificacion.mensaje,
-                    duration: 5000,
-                    action: ultimaNotificacion.link ? {
-                      label: 'Ver',
-                      onClick: () => {
-                        window.location.href = ultimaNotificacion.link || '/dashboard/notificaciones'
-                      }
-                    } : undefined
-                  })
+          toast.info(ultimaNotificacion.titulo, {
+            description: ultimaNotificacion.mensaje,
+            duration: 5000,
+            action: ultimaNotificacion.link
+              ? {
+                  label: 'Ver',
+                  onClick: () => {
+                    window.location.href = ultimaNotificacion.link || '/dashboard/notificaciones'
+                  },
                 }
-              }
-
-              // Actualizar refs
-              prevCountRef.current = newCount
-              if (isInitialLoadRef.current) {
-                isInitialLoadRef.current = false
-              }
-
-              setState(prev => ({
-                ...prev,
-                notifications: data.notifications,
-                count: data.count
-              }))
-            }
-          } catch {
-          }
+              : undefined,
+          })
         }
+      }
 
-        eventSource.onerror = () => {
-          setState(prev => ({
+      prevCountRef.current = newCount
+      if (isInitialLoadRef.current) {
+        isInitialLoadRef.current = false
+      }
+
+      setState((prev) => ({
+        ...prev,
+        notifications: data.notifications,
+        count: data.count,
+        isConnected: true,
+        error: null,
+      }))
+    }
+
+    const poll = async () => {
+      if (cancelled || (typeof document !== 'undefined' && document.hidden)) return
+
+      try {
+        const res = await fetch('/api/notificaciones/poll', { cache: 'no-store' })
+        if (!res.ok) {
+          setState((prev) => ({
             ...prev,
             isConnected: false,
-            error: 'Error de conexión'
+            error: res.status === 401 ? null : 'Error al cargar notificaciones',
           }))
-
-          eventSource?.close()
-
-          // Reconectar después de 30 segundos con backoff exponencial
-          // Esto reduce la carga en el servidor cuando hay problemas
-          const reconnectDelay = Math.min(30000, 5000 * Math.pow(2, 0)) // Máximo 30s
-          reconnectTimer = setTimeout(() => {
-            connect()
-          }, reconnectDelay)
+          return
         }
-      } catch (error) {
-        // EventSource creation failed
+        const data = await res.json()
+        applyPayload(data)
+      } catch {
+        setState((prev) => ({ ...prev, isConnected: false, error: 'Error de conexión' }))
       }
     }
 
-    connect()
+    void poll()
+    intervalId = setInterval(() => void poll(), POLL_MS)
 
-    // Limpiar al desmontar
+    const onVisibility = () => {
+      if (!document.hidden) void poll()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
     return () => {
-      eventSource?.close()
-      if (reconnectTimer) {
-        clearTimeout(reconnectTimer)
-      }
-      // Resetear refs al desmontar
+      cancelled = true
+      if (intervalId) clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', onVisibility)
       prevCountRef.current = 0
       isInitialLoadRef.current = true
     }
   }, [session?.user])
 
-  // Marcar notificación como leída
   const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch(`/api/notificaciones/${notificationId}/marcar-leida`, {
-        method: 'PATCH'
+        method: 'PATCH',
       })
 
       if (response.ok) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          notifications: prev.notifications.map(n =>
+          notifications: prev.notifications.map((n) =>
             n.id === notificationId ? { ...n, leida: true } : n
           ),
-          count: Math.max(0, prev.count - 1)
+          count: Math.max(0, prev.count - 1),
         }))
       }
-    } catch (error) {
-      console.error('Error al marcar notificación como leída:', error)
+    } catch {
+      // ignore
     }
   }, [])
 
-  // Marcar todas como leídas
   const markAllAsRead = useCallback(async () => {
     try {
       const response = await fetch('/api/notificaciones/marcar-todas-leidas', {
-        method: 'PATCH'
+        method: 'PATCH',
       })
 
       if (response.ok) {
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
-          notifications: prev.notifications.map(n => ({ ...n, leida: true })),
-          count: 0
+          notifications: prev.notifications.map((n) => ({ ...n, leida: true })),
+          count: 0,
         }))
       }
-    } catch (error) {
-      console.error('Error al marcar todas las notificaciones como leídas:', error)
+    } catch {
+      // ignore
     }
   }, [])
 
@@ -179,6 +171,6 @@ export function useNotifications() {
     isConnected: state.isConnected,
     error: state.error,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
   }
 }
