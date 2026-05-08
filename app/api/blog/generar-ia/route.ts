@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { rateLimit, rateLimitLong } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,11 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    const rl1 = await rateLimit(request, 'blog_generar_ia', 12, '1 h', session.user.id)
+    if (rl1) return rl1
+    const rl2 = await rateLimitLong(request, 'blog_generar_ia_daily', 60, '1 d', session.user.id)
+    if (rl2) return rl2
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {

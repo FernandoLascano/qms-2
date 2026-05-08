@@ -32,7 +32,13 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const uploaded = await uploadToSupabase(buffer, 'blog/hero', file.name, file.type || 'image/jpeg')
+    const uploaded = await uploadToSupabase(
+      buffer,
+      'blog/hero',
+      file.name,
+      file.type || 'image/jpeg',
+      'public'
+    )
 
     if (!uploaded?.url) {
       return NextResponse.json({ error: 'No se pudo subir la imagen' }, { status: 500 })

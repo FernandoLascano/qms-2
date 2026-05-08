@@ -26,6 +26,26 @@ function verificarAutorizacion(request: Request) {
   }
 }
 
+const EMAIL_CONCURRENCY = 5
+
+/** Cola con concurrencia fija (menos picos de SMTP / Fluid). */
+async function runWithConcurrency<T>(
+  items: readonly T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>
+): Promise<void> {
+  const queue = [...items]
+  const n = Math.max(1, Math.min(concurrency, queue.length || 1))
+  const runners = Array.from({ length: n }, async () => {
+    while (queue.length) {
+      const next = queue.shift()
+      if (next === undefined) break
+      await worker(next)
+    }
+  })
+  await Promise.allSettled(runners)
+}
+
 export async function GET(request: Request) {
   // Verificar autorización
   if (!verificarAutorizacion(request)) {
@@ -87,7 +107,7 @@ export async function GET(request: Request) {
       }
     })
 
-    for (const enlace of enlacesPendientes) {
+    await runWithConcurrency(enlacesPendientes, EMAIL_CONCURRENCY, async (enlace) => {
       const diasPendientes = Math.floor(
         (Date.now() - enlace.createdAt.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -102,7 +122,6 @@ export async function GET(request: Request) {
           enlace.tramiteId
         )
 
-        // Marcar que se envió el recordatorio
         if (diasPendientes >= 7) {
           await prisma.enlacePago.update({
             where: { id: enlace.id },
@@ -119,7 +138,7 @@ export async function GET(request: Request) {
       } catch {
         resultados.errores.push(`Pago ${enlace.id}: error al enviar recordatorio`)
       }
-    }
+    })
 
     // Pagos de Mercado Pago pendientes
     const pagosMPPendientes = await prisma.pago.findMany({
@@ -155,7 +174,7 @@ export async function GET(request: Request) {
       }
     })
 
-    for (const pago of pagosMPPendientes) {
+    await runWithConcurrency(pagosMPPendientes, EMAIL_CONCURRENCY, async (pago) => {
       const diasPendientes = Math.floor(
         (Date.now() - pago.createdAt.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -170,7 +189,6 @@ export async function GET(request: Request) {
           pago.tramiteId
         )
 
-        // Marcar que se envió el recordatorio
         if (diasPendientes >= 7) {
           await prisma.pago.update({
             where: { id: pago.id },
@@ -187,7 +205,7 @@ export async function GET(request: Request) {
       } catch {
         resultados.errores.push(`Pago MP ${pago.id}: error al enviar recordatorio`)
       }
-    }
+    })
 
     // ==========================================
     // 2. RECORDATORIOS DE DOCUMENTOS RECHAZADOS
@@ -214,7 +232,7 @@ export async function GET(request: Request) {
       }
     })
 
-    for (const documento of documentosRechazados) {
+    await runWithConcurrency(documentosRechazados, EMAIL_CONCURRENCY, async (documento) => {
       const diasPendientes = Math.floor(
         (Date.now() - documento.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -229,7 +247,6 @@ export async function GET(request: Request) {
           documento.tramiteId
         )
 
-        // Marcar que se envió el recordatorio
         await prisma.documento.update({
           where: { id: documento.id },
           data: { recordatorioEnviado: true }
@@ -239,7 +256,7 @@ export async function GET(request: Request) {
       } catch {
         resultados.errores.push(`Documento ${documento.id}: error al enviar recordatorio`)
       }
-    }
+    })
 
     // ==========================================
     // 3. RECORDATORIOS DE TRÁMITES ESTANCADOS
@@ -267,12 +284,11 @@ export async function GET(request: Request) {
       }
     })
 
-    for (const tramite of tramitesEstancados) {
+    await runWithConcurrency(tramitesEstancados, EMAIL_CONCURRENCY, async (tramite) => {
       const diasEstancado = Math.floor(
         (Date.now() - tramite.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
       )
 
-      // Determinar etapa actual
       let etapaActual = 'En proceso'
       if (!tramite.denominacionReservada) {
         etapaActual = 'Reserva de denominación'
@@ -297,7 +313,6 @@ export async function GET(request: Request) {
           tramite.id
         )
 
-        // Marcar que se envió el recordatorio
         await prisma.tramite.update({
           where: { id: tramite.id },
           data: { recordatorioEstancado: true }
@@ -307,7 +322,7 @@ export async function GET(request: Request) {
       } catch {
         resultados.errores.push(`Trámite estancado ${tramite.id}: error al enviar recordatorio`)
       }
-    }
+    })
 
     // ==========================================
     // 4. ALERTAS DE DENOMINACIONES POR VENCER
@@ -337,10 +352,9 @@ export async function GET(request: Request) {
       }
     })
 
-    for (const tramite of tramitesConDenominacionPorVencer) {
-      if (!tramite.denominacionReservadaFecha) continue
+    await runWithConcurrency(tramitesConDenominacionPorVencer, EMAIL_CONCURRENCY, async (tramite) => {
+      if (!tramite.denominacionReservadaFecha) return
 
-      // Calcular días desde la reserva (asumiendo 30 días de vigencia)
       const diasDesdeReserva = Math.floor(
         (Date.now() - tramite.denominacionReservadaFecha.getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -348,12 +362,11 @@ export async function GET(request: Request) {
 
       if (diasParaVencer <= 5 && diasParaVencer > 0) {
         try {
-          // Enviar alerta al admin (necesitamos el email del admin)
           const adminUsers = await prisma.user.findMany({
             where: { rol: 'ADMIN' }
           })
 
-          for (const admin of adminUsers) {
+          await runWithConcurrency(adminUsers, EMAIL_CONCURRENCY, async (admin) => {
             await enviarAlertaDenominacion(
               admin.email,
               admin.name,
@@ -361,9 +374,8 @@ export async function GET(request: Request) {
               diasParaVencer,
               tramite.id
             )
-          }
+          })
 
-          // Marcar que se envió la alerta
           await prisma.tramite.update({
             where: { id: tramite.id },
             data: { alertaDenominacionEnviada: true }
@@ -374,7 +386,7 @@ export async function GET(request: Request) {
           resultados.errores.push(`Denominación ${tramite.id}: error al enviar alerta`)
         }
       }
-    }
+    })
 
     return NextResponse.json({
       success: true,

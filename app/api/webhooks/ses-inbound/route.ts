@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { simpleParser } from 'mailparser'
 import { sendEmail } from '@/lib/email'
+import { assertAllowedSubscribeUrl, verifyAwsSnsMessage } from '@/lib/sns-verify'
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -39,9 +40,6 @@ export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   try {
-    // Buscar en Vercel Logs: WEBHOOK_SES_INBOUND (si no aparece, SNS no está pegándole a esta URL)
-    console.log('[WEBHOOK_SES_INBOUND] POST recibido')
-
     const body = await request.text()
     let message: Record<string, unknown>
 
@@ -51,13 +49,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
+    const snsType = message.Type
+    if (
+      snsType !== 'SubscriptionConfirmation' &&
+      snsType !== 'Notification' &&
+      snsType !== 'UnsubscribeConfirmation'
+    ) {
+      return NextResponse.json({ error: 'Tipo SNS no soportado' }, { status: 400 })
+    }
+
+    const verified = await verifyAwsSnsMessage(message)
+    if (!verified.ok) {
+      console.warn('[WEBHOOK_SES_INBOUND] Firma SNS inválida:', verified.reason)
+      return NextResponse.json({ error: 'Firma SNS inválida' }, { status: 403 })
+    }
+
     // Manejar confirmación de suscripción SNS
     if (message.Type === 'SubscriptionConfirmation') {
       const subscribeUrl = typeof message.SubscribeURL === 'string' ? message.SubscribeURL : ''
-      if (subscribeUrl) {
-        await fetch(subscribeUrl)
+      if (subscribeUrl && assertAllowedSubscribeUrl(subscribeUrl)) {
+        await fetch(subscribeUrl, { method: 'GET', cache: 'no-store' })
       }
       return NextResponse.json({ status: 'confirmed' })
+    }
+
+    if (message.Type === 'UnsubscribeConfirmation') {
+      return NextResponse.json({ status: 'unsubscribe_ack' })
     }
 
     // Manejar notificación de email

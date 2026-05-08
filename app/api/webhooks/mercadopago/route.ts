@@ -10,9 +10,8 @@ function verificarFirma(request: Request, rawBody: string): boolean {
   const xRequestId = request.headers.get('x-request-id')
   const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET
 
-  // Si no hay secret configurado, validar el pago contra la API de MP directamente
   if (!webhookSecret) {
-    return true // Fallback: se valida abajo consultando la API de MP
+    return process.env.NODE_ENV !== 'production'
   }
 
   if (!xSignature || !xRequestId) {
@@ -50,6 +49,13 @@ function verificarFirma(request: Request, rawBody: string): boolean {
 
 export async function POST(request: Request) {
   try {
+    if (process.env.NODE_ENV === 'production' && !process.env.MERCADOPAGO_WEBHOOK_SECRET) {
+      return NextResponse.json(
+        { error: 'MERCADOPAGO_WEBHOOK_SECRET requerido en producción' },
+        { status: 503 }
+      )
+    }
+
     const rateLimitResponse = await rateLimit(request, 'webhook', 30, '1 m')
     if (rateLimitResponse) return rateLimitResponse
 

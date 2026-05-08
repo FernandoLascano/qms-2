@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Clock, Tag, ArrowLeft, ArrowRight, User } from 'lucide-react'
 import { motion } from 'framer-motion'
@@ -110,11 +111,14 @@ export default function BlogPostContent({ post }: { post: PostData }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="rounded-2xl overflow-hidden shadow-xl">
-            <img
+          <div className="rounded-2xl overflow-hidden shadow-xl relative aspect-[16/9] w-full max-h-[480px]">
+            <Image
               src={post.imagenHero}
               alt={post.imagenAlt || post.titulo}
-              className="w-full h-auto object-cover"
+              fill
+              sizes="(max-width: 896px) 100vw, 896px"
+              className="object-cover"
+              priority
             />
           </div>
         </motion.div>

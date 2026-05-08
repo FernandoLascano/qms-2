@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { rateLimit, rateLimitLong } from '@/lib/rate-limit'
 
 // GET - Listar consultas del chat con paginación
 export async function GET(request: NextRequest) {
@@ -53,6 +54,11 @@ export async function POST(request: NextRequest) {
     if (!session || session.user.rol !== 'ADMIN') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
+
+    const rl1 = await rateLimit(request, 'consultas_chat_ia', 6, '1 h', session.user.id)
+    if (rl1) return rl1
+    const rl2 = await rateLimitLong(request, 'consultas_chat_ia_daily', 24, '1 d', session.user.id)
+    if (rl2) return rl2
 
     const apiKey = process.env.ANTHROPIC_API_KEY
     if (!apiKey) {

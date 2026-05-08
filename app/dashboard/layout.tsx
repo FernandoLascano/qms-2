@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { Header } from '@/components/dashboard/header'
+import { SessionGate } from '@/components/auth/SessionGate'
 
 export default async function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default async function DashboardLayout({
   }
 
   return (
+    <SessionGate>
     <div className="flex h-screen overflow-hidden bg-gray-100">
       {/* Sidebar */}
       <Sidebar />
@@ -30,5 +32,6 @@ export default async function DashboardLayout({
         </main>
       </div>
     </div>
+    </SessionGate>
   )
 }

@@ -7,6 +7,16 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const slugs = await prisma.post.findMany({
+    where: { publicado: true },
+    select: { slug: true },
+  })
+  return slugs.map((p) => ({ slug: p.slug }))
+}
+
 // Generar metadata dinámica para SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params

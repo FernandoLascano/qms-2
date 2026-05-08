@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET - Obtener un post por slug
@@ -7,12 +9,15 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    const isAdmin = session?.user?.rol === 'ADMIN'
     const { slug } = await params
+
     const post = await prisma.post.findUnique({
-      where: { slug }
+      where: { slug },
     })
 
-    if (!post) {
+    if (!post || (!isAdmin && !post.publicado)) {
       return NextResponse.json(
         { error: 'Post no encontrado' },
         { status: 404 }

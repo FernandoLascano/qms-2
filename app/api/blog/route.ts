@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { blogPostCreateSchema } from '@/lib/schemas/blog'
+import DOMPurify from 'isomorphic-dompurify'
 
 function emptyPublicListDevFallback(publicoSolo: boolean) {
   if (publicoSolo && process.env.NODE_ENV === 'development') {
@@ -9,6 +11,25 @@ function emptyPublicListDevFallback(publicoSolo: boolean) {
   }
   return null
 }
+
+const publicListSelect = {
+  id: true,
+  titulo: true,
+  descripcion: true,
+  slug: true,
+  categoria: true,
+  tags: true,
+  autor: true,
+  lectura: true,
+  imagenHero: true,
+  imagenAlt: true,
+  fechaPublicacion: true,
+  destacado: true,
+  publicado: true,
+  vistas: true,
+  createdAt: true,
+  updatedAt: true,
+} as const
 
 // GET - Listar posts (público o admin)
 export async function GET(request: NextRequest) {
@@ -26,9 +47,10 @@ export async function GET(request: NextRequest) {
   try {
     const destacados = searchParams.get('destacados') === 'true'
     const categoria = searchParams.get('categoria')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const rawLimit = parseInt(searchParams.get('limit') || '10', 10)
+    const limit = Math.min(Math.max(Number.isFinite(rawLimit) ? rawLimit : 10, 1), 50)
 
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (publicoSolo) {
       where.publicado = true
@@ -45,10 +67,18 @@ export async function GET(request: NextRequest) {
     const posts = await prisma.post.findMany({
       where,
       orderBy: { fechaPublicacion: 'desc' },
-      take: limit
+      take: limit,
+      select: publicoSolo ? publicListSelect : undefined,
     })
 
-    return NextResponse.json(posts)
+    const res = NextResponse.json(posts)
+    if (publicoSolo) {
+      res.headers.set(
+        'Cache-Control',
+        'public, s-maxage=300, stale-while-revalidate=600'
+      )
+    }
+    return res
   } catch (err) {
     console.error('[GET /api/blog]', err)
     const fallback = emptyPublicListDevFallback(publicoSolo)
@@ -73,27 +103,40 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    const parsed = blogPostCreateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Datos inválidos', details: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
+
+    const d = parsed.data
+    const metaDescription =
+      d.metaDescription != null
+        ? DOMPurify.sanitize(d.metaDescription, { ALLOWED_TAGS: [] })
+        : null
 
     const post = await prisma.post.create({
       data: {
-        titulo: body.titulo,
-        slug: body.slug,
-        descripcion: body.descripcion,
-        contenido: body.contenido,
-        categoria: body.categoria,
-        tags: body.tags || [],
-        autor: body.autor || session.user.name,
-        lectura: body.lectura || '5 min',
-        imagenHero: body.imagenHero,
-        imagenAlt: body.imagenAlt,
-        metaTitle: body.metaTitle,
-        metaDescription: body.metaDescription,
-        keywords: body.keywords || [],
-        canonical: body.canonical,
-        publicado: body.publicado || false,
-        destacado: body.destacado || false,
-        fechaPublicacion: body.fechaPublicacion || new Date()
-      }
+        titulo: d.titulo,
+        slug: d.slug,
+        descripcion: d.descripcion,
+        contenido: d.contenido as object,
+        categoria: d.categoria,
+        tags: d.tags ?? [],
+        autor: d.autor ?? session.user.name,
+        lectura: d.lectura ?? '5 min',
+        imagenHero: d.imagenHero,
+        imagenAlt: d.imagenAlt,
+        metaTitle: d.metaTitle,
+        metaDescription,
+        keywords: d.keywords ?? [],
+        canonical: d.canonical,
+        publicado: d.publicado ?? false,
+        destacado: d.destacado ?? false,
+        fechaPublicacion: d.fechaPublicacion ?? new Date(),
+      },
     })
 
     return NextResponse.json(post)

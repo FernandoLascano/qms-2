@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { slugifyPartner, validatePartnerEconomicConfig } from '@/lib/partners'
 import { PartnerDiscountType } from '@prisma/client'
+import { partnerCreateBodySchema } from '@/lib/schemas/partner'
 
 function parseBeneficios(value: unknown): string[] {
   if (!value) return []
@@ -54,27 +55,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const nombre = String(body.nombre || '').trim()
-    const slugRaw = String(body.slug || nombre).trim()
+    const raw = await request.json()
+    const parsed = partnerCreateBodySchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Datos inválidos', details: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
+    const body = parsed.data
+
+    const nombre = body.nombre
+    const slugRaw = (body.slug || nombre).trim()
     const slug = slugifyPartner(slugRaw)
 
-    if (!nombre) {
-      return NextResponse.json({ error: 'El nombre es obligatorio.' }, { status: 400 })
-    }
     if (!slug) {
       return NextResponse.json({ error: 'Slug inválido.' }, { status: 400 })
     }
 
     const aplicaDescuento = Boolean(body.aplicaDescuento)
     const aplicaComision = Boolean(body.aplicaComision)
-    const descuentoTipo = body.descuentoTipo ? String(body.descuentoTipo) as PartnerDiscountType : null
-    const descuentoValor = body.descuentoValor !== undefined && body.descuentoValor !== null
-      ? Number(body.descuentoValor)
-      : null
-    const comisionPorcentaje = body.comisionPorcentaje !== undefined && body.comisionPorcentaje !== null
-      ? Number(body.comisionPorcentaje)
-      : null
+    const descuentoTipo = body.descuentoTipo ?? null
+    const descuentoValor = body.descuentoValor ?? null
+    const comisionPorcentaje = body.comisionPorcentaje ?? null
 
     const validationError = validatePartnerEconomicConfig({
       aplicaDescuento,
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
       data: {
         nombre,
         slug,
-        logoUrl: body.logoUrl ? String(body.logoUrl) : null,
+        logoUrl: body.logoUrl ?? null,
         beneficios,
         activo: body.activo === undefined ? true : Boolean(body.activo),
         aplicaDescuento,

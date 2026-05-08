@@ -4,6 +4,25 @@
  * Actualizá este archivo para "entrenar" al asistente con información nueva.
  */
 
+/** Versión compacta para el system prompt (menos tokens por request). El detalle completo queda en KNOWLEDGE_BASE. */
+export const KNOWLEDGE_BASE_COMPACT = `
+# QuieroMiSAS (resumen)
+- Plataforma 100% online para constituir S.A.S. en Argentina (Grupo MW). ~5 días hábiles. Contacto: contacto@quieromisas.com, +54 9 351 428 4037.
+- Jurisdicción principal: Córdoba (IPJ). CABA/IGJ puede no estar disponible según momento.
+- Cualquier provincia puede constituir en Córdoba; la SAS opera en todo el país. Sede social Córdoba; domicilio fiscal donde corresponda.
+
+# S.A.S. (resumen)
+- Ley 27.349 / Decreto 27/2018. 1 socio posible (unipersonal). Capital mínimo ~2 SMVM; integrar 25% al constituir, resto hasta 2 años.
+- vs S.R.L./S.A.: más rápida y económica, 100% digital. Recomendá S.A.S. para emprendedores.
+
+# Proceso y docs (resumen)
+- DNI socios, CUIT/CUIL, domicilio social, CBU; todo digital. Pasos: datos → reserva nombre → cuenta/capital → firma → presentación → CUIT/matricula.
+- Libros digitales obligatorios. Impuestos posteriores: IVA, IIBB, Ganancias (asesoramiento contable disponible).
+
+# Reglas de respuesta
+- No inventar: si falta data, derivar a contacto/teléfono. Español rioplatense, breve, CTA suave.
+`
+
 export const KNOWLEDGE_BASE = `
 # QUIEROMISAS - ASISTENTE DE CONSULTAS S.A.S.
 

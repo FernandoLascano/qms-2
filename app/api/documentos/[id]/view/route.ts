@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { extractDocumentsObjectPath, getSignedUrlSupabase } from '@/lib/supabase-storage'
 
 export async function GET(
   req: NextRequest,
@@ -15,40 +16,39 @@ export async function GET(
 
     const { id } = await params
 
-    // Obtener el documento
     const documento = await prisma.documento.findFirst({
       where: {
         id,
-        OR: [
-          { userId: session.user.id },
-          { tramite: { userId: session.user.id } }
-        ]
+        OR: [{ userId: session.user.id }, { tramite: { userId: session.user.id } }],
       },
       include: {
-        tramite: true
-      }
+        tramite: true,
+      },
     })
 
-    // Si es admin, puede ver cualquier documento
     if (!documento && session.user.rol !== 'ADMIN') {
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 })
     }
 
-    if (!documento) {
-      const docAdmin = await prisma.documento.findUnique({
-        where: { id }
-      })
-      
-      if (!docAdmin) {
-        return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 })
-      }
+    const doc = documento
+      ? documento
+      : await prisma.documento.findUnique({
+          where: { id },
+        })
 
-      // Redirigir a la URL de Cloudinary
-      return NextResponse.redirect(docAdmin.url)
+    if (!doc) {
+      return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 })
     }
 
-    // Redirigir a la URL de Cloudinary
-    return NextResponse.redirect(documento.url)
+    const resolved = extractDocumentsObjectPath(doc.url)
+    if (resolved) {
+      const signed = await getSignedUrlSupabase(resolved.path, 300, resolved.bucket)
+      if (signed) {
+        return NextResponse.redirect(signed)
+      }
+    }
+
+    return NextResponse.redirect(doc.url)
   } catch {
     return NextResponse.json(
       { error: 'Error al obtener documento' },
@@ -56,4 +56,3 @@ export async function GET(
     )
   }
 }
-

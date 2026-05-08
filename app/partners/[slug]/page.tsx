@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
@@ -18,6 +19,16 @@ import PartnerLandingClient from './PartnerLandingClient'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+export const revalidate = 300
+
+export async function generateStaticParams() {
+  const partners = await prisma.partner.findMany({
+    where: { activo: true },
+    select: { slug: true },
+  })
+  return partners.map((p) => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -223,13 +234,14 @@ export default async function PartnerPage({ params }: Props) {
 
             <div className="bg-gradient-to-b from-brand-50 to-white px-8 py-10 md:px-10 md:py-14">
               {partner.logoUrl && (
-                <div className="flex h-16 w-full max-w-xs items-center justify-start sm:max-w-sm">
-                  <img
+                <div className="relative flex h-16 w-full max-w-xs items-center justify-start sm:max-w-sm">
+                  <Image
                     src={partner.logoUrl}
                     alt={`Logo ${partner.nombre}`}
+                    width={320}
+                    height={64}
                     className="h-full max-h-16 w-full object-contain object-left"
-                    loading="lazy"
-                    decoding="async"
+                    sizes="(max-width: 640px) 80vw, 320px"
                   />
                 </div>
               )}

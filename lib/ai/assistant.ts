@@ -1,5 +1,5 @@
 import { createAnthropicClient, getAnthropicModel, textFromMessage } from './anthropic'
-import { KNOWLEDGE_BASE } from './knowledge-base'
+import { KNOWLEDGE_BASE_COMPACT } from './knowledge-base'
 
 const SYSTEM_PROMPT = `Sos el Asistente QMS, asistente virtual de QuieroMiSAS, plataforma para constituir S.A.S. en Argentina.
 
@@ -17,7 +17,7 @@ const SYSTEM_PROMPT = `Sos el Asistente QMS, asistente virtual de QuieroMiSAS, p
 - Cualquier consulta que pueda estar relacionada con emprender, crear una empresa, o formalizar un negocio en Argentina
 
 ## BASE DE CONOCIMIENTO:
-${KNOWLEDGE_BASE}
+${KNOWLEDGE_BASE_COMPACT}
 
 ## REGLAS:
 1. RESPONDÉ siempre que la pregunta esté remotamente relacionada con empresas, SAS, sociedades, emprendimientos o el servicio. Interpretá con amplitud. Si alguien dice "soy de Chubut" o "estoy en Mendoza", está preguntando si puede constituir desde ahí → RESPONDÉ usando la info de jurisdicciones.

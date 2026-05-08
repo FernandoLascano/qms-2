@@ -44,21 +44,37 @@ function getIp(request: Request): string {
  * Aplica rate limiting a un request.
  * Retorna null si el request es permitido, o un NextResponse 429 si fue limitado.
  */
+function hasRedisEnv(): boolean {
+  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
+}
+
+function rateLimitUnavailableResponse(): NextResponse {
+  return NextResponse.json(
+    { error: 'Servicio temporalmente no disponible (rate limit).' },
+    { status: 503 }
+  )
+}
+
 export async function rateLimit(
   request: Request,
   name: string,
   requests: number = 10,
-  window: Duration = '1 m'
+  window: Duration = '1 m',
+  /** Sufijo opcional (ej. userId) para no compartir cuota solo por IP */
+  keySuffix?: string
 ): Promise<NextResponse | null> {
-  // Skip si no está configurado
-  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  if (!hasRedisEnv()) {
+    if (process.env.NODE_ENV === 'production') {
+      return rateLimitUnavailableResponse()
+    }
     return null
   }
 
   try {
     const limiter = getLimiter(name, requests, window)
     const ip = getIp(request)
-    const { success, limit, remaining, reset } = await limiter.limit(ip)
+    const id = keySuffix ? `${ip}:${keySuffix}` : ip
+    const { success, limit, remaining, reset } = await limiter.limit(id)
 
     if (!success) {
       return NextResponse.json(
@@ -76,7 +92,20 @@ export async function rateLimit(
 
     return null
   } catch {
-    // Si el rate limiting falla, permitir el request
+    if (process.env.NODE_ENV === 'production') {
+      return rateLimitUnavailableResponse()
+    }
     return null
   }
+}
+
+/** Límite adicional por ventana larga (ej. presupuesto diario de IA). */
+export async function rateLimitLong(
+  request: Request,
+  name: string,
+  requests: number,
+  window: Duration,
+  keySuffix?: string
+): Promise<NextResponse | null> {
+  return rateLimit(request, name, requests, window, keySuffix)
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { adminUsuarioPatchSchema } from '@/lib/schemas/admin-user'
 
 interface RouteParams {
   params: Promise<{
@@ -25,16 +26,28 @@ export async function GET(request: Request, { params }: RouteParams) {
 
     const usuario = await prisma.user.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        rol: true,
+        partnerId: true,
+        referredAt: true,
+        referralSource: true,
+        emailVerified: true,
+        image: true,
+        createdAt: true,
+        updatedAt: true,
         tramites: {
           select: {
             id: true,
             denominacionSocial1: true,
             estadoGeneral: true,
             createdAt: true,
-            sociedadInscripta: true
+            sociedadInscripta: true,
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
         },
         _count: {
           select: {
@@ -42,10 +55,10 @@ export async function GET(request: Request, { params }: RouteParams) {
             documentos: true,
             pagos: true,
             notificaciones: true,
-            mensajes: true
-          }
-        }
-      }
+            mensajes: true,
+          },
+        },
+      },
     })
 
     if (!usuario) {
@@ -161,8 +174,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const body = await request.json()
-    const { action, newPassword, newRol } = body
+    const raw = await request.json()
+    const parsed = adminUsuarioPatchSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Datos inválidos', details: parsed.error.flatten() },
+        { status: 400 }
+      )
+    }
+    const body = parsed.data
 
     const usuario = await prisma.user.findUnique({
       where: { id }
@@ -176,13 +196,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     // Acción: Blanquear contraseña
-    if (action === 'reset_password') {
-      if (!newPassword || newPassword.length < 6) {
-        return NextResponse.json(
-          { error: 'La contraseña debe tener al menos 6 caracteres' },
-          { status: 400 }
-        )
-      }
+    if (body.action === 'reset_password') {
+      const newPassword = body.newPassword
 
       const bcrypt = await import('bcryptjs')
       const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -199,13 +214,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     // Acción: Cambiar rol
-    if (action === 'change_rol') {
-      if (!['CLIENTE', 'ADMIN'].includes(newRol)) {
-        return NextResponse.json(
-          { error: 'Rol inválido' },
-          { status: 400 }
-        )
-      }
+    if (body.action === 'change_rol') {
+      const newRol = body.newRol
 
       // No permitir cambiar el rol de uno mismo
       if (id === session.user.id) {

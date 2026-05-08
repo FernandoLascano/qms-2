@@ -34,3 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Base de datos (Supabase / Postgres)
+
+- **RLS:** Toda tabla expuesta al Data API de Supabase debe tener `ENABLE ROW LEVEL SECURITY`. Las migraciones en `prisma/migrations/` incluyen sentencias `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`. Al agregar un modelo nuevo en Prisma, sumá la misma línea en una migración SQL (defensa en profundidad; Prisma con rol `postgres` usa `BYPASSRLS` en servidor).

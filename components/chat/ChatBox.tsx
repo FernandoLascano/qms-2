@@ -100,19 +100,27 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
     }
   }, [tramiteId, isAdmin, marcarComoLeidos])
 
-  // Polling para nuevos mensajes cada 30 segundos (optimizado para reducir carga en servidor)
-  // Solo hacer polling si el chat está abierto
+  // Polling cada 60s; pausa en pestaña oculta (menos carga en Fluid)
   useEffect(() => {
-    if (!isOpen) return // No hacer polling si el chat está cerrado
+    if (!isOpen) return
 
-    const interval = setInterval(() => {
-      cargarMensajes()
-    }, 30000) // Aumentado de 5s a 30s
+    const tick = () => {
+      if (typeof document !== 'undefined' && document.hidden) return
+      void cargarMensajes()
+    }
 
-    // Cargar mensajes inmediatamente al abrir
-    cargarMensajes()
+    tick()
+    const interval = setInterval(tick, 60_000)
 
-    return () => clearInterval(interval)
+    const onVis = () => {
+      if (typeof document !== 'undefined' && !document.hidden) void cargarMensajes()
+    }
+    document.addEventListener('visibilitychange', onVis)
+
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVis)
+    }
   }, [tramiteId, isOpen, cargarMensajes])
 
   const enviarMensaje = async (e: React.FormEvent) => {

@@ -1,21 +1,37 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import Script from 'next/script'
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { useTurnstileWidget } from '@/lib/hooks/use-turnstile-widget'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
 }
 
-const mensajeInicial = 'Hola, soy el Asistente QMS. Respondo consultas sobre constitución de S.A.S. y nuestro servicio. ¿En qué puedo ayudarte?'
+const mensajeInicial =
+  'Hola, soy el Asistente QMS. Respondo consultas sobre constitución de S.A.S. y nuestro servicio. ¿En qué puedo ayudarte?'
 
 export function AsistenteChat() {
+  const { data: session } = useSession()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const captchaRequired = process.env.NODE_ENV === 'production' && !session?.user
+
+  const onTurnstileToken = useCallback((token: string | null) => setTurnstileToken(token), [])
+  const { setContainerRef, onScriptLoad } = useTurnstileWidget({
+    siteKey,
+    captchaRequired,
+    onTokenChange: onTurnstileToken,
+  })
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -25,20 +41,34 @@ export function AsistenteChat() {
     const texto = input.trim()
     if (!texto || loading) return
 
+    if (captchaRequired && (!siteKey || !turnstileToken)) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Completá la verificación anti-spam debajo del mensaje antes de enviar.',
+        },
+      ])
+      return
+    }
+
     setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: texto }])
+    setMessages((prev) => [...prev, { role: 'user', content: texto }])
     setLoading(true)
 
     try {
-      const mensajesParaApi = [...messages, { role: 'user' as const, content: texto }].map(m => ({
+      const mensajesParaApi = [...messages, { role: 'user' as const, content: texto }].map((m) => ({
         role: m.role,
-        content: m.content
+        content: m.content,
       }))
 
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: mensajesParaApi })
+        body: JSON.stringify({
+          messages: mensajesParaApi,
+          turnstileToken: turnstileToken || undefined,
+        }),
       })
 
       const data = await res.json()
@@ -47,12 +77,16 @@ export function AsistenteChat() {
         throw new Error(data.error || 'Error al enviar')
       }
 
-      setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.message }])
     } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'No pude procesar tu consulta. Probá de nuevo o contactanos por WhatsApp o email.'
-      }])
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content:
+            'No pude procesar tu consulta. Probá de nuevo o contactanos por WhatsApp o email.',
+        },
+      ])
     } finally {
       setLoading(false)
     }
@@ -60,7 +94,14 @@ export function AsistenteChat() {
 
   return (
     <>
-      {/* Botón flotante */}
+      {siteKey && captchaRequired && (
+        <Script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          strategy="afterInteractive"
+          onLoad={onScriptLoad}
+        />
+      )}
+
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-brand-700 text-white shadow-lg hover:bg-brand-800 transition-all flex items-center justify-center cursor-pointer"
@@ -69,10 +110,8 @@ export function AsistenteChat() {
         <MessageCircle className="w-6 h-6" />
       </button>
 
-      {/* Panel de chat */}
       {open && (
         <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[420px] max-w-[calc(100vw-32px)] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col">
-          {/* Header */}
           <div className="bg-gradient-to-r from-brand-700 to-brand-800 text-white px-5 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
@@ -92,7 +131,6 @@ export function AsistenteChat() {
             </button>
           </div>
 
-          {/* Mensajes */}
           <div className="flex-1 overflow-y-auto max-h-[400px] min-h-[200px] p-5 space-y-4 bg-gray-50">
             {messages.length === 0 ? (
               <div className="text-center py-10">
@@ -130,11 +168,16 @@ export function AsistenteChat() {
             <div ref={scrollRef} />
           </div>
 
-          {/* Input */}
           <form
-            onSubmit={(e) => { e.preventDefault(); enviar() }}
-            className="p-4 border-t border-gray-200 bg-white"
+            onSubmit={(e) => {
+              e.preventDefault()
+              enviar()
+            }}
+            className="p-4 border-t border-gray-200 bg-white space-y-3"
           >
+            {captchaRequired && siteKey && (
+              <div className="flex justify-center min-h-[65px]" ref={setContainerRef} />
+            )}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -146,7 +189,7 @@ export function AsistenteChat() {
               />
               <button
                 type="submit"
-                disabled={loading || !input.trim()}
+                disabled={loading || !input.trim() || (captchaRequired && (!siteKey || !turnstileToken))}
                 className="p-3 bg-brand-700 text-white rounded-xl hover:bg-brand-800 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer"
               >
                 <Send className="w-5 h-5" />

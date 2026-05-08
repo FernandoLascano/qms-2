@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const uploaded = await uploadToSupabase(buffer, 'partners/logos', file.name, file.type)
+    const uploaded = await uploadToSupabase(buffer, 'partners/logos', file.name, file.type, 'public')
 
     if (!uploaded?.url) {
       return NextResponse.json({ error: 'No se pudo subir el logo' }, { status: 500 })

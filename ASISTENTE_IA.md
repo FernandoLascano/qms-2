@@ -33,7 +33,7 @@ El asistente usa la **base de conocimiento** en `lib/ai/knowledge-base.ts`.
 ### Agregar información nueva
 
 1. Abrí `lib/ai/knowledge-base.ts`
-2. Agregá texto en formato Markdown dentro de la variable `KNOWLEDGE_BASE`
+2. Actualizá `KNOWLEDGE_BASE` (referencia completa) y, si cambiás reglas clave, el resumen `KNOWLEDGE_BASE_COMPACT` usado en el system prompt del asistente.
 3. Usá títulos con `##` para organizar
 4. Guardá el archivo
 

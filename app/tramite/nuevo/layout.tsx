@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { Sidebar } from '@/components/dashboard/sidebar'
 import { Header } from '@/components/dashboard/header'
+import { SessionGate } from '@/components/auth/SessionGate'
 
 export default async function NuevoTramiteLayout({
   children,
@@ -16,6 +17,7 @@ export default async function NuevoTramiteLayout({
   }
 
   return (
+    <SessionGate>
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
@@ -28,6 +30,7 @@ export default async function NuevoTramiteLayout({
         </main>
       </div>
     </div>
+    </SessionGate>
   )
 }
 
