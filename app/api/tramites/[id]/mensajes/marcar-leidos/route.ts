@@ -20,6 +20,17 @@ export async function PATCH(
     const { id } = await params
     const isAdmin = session.user.rol === 'ADMIN'
 
+    // Verificar acceso al trámite antes de modificar nada: admin a cualquiera,
+    // el cliente solo a los suyos.
+    const tramite = await prisma.tramite.findFirst({
+      where: isAdmin ? { id } : { id, userId: session.user.id },
+      select: { id: true },
+    })
+
+    if (!tramite) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
+
     // Marcar como leídos los mensajes que NO son del usuario actual
     await prisma.mensaje.updateMany({
       where: {

@@ -23,6 +23,32 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const { id } = await params
     const { estado } = await request.json()
 
+    // Validar que el estado sea un valor válido del enum
+    const estadosValidos = [
+      'INICIADO',
+      'EN_PROCESO',
+      'ESPERANDO_CLIENTE',
+      'ESPERANDO_APROBACION',
+      'COMPLETADO',
+      'CANCELADO',
+    ]
+    if (!estado || !estadosValidos.includes(estado)) {
+      return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
+    }
+
+    // Leer el estado ANTERIOR antes de actualizar (de lo contrario el historial
+    // registraría estadoAnterior === estadoNuevo).
+    const tramiteActual = await prisma.tramite.findUnique({
+      where: { id },
+      select: { estadoGeneral: true },
+    })
+
+    if (!tramiteActual) {
+      return NextResponse.json({ error: 'Trámite no encontrado' }, { status: 404 })
+    }
+
+    const estadoAnterior = tramiteActual.estadoGeneral
+
     // Actualizar estado
     const tramite = await prisma.tramite.update({
       where: { id },
@@ -35,7 +61,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     await prisma.historialEstado.create({
       data: {
         tramiteId: id,
-        estadoAnterior: tramite.estadoGeneral,
+        estadoAnterior,
         estadoNuevo: estado,
         descripcion: `Estado cambiado por administrador`
       }

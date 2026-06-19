@@ -19,18 +19,15 @@ export async function GET(
 
     const { id } = await params
 
-    // Verificar que el usuario tenga acceso al trámite
+    // Verificar acceso según el rol del USUARIO de la sesión (no del dueño del
+    // trámite): admin accede a cualquiera; el cliente solo a los suyos.
+    const esAdmin = session.user.rol === 'ADMIN'
     const tramite = await prisma.tramite.findFirst({
-      where: {
-        id,
-        OR: [
-          { userId: session.user.id },
-          { user: { rol: 'ADMIN' } }
-        ]
-      }
+      where: esAdmin ? { id } : { id, userId: session.user.id },
+      select: { id: true },
     })
 
-    if (!tramite && session.user.rol !== 'ADMIN') {
+    if (!tramite) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
@@ -78,28 +75,19 @@ export async function POST(
       )
     }
 
-    // Verificar que el usuario tenga acceso al trámite
+    // Verificar acceso según el rol del USUARIO de la sesión: admin accede a
+    // cualquier trámite; el cliente solo a los suyos.
+    const esAdminSesion = session.user.rol === 'ADMIN'
     const tramite = await prisma.tramite.findFirst({
-      where: {
-        id,
-        OR: [{ userId: session.user.id }, { user: { rol: 'ADMIN' } }],
-      },
+      where: esAdminSesion ? { id } : { id, userId: session.user.id },
       select: { userId: true, denominacionSocial1: true },
     })
 
-    if (!tramite && session.user.rol !== 'ADMIN') {
+    if (!tramite) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
-    // Admin puede chatear en trámites de clientes aunque findFirst no devuelva fila (OR no matchea dueño)
-    const tramiteForNotify =
-      tramite ??
-      (session.user.rol === 'ADMIN'
-        ? await prisma.tramite.findUnique({
-            where: { id },
-            select: { userId: true, denominacionSocial1: true },
-          })
-        : null)
+    const tramiteForNotify = tramite
 
     const mensaje = await prisma.mensaje.create({
       data: {

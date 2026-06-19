@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
     }
 
     const documentoId = req.nextUrl.searchParams.get('documentoId')
-    const url = req.nextUrl.searchParams.get('url')
 
     async function signedForStored(storedUrl: string): Promise<NextResponse> {
       const resolved = extractDocumentsObjectPath(storedUrl)
@@ -51,11 +50,7 @@ export async function GET(req: NextRequest) {
       return signedForStored(documento.url)
     }
 
-    if (url && session.user.rol === 'ADMIN') {
-      return signedForStored(url)
-    }
-
-    return NextResponse.json({ error: 'Se requiere documentoId o url' }, { status: 400 })
+    return NextResponse.json({ error: 'Se requiere documentoId' }, { status: 400 })
   } catch {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }

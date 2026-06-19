@@ -30,6 +30,31 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validar tipo MIME (allow-list) y tamaño del archivo
+    const ALLOWED_MIME_TYPES = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/heif',
+    ]
+    const MAX_FILE_SIZE = 15 * 1024 * 1024 // 15 MB
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: 'Tipo de archivo no permitido. Solo PDF o imágenes (JPG, PNG, WEBP).' },
+        { status: 400 }
+      )
+    }
+
+    if (file.size <= 0 || file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'El archivo supera el tamaño máximo permitido (15 MB).' },
+        { status: 400 }
+      )
+    }
+
     // Verificar que el trámite pertenece al usuario y obtener información para emails
     const tramite = await prisma.tramite.findFirst({
       where: {

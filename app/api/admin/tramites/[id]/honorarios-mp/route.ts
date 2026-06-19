@@ -61,6 +61,17 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Crear preferencia de pago en Mercado Pago
     const conceptoTexto = 'Honorarios Profesionales'
 
+    // Determinar el concepto (enum) según el plan del trámite.
+    // Debe calcularse ANTES de la preferencia para que el external_reference
+    // coincida con el `concepto` que se guarda en el Pago (de lo contrario el
+    // webhook nunca encuentra el pago al aprobarlo).
+    let conceptoPago: 'HONORARIOS_BASICO' | 'HONORARIOS_EMPRENDEDOR' | 'HONORARIOS_PREMIUM' = 'HONORARIOS_BASICO'
+    if (tramite.plan === 'EMPRENDEDOR') {
+      conceptoPago = 'HONORARIOS_EMPRENDEDOR'
+    } else if (tramite.plan === 'PREMIUM') {
+      conceptoPago = 'HONORARIOS_PREMIUM'
+    }
+
     // Verificar que NEXTAUTH_URL esté configurado
     const baseUrl = process.env.NEXTAUTH_URL
     if (!baseUrl) {
@@ -100,7 +111,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         pending: pendingUrl
       },
       notification_url: notificationUrl,
-      external_reference: `${id}|${concepto}`,
+      external_reference: `${id}|${conceptoPago}`,
       payer: {
         name: tramite.user.name,
         email: tramite.user.email
@@ -140,14 +151,6 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     const mpData = await response.json()
-
-    // Determinar el concepto según el plan del trámite
-    let conceptoPago: 'HONORARIOS_BASICO' | 'HONORARIOS_EMPRENDEDOR' | 'HONORARIOS_PREMIUM' = 'HONORARIOS_BASICO'
-    if (tramite.plan === 'EMPRENDEDOR') {
-      conceptoPago = 'HONORARIOS_EMPRENDEDOR'
-    } else if (tramite.plan === 'PREMIUM') {
-      conceptoPago = 'HONORARIOS_PREMIUM'
-    }
 
     // Crear registro de pago en la base de datos
     await prisma.pago.create({

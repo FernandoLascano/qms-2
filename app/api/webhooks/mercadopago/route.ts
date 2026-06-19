@@ -4,8 +4,10 @@ import crypto from 'crypto'
 import { rateLimit } from '@/lib/rate-limit'
 import { registerPartnerConversion } from '@/lib/partners'
 
-// Verificar firma del webhook de Mercado Pago
-function verificarFirma(request: Request, rawBody: string): boolean {
+// Verificar firma del webhook de Mercado Pago.
+// El manifest debe construirse con el id del RECURSO (data.id), no con el x-request-id.
+// Ref: https://www.mercadopago.com.ar/developers/es/docs/your-integrations/notifications/webhooks
+function verificarFirma(request: Request, dataId: string): boolean {
   const xSignature = request.headers.get('x-signature')
   const xRequestId = request.headers.get('x-request-id')
   const webhookSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET
@@ -14,7 +16,7 @@ function verificarFirma(request: Request, rawBody: string): boolean {
     return process.env.NODE_ENV !== 'production'
   }
 
-  if (!xSignature || !xRequestId) {
+  if (!xSignature || !xRequestId || !dataId) {
     return false
   }
 
@@ -30,8 +32,8 @@ function verificarFirma(request: Request, rawBody: string): boolean {
   const ts = tsEntry.split('=')[1]
   const hash = v1Entry.split('=')[1]
 
-  // Construir el manifest para verificar
-  const manifest = `id:${xRequestId};request-id:${xRequestId};ts:${ts};`
+  // El id alfanumérico debe ir en minúsculas según la spec de MP
+  const manifest = `id:${dataId.toLowerCase()};request-id:${xRequestId};ts:${ts};`
   const computedHash = crypto
     .createHmac('sha256', webhookSecret)
     .update(manifest)
@@ -62,14 +64,18 @@ export async function POST(request: Request) {
     const rawBody = await request.text()
     const body = JSON.parse(rawBody)
 
-    // Verificar firma si está configurada
-    if (process.env.MERCADOPAGO_WEBHOOK_SECRET && !verificarFirma(request, rawBody)) {
+    const paymentId = body?.data?.id ? String(body.data.id) : ''
+
+    // Verificar firma si está configurada (usando el id del recurso)
+    if (process.env.MERCADOPAGO_WEBHOOK_SECRET && !verificarFirma(request, paymentId)) {
       return NextResponse.json({ error: 'Firma inválida' }, { status: 401 })
     }
 
     // Mercado Pago envía notificaciones de tipo "payment"
     if (body.type === 'payment') {
-      const paymentId = body.data.id
+      if (!paymentId) {
+        return NextResponse.json({ error: 'ID de pago no encontrado' }, { status: 400 })
+      }
 
       // Obtener información del pago desde Mercado Pago (doble verificación)
       const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN
@@ -113,17 +119,53 @@ export async function POST(request: Request) {
         })
 
         if (!pago) {
-          return NextResponse.json({ error: 'Pago no encontrado' }, { status: 404 })
+          // No hay pago PENDIENTE que coincida: probablemente ya fue procesado
+          // (reintento de MP) o la referencia no corresponde. Confirmamos recepción
+          // para que Mercado Pago no reintente en bucle.
+          return NextResponse.json({ received: true })
         }
 
-        // Actualizar el pago
-        await prisma.pago.update({
-          where: { id: pago.id },
+        // CRÍTICO: validar que el monto y la moneda realmente pagados coincidan con
+        // lo esperado. Sin esto, un pago real por un monto mínimo aprobaría el cobro.
+        const montoPagado = Number(payment.transaction_amount)
+        const monedaPagada = payment.currency_id
+        const montoCoincide = Number.isFinite(montoPagado) && Math.abs(montoPagado - pago.monto) <= 0.01
+        const monedaCoincide = monedaPagada === pago.moneda
+
+        if (!montoCoincide || !monedaCoincide) {
+          // Posible manipulación: no aprobamos y alertamos a los administradores.
+          const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true } })
+          await prisma.notificacion.createMany({
+            data: admins.map(admin => ({
+              userId: admin.id,
+              tramiteId: tramiteId,
+              tipo: 'ALERTA' as const,
+              titulo: '⚠️ Pago con monto inconsistente',
+              mensaje: `Se recibió un pago de ${monedaPagada} ${montoPagado} que NO coincide con lo esperado (${pago.moneda} ${pago.monto}) para el trámite #${tramiteId.substring(0, 8)}. Revisar manualmente.`,
+            })),
+          })
+          return NextResponse.json({ error: 'Monto del pago no coincide' }, { status: 400 })
+        }
+
+        // Aprobar de forma idempotente: solo actualiza si sigue PENDIENTE.
+        // Si otro reintento de MP ya lo aprobó, count será 0 y no duplicamos notificaciones.
+        const resultado = await prisma.pago.updateMany({
+          where: { id: pago.id, estado: 'PENDIENTE' },
           data: {
             estado: 'APROBADO',
-            mercadoPagoPaymentId: payment.id.toString()
-          }
+            mercadoPagoPaymentId: paymentId,
+            fechaPago: new Date(),
+          },
         })
+
+        if (resultado.count === 0) {
+          return NextResponse.json({ received: true })
+        }
+
+        // Texto amigable para las notificaciones (el concepto es un enum interno)
+        const conceptoTexto = concepto?.startsWith('HONORARIOS')
+          ? 'Honorarios Profesionales'
+          : 'tu pago'
 
         await registerPartnerConversion({
           userId: pago.userId,
@@ -142,7 +184,7 @@ export async function POST(request: Request) {
               tramiteId: tramiteId,
               tipo: 'EXITO',
               titulo: 'Pago de Honorarios Confirmado',
-              mensaje: `Hemos recibido tu pago de ${concepto} por $${pago.monto.toLocaleString('es-AR')}.`
+              mensaje: `Hemos recibido ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')}.`
             }
           })
         }
@@ -159,7 +201,7 @@ export async function POST(request: Request) {
               tramiteId: tramiteId,
               tipo: 'EXITO',
               titulo: 'Pago de Honorarios Recibido',
-              mensaje: `El cliente pagó ${concepto} por $${pago.monto.toLocaleString('es-AR')} (Trámite #${tramiteId.substring(0, 8)}).`
+              mensaje: `El cliente pagó ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')} (Trámite #${tramiteId.substring(0, 8)}).`
             }
           })
         ))

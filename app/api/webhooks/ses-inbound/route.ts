@@ -15,6 +15,25 @@ const s3 = new S3Client({
 
 const S3_BUCKET = 'quieromisas-emails-inbound'
 
+// Escapa HTML para evitar inyección en el email de forward (el contenido viene
+// del remitente externo y no es de confianza).
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// Sanitiza el nombre de archivo de un adjunto antes de usarlo como key de S3,
+// evitando inyección de path/key controlada por el remitente.
+function sanitizeFilename(name: string | undefined): string {
+  const base = (name || 'unnamed').split(/[/\\]/).pop() || 'unnamed'
+  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/^\.+/, '')
+  return cleaned.slice(0, 200) || 'unnamed'
+}
+
 /** Forma mínima del objeto `mail` en notificaciones SES (JSON en SNS). */
 type SesInboundMail = {
   messageId?: unknown
@@ -217,7 +236,7 @@ export async function POST(request: NextRequest) {
           // Procesar adjuntos
           if (parsed.attachments && parsed.attachments.length > 0) {
             for (const att of parsed.attachments) {
-              const attS3Key = `attachments/${messageId}/${att.filename || 'unnamed'}`
+              const attS3Key = `attachments/${messageId}/${sanitizeFilename(att.filename)}`
 
               // Guardar adjunto en S3
               const { PutObjectCommand } = await import('@aws-sdk/client-s3')
@@ -243,28 +262,42 @@ export async function POST(request: NextRequest) {
         bodyText = `Email recibido de ${fromAddress}. No se pudo procesar el contenido completo.`
       }
 
-      // Guardar en base de datos
-      const email = await prisma.email.create({
-        data: {
-          messageId,
-          from: fromAddress,
-          fromName: fromName || null,
-          to: Array.isArray(toAddresses) ? toAddresses : [toAddresses],
-          cc: ccAddresses,
-          replyTo,
-          subject,
-          bodyText: bodyText.substring(0, 65000), // Limitar tamaño
-          bodyHtml: bodyHtml.substring(0, 200000),
-          s3Key,
-          direction: 'INBOUND',
-          status: 'UNREAD',
-          spamVerdict,
-          virusVerdict,
-          attachments: {
-            create: attachmentRecords,
+      // Guardar en base de datos. El check de duplicado anterior es best-effort:
+      // dos entregas concurrentes de SNS pueden pasarlo a la vez, así que también
+      // capturamos la violación de unicidad (P2002) y respondemos 200 para evitar
+      // que SNS reintente en bucle (y re-escriba adjuntos en S3).
+      let email
+      try {
+        email = await prisma.email.create({
+          data: {
+            messageId,
+            from: fromAddress,
+            fromName: fromName || null,
+            to: Array.isArray(toAddresses) ? toAddresses : [toAddresses],
+            cc: ccAddresses,
+            replyTo,
+            subject,
+            bodyText: bodyText.substring(0, 65000), // Limitar tamaño
+            bodyHtml: bodyHtml.substring(0, 200000),
+            s3Key,
+            direction: 'INBOUND',
+            status: 'UNREAD',
+            spamVerdict,
+            virusVerdict,
+            attachments: {
+              create: attachmentRecords,
+            },
           },
-        },
-      })
+        })
+      } catch (err) {
+        if (
+          typeof err === 'object' && err !== null && 'code' in err &&
+          (err as { code?: string }).code === 'P2002'
+        ) {
+          return NextResponse.json({ status: 'duplicate' })
+        }
+        throw err
+      }
 
       const logInboundDone = (outcome: string) => {
         console.log(
@@ -313,14 +346,14 @@ export async function POST(request: NextRequest) {
           const forwardHtml = `
             <div style="font-family: sans-serif; color: #374151; line-height: 1.6;">
               <p><strong>Nuevo email recibido en QuieroMiSAS</strong></p>
-              <p><strong>De:</strong> ${fromLabel}<br/>
-              <strong>Para:</strong> ${toLabel}<br/>
-              <strong>Asunto:</strong> ${subjectShort}<br/>
-              <strong>Adjuntos:</strong> ${attachmentsLabel}</p>
+              <p><strong>De:</strong> ${escapeHtml(fromLabel)}<br/>
+              <strong>Para:</strong> ${escapeHtml(toLabel)}<br/>
+              <strong>Asunto:</strong> ${escapeHtml(subjectShort)}<br/>
+              <strong>Adjuntos:</strong> ${escapeHtml(attachmentsLabel)}</p>
               <p style="font-size: 13px; color: #6b7280;">
                 Se envia solo resumen para evitar rebotes por tamano. Revisar contenido completo y descargar adjuntos desde el panel de admin.
               </p>
-              ${safeBodyText ? `<pre style="white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px;">${safeBodyText}</pre>` : ''}
+              ${safeBodyText ? `<pre style="white-space: pre-wrap; background: #f9fafb; border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px;">${escapeHtml(safeBodyText)}</pre>` : ''}
             </div>
           `
 
