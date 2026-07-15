@@ -1,11 +1,14 @@
 import { ImageResponse } from 'next/og'
+import { getPublicConfig } from '@/lib/config'
 
-export const runtime = 'edge'
 export const alt = 'QuieroMiSAS - Constituí tu SAS online en Argentina'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
+  const { precioPlanBasico } = await getPublicConfig()
+  const desde = `$${precioPlanBasico.toLocaleString('es-AR')}`
+
   return new ImageResponse(
     (
       <div
@@ -91,7 +94,7 @@ export default async function Image() {
             textAlign: 'center',
           }}
         >
-          100% online · Córdoba y CABA · Desde $285.000
+          100% online · Córdoba y CABA · Desde {desde}
         </span>
 
         {/* Bottom bar */}

@@ -27,7 +27,12 @@ export const rootOrganizationJsonLd = {
   sameAs: [] as string[],
 }
 
-export const rootLegalServiceJsonLd = {
+type PreciosPlanes = {
+  precioPlanBasico: number
+  precioPlanPremium: number
+}
+
+export const buildLegalServiceJsonLd = ({ precioPlanBasico, precioPlanPremium }: PreciosPlanes) => ({
   '@context': 'https://schema.org',
   '@type': 'LegalService',
   name: 'Constitución de SAS Online - QuieroMiSAS',
@@ -56,14 +61,14 @@ export const rootLegalServiceJsonLd = {
   priceRange: '$$',
   offers: {
     '@type': 'AggregateOffer',
-    lowPrice: '285000',
-    highPrice: '390000',
+    lowPrice: String(precioPlanBasico),
+    highPrice: String(precioPlanPremium),
     priceCurrency: 'ARS',
     offerCount: '3',
   },
-}
+})
 
-export const rootFaqJsonLd = {
+export const buildFaqJsonLd = ({ precioPlanBasico, precioPlanPremium }: PreciosPlanes) => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: [
@@ -80,7 +85,7 @@ export const rootFaqJsonLd = {
       name: '¿Cuánto cuesta constituir una S.A.S. en Argentina?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Los honorarios profesionales van desde $285.000 en el plan Básico hasta $390.000 en el plan Premium, más los gastos de jurisdicción (tasas gubernamentales de IPJ o IGJ). Es significativamente más económico que constituir una S.R.L. o S.A.',
+        text: `Los honorarios profesionales van desde $${precioPlanBasico.toLocaleString('es-AR')} en el plan Básico hasta $${precioPlanPremium.toLocaleString('es-AR')} en el plan Premium, más los gastos de jurisdicción (tasas gubernamentales de IPJ o IGJ). Es significativamente más económico que constituir una S.R.L. o S.A.`,
       },
     },
     {
@@ -132,7 +137,7 @@ export const rootFaqJsonLd = {
       },
     },
   ],
-}
+})
 
 export const rootBreadcrumbJsonLd = {
   '@context': 'https://schema.org',
