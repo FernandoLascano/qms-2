@@ -3,6 +3,21 @@ import { sendEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
 
+// Escapa HTML para evitar inyección en el email que recibe el equipo.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+// Quita saltos de línea para evitar header injection en el subject.
+function singleLine(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ').trim()
+}
+
 export async function POST(request: NextRequest) {
   try {
     const rateLimitResponse = await rateLimit(request, 'contact', 3, '1 m')
@@ -14,6 +29,19 @@ export async function POST(request: NextRequest) {
     if (!nombre || !email || !asunto || !mensaje) {
       return NextResponse.json(
         { error: 'Todos los campos son obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    // Validar tipos y longitudes razonables para evitar abuso
+    if (
+      typeof nombre !== 'string' || typeof email !== 'string' ||
+      typeof asunto !== 'string' || typeof mensaje !== 'string' ||
+      nombre.length > 200 || email.length > 200 ||
+      asunto.length > 300 || mensaje.length > 5000
+    ) {
+      return NextResponse.json(
+        { error: 'Datos inválidos o demasiado largos' },
         { status: 400 }
       )
     }
@@ -42,6 +70,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Valores escapados para insertar en el HTML del email
+    const nombreSafe = escapeHtml(nombre)
+    const emailSafe = escapeHtml(email)
+    const asuntoSafe = escapeHtml(asunto)
+    const mensajeSafe = escapeHtml(mensaje)
 
     // Crear el HTML del email
     const htmlContent = `
@@ -86,7 +120,7 @@ export async function POST(request: NextRequest) {
                       <span style="color: #6b7280; font-size: 14px;">Nombre:</span>
                     </td>
                     <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-                      <strong style="color: #1f2937; font-size: 14px;">${nombre}</strong>
+                      <strong style="color: #1f2937; font-size: 14px;">${nombreSafe}</strong>
                     </td>
                   </tr>
                   <tr>
@@ -94,7 +128,7 @@ export async function POST(request: NextRequest) {
                       <span style="color: #6b7280; font-size: 14px;">Email:</span>
                     </td>
                     <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-                      <a href="mailto:${email}" style="color: #DC2626; font-size: 14px; text-decoration: none; font-weight: 600;">${email}</a>
+                      <a href="mailto:${emailSafe}" style="color: #DC2626; font-size: 14px; text-decoration: none; font-weight: 600;">${emailSafe}</a>
                     </td>
                   </tr>
                   <tr>
@@ -102,7 +136,7 @@ export async function POST(request: NextRequest) {
                       <span style="color: #6b7280; font-size: 14px;">Asunto:</span>
                     </td>
                     <td style="padding: 8px 0; text-align: right;">
-                      <strong style="color: #1f2937; font-size: 14px;">${asunto}</strong>
+                      <strong style="color: #1f2937; font-size: 14px;">${asuntoSafe}</strong>
                     </td>
                   </tr>
                 </table>
@@ -114,13 +148,13 @@ export async function POST(request: NextRequest) {
                   Mensaje:
                 </h3>
                 <div style="background-color: #f9fafb; border-left: 4px solid #DC2626; padding: 20px; border-radius: 0 12px 12px 0;">
-                  <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${mensaje}</p>
+                  <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${mensajeSafe}</p>
                 </div>
               </div>
 
               <!-- Botón responder -->
               <div style="text-align: center;">
-                <a href="mailto:${email}?subject=Re: ${encodeURIComponent(asunto)}" style="display: inline-block; background-color: #DC2626; color: white; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none;">
+                <a href="mailto:${emailSafe}?subject=Re: ${encodeURIComponent(asunto)}" style="display: inline-block; background-color: #DC2626; color: white; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none;">
                   Responder al cliente →
                 </a>
               </div>
@@ -158,7 +192,7 @@ export async function POST(request: NextRequest) {
     // Enviar email al equipo
     const result = await sendEmail({
       to: 'fernandolascano@martinezwehbe.com',
-      subject: `Consulta web: ${asunto} - ${nombre}`,
+      subject: singleLine(`Consulta web: ${asunto} - ${nombre}`),
       html: htmlContent,
       text: `Nueva consulta de contacto\n\nNombre: ${nombre}\nEmail: ${email}\nAsunto: ${asunto}\n\nMensaje:\n${mensaje}`
     })

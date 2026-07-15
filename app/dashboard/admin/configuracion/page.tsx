@@ -49,6 +49,7 @@ interface ConfigData {
   precioPlanBasico: number
   precioPlanEmprendedor: number
   precioPlanPremium: number
+  descuentoTransferencia: number
   smvm: number
 
   // General
@@ -82,6 +83,7 @@ export default function ConfiguracionAdminPage() {
     precioPlanBasico: 285000,
     precioPlanEmprendedor: 320000,
     precioPlanPremium: 390000,
+    descuentoTransferencia: 3,
     smvm: 317800,
     mantenimientoMode: false
   })
@@ -605,6 +607,27 @@ export default function ConfiguracionAdminPage() {
                   </div>
                   <p className="text-sm text-gray-500">
                     Precio del plan Premium (mostrado en landing page y formulario)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="descuentoTransferencia">Descuento por transferencia</Label>
+                  <div className="relative">
+                    <Input
+                      id="descuentoTransferencia"
+                      type="number"
+                      value={config.descuentoTransferencia}
+                      onChange={(e) => setConfig({ ...config, descuentoTransferencia: parseFloat(e.target.value) })}
+                      className="pr-8"
+                      min={0}
+                      max={100}
+                      step={0.5}
+                    />
+                    <span className="absolute right-3 top-3 text-gray-500">%</span>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Porcentaje de descuento aplicado sobre el precio del plan cuando el cliente paga por transferencia
+                    (usado al generar el link de pago de honorarios)
                   </p>
                 </div>
               </div>

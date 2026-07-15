@@ -22,6 +22,23 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const { id } = await params
 
+    // Verificar PRIMERO que el usuario sea dueño del trámite (o admin)
+    // antes de modificar nada. De lo contrario cualquier usuario podría
+    // vencer enlaces ajenos iterando ids.
+    const enlaceExistente = await prisma.enlacePago.findUnique({
+      where: { id },
+      include: { tramite: { select: { userId: true } } },
+    })
+
+    if (!enlaceExistente || !enlaceExistente.tramite) {
+      return NextResponse.json({ error: 'Enlace no encontrado' }, { status: 404 })
+    }
+
+    const esAdmin = session.user.rol === 'ADMIN'
+    if (!esAdmin && enlaceExistente.tramite.userId !== session.user.id) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+    }
+
     // Actualizar enlace
     const enlace = await prisma.enlacePago.update({
       where: { id },
@@ -33,14 +50,6 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         tramite: true
       }
     })
-
-    // Verificar que el usuario sea dueño del trámite
-    if (!enlace.tramite || enlace.tramite.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      )
-    }
 
     // Notificar a los admins (buscar usuarios admin)
     const admins = await prisma.user.findMany({

@@ -699,6 +699,7 @@ model Config {
   precioPlanBasico       Float @default(285000)
   precioPlanEmprendedor  Float @default(320000)
   precioPlanPremium      Float @default(390000)
+  descuentoTransferencia Float @default(3) // % de descuento aplicado sobre el precio del plan al pagar por transferencia
   smvm                   Float @default(317800) // Salario Mínimo, Vital y Móvil
 
   // General

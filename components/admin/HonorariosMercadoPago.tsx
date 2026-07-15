@@ -31,11 +31,33 @@ interface HonorariosMercadoPagoProps {
   plan?: 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'
 }
 
-// Montos de honorarios por plan (ajustar según corresponda)
-const MONTOS_POR_PLAN = {
-  BASICO: { mercadoPago: 250000, transferencia: 240000 },
-  EMPRENDEDOR: { mercadoPago: 320000, transferencia: 310000 },
-  PREMIUM: { mercadoPago: 390000, transferencia: 380000 }
+type PreciosConfig = {
+  precioPlanBasico: number
+  precioPlanEmprendedor: number
+  precioPlanPremium: number
+  descuentoTransferencia: number
+}
+
+const PRECIOS_DEFAULT: PreciosConfig = {
+  precioPlanBasico: 285000,
+  precioPlanEmprendedor: 320000,
+  precioPlanPremium: 390000,
+  descuentoTransferencia: 3
+}
+
+// Calcula los montos de honorarios de un plan a partir de la configuración:
+// - MercadoPago: precio del plan
+// - Transferencia: precio del plan con el % de descuento configurado
+function montosDePlan(plan: 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM', precios: PreciosConfig) {
+  const precioPlan = {
+    BASICO: precios.precioPlanBasico,
+    EMPRENDEDOR: precios.precioPlanEmprendedor,
+    PREMIUM: precios.precioPlanPremium
+  }[plan]
+  return {
+    mercadoPago: precioPlan,
+    transferencia: Math.round(precioPlan * (1 - precios.descuentoTransferencia / 100))
+  }
 }
 
 interface CuentaBancaria {
@@ -51,6 +73,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
   const router = useRouter()
   const [generando, setGenerando] = useState(false)
   const [planSeleccionado, setPlanSeleccionado] = useState<'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'>(plan || 'EMPRENDEDOR')
+  const [precios, setPrecios] = useState<PreciosConfig>(PRECIOS_DEFAULT)
   const [monto, setMonto] = useState('')
   const [montoTransferencia, setMontoTransferencia] = useState('')
   const [cuentasPreConfiguradas, setCuentasPreConfiguradas] = useState<CuentaBancaria[]>([])
@@ -62,14 +85,25 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
     titular: ''
   })
 
-  // Inicializar montos según el plan
+  // Cargar precios desde la configuración e inicializar montos según el plan
   useEffect(() => {
-    if (plan) {
-      const montos = MONTOS_POR_PLAN[plan]
-      setMonto(montos.mercadoPago.toString())
-      setMontoTransferencia(montos.transferencia.toString())
-      setPlanSeleccionado(plan)
-    }
+    const planActual = plan || 'EMPRENDEDOR'
+    fetch('/api/config')
+      .then(res => res.json())
+      .then(data => {
+        const nuevosPrecios: PreciosConfig = {
+          precioPlanBasico: data.precioPlanBasico ?? PRECIOS_DEFAULT.precioPlanBasico,
+          precioPlanEmprendedor: data.precioPlanEmprendedor ?? PRECIOS_DEFAULT.precioPlanEmprendedor,
+          precioPlanPremium: data.precioPlanPremium ?? PRECIOS_DEFAULT.precioPlanPremium,
+          descuentoTransferencia: data.descuentoTransferencia ?? PRECIOS_DEFAULT.descuentoTransferencia
+        }
+        setPrecios(nuevosPrecios)
+        setPlanSeleccionado(planActual)
+        const montos = montosDePlan(planActual, nuevosPrecios)
+        setMonto(montos.mercadoPago.toString())
+        setMontoTransferencia(montos.transferencia.toString())
+      })
+      .catch(err => console.error('Error al cargar precios:', err))
   }, [plan])
 
   // Cargar cuentas bancarias pre-configuradas
@@ -254,16 +288,16 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                 onChange={(e) => {
                   const nuevoPlan = e.target.value as 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'
                   setPlanSeleccionado(nuevoPlan)
-                  const montos = MONTOS_POR_PLAN[nuevoPlan]
+                  const montos = montosDePlan(nuevoPlan, precios)
                   setMonto(montos.mercadoPago.toString())
                   setMontoTransferencia(montos.transferencia.toString())
                 }}
                 className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
                 disabled={generando}
               >
-                <option value="BASICO">Básico - ${MONTOS_POR_PLAN.BASICO.mercadoPago.toLocaleString('es-AR')}</option>
-                <option value="EMPRENDEDOR">Emprendedor - ${MONTOS_POR_PLAN.EMPRENDEDOR.mercadoPago.toLocaleString('es-AR')}</option>
-                <option value="PREMIUM">Premium - ${MONTOS_POR_PLAN.PREMIUM.mercadoPago.toLocaleString('es-AR')}</option>
+                <option value="BASICO">Básico - ${precios.precioPlanBasico.toLocaleString('es-AR')}</option>
+                <option value="EMPRENDEDOR">Emprendedor - ${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</option>
+                <option value="PREMIUM">Premium - ${precios.precioPlanPremium.toLocaleString('es-AR')}</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">Los montos se cargarán automáticamente según el plan seleccionado</p>
             </div>

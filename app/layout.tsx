@@ -8,16 +8,21 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import {
   rootBreadcrumbJsonLd,
-  rootFaqJsonLd,
-  rootLegalServiceJsonLd,
+  buildFaqJsonLd,
+  buildLegalServiceJsonLd,
   rootOrganizationJsonLd,
 } from "@/lib/seo/root-jsonld";
+import { getPublicConfig } from "@/lib/config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-export const metadata: Metadata = {
+export async function generateMetadata(): Promise<Metadata> {
+  const { precioPlanBasico } = await getPublicConfig();
+  const desde = `$${precioPlanBasico.toLocaleString("es-AR")}`;
+
+  return {
   title: "Constituir SAS Online en Argentina | Tu Empresa en 5 Días - QuieroMiSAS",
-  description: "Constituí tu SAS 100% online en Córdoba y CABA. Desde $285.000. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas. Empezá hoy.",
+  description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas. Empezá hoy.`,
   keywords: [
     "constituir SAS",
     "crear SAS",
@@ -57,14 +62,14 @@ export const metadata: Metadata = {
     locale: 'es_AR',
     url: 'https://www.quieromisas.com',
     title: 'Constituir SAS Online en Argentina | Tu Empresa en 5 Días',
-    description: 'Constituí tu SAS 100% online en Córdoba y CABA. Desde $285.000. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.',
+    description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.`,
     siteName: 'QuieroMiSAS',
     images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Constituir SAS Online en Argentina | QuieroMiSAS',
-    description: 'Constituí tu SAS 100% online en Córdoba y CABA. Desde $285.000. CUIT y matrícula en 5 días hábiles.',
+    description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles.`,
     images: ['/opengraph-image'],
   },
   alternates: {
@@ -74,13 +79,18 @@ export const metadata: Metadata = {
     google: 'Fb9746BUHbwNsQqEI8c6ELfh6ekKpop4tvtpMZ8IEto',
   },
   manifest: '/manifest.json',
-};
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { precioPlanBasico, precioPlanPremium } = await getPublicConfig();
+  const legalServiceJsonLd = buildLegalServiceJsonLd({ precioPlanBasico, precioPlanPremium });
+  const faqJsonLd = buildFaqJsonLd({ precioPlanBasico, precioPlanPremium });
+
   return (
     <html lang="es" className={inter.variable}>
       <body className={inter.className}>
@@ -88,10 +98,10 @@ export default function RootLayout({
           {JSON.stringify(rootOrganizationJsonLd)}
         </Script>
         <Script id="ld-json-legal" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(rootLegalServiceJsonLd)}
+          {JSON.stringify(legalServiceJsonLd)}
         </Script>
         <Script id="ld-json-faq" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(rootFaqJsonLd)}
+          {JSON.stringify(faqJsonLd)}
         </Script>
         <Script id="ld-json-breadcrumb" type="application/ld+json" strategy="afterInteractive">
           {JSON.stringify(rootBreadcrumbJsonLd)}

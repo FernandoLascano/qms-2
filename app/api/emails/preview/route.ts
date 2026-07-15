@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import * as templates from '@/lib/emails/templates'
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
 
 // Datos de ejemplo por template
 const sampleData: Record<string, Record<string, unknown>> = {
@@ -18,6 +29,13 @@ const sampleData: Record<string, Record<string, unknown>> = {
 }
 
 export async function GET(request: NextRequest) {
+  // Solo administradores: este endpoint expone plantillas internas y refleja
+  // parámetros del usuario en HTML servido desde nuestro propio dominio.
+  const session = await getServerSession(authOptions)
+  if (!session?.user || session.user.rol !== 'ADMIN') {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const template = searchParams.get('template') || 'emailBienvenida'
 
@@ -28,7 +46,7 @@ export async function GET(request: NextRequest) {
 
   const data = { ...(sampleData[template] || sampleData.emailBienvenida) }
   const nombreParam = searchParams.get('nombre')
-  if (nombreParam) data.nombre = nombreParam
+  if (nombreParam) data.nombre = escapeHtml(nombreParam)
   const html = templateFn(data)
 
   return new NextResponse(html, {

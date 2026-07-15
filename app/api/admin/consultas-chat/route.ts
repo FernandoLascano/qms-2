@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { rateLimit, rateLimitLong } from '@/lib/rate-limit'
+import { getPublicConfig } from '@/lib/config'
 
 // GET - Listar consultas del chat con paginación
 export async function GET(request: NextRequest) {
@@ -78,6 +79,8 @@ export async function POST(request: NextRequest) {
 
     const preguntas = consultas.map(c => c.pregunta).join('\n- ')
 
+    const { precioPlanBasico, precioPlanEmprendedor, precioPlanPremium } = await getPublicConfig()
+
     const { completeWithClaude } = await import('@/lib/ai/anthropic')
 
     const analysis = await completeWithClaude({
@@ -93,7 +96,7 @@ Analizá las siguientes preguntas que hicieron los visitantes del sitio web y:
 
 Contexto del servicio:
 - Constituyen S.A.S. en Córdoba (IPJ) y CABA (IGJ), aunque CABA está temporalmente deshabilitada
-- Planes: Básico ($285.000), Emprendedor ($320.000), Premium ($390.000)
+- Planes: Básico ($${precioPlanBasico.toLocaleString('es-AR')}), Emprendedor ($${precioPlanEmprendedor.toLocaleString('es-AR')}), Premium ($${precioPlanPremium.toLocaleString('es-AR')})
 - Plazo: 5 días hábiles
 - 100% online
 - Válida en todo el país

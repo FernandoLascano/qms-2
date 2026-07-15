@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 
 // GET - Obtener configuración
 export async function GET(request: NextRequest) {
@@ -70,6 +71,7 @@ export async function PUT(request: NextRequest) {
           precioPlanBasico: body.precioPlanBasico,
           precioPlanEmprendedor: body.precioPlanEmprendedor,
           precioPlanPremium: body.precioPlanPremium,
+          descuentoTransferencia: body.descuentoTransferencia,
           smvm: body.smvm,
           mantenimientoMode: body.mantenimientoMode,
           emailForwardingEnabled: body.emailForwardingEnabled,
@@ -77,6 +79,12 @@ export async function PUT(request: NextRequest) {
         }
       })
     }
+
+    // Purgar el cache de los precios/config para que los cambios se vean al instante:
+    // - /api/config: lo consumen (client-side) el formulario de carga, landing y honorarios
+    // - layout raíz: JSON-LD SEO, metadata y opengraph-image leen la config en el servidor
+    revalidatePath('/api/config')
+    revalidatePath('/', 'layout')
 
     return NextResponse.json(config)
   } catch {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { PUBLIC_CONFIG_DEFAULTS } from '@/lib/config'
 
 // GET - Obtener configuración pública (precios, SMVM)
 export async function GET(request: NextRequest) {
@@ -19,6 +20,7 @@ export async function GET(request: NextRequest) {
       precioPlanBasico: config.precioPlanBasico,
       precioPlanEmprendedor: config.precioPlanEmprendedor,
       precioPlanPremium: config.precioPlanPremium,
+      descuentoTransferencia: config.descuentoTransferencia,
       smvm: config.smvm
     }, {
       headers: {
@@ -28,11 +30,6 @@ export async function GET(request: NextRequest) {
   } catch {
 
     // En caso de error, retornar valores por defecto
-    return NextResponse.json({
-      precioPlanBasico: 285000,
-      precioPlanEmprendedor: 320000,
-      precioPlanPremium: 390000,
-      smvm: 317800
-    })
+    return NextResponse.json(PUBLIC_CONFIG_DEFAULTS)
   }
 }

@@ -34,7 +34,13 @@ const publicListSelect = {
 // GET - Listar posts (público o admin)
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const publicoSolo = searchParams.get('publico') === 'true'
+
+  // Solo un admin puede listar borradores/columnas completas. Cualquier otro
+  // usuario (incluido anónimo) queda forzado a modo público: solo posts
+  // publicados y con el select whitelist.
+  const session = await getServerSession(authOptions)
+  const isAdmin = session?.user?.rol === 'ADMIN'
+  const publicoSolo = !isAdmin || searchParams.get('publico') === 'true'
 
   if (publicoSolo && !process.env.DATABASE_URL) {
     console.warn(

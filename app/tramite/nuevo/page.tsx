@@ -123,6 +123,11 @@ export default function NuevoTramitePage() {
   const [cargandoBorrador, setCargandoBorrador] = useState(true)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
   const [smvm, setSmvm] = useState(317800) // Valor por defecto
+  const [precios, setPrecios] = useState({
+    precioPlanBasico: 285000,
+    precioPlanEmprendedor: 320000,
+    precioPlanPremium: 390000
+  })
 
   const [formData, setFormData] = useState<FormData>({
     nombre: session?.user?.name?.split(' ')[0] || '',
@@ -177,7 +182,7 @@ export default function NuevoTramitePage() {
     asesoramientoContable: false
   })
 
-  // Cargar configuración (SMVM)
+  // Cargar configuración (SMVM y precios de planes)
   useEffect(() => {
     fetch('/api/config')
       .then(res => res.json())
@@ -190,8 +195,15 @@ export default function NuevoTramitePage() {
             capitalSocial: String(2 * data.smvm)
           }))
         }
+        if (data.precioPlanBasico != null && data.precioPlanEmprendedor != null && data.precioPlanPremium != null) {
+          setPrecios({
+            precioPlanBasico: data.precioPlanBasico,
+            precioPlanEmprendedor: data.precioPlanEmprendedor,
+            precioPlanPremium: data.precioPlanPremium
+          })
+        }
       })
-      .catch(err => console.error('Error al cargar SMVM:', err))
+      .catch(err => console.error('Error al cargar configuración:', err))
   }, [])
 
   // Cargar borrador al iniciar - SOLO si es un borrador sin terminar
@@ -905,9 +917,9 @@ export default function NuevoTramitePage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { id: 'BASICO', nombre: 'Básico', precio: '$285.000 + gastos' },
-                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', precio: '$320.000 + gastos', destacado: true },
-                      { id: 'PREMIUM', nombre: 'Premium', precio: '$390.000 + gastos' }
+                      { id: 'BASICO', nombre: 'Básico', precio: `$${precios.precioPlanBasico.toLocaleString('es-AR')} + gastos` },
+                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', precio: `$${precios.precioPlanEmprendedor.toLocaleString('es-AR')} + gastos`, destacado: true },
+                      { id: 'PREMIUM', nombre: 'Premium', precio: `$${precios.precioPlanPremium.toLocaleString('es-AR')} + gastos` }
                     ].map(plan => (
                       <div
                         key={plan.id}
