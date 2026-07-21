@@ -107,8 +107,8 @@ export function Contacto() {
     {
       icon: Phone,
       title: 'Teléfono',
-      lines: ['+54 9 351 428 4037'],
-      href: 'tel:+5493514284037'
+      lines: ['+54 9 351 213 6212'],
+      href: 'tel:+5493512136212'
     },
     {
       icon: Mail,
@@ -212,7 +212,7 @@ export function Contacto() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Sábados</span>
-                    <span className="font-semibold text-gray-900">9:00 - 13:00</span>
+                    <span className="font-semibold text-gray-500">Cerrado</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Domingos</span>

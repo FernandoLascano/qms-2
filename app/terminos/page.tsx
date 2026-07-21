@@ -90,7 +90,7 @@ export default function TerminosPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Contacto</h2>
               <p>
-                Para consultas sobre estos Términos y Condiciones: contacto@quieromisas.com | Tel: +54 351 428 4037 | Córdoba, Argentina.
+                Para consultas sobre estos Términos y Condiciones: contacto@quieromisas.com | Tel: +54 9 351 213 6212 | Córdoba, Argentina.
               </p>
             </section>
           </div>

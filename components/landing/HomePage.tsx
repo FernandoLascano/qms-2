@@ -493,8 +493,8 @@ export default function HomePage({ destacadas = [] }: { destacadas?: NotaCard[] 
               <ul className="space-y-3 text-sm">
                 <li className="text-gray-400">Córdoba, Argentina</li>
                 <li>
-                  <a href="tel:+5493514284037" className="text-gray-400 hover:text-white transition">
-                    +54 9 351 428 4037
+                  <a href="tel:+5493512136212" className="text-gray-400 hover:text-white transition">
+                    +54 9 351 213 6212
                   </a>
                 </li>
                 <li>

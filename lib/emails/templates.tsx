@@ -154,7 +154,7 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
                     <table cellpadding="0" cellspacing="0" style="margin: 0 auto 20px auto;">
                       <tr>
                         <td style="padding: 0 8px;">
-                          <a href="https://wa.me/5493514284037" style="display: inline-block; width: 40px; height: 40px; background-color: ${colors.background}; border-radius: 10px; text-align: center; line-height: 40px;">
+                          <a href="https://wa.me/5493512136212" style="display: inline-block; width: 40px; height: 40px; background-color: ${colors.background}; border-radius: 10px; text-align: center; line-height: 40px;">
                             <span style="font-size: 18px;">💬</span>
                           </a>
                         </td>
@@ -175,7 +175,7 @@ const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; n
                       ¿Necesitás ayuda? Respondé este email o escribinos por WhatsApp
                     </p>
                     <p style="margin: 0 0 16px 0; color: ${colors.textLight}; font-size: 12px;">
-                      <a href="tel:+5493514284037" style="color: ${colors.primary}; font-weight: 600;">+54 9 351 428 4037</a>
+                      <a href="tel:+5493512136212" style="color: ${colors.primary}; font-weight: 600;">+54 9 351 213 6212</a>
                     </p>
 
                     <p style="margin: 20px 0 0 0; color: ${colors.textLight}; font-size: 11px; line-height: 1.6;">

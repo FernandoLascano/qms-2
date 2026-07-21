@@ -10,7 +10,7 @@ export const rootOrganizationJsonLd = {
   image: 'https://www.quieromisas.com/assets/img/qms-logo-reg.png',
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+54-351-428-4037',
+    telephone: '+54-9-351-213-6212',
     contactType: 'customer service',
     email: 'contacto@quieromisas.com',
     availableLanguage: ['Spanish'],
@@ -45,7 +45,7 @@ export const buildLegalServiceJsonLd = ({ precioPlanBasico, precioPlanPremium }:
     { '@type': 'State', name: 'Buenos Aires' },
   ],
   serviceType: 'Constitución de Sociedades',
-  telephone: '+54-351-428-4037',
+  telephone: '+54-9-351-213-6212',
   email: 'contacto@quieromisas.com',
   address: {
     '@type': 'PostalAddress',

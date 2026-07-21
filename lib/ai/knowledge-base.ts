@@ -7,7 +7,7 @@
 /** Versión compacta para el system prompt (menos tokens por request). El detalle completo queda en KNOWLEDGE_BASE. */
 export const KNOWLEDGE_BASE_COMPACT = `
 # QuieroMiSAS (resumen)
-- Plataforma 100% online para constituir S.A.S. en Argentina (Grupo MW). ~5 días hábiles. Contacto: contacto@quieromisas.com, +54 9 351 428 4037.
+- Plataforma 100% online para constituir S.A.S. en Argentina (Grupo MW). ~5 días hábiles. Contacto: contacto@quieromisas.com, +54 9 351 213 6212.
 - Jurisdicción principal: Córdoba (IPJ). CABA/IGJ puede no estar disponible según momento.
 - Cualquier provincia puede constituir en Córdoba; la SAS opera en todo el país. Sede social Córdoba; domicilio fiscal donde corresponda.
 
@@ -31,7 +31,7 @@ export const KNOWLEDGE_BASE = `
 - Es parte del Grupo MW de Martínez Wehbe & Asociados.
 - Jurisdicciones: Córdoba (IPJ) y Ciudad Autónoma de Buenos Aires (IGJ).
 - Proceso 100% online, aprox. 5 días hábiles.
-- Contacto: contacto@quieromisas.com, +54 9 351 428 4037.
+- Contacto: contacto@quieromisas.com, +54 9 351 213 6212.
 - Oficina Centro: Ituzaingo 87, 5to Piso, B° Centro, Córdoba.
 - Oficina Norte: Pasaje Chagas 6043, B° Villa Belgrano, Córdoba.
 
