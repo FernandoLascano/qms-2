@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -11,6 +12,11 @@ async function DashboardPage() {
 
   if (!session?.user?.id) {
     return null
+  }
+
+  // Los admin no inician trámites: van directo al Panel de Admin
+  if (session.user.rol === 'ADMIN') {
+    redirect('/dashboard/admin')
   }
 
   // Obtener trámites del usuario
