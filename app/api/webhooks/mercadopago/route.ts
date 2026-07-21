@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { rateLimit } from '@/lib/rate-limit'
 import { registerPartnerConversion } from '@/lib/partners'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 // Verificar firma del webhook de Mercado Pago.
 // El manifest debe construirse con el id del RECURSO (data.id), no con el x-request-id.
@@ -134,16 +135,27 @@ export async function POST(request: Request) {
 
         if (!montoCoincide || !monedaCoincide) {
           // Posible manipulación: no aprobamos y alertamos a los administradores.
-          const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true } })
+          const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true, email: true, name: true } })
+          const tituloAlerta = '⚠️ Pago con monto inconsistente'
+          const mensajeAlerta = `Se recibió un pago de ${monedaPagada} ${montoPagado} que NO coincide con lo esperado (${pago.moneda} ${pago.monto}) para el trámite #${tramiteId.substring(0, 8)}. Revisar manualmente.`
           await prisma.notificacion.createMany({
             data: admins.map(admin => ({
               userId: admin.id,
               tramiteId: tramiteId,
               tipo: 'ALERTA' as const,
-              titulo: '⚠️ Pago con monto inconsistente',
-              mensaje: `Se recibió un pago de ${monedaPagada} ${montoPagado} que NO coincide con lo esperado (${pago.moneda} ${pago.monto}) para el trámite #${tramiteId.substring(0, 8)}. Revisar manualmente.`,
+              titulo: tituloAlerta,
+              mensaje: mensajeAlerta,
             })),
           })
+          // Email a los admins (crítico: posible manipulación de pago)
+          await Promise.all(admins.map(async (admin) => {
+            if (!admin.email) return
+            try {
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAlerta, mensajeAlerta, tramiteId)
+            } catch {
+              // Email no crítico para la respuesta del webhook
+            }
+          }))
           return NextResponse.json({ error: 'Monto del pago no coincide' }, { status: 400 })
         }
 
@@ -191,20 +203,33 @@ export async function POST(request: Request) {
 
         // Notificar a los admins
         const admins = await prisma.user.findMany({
-          where: { rol: 'ADMIN' }
+          where: { rol: 'ADMIN' },
+          select: { id: true, email: true, name: true }
         })
 
-        await Promise.all(admins.map(admin =>
-          prisma.notificacion.create({
+        const tituloAdmin = 'Pago de Honorarios Recibido'
+        const mensajeAdmin = `El cliente pagó ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')} (Trámite #${tramiteId.substring(0, 8)}).`
+
+        await Promise.all(admins.map(async (admin) => {
+          await prisma.notificacion.create({
             data: {
               userId: admin.id,
               tramiteId: tramiteId,
               tipo: 'EXITO',
-              titulo: 'Pago de Honorarios Recibido',
-              mensaje: `El cliente pagó ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')} (Trámite #${tramiteId.substring(0, 8)}).`
+              titulo: tituloAdmin,
+              mensaje: mensajeAdmin
             }
           })
-        ))
+
+          // Enviar email al admin
+          if (admin.email) {
+            try {
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAdmin, mensajeAdmin, tramiteId)
+            } catch {
+              // Email no crítico
+            }
+          }
+        }))
       }
     }
 

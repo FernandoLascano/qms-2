@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -56,6 +57,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       where: { rol: 'ADMIN' }
     })
 
+    const mensajeAviso = `El cliente reportó que el enlace de ${enlace.concepto} está vencido. Genera y envía uno nuevo.`
+
     for (const admin of admins) {
       await prisma.notificacion.create({
         data: {
@@ -63,9 +66,24 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           tramiteId: enlace.tramiteId,
           tipo: 'ALERTA',
           titulo: '⚠️ Enlace de Pago Reportado como Vencido',
-          mensaje: `El cliente reportó que el enlace de ${enlace.concepto} está vencido. Genera y envía uno nuevo.`
+          mensaje: mensajeAviso
         }
       })
+
+      // Enviar email al admin
+      if (admin.email) {
+        try {
+          await enviarEmailNotificacion(
+            admin.email,
+            admin.name || 'Administrador',
+            '⚠️ Enlace de Pago Reportado como Vencido',
+            mensajeAviso,
+            enlace.tramiteId
+          )
+        } catch {
+          // Email no crítico
+        }
+      }
     }
 
     return NextResponse.json({ success: true })

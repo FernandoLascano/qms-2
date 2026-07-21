@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10 // Timeout de 10 segundos máximo
@@ -126,26 +127,42 @@ export async function POST(
     } else if (!esAdmin && tramiteForNotify) {
       const admins = await prisma.user.findMany({
         where: { rol: 'ADMIN' },
-        select: { id: true },
+        select: { id: true, email: true, name: true },
       })
       const denom = tramiteForNotify.denominacionSocial1?.trim() || 'Trámite'
       const titulo =
         denom.length > 56 ? `Chat trámite: ${denom.slice(0, 53)}…` : `Chat trámite: ${denom}`
       const nombre = session.user?.name?.trim() || 'Cliente'
+      const mensajeAviso = `${nombre}: ${textoCorto}`
       await Promise.all(
-        admins.map((admin) =>
-          prisma.notificacion.create({
+        admins.map(async (admin) => {
+          await prisma.notificacion.create({
             data: {
               tipo: 'MENSAJE',
               titulo,
-              mensaje: `${nombre}: ${textoCorto}`,
+              mensaje: mensajeAviso,
               userId: admin.id,
               tramiteId: id,
               leida: false,
               link: `/dashboard/admin/tramites/${id}`,
             },
-          }),
-        ),
+          })
+
+          // Enviar email al admin
+          if (admin.email) {
+            try {
+              await enviarEmailNotificacion(
+                admin.email,
+                admin.name || 'Administrador',
+                titulo,
+                mensajeAviso,
+                id
+              )
+            } catch {
+              // Email no crítico
+            }
+          }
+        }),
       )
     }
 

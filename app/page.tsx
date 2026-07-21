@@ -2,6 +2,10 @@ import HomePage from '@/components/landing/HomePage'
 import { prisma } from '@/lib/prisma'
 import type { NotaCard } from '@/components/landing/NotasClient'
 
+// ISR: regenerar la home cada 5 min para reflejar cambios en notas destacadas
+// (igual que /blog y /blog/[slug]). Sin esto la home queda estática desde el build.
+export const revalidate = 300
+
 export default async function Page() {
   let destacadas: NotaCard[] = []
 
