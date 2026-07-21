@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Clock, Tag, ArrowLeft, ArrowRight, User } from 'lucide-react'
@@ -35,6 +36,14 @@ interface PostData {
 }
 
 export default function BlogPostContent({ post }: { post: PostData }) {
+  // Registrar la vista una sola vez por carga (conteo real por visita).
+  const vistaRegistrada = useRef(false)
+  useEffect(() => {
+    if (vistaRegistrada.current) return
+    vistaRegistrada.current = true
+    fetch(`/api/blog/${post.id}/vista`, { method: 'POST', keepalive: true }).catch(() => {})
+  }, [post.id])
+
   const renderSection = (section: { type: string; content?: string; text?: string; items?: string[] }, index: number) => {
     switch (section.type) {
       case 'h2':

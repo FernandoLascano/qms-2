@@ -85,11 +85,10 @@ export default async function PostPage({ params }: Props) {
     notFound()
   }
 
-  // Incrementar vistas en background (no bloquea el render)
-  prisma.post.update({
-    where: { slug },
-    data: { vistas: { increment: 1 } }
-  }).catch(() => {})
+  // Nota: el conteo de vistas se hace del lado del cliente (ver BlogPostContent),
+  // no acá. Esta página es estática (SSG + ISR), así que un update en el render
+  // sólo correría en build/regeneración —no por visita real— e introduce un write
+  // a la BD durante el prerender que puede hacer fallar el build en Vercel.
 
   // Serializar datos para el client component
   const postData = {
