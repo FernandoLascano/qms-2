@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { blogPostCreateSchema } from '@/lib/schemas/blog'
 import DOMPurify from 'isomorphic-dompurify'
+import { revalidatePath } from 'next/cache'
 
 function emptyPublicListDevFallback(publicoSolo: boolean) {
   if (publicoSolo && process.env.NODE_ENV === 'development') {
@@ -144,6 +145,11 @@ export async function POST(request: NextRequest) {
         fechaPublicacion: d.fechaPublicacion ?? new Date(),
       },
     })
+
+    // Reflejar el nuevo post en las páginas públicas sin esperar al ISR
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath(`/blog/${post.slug}`)
 
     return NextResponse.json(post)
   } catch {

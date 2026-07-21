@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { blogPostUpdateSchema } from '@/lib/schemas/blog'
 import DOMPurify from 'isomorphic-dompurify'
+import { revalidatePath } from 'next/cache'
 
 // GET - Obtener un post por ID
 export async function GET(
@@ -90,6 +91,11 @@ export async function PATCH(
       data: patch as any,
     })
 
+    // Reflejar los cambios en las páginas públicas sin esperar al ISR
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath(`/blog/${post.slug}`)
+
     return NextResponse.json(post)
   } catch {
     return NextResponse.json(
@@ -123,9 +129,14 @@ export async function DELETE(
     }
 
     const { id } = await params
-    await prisma.post.delete({
+    const deleted = await prisma.post.delete({
       where: { id }
     })
+
+    // Quitar el post de las páginas públicas sin esperar al ISR
+    revalidatePath('/')
+    revalidatePath('/blog')
+    revalidatePath(`/blog/${deleted.slug}`)
 
     return NextResponse.json({ success: true })
   } catch {
