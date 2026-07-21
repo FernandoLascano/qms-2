@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard, BookOpen } from 'lucide-react'
 import Link from 'next/link'
+import { ServiceStatus } from '@/components/dashboard/service-status'
 
 async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
@@ -62,6 +63,9 @@ async function AdminDashboardPage() {
           Gestiona todos los trámites y usuarios de la plataforma
         </p>
       </div>
+
+      {/* Estado de servicios (health check en vivo) */}
+      <ServiceStatus />
 
       {/* Stats Cards */}
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
