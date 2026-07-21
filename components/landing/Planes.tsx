@@ -60,6 +60,9 @@ export function Planes() {
           <p className="text-lg text-gray-500 max-w-2xl mx-auto">
             Ofrecemos distintos servicios según las necesidades que tengas
           </p>
+          <p className="text-base font-semibold text-brand-700 max-w-2xl mx-auto mt-3">
+            Pago único, no mensual: es el precio por la constitución de tu sociedad según el plan elegido.
+          </p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -77,7 +80,12 @@ export function Planes() {
               <div className="mb-2">
                 <span className="text-4xl font-bold text-gray-900">${precios.precioPlanBasico.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">+ gastos</p>
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                  Pago único
+                </span>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+              </div>
             </div>
 
             <AnimatedList asList className="space-y-3 mb-8">
@@ -124,7 +132,12 @@ export function Planes() {
               <div className="mb-2">
                 <span className="text-4xl font-bold text-brand-700">${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">+ gastos</p>
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                  Pago único
+                </span>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+              </div>
             </div>
 
             <AnimatedList asList className="space-y-3 mb-8">
@@ -165,7 +178,12 @@ export function Planes() {
               <div className="mb-2">
                 <span className="text-4xl font-bold text-gray-900">${precios.precioPlanPremium.toLocaleString('es-AR')}</span>
               </div>
-              <p className="text-sm text-gray-500">+ gastos</p>
+              <div className="mt-2 flex flex-col items-center gap-1">
+                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                  Pago único
+                </span>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+              </div>
             </div>
 
             <AnimatedList asList className="space-y-3 mb-8">
@@ -200,7 +218,8 @@ export function Planes() {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <p>
-            <strong>Nota:</strong> Los precios no incluyen las tasas de inscripción de IGJ/IPJ (varían según jurisdicción y capital social)
+            <strong>Es un pago único</strong> por la constitución de la sociedad —no es una suscripción mensual—.
+            Los precios no incluyen las tasas de inscripción de IGJ/IPJ (varían según jurisdicción y capital social)
             ni el depósito del 25% del capital social. Te informamos todos los costos detallados antes de comenzar.
           </p>
         </motion.div>
