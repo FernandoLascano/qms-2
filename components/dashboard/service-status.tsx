@@ -20,7 +20,9 @@ interface HealthResponse {
   services: ServiceResult[]
 }
 
-const REFRESH_MS = 60_000
+// Refresco espaciado para no consumir CPU de Vercel; el monitoreo real va por
+// el email 2×/día. Además pausamos cuando la pestaña no está visible.
+const REFRESH_MS = 300_000
 
 const DOT: Record<ServiceStatus, string> = {
   ok: 'bg-green-500',
@@ -66,7 +68,10 @@ export function ServiceStatus() {
 
   useEffect(() => {
     load()
-    const refresh = setInterval(load, REFRESH_MS)
+    // Solo refresca automáticamente si la pestaña está visible.
+    const refresh = setInterval(() => {
+      if (document.visibilityState === 'visible') load()
+    }, REFRESH_MS)
     const tick = setInterval(() => {
       if (lastFetch.current) setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
     }, 1000)
@@ -111,7 +116,7 @@ export function ServiceStatus() {
         <div className="flex items-center gap-3">
           {data && !error && (
             <span className="text-xs text-gray-400 hidden sm:inline">
-              hace {secondsAgo}s
+              hace {secondsAgo < 60 ? `${secondsAgo}s` : `${Math.floor(secondsAgo / 60)}min`}
             </span>
           )}
           <button
