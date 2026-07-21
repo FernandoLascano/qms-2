@@ -45,7 +45,6 @@ export async function chatWithAssistant(
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: claudeMessages,
-    temperature: 0.3,
   })
 
   return textFromMessage(response) || 'No pude generar una respuesta.'

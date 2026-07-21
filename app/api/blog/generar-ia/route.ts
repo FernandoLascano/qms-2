@@ -109,7 +109,6 @@ Responde ÚNICAMENTE con un JSON válido:
       apiKey,
       system: systemPrompt,
       user: userPrompt,
-      temperature: 0.7,
       maxTokens: 4000,
     })
 

@@ -103,7 +103,6 @@ Contexto del servicio:
 
 Respondé en español argentino, formato markdown.`,
       user: `Estas son las últimas ${consultas.length} preguntas que hicieron los visitantes:\n\n- ${preguntas}`,
-      temperature: 0.3,
       maxTokens: 3000,
     })
 

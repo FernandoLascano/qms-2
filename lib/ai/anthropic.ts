@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 
 export function getAnthropicModel(): string {
-  return process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-20250514'
+  // claude-sonnet-4-20250514 fue retirado (jun 2026) → 404. Usamos el reemplazo actual.
+  return process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-5'
 }
 
 export function createAnthropicClient(apiKey: string) {
@@ -21,15 +22,14 @@ export async function completeWithClaude(params: {
   system: string
   user: string
   maxTokens: number
-  temperature: number
 }): Promise<string> {
   const client = createAnthropicClient(params.apiKey)
+  // Nota: los modelos actuales (Sonnet 5 / Opus 4.x) rechazan `temperature`; no se envía.
   const msg = await client.messages.create({
     model: getAnthropicModel(),
     max_tokens: params.maxTokens,
     system: params.system,
     messages: [{ role: 'user', content: params.user }],
-    temperature: params.temperature,
   })
   return textFromMessage(msg) || 'No se pudo generar una respuesta.'
 }
