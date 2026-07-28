@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { getPublicConfig } from '@/lib/config'
 
 export const alt = 'QuieroMiSAS - Constituí tu SAS online en Argentina'
@@ -8,6 +10,9 @@ export const contentType = 'image/png'
 export default async function Image() {
   const { precioPlanBasico } = await getPublicConfig()
   const desde = `$${precioPlanBasico.toLocaleString('es-AR')}`
+
+  const logoData = await readFile(join(process.cwd(), 'public/assets/img/qms-logo-white.png'))
+  const logoSrc = `data:image/png;base64,${logoData.toString('base64')}`
 
   return new ImageResponse(
     (
@@ -29,26 +34,11 @@ export default async function Image() {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px',
             marginBottom: '40px',
           }}
         >
-          <div
-            style={{
-              background: '#dc2626',
-              borderRadius: '16px',
-              padding: '12px 24px',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ color: 'white', fontSize: '36px', fontWeight: 800 }}>
-              QMS
-            </span>
-          </div>
-          <span style={{ color: '#9ca3af', fontSize: '28px', fontWeight: 500 }}>
-            QuieroMiSAS
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoSrc} alt="QuieroMiSAS" width={321} height={120} />
         </div>
 
         {/* Main title */}
@@ -73,6 +63,8 @@ export default async function Image() {
           </span>
           <span
             style={{
+              display: 'flex',
+              gap: '16px',
               color: 'white',
               fontSize: '56px',
               fontWeight: 900,
@@ -80,7 +72,7 @@ export default async function Image() {
               lineHeight: 1.1,
             }}
           >
-            en{' '}
+            <span>en</span>
             <span style={{ color: '#dc2626' }}>5 días</span>
           </span>
         </div>
@@ -94,7 +86,7 @@ export default async function Image() {
             textAlign: 'center',
           }}
         >
-          100% online · Córdoba y CABA · Desde {desde}
+          100% online · Córdoba · Desde {desde}
         </span>
 
         {/* Bottom bar */}

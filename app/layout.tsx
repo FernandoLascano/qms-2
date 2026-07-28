@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
   title: "Constituir SAS Online en Argentina | Tu Empresa en 5 Días - QuieroMiSAS",
-  description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas. Empezá hoy.`,
+  description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas. Empezá hoy.`,
   keywords: [
     "constituir SAS",
     "crear SAS",
@@ -62,14 +62,14 @@ export async function generateMetadata(): Promise<Metadata> {
     locale: 'es_AR',
     url: 'https://www.quieromisas.com',
     title: 'Constituir SAS Online en Argentina | Tu Empresa en 5 Días',
-    description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.`,
+    description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.`,
     siteName: 'QuieroMiSAS',
     images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Constituir SAS Online en Argentina | QuieroMiSAS',
-    description: `Constituí tu SAS 100% online en Córdoba y CABA. Desde ${desde}. CUIT y matrícula en 5 días hábiles.`,
+    description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles.`,
     images: ['/opengraph-image'],
   },
   alternates: {
