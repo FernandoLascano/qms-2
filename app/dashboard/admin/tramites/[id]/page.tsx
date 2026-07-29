@@ -90,6 +90,11 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []
 
+  // El teléfono es obligatorio en el formulario del trámite y se guarda en datosUsuario,
+  // pero es opcional en el registro, así que user.phone puede estar vacío.
+  const datosUsuarioTramite = (tramite.datosUsuario as any) || {}
+  const telefonoCliente = tramite.user.phone || datosUsuarioTramite.telefono || ''
+
   const editProps = {
     tramiteId: tramite.id,
     tramite: {
@@ -162,7 +167,7 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           </div>
           <div>
             <p className="text-sm text-gray-500 mb-1">Teléfono</p>
-            <p className="font-semibold text-gray-900">{tramite.user.phone || 'No proporcionado'}</p>
+            <p className="font-semibold text-gray-900">{telefonoCliente || 'No proporcionado'}</p>
           </div>
         </CardContent>
       </Card>

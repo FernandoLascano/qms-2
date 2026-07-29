@@ -287,6 +287,19 @@ export async function POST(request: Request) {
       })
     }
 
+    // Completar el teléfono del usuario si no lo cargó al registrarse (ahí es opcional).
+    // En el formulario del trámite es obligatorio, así que aprovechamos ese dato.
+    if (!usuario.phone?.trim() && data.telefono?.trim()) {
+      try {
+        await prisma.user.update({
+          where: { id: usuario.id },
+          data: { phone: data.telefono.trim() }
+        })
+      } catch {
+        // No es crítico: el teléfono queda igual guardado en datosUsuario del trámite
+      }
+    }
+
     // Crear notificación para el usuario
     await prisma.notificacion.create({
       data: {
