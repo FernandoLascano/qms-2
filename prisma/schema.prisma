@@ -38,6 +38,7 @@ model User {
   partnerConversions   PartnerConversion[]
 
   emailVerificationTokens EmailVerificationToken[]
+  leadSeguimientos        LeadSeguimiento[]
 
   @@index([partnerId])
 }
@@ -212,6 +213,11 @@ model Tramite {
   recordatorioEstancado     Boolean @default(false)
   alertaDenominacionEnviada Boolean @default(false)
 
+  // Seguimiento comercial de borradores sin terminar (leads)
+  leadEstado          LeadEstado @default(NUEVO)
+  leadProximoContacto DateTime?
+  leadUltimoContacto  DateTime?
+
   // Fechas importantes
   fechaReservaNombre   DateTime?
   fechaDepositoCapital DateTime?
@@ -248,11 +254,44 @@ model Tramite {
   eventos          Evento[]
   cuentasBancarias CuentaBancaria[]
   emails           Email[]
+  leadSeguimientos LeadSeguimiento[]
 
   @@index([userId])
   @@index([estadoGeneral])
   @@index([createdAt])
   @@index([userId, estadoGeneral])
+  @@index([formularioCompleto, leadEstado])
+}
+
+// Historial de contactos con leads (borradores sin terminar)
+model LeadSeguimiento {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  adminId   String
+  admin     User    @relation(fields: [adminId], references: [id])
+
+  canal     LeadCanal
+  nota      String    @db.Text
+  createdAt DateTime  @default(now())
+
+  @@index([tramiteId])
+  @@index([createdAt])
+}
+
+enum LeadEstado {
+  NUEVO
+  CONTACTADO
+  EN_CONVERSACION
+  CONVERTIDO
+  DESCARTADO
+}
+
+enum LeadCanal {
+  LLAMADA
+  WHATSAPP
+  EMAIL
+  OTRO
 }
 
 

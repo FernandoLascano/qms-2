@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard, BookOpen } from 'lucide-react'
+import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard, BookOpen, UserSearch } from 'lucide-react'
 import Link from 'next/link'
 import { ServiceStatus } from '@/components/dashboard/service-status'
 
@@ -26,18 +26,24 @@ async function AdminDashboardPage() {
     totalUsuarios,
     documentosPendientes,
     tramitesPendientesValidacion,
-    tramitesRecientes
+    tramitesRecientes,
+    leadsSinContactar,
+    leadsASeguir
   ] = await Promise.all([
-    prisma.tramite.count(),
+    // Los borradores sin enviar no son trámites: se cuentan aparte, como leads.
+    prisma.tramite.count({ where: { formularioCompleto: true } }),
     prisma.tramite.count({ where: { sociedadInscripta: true } }),
     prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
-    prisma.tramite.count({ where: { estadoGeneral: 'INICIADO' } }),
+    prisma.tramite.count({ where: { formularioCompleto: true, estadoGeneral: 'INICIADO' } }),
     prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
     prisma.user.count(),
     prisma.documento.count({ where: { estado: 'PENDIENTE' } }),
-    prisma.tramite.count({ where: { estadoValidacion: 'PENDIENTE_VALIDACION' } }),
+    prisma.tramite.count({
+      where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' }
+    }),
     prisma.tramite.findMany({
       take: 5,
+      where: { formularioCompleto: true },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -45,6 +51,21 @@ async function AdminDashboardPage() {
         estadoGeneral: true,
         createdAt: true,
         user: { select: { name: true, email: true } }
+      }
+    }),
+    prisma.tramite.count({
+      where: {
+        formularioCompleto: false,
+        leadEstado: 'NUEVO',
+        user: { tramites: { none: { formularioCompleto: true } } }
+      }
+    }),
+    prisma.tramite.count({
+      where: {
+        formularioCompleto: false,
+        leadEstado: { notIn: ['CONVERTIDO', 'DESCARTADO'] },
+        leadProximoContacto: { lte: new Date() },
+        user: { tramites: { none: { formularioCompleto: true } } }
       }
     })
   ])
@@ -131,6 +152,43 @@ async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Alerta de Leads sin seguimiento */}
+      {(leadsSinContactar > 0 || leadsASeguir > 0) && (
+        <Card className="border-2 border-amber-400 bg-amber-50 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-amber-200 flex items-center justify-center flex-shrink-0">
+                <UserSearch className="h-6 w-6 text-amber-700" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-900 mb-1">
+                  Leads esperando seguimiento
+                </h3>
+                <p className="text-sm text-amber-800 mb-4">
+                  {leadsSinContactar > 0 && (
+                    <>
+                      <strong>{leadsSinContactar}</strong> lead{leadsSinContactar !== 1 ? 's' : ''} sin contactar
+                      {leadsASeguir > 0 ? ' y ' : '. '}
+                    </>
+                  )}
+                  {leadsASeguir > 0 && (
+                    <>
+                      <strong>{leadsASeguir}</strong> con el seguimiento vencido.{' '}
+                    </>
+                  )}
+                  Empezaron el formulario y no lo terminaron.
+                </p>
+                <Link href="/dashboard/admin/leads">
+                  <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-lg">
+                    Ver Leads
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Alerta de Trámites Pendientes de Validación */}
       {tramitesPendientesValidacion > 0 && (

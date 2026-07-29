@@ -17,6 +17,11 @@ export const calcularProgreso = (tramite: any) => {
 export const getEstadoColor = (tramite: any) => {
   const progreso = calcularProgreso(tramite)
 
+  // Borrador: el cliente todavía no envió el formulario
+  if (!tramite.formularioCompleto) {
+    return 'bg-amber-100 text-amber-800 border-amber-200'
+  }
+
   // Si está al 100%, mostrar verde (Completado)
   if (progreso === 100 || tramite.sociedadInscripta) {
     return 'bg-green-100 text-green-800 border-green-200'
@@ -42,6 +47,11 @@ export const getEstadoColor = (tramite: any) => {
 
 export const getEstadoTexto = (tramite: any) => {
   const progreso = calcularProgreso(tramite)
+
+  // Borrador: el cliente empezó el formulario pero nunca lo envió
+  if (!tramite.formularioCompleto) {
+    return 'Borrador'
+  }
 
   // Si está al 100%, mostrar "Completado"
   if (progreso === 100 || tramite.sociedadInscripta) {

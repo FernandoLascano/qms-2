@@ -120,6 +120,9 @@ export default function NuevoTramitePage() {
   const { data: session, status } = useSession()
   const [pasoActual, setPasoActual] = useState(1)
   const [guardando, setGuardando] = useState(false)
+  // Una vez enviado hay que cortar el auto-guardado: si sigue corriendo, el
+  // borrador ya no existe (quedó marcado como completo) y crea un trámite duplicado.
+  const [enviado, setEnviado] = useState(false)
   const [cargandoBorrador, setCargandoBorrador] = useState(true)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
   const [smvm, setSmvm] = useState(317800) // Valor por defecto
@@ -404,8 +407,8 @@ export default function NuevoTramitePage() {
 
   // Auto-guardado
   const handleAutoSave = useCallback(async (data: FormData) => {
-    if (status !== 'authenticated') return
-    
+    if (status !== 'authenticated' || enviado) return
+
     try {
       // Obtener tramiteId de la URL si está presente
       const urlParams = new URLSearchParams(window.location.search)
@@ -434,13 +437,13 @@ export default function NuevoTramitePage() {
     } catch (error) {
       console.error('Error en auto-guardado:', error)
     }
-  }, [status])
+  }, [status, enviado])
 
   const { isSaving, lastSaved } = useAutoSave({
     data: formData,
     onSave: handleAutoSave,
     delay: 5000, // 5 segundos
-    enabled: status === 'authenticated' && pasoActual >= 1 // Habilitar desde el paso 1
+    enabled: status === 'authenticated' && pasoActual >= 1 && !enviado // Habilitar desde el paso 1, cortar al enviar
   })
 
   // Validación en tiempo real para el paso 1
@@ -648,6 +651,7 @@ export default function NuevoTramitePage() {
       const result = await response.json()
 
       if (response.ok && result.success) {
+        setEnviado(true)
         toast.success('¡Trámite creado exitosamente! Redirigiendo...')
         trackEvent.enviarTramite({
           tramite_id: result.tramite?.id,

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake } from 'lucide-react'
+import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake, UserSearch } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
@@ -92,6 +92,7 @@ export function Sidebar() {
         { name: 'Panel de Admin', href: '/dashboard/admin', icon: Shield },
         { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
         { name: 'Sociedades', href: '/dashboard/admin/sociedades', icon: Building2 },
+        { name: 'Leads', href: '/dashboard/admin/leads', icon: UserSearch },
         { name: 'Usuarios', href: '/dashboard/admin/usuarios', icon: Users },
         { name: 'Email', href: '/dashboard/admin/emails', icon: Mail },
         { name: 'Blog', href: '/dashboard/admin/blog', icon: BookOpen },
@@ -149,6 +150,7 @@ export function Sidebar() {
             (item.href === '/dashboard/admin' && pathname === '/dashboard/admin') ||
             (item.href === '/dashboard/admin/analytics' && pathname?.startsWith('/dashboard/admin/analytics')) ||
             (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades')) ||
+            (item.href === '/dashboard/admin/leads' && pathname?.startsWith('/dashboard/admin/leads')) ||
             (item.href === '/dashboard/admin/emails' && pathname?.startsWith('/dashboard/admin/emails')) ||
             (item.href === '/dashboard/admin/consultas-chat' && pathname?.startsWith('/dashboard/admin/consultas-chat')) ||
             (item.href === '/dashboard/admin/jurisdicciones' && pathname?.startsWith('/dashboard/admin/jurisdicciones')) ||
