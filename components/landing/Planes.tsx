@@ -2,7 +2,7 @@
 
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState, useRef } from 'react'
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { AnimatedList } from './AnimatedList'
@@ -18,27 +18,18 @@ const caracteristicas = [
   { nombre: 'Una reunión de asesoría societaria al mes', basico: false, emprendedor: false, premium: true },
 ]
 
-export function Planes() {
+type PreciosPlanes = {
+  precioPlanBasico: number
+  precioPlanEmprendedor: number
+  precioPlanPremium: number
+}
+
+// Los precios llegan como prop desde el server component (app/page.tsx →
+// getPublicConfig), así se renderizan en el HTML inicial y los ve cualquier
+// request (crawler/curl) sin depender de JavaScript.
+export function Planes({ precios }: { precios: PreciosPlanes }) {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
-  const [precios, setPrecios] = useState({
-    precioPlanBasico: 285000,
-    precioPlanEmprendedor: 320000,
-    precioPlanPremium: 390000
-  })
-
-  useEffect(() => {
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => {
-        setPrecios({
-          precioPlanBasico: data.precioPlanBasico,
-          precioPlanEmprendedor: data.precioPlanEmprendedor,
-          precioPlanPremium: data.precioPlanPremium
-        })
-      })
-      .catch(err => console.error('Error al cargar precios:', err))
-  }, [])
 
   return (
     <section ref={sectionRef} id="planes" className="py-20 md:py-28 bg-gradient-to-b from-brand-50 to-white">

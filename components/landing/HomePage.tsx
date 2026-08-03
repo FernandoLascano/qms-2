@@ -18,7 +18,19 @@ import { DesdeTodasLasProvincias } from '@/components/landing/DesdeTodasLasProvi
 import Navbar from '@/components/Navbar'
 
 
-export default function HomePage({ destacadas = [] }: { destacadas?: NotaCard[] }) {
+type PreciosPlanes = {
+  precioPlanBasico: number
+  precioPlanEmprendedor: number
+  precioPlanPremium: number
+}
+
+export default function HomePage({
+  destacadas = [],
+  precios,
+}: {
+  destacadas?: NotaCard[]
+  precios: PreciosPlanes
+}) {
   const stepsRef = useRef(null)
 
 
@@ -411,7 +423,7 @@ export default function HomePage({ destacadas = [] }: { destacadas?: NotaCard[] 
       <QueEsSAS />
 
       {/* Planes y Precios */}
-      <Planes />
+      <Planes precios={precios} />
 
       {/* Gastos por Jurisdicción */}
       <GastosJurisdiccion />
