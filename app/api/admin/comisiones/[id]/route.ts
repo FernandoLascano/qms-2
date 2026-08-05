@@ -83,10 +83,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Movimiento no encontrado' }, { status: 404 })
     }
     if (actual.origen === 'PAGO') {
-      return NextResponse.json(
-        { error: 'Este movimiento proviene de un pago del sistema y no puede eliminarse.' },
-        { status: 400 }
-      )
+      // No se borra (la sincronización lo recrearía): se excluye del reparto.
+      await prisma.movimientoComision.update({ where: { id }, data: { excluido: true } })
+      return NextResponse.json({ success: true, excluido: true })
     }
     await prisma.movimientoComision.delete({ where: { id } })
     return NextResponse.json({ success: true })

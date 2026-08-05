@@ -478,6 +478,7 @@ model MovimientoComision {
   monto      Float // honorario sin gastos = base de reparto
   originador Originador       @default(NINGUNO)
   origen     OrigenMovimiento @default(MANUAL)
+  excluido   Boolean          @default(false) // sacado del reparto (no es ingreso computable de QMS)
 
   // Link idempotente al Pago del sistema (si origen = PAGO)
   pagoId String? @unique

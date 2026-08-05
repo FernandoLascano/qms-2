@@ -154,7 +154,7 @@ export default function ComisionesPage() {
     try {
       const res = await fetch(`/api/admin/comisiones/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error((await res.json()).error)
-      toast.success('Movimiento eliminado')
+      toast.success('Movimiento quitado')
       await cargar()
     } catch (e: any) {
       toast.error(e.message || 'Error al eliminar')
@@ -240,7 +240,7 @@ export default function ComisionesPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto text-gray-900">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="h-11 w-11 rounded-xl bg-brand-700 flex items-center justify-center">
@@ -284,7 +284,7 @@ export default function ComisionesPage() {
                 <div><Label>Honorario (sin gastos)</Label><Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" /></div>
                 <div>
                   <Label>Originador</Label>
-                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
                     {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
                   </select>
                 </div>
@@ -323,7 +323,7 @@ export default function ComisionesPage() {
                         </td>
                         <td className="pr-3 text-right font-medium whitespace-nowrap">{fmt(m.monto)}</td>
                         <td className="pr-3">
-                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs">
+                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs text-gray-900">
                             {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
                           </select>
                         </td>
@@ -333,9 +333,7 @@ export default function ComisionesPage() {
                         <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoFernando)}</td>
                         <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoJustiniano)}</td>
                         <td className="text-right">
-                          {m.origen === 'MANUAL' && (
-                            <button onClick={() => eliminarMovimiento(m.id)} className="text-gray-400 hover:text-red-600 p-1" title="Eliminar"><Trash2 className="h-4 w-4" /></button>
-                          )}
+                          <button onClick={() => eliminarMovimiento(m.id)} className="text-gray-500 hover:text-red-600 p-1" title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}><Trash2 className="h-4 w-4" /></button>
                         </td>
                       </tr>
                     )
@@ -352,7 +350,7 @@ export default function ComisionesPage() {
         <div className="space-y-6">
           <div className="flex items-center gap-3 flex-wrap">
             <Label className="mb-0">Período:</Label>
-            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium">
+            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium text-gray-900">
               {periodos.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
             <span className="text-sm text-gray-500">Ingreso bruto: <strong className="text-gray-900">{fmt(totales.ingresoBruto)}</strong></span>
@@ -389,8 +387,8 @@ export default function ComisionesPage() {
                   )
                 })}
                 <div className="flex justify-between border-t pt-3 text-sm">
-                  <span className="font-semibold">Subtotal a pagar</span>
-                  <span className="font-bold">{fmt(totales.subtotalPagable)}</span>
+                  <span className="font-semibold text-gray-900">Subtotal a pagar</span>
+                  <span className="font-bold text-gray-900">{fmt(totales.subtotalPagable)}</span>
                 </div>
               </div>
             </CardContent>
@@ -400,8 +398,8 @@ export default function ComisionesPage() {
             <CardHeader><CardTitle variant="section">Fondo de Desarrollo del período (acumula, no se paga)</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span>Fondo Fernando (12%)</span><strong>{fmt(totales.fondoFernando)}</strong></div>
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span>Fondo Justiniano (8%)</span><strong>{fmt(totales.fondoJustiniano)}</strong></div>
+                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Fernando (12%)</span><strong className="text-gray-900">{fmt(totales.fondoFernando)}</strong></div>
+                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Justiniano (8%)</span><strong className="text-gray-900">{fmt(totales.fondoJustiniano)}</strong></div>
               </div>
               <p className={`text-sm mt-3 ${Math.abs(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo) < 0.01 ? 'text-green-600' : 'text-red-600'}`}>
                 Control: bruto − pagable − fondo = {fmt(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo)}
@@ -424,7 +422,7 @@ export default function ComisionesPage() {
                   <CardContent className="space-y-1 text-sm">
                     <div className="flex justify-between"><span className="text-gray-600">Acumulado histórico</span><span className="text-gray-900">{fmt(acum)}</span></div>
                     <div className="flex justify-between"><span className="text-gray-600">Distribuido</span><span className="text-gray-900">− {fmt(distrib)}</span></div>
-                    <div className="flex justify-between border-t pt-1 font-bold"><span>Saldo disponible</span><span className="text-green-700">{fmt(acum - distrib)}</span></div>
+                    <div className="flex justify-between border-t pt-1 font-bold"><span className="text-gray-900">Saldo disponible</span><span className="text-green-700">{fmt(acum - distrib)}</span></div>
                   </CardContent>
                 </Card>
               )
@@ -438,7 +436,7 @@ export default function ComisionesPage() {
                 <div><Label>Fecha</Label><Input type="date" value={dist.fecha} onChange={(e) => setDist({ ...dist, fecha: e.target.value })} /></div>
                 <div>
                   <Label>Beneficiario</Label>
-                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm">
+                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
                     <option value="FERNANDO">Fernando</option>
                     <option value="JUSTINIANO">Justiniano</option>
                   </select>
@@ -463,7 +461,7 @@ export default function ComisionesPage() {
                       <td className="pr-3">{BENEFICIARIO_LABEL[d.beneficiario]}</td>
                       <td className="pr-3 text-right">{fmt(d.monto)}</td>
                       <td className="pr-3 text-gray-600">{d.notas || '—'}</td>
-                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="h-4 w-4" /></button></td>
+                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-gray-500 hover:text-red-600 p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
                 </tbody>

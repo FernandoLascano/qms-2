@@ -19,7 +19,7 @@ export async function GET() {
 
     const [porcentajes, movimientos, liquidaciones, distribucionesFondo] = await Promise.all([
       getPorcentajes(),
-      prisma.movimientoComision.findMany({ orderBy: { fecha: 'desc' } }),
+      prisma.movimientoComision.findMany({ where: { excluido: false }, orderBy: { fecha: 'desc' } }),
       prisma.liquidacionPago.findMany(),
       prisma.distribucionFondo.findMany({ orderBy: { fecha: 'desc' } }),
     ])
