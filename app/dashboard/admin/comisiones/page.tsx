@@ -275,7 +275,7 @@ export default function ComisionesPage() {
       {tab === 'movimientos' && (
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle className="text-base">Agregar movimiento manual</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">Agregar movimiento manual</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
                 <div><Label>Fecha</Label><Input type="date" value={nuevo.fecha} onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })} /></div>
@@ -296,11 +296,11 @@ export default function ComisionesPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Movimientos ({movimientos.length})</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">Movimientos ({movimientos.length})</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm text-gray-800">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b">
+                  <tr className="text-left text-gray-600 border-b">
                     <th className="py-2 pr-3">Fecha</th><th className="pr-3">Cliente</th><th className="pr-3">Asunto</th>
                     <th className="pr-3">Origen</th><th className="pr-3 text-right">Honorario</th><th className="pr-3">Originador</th>
                     <th className="pr-3 text-right">Com. orig.</th><th className="pr-3 text-right">MW</th><th className="pr-3 text-right">Operador</th>
@@ -309,7 +309,7 @@ export default function ComisionesPage() {
                 </thead>
                 <tbody>
                   {movimientos.length === 0 && (
-                    <tr><td colSpan={12} className="py-6 text-center text-gray-400">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
+                    <tr><td colSpan={12} className="py-6 text-center text-gray-500">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
                   )}
                   {movimientos.map((m) => {
                     const r = calcularReparto(m.monto, m.originador, porcentajes)
@@ -330,8 +330,8 @@ export default function ComisionesPage() {
                         <td className="pr-3 text-right whitespace-nowrap">{r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}</td>
                         <td className="pr-3 text-right whitespace-nowrap">{fmt(r.mw)}</td>
                         <td className="pr-3 text-right whitespace-nowrap">{fmt(r.operadorFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-500">{fmt(r.fondoFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-500">{fmt(r.fondoJustiniano)}</td>
+                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoFernando)}</td>
+                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoJustiniano)}</td>
                         <td className="text-right">
                           {m.origen === 'MANUAL' && (
                             <button onClick={() => eliminarMovimiento(m.id)} className="text-gray-400 hover:text-red-600 p-1" title="Eliminar"><Trash2 className="h-4 w-4" /></button>
@@ -360,7 +360,7 @@ export default function ComisionesPage() {
           </div>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">A pagar — {periodoSel}</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">A pagar — {periodoSel}</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {(['FERNANDO', 'MW', 'JUSTINIANO'] as Beneficiario[]).map((b) => {
@@ -397,7 +397,7 @@ export default function ComisionesPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Fondo de Desarrollo del período (acumula, no se paga)</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">Fondo de Desarrollo del período (acumula, no se paga)</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span>Fondo Fernando (12%)</span><strong>{fmt(totales.fondoFernando)}</strong></div>
@@ -420,10 +420,10 @@ export default function ComisionesPage() {
               const distrib = b === 'FERNANDO' ? distFernando : distJustiniano
               return (
                 <Card key={b}>
-                  <CardHeader><CardTitle className="text-base">Fondo {BENEFICIARIO_LABEL[b]}</CardTitle></CardHeader>
+                  <CardHeader><CardTitle variant="section">Fondo {BENEFICIARIO_LABEL[b]}</CardTitle></CardHeader>
                   <CardContent className="space-y-1 text-sm">
-                    <div className="flex justify-between"><span className="text-gray-500">Acumulado histórico</span><span>{fmt(acum)}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-500">Distribuido</span><span>− {fmt(distrib)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Acumulado histórico</span><span className="text-gray-900">{fmt(acum)}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600">Distribuido</span><span className="text-gray-900">− {fmt(distrib)}</span></div>
                     <div className="flex justify-between border-t pt-1 font-bold"><span>Saldo disponible</span><span className="text-green-700">{fmt(acum - distrib)}</span></div>
                   </CardContent>
                 </Card>
@@ -432,7 +432,7 @@ export default function ComisionesPage() {
           </div>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Registrar distribución acordada</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">Registrar distribución acordada</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                 <div><Label>Fecha</Label><Input type="date" value={dist.fecha} onChange={(e) => setDist({ ...dist, fecha: e.target.value })} /></div>
@@ -451,18 +451,18 @@ export default function ComisionesPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="text-base">Distribuciones registradas</CardTitle></CardHeader>
+            <CardHeader><CardTitle variant="section">Distribuciones registradas</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead><tr className="text-left text-gray-500 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
+              <table className="w-full text-sm text-gray-800">
+                <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
                 <tbody>
-                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-gray-400">Sin distribuciones registradas.</td></tr>}
+                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-gray-500">Sin distribuciones registradas.</td></tr>}
                   {distribuciones.map((d) => (
                     <tr key={d.id} className="border-b last:border-0">
                       <td className="py-2 pr-3">{fmtFecha(d.fecha)}</td>
                       <td className="pr-3">{BENEFICIARIO_LABEL[d.beneficiario]}</td>
                       <td className="pr-3 text-right">{fmt(d.monto)}</td>
-                      <td className="pr-3 text-gray-500">{d.notas || '—'}</td>
+                      <td className="pr-3 text-gray-600">{d.notas || '—'}</td>
                       <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-gray-400 hover:text-red-600 p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
