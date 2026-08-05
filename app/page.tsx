@@ -1,5 +1,6 @@
 import HomePage from '@/components/landing/HomePage'
 import { prisma } from '@/lib/prisma'
+import { getPublicConfig } from '@/lib/config'
 import type { NotaCard } from '@/components/landing/NotasClient'
 
 // ISR: regenerar la home cada 5 min para reflejar cambios en notas destacadas
@@ -36,5 +37,15 @@ export default async function Page() {
     }
   }
 
-  return <HomePage destacadas={destacadas} />
+  // Precios leídos en el servidor para que las tarjetas de #planes se rendericen
+  // con los valores reales de la DB en el HTML inicial (sin depender de un fetch
+  // client-side que dejaba precios viejos hardcodeados a los crawlers).
+  const { precioPlanBasico, precioPlanEmprendedor, precioPlanPremium } = await getPublicConfig()
+
+  return (
+    <HomePage
+      destacadas={destacadas}
+      precios={{ precioPlanBasico, precioPlanEmprendedor, precioPlanPremium }}
+    />
+  )
 }
