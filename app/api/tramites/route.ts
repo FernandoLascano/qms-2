@@ -287,6 +287,21 @@ export async function POST(request: Request) {
       })
     }
 
+    // Servicio de domicilio en sede: si marcó "no tengo domicilio", registrar la
+    // solicitud pendiente de contacto (idempotente por trámite).
+    if (data.sinDomicilio) {
+      try {
+        const existente = await prisma.domicilioSede.findUnique({ where: { tramiteId: tramite.id } })
+        if (!existente) {
+          await prisma.domicilioSede.create({
+            data: { tramiteId: tramite.id, estado: 'PENDIENTE_CONTACTO' },
+          })
+        }
+      } catch {
+        // No es crítico para la creación del trámite
+      }
+    }
+
     // Completar el teléfono del usuario si no lo cargó al registrarse (ahí es opcional).
     // En el formulario del trámite es obligatorio, así que aprovechamos ese dato.
     if (!usuario.phone?.trim() && data.telefono?.trim()) {

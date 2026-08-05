@@ -78,6 +78,9 @@ export async function PUT(request: NextRequest) {
           comisionFondoFernandoPct: body.comisionFondoFernandoPct,
           comisionFondoJustinianoPct: body.comisionFondoJustinianoPct,
           comisionOriginacionPct: body.comisionOriginacionPct,
+          domicilioSedeDireccion: body.domicilioSedeDireccion,
+          domicilioSedePrecioAnual: body.domicilioSedePrecioAnual,
+          domicilioSedeDiasAlerta: body.domicilioSedeDiasAlerta,
           mantenimientoMode: body.mantenimientoMode,
           emailForwardingEnabled: body.emailForwardingEnabled,
           emailForwardingAddress: body.emailForwardingAddress

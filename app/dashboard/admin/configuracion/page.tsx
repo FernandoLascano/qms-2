@@ -59,6 +59,11 @@ interface ConfigData {
   comisionFondoJustinianoPct: number
   comisionOriginacionPct: number
 
+  // Domicilio en sede
+  domicilioSedeDireccion: string
+  domicilioSedePrecioAnual: number
+  domicilioSedeDiasAlerta: number
+
   // General
   mantenimientoMode: boolean
 }
@@ -97,6 +102,9 @@ export default function ConfiguracionAdminPage() {
     comisionFondoFernandoPct: 12,
     comisionFondoJustinianoPct: 8,
     comisionOriginacionPct: 30,
+    domicilioSedeDireccion: '',
+    domicilioSedePrecioAnual: 0,
+    domicilioSedeDiasAlerta: 30,
     mantenimientoMode: false
   })
 
@@ -708,6 +716,53 @@ export default function ConfiguracionAdminPage() {
                   </p>
                 )
               })()}
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Domicilio en Sede</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Servicio de domicilio legal en la oficina. Usado por el módulo <strong>Domicilios en Sede</strong>.
+              </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="domicilioSedeDireccion">Dirección de la sede</Label>
+                  <Input
+                    id="domicilioSedeDireccion"
+                    value={config.domicilioSedeDireccion}
+                    onChange={(e) => setConfig({ ...config, domicilioSedeDireccion: e.target.value })}
+                    placeholder="Ituzaingó 87, 5to Piso, Córdoba"
+                  />
+                  <p className="text-sm text-gray-500">Se usa como domicilio legal del trámite al activar el servicio.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="domicilioSedePrecioAnual">Precio anual</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-3 text-gray-500">$</span>
+                      <Input
+                        id="domicilioSedePrecioAnual"
+                        type="number"
+                        value={config.domicilioSedePrecioAnual}
+                        onChange={(e) => setConfig({ ...config, domicilioSedePrecioAnual: parseFloat(e.target.value) })}
+                        className="pl-7"
+                        min={0}
+                        step={1000}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="domicilioSedeDiasAlerta">Alerta de vencimiento (días antes)</Label>
+                    <Input
+                      id="domicilioSedeDiasAlerta"
+                      type="number"
+                      value={config.domicilioSedeDiasAlerta}
+                      onChange={(e) => setConfig({ ...config, domicilioSedeDiasAlerta: parseInt(e.target.value) })}
+                      min={0}
+                      step={1}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">

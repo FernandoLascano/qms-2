@@ -255,6 +255,7 @@ model Tramite {
   cuentasBancarias CuentaBancaria[]
   emails           Email[]
   leadSeguimientos LeadSeguimiento[]
+  domicilioSede    DomicilioSede?
 
   @@index([userId])
   @@index([estadoGeneral])
@@ -521,6 +522,34 @@ model DistribucionFondo {
   createdAt DateTime @default(now())
 
   @@index([fecha])
+}
+
+// ============================================================
+// DOMICILIO EN SEDE (servicio de domicilio legal en la oficina)
+// ============================================================
+
+enum EstadoDomicilioSede {
+  PENDIENTE_CONTACTO // el cliente marcó "no tengo domicilio" → hay que contactarlo y ofrecer
+  ACTIVO // contratado y vigente
+  CANCELADO // no aceptó o se dio de baja
+}
+
+model DomicilioSede {
+  id               String              @id @default(cuid())
+  tramiteId        String              @unique
+  tramite          Tramite             @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  estado           EstadoDomicilioSede @default(PENDIENTE_CONTACTO)
+  montoAnual       Float? // precio acordado (toma el default de Config al activar)
+  fechaInicio      DateTime?
+  fechaVencimiento DateTime? // se cobra de nuevo al llegar esta fecha (vencido/por vencer se deriva)
+  ultimoCobro      DateTime?
+  notas            String?             @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([estado])
+  @@index([fechaVencimiento])
 }
 
 // CUENTAS BANCARIAS POR TRÁMITE (por ejemplo, depósito de capital)
@@ -824,6 +853,11 @@ model Config {
   comisionFondoFernandoPct   Float @default(12) // Fondo de Desarrollo - Fernando
   comisionFondoJustinianoPct Float @default(8) // Fondo de Desarrollo - Justiniano
   comisionOriginacionPct     Float @default(30) // Comisión de originación (sobre el ingreso del asunto derivado)
+
+  // Domicilio en sede (servicio de domicilio legal en la oficina)
+  domicilioSedeDireccion   String @default("Ituzaingó 87, 5to Piso, Córdoba") // Dirección usada como domicilio legal
+  domicilioSedePrecioAnual Float  @default(0) // Precio anual del servicio
+  domicilioSedeDiasAlerta  Int    @default(30) // Días antes del vencimiento para alertar
 
   // General
   mantenimientoMode Boolean @default(false)
