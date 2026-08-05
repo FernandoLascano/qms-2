@@ -10,19 +10,19 @@ datasource db {
 
 // USUARIOS Y AUTENTICACIÓN
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String?
-  name          String
-  phone         String?
-  rol           Rol       @default(CLIENTE)
-  partnerId     String?
-  referredAt    DateTime?
+  id             String    @id @default(cuid())
+  email          String    @unique
+  password       String?
+  name           String
+  phone          String?
+  rol            Rol       @default(CLIENTE)
+  partnerId      String?
+  referredAt     DateTime?
   referralSource String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]
@@ -32,9 +32,9 @@ model User {
   notificaciones       Notificacion[]
   pagos                Pago[]
   mensajes             Mensaje[]
-  reunionesComoCliente Evento[]       @relation("ReunionesCliente")
-  reunionesComoAdmin   Evento[]       @relation("ReunionesAdmin")
-  partner              Partner?       @relation(fields: [partnerId], references: [id])
+  reunionesComoCliente Evento[]            @relation("ReunionesCliente")
+  reunionesComoAdmin   Evento[]            @relation("ReunionesAdmin")
+  partner              Partner?            @relation(fields: [partnerId], references: [id])
   partnerConversions   PartnerConversion[]
 
   emailVerificationTokens EmailVerificationToken[]
@@ -80,11 +80,11 @@ model VerificationToken {
 }
 
 model EmailVerificationToken {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  tokenHash String   @unique
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
 
@@ -106,59 +106,59 @@ enum PartnerDiscountType {
 }
 
 model Partner {
-  id                       String    @id @default(cuid())
-  nombre                   String
-  slug                     String    @unique
-  logoUrl                  String?
-  beneficios               Json?
-  activo                   Boolean   @default(true)
-  aplicaDescuento          Boolean   @default(false)
-  descuentoTipo            PartnerDiscountType?
-  descuentoValor           Float?
-  aplicaComision           Boolean   @default(false)
-  comisionPorcentaje       Float?
-  condicionesNotas         String?   @db.Text
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  id                 String               @id @default(cuid())
+  nombre             String
+  slug               String               @unique
+  logoUrl            String?
+  beneficios         Json?
+  activo             Boolean              @default(true)
+  aplicaDescuento    Boolean              @default(false)
+  descuentoTipo      PartnerDiscountType?
+  descuentoValor     Float?
+  aplicaComision     Boolean              @default(false)
+  comisionPorcentaje Float?
+  condicionesNotas   String?              @db.Text
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
-  users                    User[]
-  clicks                   ReferralClick[]
-  conversions              PartnerConversion[]
+  users       User[]
+  clicks      ReferralClick[]
+  conversions PartnerConversion[]
 
   @@index([activo])
 }
 
 model ReferralClick {
-  id         String   @id @default(cuid())
-  partnerId  String
-  partner    Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  ip         String?
-  userAgent  String?
-  referrer   String?
+  id          String   @id @default(cuid())
+  partnerId   String
+  partner     Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  ip          String?
+  userAgent   String?
+  referrer    String?
   landingPath String?
-  clickedAt  DateTime @default(now())
+  clickedAt   DateTime @default(now())
 
   @@index([partnerId, clickedAt])
 }
 
 model PartnerConversion {
-  id                         String   @id @default(cuid())
+  id                         String               @id @default(cuid())
   partnerId                  String
-  partner                    Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  userId                     String   @unique
-  user                       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  partner                    Partner              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  userId                     String               @unique
+  user                       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   pagoId                     String?
   montoCobrado               Float
   metodoPago                 String?
   sourceType                 String
   sourceId                   String?
-  descuentoAplicado          Boolean  @default(false)
+  descuentoAplicado          Boolean              @default(false)
   descuentoTipoSnapshot      PartnerDiscountType?
   descuentoValorSnapshot     Float?
-  comisionAplicada           Boolean  @default(false)
+  comisionAplicada           Boolean              @default(false)
   comisionPorcentajeSnapshot Float?
   comisionEstimada           Float?
-  convertedAt                DateTime @default(now())
+  convertedAt                DateTime             @default(now())
 
   @@index([partnerId, convertedAt])
   @@index([sourceType, sourceId])
@@ -206,8 +206,8 @@ model Tramite {
   sociedadInscripta          Boolean   @default(false)
 
   // Validación inicial del formulario
-  estadoValidacion EstadoValidacion @default(PENDIENTE_VALIDACION)
-  observacionesValidacion String? @db.Text
+  estadoValidacion        EstadoValidacion @default(PENDIENTE_VALIDACION)
+  observacionesValidacion String?          @db.Text
 
   // Campos para recordatorios
   recordatorioEstancado     Boolean @default(false)
@@ -293,7 +293,6 @@ enum LeadCanal {
   EMAIL
   OTRO
 }
-
 
 enum Plan {
   BASICO
@@ -414,6 +413,8 @@ model Pago {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  movimientoComision MovimientoComision?
+
   @@index([tramiteId])
   @@index([userId])
   @@index([estado])
@@ -446,6 +447,81 @@ enum EstadoPago {
   REEMBOLSADO
 }
 
+// ============================================================
+// COMISIONES (distribución de ingresos - cláusula 4 del contrato asociativo)
+// ============================================================
+
+enum Originador {
+  NINGUNO // cliente orgánico (SEO / pauta / directo) → sin comisión de originación
+  FERNANDO
+  JUSTINIANO
+  MW
+}
+
+enum OrigenMovimiento {
+  PAGO // importado de un Pago aprobado del sistema
+  MANUAL // cargado a mano (mensualización, declaratoria u otro asunto conexo)
+}
+
+enum BeneficiarioComision {
+  FERNANDO
+  JUSTINIANO
+  MW
+}
+
+// Cada ingreso computable para el reparto de comisiones (honorario sin gastos).
+model MovimientoComision {
+  id         String           @id @default(cuid())
+  fecha      DateTime
+  cliente    String
+  asunto     String // servicio / asunto (ej. "Constitución SAS", "Mensualización")
+  monto      Float // honorario sin gastos = base de reparto
+  originador Originador       @default(NINGUNO)
+  origen     OrigenMovimiento @default(MANUAL)
+
+  // Link idempotente al Pago del sistema (si origen = PAGO)
+  pagoId String? @unique
+  pago   Pago?   @relation(fields: [pagoId], references: [id], onDelete: SetNull)
+
+  tramiteId String? // referencia opcional al trámite
+  notas     String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fecha])
+  @@index([originador])
+}
+
+// Marca de liquidación efectiva por período y beneficiario (snapshot del monto pagado).
+model LiquidacionPago {
+  id           String               @id @default(cuid())
+  periodo      String // "YYYY-MM"
+  beneficiario BeneficiarioComision
+  monto        Float // snapshot de lo liquidado
+  pagado       Boolean              @default(false)
+  fechaPago    DateTime?
+  notas        String?              @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([periodo, beneficiario])
+}
+
+// Distribuciones efectivas del Fondo de Desarrollo (acordadas por escrito entre las partes).
+model DistribucionFondo {
+  id           String               @id @default(cuid())
+  fecha        DateTime
+  beneficiario BeneficiarioComision // FERNANDO o JUSTINIANO
+  monto        Float
+  notas        String?              @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([fecha])
+}
+
 // CUENTAS BANCARIAS POR TRÁMITE (por ejemplo, depósito de capital)
 model CuentaBancaria {
   id        String  @id @default(cuid())
@@ -463,7 +539,7 @@ model CuentaBancaria {
 
   montoEsperado Float
 
-  fechaInformacion DateTime @default(now())
+  fechaInformacion DateTime  @default(now())
   fechaDeposito    DateTime?
 
   createdAt DateTime @default(now())
@@ -562,12 +638,12 @@ model PlanPrecio {
 
 // GASTOS POR JURISDICCIÓN
 model GastoJurisdiccion {
-  id           String       @id @default(cuid())
+  id           String @id @default(cuid())
   jurisdiccion String @unique
 
   // Datos de display
-  nombre      String   // Ej: "Córdoba (IPJ)", "CABA (IGJ)"
-  habilitada  Boolean  @default(true) // Si se puede elegir en el formulario
+  nombre     String // Ej: "Córdoba (IPJ)", "CABA (IGJ)"
+  habilitada Boolean @default(true) // Si se puede elegir en el formulario
 
   // Gastos como texto (permite "Bonificado", "No aplica", "~$60.000", etc.)
   gastos Json // Array de { concepto: string, valor: string }
@@ -674,15 +750,15 @@ model Post {
 
   // Contenido principal
   titulo      String
-  slug        String    @unique
-  descripcion String    @db.Text // Resumen/excerpt para SEO
+  slug        String @unique
+  descripcion String @db.Text // Resumen/excerpt para SEO
   contenido   Json // Contenido estructurado (sections)
 
   // Metadata
-  categoria  String
-  tags       String[] // Array de tags para SEO
-  autor      String?
-  lectura    String   @default("5 min")
+  categoria String
+  tags      String[] // Array de tags para SEO
+  autor     String?
+  lectura   String   @default("5 min")
 
   // Imágenes
   imagenHero String? // URL de imagen principal
@@ -690,17 +766,17 @@ model Post {
 
   // SEO Avanzado
   metaTitle       String? // Si es diferente del titulo
-  metaDescription String? @db.Text // Meta description personalizada
+  metaDescription String?  @db.Text // Meta description personalizada
   keywords        String[] // Keywords para SEO
   canonical       String? // URL canónica si aplica
 
   // Estado y publicación
-  publicado   Boolean   @default(false)
-  destacado   Boolean   @default(false) // Para mostrar en home
+  publicado        Boolean  @default(false)
+  destacado        Boolean  @default(false) // Para mostrar en home
   fechaPublicacion DateTime @default(now())
 
   // Analytics
-  vistas      Int @default(0)
+  vistas Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -740,6 +816,13 @@ model Config {
   precioPlanPremium      Float @default(390000)
   descuentoTransferencia Float @default(3) // % de descuento aplicado sobre el precio del plan al pagar por transferencia
   smvm                   Float @default(317800) // Salario Mínimo, Vital y Móvil
+
+  // Comisiones (esquema de distribución de ingresos - cláusula 4). Valores en % (30 = 30%).
+  comisionMwPct              Float @default(30) // MW (cubre costos fijos)
+  comisionOperadorPct        Float @default(50) // Operador (Fernando)
+  comisionFondoFernandoPct   Float @default(12) // Fondo de Desarrollo - Fernando
+  comisionFondoJustinianoPct Float @default(8) // Fondo de Desarrollo - Justiniano
+  comisionOriginacionPct     Float @default(30) // Comisión de originación (sobre el ingreso del asunto derivado)
 
   // General
   mantenimientoMode Boolean @default(false)
@@ -829,7 +912,7 @@ model EmailAttachment {
 
   fileName String
   mimeType String
-  size     Int    // bytes
+  size     Int // bytes
   s3Key    String // Almacenado en S3
 
   createdAt DateTime @default(now())
@@ -840,12 +923,12 @@ model EmailAttachment {
 model EmailTemplate {
   id String @id @default(cuid())
 
-  name        String  @unique // Clave interna (ej: "bienvenida")
-  displayName String          // Nombre visible (ej: "Email de Bienvenida")
-  subject     String          // Asunto con {{variables}}
-  bodyHtml    String  @db.Text // HTML con {{variables}}
-  variables   String[]         // Lista de variables esperadas
-  category    String           // "tramite", "pago", "general", "notificacion"
+  name        String   @unique // Clave interna (ej: "bienvenida")
+  displayName String // Nombre visible (ej: "Email de Bienvenida")
+  subject     String // Asunto con {{variables}}
+  bodyHtml    String   @db.Text // HTML con {{variables}}
+  variables   String[] // Lista de variables esperadas
+  category    String // "tramite", "pago", "general", "notificacion"
 
   isSystem Boolean @default(false) // Proteger templates del sistema
   isActive Boolean @default(true)
@@ -860,8 +943,8 @@ model EmailTemplate {
 model ConsultaChat {
   id String @id @default(cuid())
 
-  pregunta  String @db.Text
-  respuesta String @db.Text
+  pregunta  String  @db.Text
+  respuesta String  @db.Text
   ip        String? // Para analytics, no identificación
 
   createdAt DateTime @default(now())

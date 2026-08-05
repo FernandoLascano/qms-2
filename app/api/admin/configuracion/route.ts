@@ -73,6 +73,11 @@ export async function PUT(request: NextRequest) {
           precioPlanPremium: body.precioPlanPremium,
           descuentoTransferencia: body.descuentoTransferencia,
           smvm: body.smvm,
+          comisionMwPct: body.comisionMwPct,
+          comisionOperadorPct: body.comisionOperadorPct,
+          comisionFondoFernandoPct: body.comisionFondoFernandoPct,
+          comisionFondoJustinianoPct: body.comisionFondoJustinianoPct,
+          comisionOriginacionPct: body.comisionOriginacionPct,
           mantenimientoMode: body.mantenimientoMode,
           emailForwardingEnabled: body.emailForwardingEnabled,
           emailForwardingAddress: body.emailForwardingAddress

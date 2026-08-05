@@ -52,6 +52,13 @@ interface ConfigData {
   descuentoTransferencia: number
   smvm: number
 
+  // Comisiones (esquema de distribución)
+  comisionMwPct: number
+  comisionOperadorPct: number
+  comisionFondoFernandoPct: number
+  comisionFondoJustinianoPct: number
+  comisionOriginacionPct: number
+
   // General
   mantenimientoMode: boolean
 }
@@ -85,6 +92,11 @@ export default function ConfiguracionAdminPage() {
     precioPlanPremium: 390000,
     descuentoTransferencia: 3,
     smvm: 317800,
+    comisionMwPct: 30,
+    comisionOperadorPct: 50,
+    comisionFondoFernandoPct: 12,
+    comisionFondoJustinianoPct: 8,
+    comisionOriginacionPct: 30,
     mantenimientoMode: false
   })
 
@@ -653,6 +665,49 @@ export default function ConfiguracionAdminPage() {
                   Valor actual del SMVM. El capital social mínimo es 2 SMVM = ${(config.smvm * 2).toLocaleString('es-AR')}
                 </p>
               </div>
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Comisiones (esquema de distribución)</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Porcentajes usados por el módulo <strong>Liquidación de Comisiones</strong>. Los cuatro del esquema base
+                deben sumar 100%.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {([
+                  ['comisionMwPct', 'MW'],
+                  ['comisionOperadorPct', 'Operador (Fernando)'],
+                  ['comisionFondoFernandoPct', 'Fondo Fernando'],
+                  ['comisionFondoJustinianoPct', 'Fondo Justiniano'],
+                  ['comisionOriginacionPct', 'Comisión originación'],
+                ] as const).map(([key, label]) => (
+                  <div className="space-y-2" key={key}>
+                    <Label htmlFor={key}>{label}</Label>
+                    <div className="relative">
+                      <Input
+                        id={key}
+                        type="number"
+                        value={config[key]}
+                        onChange={(e) => setConfig({ ...config, [key]: parseFloat(e.target.value) })}
+                        className="pr-8"
+                        min={0}
+                        max={100}
+                        step={0.5}
+                      />
+                      <span className="absolute right-3 top-3 text-gray-500">%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {(() => {
+                const suma = config.comisionMwPct + config.comisionOperadorPct + config.comisionFondoFernandoPct + config.comisionFondoJustinianoPct
+                const ok = Math.abs(suma - 100) < 0.001
+                return (
+                  <p className={`text-sm mt-3 ${ok ? 'text-green-600' : 'text-red-600'}`}>
+                    Suma del esquema base (MW + Operador + Fondos): {suma}% {ok ? '✓' : '— debe ser 100%'}
+                  </p>
+                )
+              })()}
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">

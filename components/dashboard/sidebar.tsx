@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake, UserSearch } from 'lucide-react'
+import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake, UserSearch, Coins } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
@@ -100,6 +100,7 @@ export function Sidebar() {
         { name: 'Consultas Chat', href: '/dashboard/admin/consultas-chat', icon: MessageCircle },
         { name: 'Jurisdicciones', href: '/dashboard/admin/jurisdicciones', icon: MapPin },
         { name: 'Partners', href: '/dashboard/admin/partners', icon: Handshake },
+        { name: 'Liquidación de Comisiones', href: '/dashboard/admin/comisiones', icon: Coins },
         { name: 'Configuración', href: '/dashboard/admin/configuracion', icon: Settings },
         ...navigation.slice(1, -1), // Excluir "Inicio" y "Configuración" normal
         { name: 'Mi Cuenta', href: '/dashboard/configuracion', icon: User }
@@ -145,7 +146,7 @@ export function Sidebar() {
             Administración
           </p>
         )}
-        {navItems.slice(0, isAdmin ? 11 : navItems.length).map((item) => {
+        {navItems.slice(0, isAdmin ? 12 : navItems.length).map((item) => {
           const isActive = pathname === item.href ||
             (item.href === '/dashboard/admin' && pathname === '/dashboard/admin') ||
             (item.href === '/dashboard/admin/analytics' && pathname?.startsWith('/dashboard/admin/analytics')) ||
@@ -155,6 +156,7 @@ export function Sidebar() {
             (item.href === '/dashboard/admin/consultas-chat' && pathname?.startsWith('/dashboard/admin/consultas-chat')) ||
             (item.href === '/dashboard/admin/jurisdicciones' && pathname?.startsWith('/dashboard/admin/jurisdicciones')) ||
             (item.href === '/dashboard/admin/partners' && pathname?.startsWith('/dashboard/admin/partners')) ||
+            (item.href === '/dashboard/admin/comisiones' && pathname?.startsWith('/dashboard/admin/comisiones')) ||
             (item.href === '/dashboard/admin/blog' && pathname?.startsWith('/dashboard/admin/blog')) ||
             (item.href === '/dashboard/admin/calendario' && pathname?.startsWith('/dashboard/admin/calendario')) ||
             (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion')) ||
@@ -201,7 +203,7 @@ export function Sidebar() {
             <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               Mi cuenta
             </p>
-            {navItems.slice(11).map((item) => {
+            {navItems.slice(12).map((item) => {
               const isActive = pathname === item.href ||
                 (item.href !== '/dashboard/admin' && pathname?.startsWith(item.href))
               return (
