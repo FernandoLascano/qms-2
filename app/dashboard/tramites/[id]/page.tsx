@@ -194,7 +194,7 @@ async function TramiteDetallePage({ params }: PageProps) {
                             Ya puedes descargar el documento oficial emitido por el organismo.
                           </p>
                           <a
-                            href={resolucionDoc.url}
+                            href={`/api/documentos/${resolucionDoc.id}/view?download=1`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-full shadow-xl transition-all active:scale-95 hover:shadow-green-200"

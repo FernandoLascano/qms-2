@@ -126,7 +126,7 @@ async function SociedadDetallePage({ params }: PageProps) {
                     Documento oficial de inscripción de la sociedad
                   </p>
                   <a
-                    href={tramite.documentos[0].url}
+                    href={`/api/documentos/${tramite.documentos[0].id}/view?download=1`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors"

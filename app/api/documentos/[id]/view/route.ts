@@ -40,9 +40,12 @@ export async function GET(
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 })
     }
 
+    // ?download=1 fuerza la descarga (Content-Disposition attachment) en vez de abrir inline.
+    const forceDownload = req.nextUrl.searchParams.get('download') === '1'
+
     const resolved = extractDocumentsObjectPath(doc.url)
     if (resolved) {
-      const signed = await getSignedUrlSupabase(resolved.path, 300, resolved.bucket)
+      const signed = await getSignedUrlSupabase(resolved.path, 300, resolved.bucket, forceDownload)
       if (signed) {
         return NextResponse.redirect(signed)
       }

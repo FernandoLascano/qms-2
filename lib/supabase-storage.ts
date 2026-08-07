@@ -140,11 +140,14 @@ export async function deleteFromSupabase(
 export async function getSignedUrlSupabase(
   path: string,
   expiresIn: number = 3600,
-  bucket: string = DOCUMENTS_BUCKET
+  bucket: string = DOCUMENTS_BUCKET,
+  download: boolean = false
 ): Promise<string | null> {
   try {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresIn)
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, expiresIn, download ? { download: true } : undefined)
 
     if (error) {
       return null

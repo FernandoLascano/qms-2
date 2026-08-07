@@ -211,7 +211,7 @@ export default function SubirDocumentosParaCliente({ tramiteId, userId, document
                       {doc.estado === 'APROBADO' ? 'Firmado' : 'Pendiente'}
                     </span>
                     <a
-                      href={doc.url}
+                      href={`/api/documentos/${doc.id}/view`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-purple-600 hover:text-purple-800"

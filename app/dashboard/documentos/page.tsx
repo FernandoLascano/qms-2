@@ -233,7 +233,7 @@ async function DocumentosPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                    <a href={`/api/documentos/${doc.id}/view?download=1`} target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-200 hover:border-brand-300 hover:text-brand-700">
                         <Download className="h-4 w-4" />
                         Descargar
