@@ -103,17 +103,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: updateData
     })
 
-    // Notificar al cliente
-    await prisma.notificacion.create({
-      data: {
-        userId: tramite.userId,
-        tramiteId: id,
-        tipo: 'INFO',
-        titulo: 'Información Actualizada',
-        mensaje: 'El equipo de QuieroMiSAS actualizó información de tu trámite.',
-        link: `/dashboard/tramites/${id}`
-      }
-    })
+    // No se notifica al cliente cuando el equipo corrige/completa datos del trámite
+    // (p. ej. cargar el CBU que el cliente compartió después).
 
     return NextResponse.json({ success: true })
   } catch {
