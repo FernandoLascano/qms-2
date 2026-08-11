@@ -40,18 +40,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (accion === 'activar') {
       const inicio = body.fechaInicio ? new Date(body.fechaInicio) : new Date()
       const monto = body.montoAnual != null ? Number(body.montoAnual) : config?.domicilioSedePrecioAnual ?? 0
+      const direccion = body.direccion ? String(body.direccion) : actual.direccion || config?.domicilioSedeDirecciones?.[0] || null
       data.estado = 'ACTIVO'
+      data.direccion = direccion
       data.fechaInicio = inicio
       data.fechaVencimiento = masUnAnio(inicio)
       data.montoAnual = monto
       data.ultimoCobro = inicio
       if (body.notas !== undefined) data.notas = body.notas ? String(body.notas).trim() : null
 
-      // Cierra el círculo: el domicilio legal del trámite pasa a ser la sede.
-      if (config?.domicilioSedeDireccion) {
+      // Cierra el círculo: el domicilio legal del trámite pasa a ser la dirección elegida.
+      if (direccion) {
         await prisma.tramite.update({
           where: { id: actual.tramiteId },
-          data: { domicilioLegal: config.domicilioSedeDireccion },
+          data: { domicilioLegal: direccion },
         }).catch(() => {})
       }
     } else if (accion === 'renovar') {
@@ -64,6 +66,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     } else if (accion === 'cancelar') {
       data.estado = 'CANCELADO'
     } else if (accion === 'editar') {
+      if (body.direccion !== undefined) data.direccion = body.direccion ? String(body.direccion) : null
       if (body.montoAnual !== undefined) data.montoAnual = body.montoAnual != null ? Number(body.montoAnual) : null
       if (body.fechaVencimiento !== undefined) data.fechaVencimiento = body.fechaVencimiento ? new Date(body.fechaVencimiento) : null
       if (body.notas !== undefined) data.notas = body.notas ? String(body.notas).trim() : null

@@ -78,7 +78,9 @@ export async function PUT(request: NextRequest) {
           comisionFondoFernandoPct: body.comisionFondoFernandoPct,
           comisionFondoJustinianoPct: body.comisionFondoJustinianoPct,
           comisionOriginacionPct: body.comisionOriginacionPct,
-          domicilioSedeDireccion: body.domicilioSedeDireccion,
+          domicilioSedeDirecciones: Array.isArray(body.domicilioSedeDirecciones)
+            ? body.domicilioSedeDirecciones.map((d: any) => String(d).trim()).filter(Boolean)
+            : undefined,
           domicilioSedePrecioAnual: body.domicilioSedePrecioAnual,
           domicilioSedeDiasAlerta: body.domicilioSedeDiasAlerta,
           mantenimientoMode: body.mantenimientoMode,

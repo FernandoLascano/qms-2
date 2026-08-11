@@ -42,13 +42,14 @@ export async function GET() {
 
     return NextResponse.json({
       config: {
-        direccion: config?.domicilioSedeDireccion ?? '',
+        direcciones: config?.domicilioSedeDirecciones ?? [],
         precioAnual: config?.domicilioSedePrecioAnual ?? 0,
         diasAlerta: config?.domicilioSedeDiasAlerta ?? 30,
       },
       items: items.map((i) => ({
         id: i.id,
         estado: i.estado,
+        direccion: i.direccion,
         montoAnual: i.montoAnual,
         fechaInicio: i.fechaInicio,
         fechaVencimiento: i.fechaVencimiento,
@@ -94,11 +95,13 @@ export async function POST(request: Request) {
       ? new Date(body.fechaVencimiento)
       : new Date(new Date(inicio).setFullYear(inicio.getFullYear() + 1))
     const monto = body.montoAnual != null ? Number(body.montoAnual) : config?.domicilioSedePrecioAnual ?? 0
+    const direccion = body.direccion ? String(body.direccion) : config?.domicilioSedeDirecciones?.[0] ?? null
 
     const creado = await prisma.domicilioSede.create({
       data: {
         tramiteId,
         estado: 'ACTIVO',
+        direccion,
         montoAnual: monto,
         fechaInicio: inicio,
         fechaVencimiento: vencimiento,
@@ -107,11 +110,11 @@ export async function POST(request: Request) {
       },
     })
 
-    // Cierra el círculo: el domicilio legal del trámite pasa a ser la sede.
-    if (config?.domicilioSedeDireccion) {
+    // Cierra el círculo: el domicilio legal del trámite pasa a ser la dirección elegida.
+    if (direccion) {
       await prisma.tramite.update({
         where: { id: tramiteId },
-        data: { domicilioLegal: config.domicilioSedeDireccion },
+        data: { domicilioLegal: direccion },
       }).catch(() => {})
     }
 

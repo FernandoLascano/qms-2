@@ -539,6 +539,7 @@ model DomicilioSede {
   tramiteId        String              @unique
   tramite          Tramite             @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
   estado           EstadoDomicilioSede @default(PENDIENTE_CONTACTO)
+  direccion        String? // cuál de las direcciones de la sede usa este cliente
   montoAnual       Float? // precio acordado (toma el default de Config al activar)
   fechaInicio      DateTime?
   fechaVencimiento DateTime? // se cobra de nuevo al llegar esta fecha (vencido/por vencer se deriva)
@@ -855,9 +856,10 @@ model Config {
   comisionOriginacionPct     Float @default(30) // Comisión de originación (sobre el ingreso del asunto derivado)
 
   // Domicilio en sede (servicio de domicilio legal en la oficina)
-  domicilioSedeDireccion   String @default("Ituzaingó 87, 5to Piso, Córdoba") // Dirección usada como domicilio legal
-  domicilioSedePrecioAnual Float  @default(0) // Precio anual del servicio
-  domicilioSedeDiasAlerta  Int    @default(30) // Días antes del vencimiento para alertar
+  domicilioSedeDireccion   String   @default("Ituzaingó 87, 5to Piso, Córdoba") // (legacy) dirección única - reemplazada por la lista
+  domicilioSedeDirecciones String[] @default(["Ituzaingó 87", "Ituzaingó 87, 5to Piso", "Pasaje Chagas 6043"]) // Direcciones disponibles para elegir
+  domicilioSedePrecioAnual Float    @default(0) // Precio anual del servicio
+  domicilioSedeDiasAlerta  Int      @default(30) // Días antes del vencimiento para alertar
 
   // General
   mantenimientoMode Boolean @default(false)

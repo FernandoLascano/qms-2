@@ -18,9 +18,10 @@ type Item = {
   ultimoCobro: string | null
   notas: string | null
   createdAt: string
+  direccion: string | null
   tramite: { id: string; denominacion: string; cliente: string; email: string | null }
 }
-type ConfigDom = { direccion: string; precioAnual: number; diasAlerta: number }
+type ConfigDom = { direcciones: string[]; precioAnual: number; diasAlerta: number }
 type Disponible = { id: string; denominacion: string; cliente: string; inscripta: boolean }
 
 const hoyISO = () => new Date().toISOString().slice(0, 10)
@@ -38,10 +39,10 @@ export default function DomiciliosPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [items, setItems] = useState<Item[]>([])
-  const [config, setConfig] = useState<ConfigDom>({ direccion: '', precioAnual: 0, diasAlerta: 30 })
+  const [config, setConfig] = useState<ConfigDom>({ direcciones: [], precioAnual: 0, diasAlerta: 30 })
   const [disponibles, setDisponibles] = useState<Disponible[]>([])
-  const [activando, setActivando] = useState<{ id: string; monto: string } | null>(null)
-  const [nuevo, setNuevo] = useState({ tramiteId: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
+  const [activando, setActivando] = useState<{ id: string; monto: string; direccion: string } | null>(null)
+  const [nuevo, setNuevo] = useState({ tramiteId: '', direccion: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
 
   async function cargar() {
     try {
@@ -68,6 +69,7 @@ export default function DomiciliosPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tramiteId: nuevo.tramiteId,
+          direccion: nuevo.direccion || undefined,
           montoAnual: nuevo.monto !== '' ? Number(nuevo.monto) : undefined,
           fechaInicio: nuevo.fechaInicio,
           fechaVencimiento: nuevo.fechaVencimiento,
@@ -75,7 +77,7 @@ export default function DomiciliosPage() {
       })
       if (!res.ok) throw new Error((await res.json()).error)
       toast.success('Servicio cargado')
-      setNuevo({ tramiteId: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
+      setNuevo({ tramiteId: '', direccion: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
       await cargar()
     } catch (e: any) {
       toast.error(e.message || 'Error')
@@ -133,8 +135,14 @@ export default function DomiciliosPage() {
       {/* Parámetros */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs text-gray-500">Dirección de la sede</p>
-          <p className="text-sm font-semibold text-gray-900">{config.direccion || '— (configurala)'}</p>
+          <p className="text-xs text-gray-500">Direcciones de la sede</p>
+          {config.direcciones.length > 0 ? (
+            <ul className="text-sm font-semibold text-gray-900 list-disc list-inside">
+              {config.direcciones.map((d, i) => <li key={i}>{d}</li>)}
+            </ul>
+          ) : (
+            <p className="text-sm font-semibold text-gray-900">— (configuralas)</p>
+          )}
         </div>
         <div className="rounded-lg border bg-white p-4">
           <p className="text-xs text-gray-500">Precio anual (default)</p>
@@ -151,7 +159,7 @@ export default function DomiciliosPage() {
         <CardHeader><CardTitle variant="section">Cargar una sociedad que ya contrató</CardTitle></CardHeader>
         <CardContent>
           <p className="text-sm text-gray-500 mb-3">Para clientes a los que ya les ofreciste y aceptaron: elegí la sociedad y cargá el vencimiento.</p>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-gray-900">Sociedad</label>
               <select
@@ -163,6 +171,17 @@ export default function DomiciliosPage() {
                 {disponibles.map((d) => (
                   <option key={d.id} value={d.id}>{d.denominacion} — {d.cliente}{d.inscripta ? ' (inscripta)' : ''}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-900">Dirección</label>
+              <select
+                value={nuevo.direccion}
+                onChange={(e) => setNuevo({ ...nuevo, direccion: e.target.value })}
+                className="mt-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900"
+              >
+                <option value="">{config.direcciones[0] ? `(default: ${config.direcciones[0]})` : '— elegí —'}</option>
+                {config.direcciones.map((d, i) => <option key={i} value={d}>{d}</option>)}
               </select>
             </div>
             <div>
@@ -208,15 +227,19 @@ export default function DomiciliosPage() {
                     <td className="pr-3 text-gray-600 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
                     <td className="text-right">
                       {activando?.id === i.id ? (
-                        <div className="flex items-center gap-2 justify-end">
-                          <span className="text-gray-600 text-xs">Monto anual $</span>
-                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ id: i.id, monto: e.target.value })} className="h-8 w-28 text-gray-900" />
-                          <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: Number(activando.monto) }, 'Servicio activado')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Confirmar</Button>
+                        <div className="flex items-center gap-2 justify-end flex-wrap">
+                          <select value={activando.direccion} onChange={(e) => setActivando({ ...activando, direccion: e.target.value })} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs text-gray-900">
+                            <option value="">Dirección…</option>
+                            {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
+                          </select>
+                          <span className="text-gray-600 text-xs">$</span>
+                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ ...activando, monto: e.target.value })} className="h-8 w-28 text-gray-900" />
+                          <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: Number(activando.monto), direccion: activando.direccion || undefined }, 'Servicio activado')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Confirmar</Button>
                           <Button size="sm" variant="outline" onClick={() => setActivando(null)}>Cancelar</Button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 justify-end">
-                          <Button size="sm" onClick={() => setActivando({ id: i.id, monto: String(config.precioAnual || '') })} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Activar</Button>
+                          <Button size="sm" onClick={() => setActivando({ id: i.id, monto: String(config.precioAnual || ''), direccion: config.direcciones[0] || '' })} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Activar</Button>
                           <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Marcado como no contratado')} className="gap-1 text-gray-700"><XCircle className="h-4 w-4" /> No contrató</Button>
                         </div>
                       )}
@@ -237,7 +260,7 @@ export default function DomiciliosPage() {
             <p className="text-sm text-gray-500 py-2">No hay servicios activos.</p>
           ) : (
             <table className="w-full text-sm text-gray-800">
-              <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3 text-right">Monto anual</th><th className="pr-3">Inicio</th><th className="pr-3">Vencimiento</th><th className="pr-3">Últ. cobro</th><th></th></tr></thead>
+              <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Dirección</th><th className="pr-3 text-right">Monto anual</th><th className="pr-3">Inicio</th><th className="pr-3">Vencimiento</th><th className="pr-3">Últ. cobro</th><th></th></tr></thead>
               <tbody>
                 {activos.map((i) => (
                   <tr key={i.id} className="border-b last:border-0">
@@ -248,6 +271,7 @@ export default function DomiciliosPage() {
                     <td className="pr-3">
                       <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-brand-700 hover:underline">{i.tramite.denominacion}</Link>
                     </td>
+                    <td className="pr-3 text-gray-700">{i.direccion || '—'}</td>
                     <td className="pr-3 text-right text-gray-900 whitespace-nowrap">{i.montoAnual != null ? fmt(i.montoAnual) : '—'}</td>
                     <td className="pr-3 text-gray-700 whitespace-nowrap">{fmtFecha(i.fechaInicio)}</td>
                     <td className="pr-3 whitespace-nowrap"><div className="flex items-center gap-2"><span className="text-gray-900">{fmtFecha(i.fechaVencimiento)}</span>{badgeVencimiento(i)}</div></td>
@@ -279,7 +303,7 @@ export default function DomiciliosPage() {
                   <tr key={i.id} className="border-b last:border-0">
                     <td className="py-2 pr-3 text-gray-900">{i.tramite.cliente}</td>
                     <td className="pr-3"><Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-brand-700 hover:underline">{i.tramite.denominacion}</Link></td>
-                    <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => setActivando({ id: i.id, monto: String(config.precioAnual || '') })} className="text-gray-700">Reactivar</Button></td>
+                    <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: config.precioAnual, direccion: config.direcciones[0] || undefined }, 'Reactivado')} className="text-gray-700">Reactivar</Button></td>
                   </tr>
                 ))}
               </tbody>

@@ -60,7 +60,7 @@ interface ConfigData {
   comisionOriginacionPct: number
 
   // Domicilio en sede
-  domicilioSedeDireccion: string
+  domicilioSedeDirecciones: string[]
   domicilioSedePrecioAnual: number
   domicilioSedeDiasAlerta: number
 
@@ -102,7 +102,7 @@ export default function ConfiguracionAdminPage() {
     comisionFondoFernandoPct: 12,
     comisionFondoJustinianoPct: 8,
     comisionOriginacionPct: 30,
-    domicilioSedeDireccion: '',
+    domicilioSedeDirecciones: [],
     domicilioSedePrecioAnual: 0,
     domicilioSedeDiasAlerta: 30,
     mantenimientoMode: false
@@ -725,14 +725,40 @@ export default function ConfiguracionAdminPage() {
               </p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="domicilioSedeDireccion">Dirección de la sede</Label>
-                  <Input
-                    id="domicilioSedeDireccion"
-                    value={config.domicilioSedeDireccion}
-                    onChange={(e) => setConfig({ ...config, domicilioSedeDireccion: e.target.value })}
-                    placeholder="Ituzaingó 87, 5to Piso, Córdoba"
-                  />
-                  <p className="text-sm text-gray-500">Se usa como domicilio legal del trámite al activar el servicio.</p>
+                  <Label>Direcciones de la sede</Label>
+                  <p className="text-sm text-gray-500">Al activar el servicio elegís cuál de estas se usa como domicilio legal del trámite.</p>
+                  <div className="space-y-2">
+                    {config.domicilioSedeDirecciones.map((dir, idx) => (
+                      <div key={idx} className="flex gap-2">
+                        <Input
+                          value={dir}
+                          onChange={(e) => {
+                            const nuevas = [...config.domicilioSedeDirecciones]
+                            nuevas[idx] = e.target.value
+                            setConfig({ ...config, domicilioSedeDirecciones: nuevas })
+                          }}
+                          placeholder="Ej: Ituzaingó 87, 5to Piso"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="text-gray-600 hover:text-red-600 shrink-0"
+                          onClick={() => setConfig({ ...config, domicilioSedeDirecciones: config.domicilioSedeDirecciones.filter((_, i) => i !== idx) })}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setConfig({ ...config, domicilioSedeDirecciones: [...config.domicilioSedeDirecciones, ''] })}
+                    >
+                      + Agregar dirección
+                    </Button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
