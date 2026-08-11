@@ -11,6 +11,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { FileText, Building2, DollarSign, Users, User, CheckCircle, Calendar, Tag, Briefcase, MapPin } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
+import EditarCBU from '@/components/admin/EditarCBU'
 import EstadoManager from '@/components/admin/EstadoManager'
 import DatosFinalesForm from '@/components/admin/DatosFinalesForm'
 import DocumentosReview from '@/components/admin/DocumentosReview'
@@ -566,39 +567,12 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           </div>
       </CollapsibleCard>
 
-      {/* CBU Informados */}
-      {(() => {
-        const datosUsuario = (tramite.datosUsuario as any) || {}
-        const cbuPrincipal = datosUsuario.cbuPrincipal
-        const cbuSecundario = datosUsuario.cbuSecundario
-        if (cbuPrincipal || cbuSecundario) {
-          return (
-            <CollapsibleCard
-              title="CBU Informados"
-              description="Datos bancarios proporcionados por el cliente"
-              icon={<Building2 className="h-5 w-5 text-gray-600" />}
-            >
-              <div className="grid md:grid-cols-2 gap-4">
-                {cbuPrincipal && (
-                  <div className="bg-gray-50 p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CBU Principal</p>
-                    <p className="font-semibold text-gray-900">{cbuPrincipal}</p>
-                    <p className="text-xs text-gray-600 mt-1">Administrador Titular</p>
-                  </div>
-                )}
-                {cbuSecundario && (
-                  <div className="bg-gray-50 p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CBU Secundario</p>
-                    <p className="font-semibold text-gray-900">{cbuSecundario}</p>
-                    <p className="text-xs text-gray-600 mt-1">Administrador Suplente</p>
-                  </div>
-                )}
-              </div>
-            </CollapsibleCard>
-          )
-        }
-        return null
-      })()}
+      {/* CBU Informados (editable: permite cargarlos cuando el cliente los comparte) */}
+      <EditarCBU
+        tramiteId={tramite.id}
+        cbuPrincipal={(tramite.datosUsuario as any)?.cbuPrincipal}
+        cbuSecundario={(tramite.datosUsuario as any)?.cbuSecundario}
+      />
 
       {/* Validación Inicial del Formulario */}
       <ValidacionTramite
