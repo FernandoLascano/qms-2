@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink } from 'lucide-react'
+import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock } from 'lucide-react'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -34,6 +34,7 @@ const masUnAnioISO = (iso: string) => {
 const fmt = (n: number) => '$' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { maximumFractionDigits: 2 })
 const fmtFecha = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('es-AR') : '—')
 const diasHasta = (iso: string) => Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000)
+const toDateInput = (iso: string | null) => (iso ? new Date(iso).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10))
 
 export default function DomiciliosPage() {
   const [loading, setLoading] = useState(true)
@@ -42,6 +43,7 @@ export default function DomiciliosPage() {
   const [config, setConfig] = useState<ConfigDom>({ direcciones: [], precioAnual: 0, diasAlerta: 30 })
   const [disponibles, setDisponibles] = useState<Disponible[]>([])
   const [activando, setActivando] = useState<{ id: string; monto: string; direccion: string } | null>(null)
+  const [editando, setEditando] = useState<{ id: string; direccion: string; monto: string; fechaVencimiento: string; notas: string } | null>(null)
   const [nuevo, setNuevo] = useState({ tramiteId: '', direccion: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
 
   async function cargar() {
@@ -101,6 +103,7 @@ export default function DomiciliosPage() {
       if (!res.ok) throw new Error((await res.json()).error)
       toast.success(okMsg)
       setActivando(null)
+      setEditando(null)
       await cargar()
     } catch (e: any) {
       toast.error(e.message || 'Error')
@@ -255,38 +258,89 @@ export default function DomiciliosPage() {
       {/* Activos */}
       <Card className="mb-6">
         <CardHeader><CardTitle variant="section">Activos ({activos.length})</CardTitle></CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent>
           {activos.length === 0 ? (
             <p className="text-sm text-gray-500 py-2">No hay servicios activos.</p>
           ) : (
-            <table className="w-full text-sm text-gray-800">
-              <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Dirección</th><th className="pr-3 text-right">Monto anual</th><th className="pr-3">Inicio</th><th className="pr-3">Vencimiento</th><th className="pr-3">Últ. cobro</th><th></th></tr></thead>
-              <tbody>
-                {activos.map((i) => (
-                  <tr key={i.id} className="border-b last:border-0">
-                    <td className="py-2 pr-3">
-                      <div className="font-medium text-gray-900">{i.tramite.cliente}</div>
-                      {i.tramite.email && <div className="text-xs text-gray-500">{i.tramite.email}</div>}
-                    </td>
-                    <td className="pr-3">
-                      <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-brand-700 hover:underline">{i.tramite.denominacion}</Link>
-                    </td>
-                    <td className="pr-3 text-gray-700">{i.direccion || '—'}</td>
-                    <td className="pr-3 text-right text-gray-900 whitespace-nowrap">{i.montoAnual != null ? fmt(i.montoAnual) : '—'}</td>
-                    <td className="pr-3 text-gray-700 whitespace-nowrap">{fmtFecha(i.fechaInicio)}</td>
-                    <td className="pr-3 whitespace-nowrap"><div className="flex items-center gap-2"><span className="text-gray-900">{fmtFecha(i.fechaVencimiento)}</span>{badgeVencimiento(i)}</div></td>
-                    <td className="pr-3 text-gray-700 whitespace-nowrap">{fmtFecha(i.ultimoCobro)}</td>
-                    <td className="text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-gray-700" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {activos.map((i) => (
+                <div key={i.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                  {editando?.id === i.id ? (
+                    /* ---- Modo edición ---- */
+                    <div className="space-y-3">
+                      <p className="font-bold text-gray-900">{i.tramite.denominacion}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Dirección</label>
+                          <select value={editando.direccion} onChange={(e) => setEditando({ ...editando, direccion: e.target.value })} className="mt-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
+                            <option value="">— sin dirección —</option>
+                            {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Monto anual</label>
+                          <Input type="number" value={editando.monto} onChange={(e) => setEditando({ ...editando, monto: e.target.value })} className="mt-1 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Vencimiento</label>
+                          <Input type="date" value={editando.fechaVencimiento} onChange={(e) => setEditando({ ...editando, fechaVencimiento: e.target.value })} className="mt-1 text-gray-900" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Notas</label>
+                          <Input value={editando.notas} onChange={(e) => setEditando({ ...editando, notas: e.target.value })} className="mt-1 text-gray-900" placeholder="Opcional" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'editar', direccion: editando.direccion || null, montoAnual: editando.monto !== '' ? Number(editando.monto) : null, fechaVencimiento: editando.fechaVencimiento, notas: editando.notas }, 'Cambios guardados')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Guardar</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditando(null)} className="text-gray-700">Cancelar</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* ---- Modo vista ---- */
+                    <>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="font-bold text-gray-900 hover:text-brand-700 truncate block">{i.tramite.denominacion}</Link>
+                          <p className="text-sm text-gray-600 truncate">{i.tramite.cliente}{i.tramite.email ? ` · ${i.tramite.email}` : ''}</p>
+                        </div>
+                        {badgeVencimiento(i)}
+                      </div>
+
+                      <div className="mt-4 flex items-center gap-2 text-sm text-gray-800">
+                        <MapPin className="h-4 w-4 text-brand-700 shrink-0" />
+                        <span className="truncate">{i.direccion || <span className="text-amber-700">Sin dirección asignada</span>}</span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 text-sm">
+                        <div>
+                          <p className="text-xs text-gray-500">Monto anual</p>
+                          <p className="font-semibold text-gray-900">{i.montoAnual != null ? fmt(i.montoAnual) : '—'}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Vence</p>
+                          <p className="font-semibold text-gray-900">{fmtFecha(i.fechaVencimiento)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Inicio</p>
+                          <p className="text-gray-700">{fmtFecha(i.fechaInicio)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Último cobro</p>
+                          <p className="text-gray-700">{fmtFecha(i.ultimoCobro)}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
                         <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'renovar' }, 'Renovado 1 año')} className="gap-1"><RefreshCw className="h-4 w-4" /> Renovar 1 año</Button>
+                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-gray-700" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditando({ id: i.id, direccion: i.direccion || '', monto: i.montoAnual != null ? String(i.montoAnual) : '', fechaVencimiento: toDateInput(i.fechaVencimiento), notas: i.notas || '' })} className="gap-1 text-gray-700"><Pencil className="h-4 w-4" /> Editar</Button>
                         <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Servicio dado de baja')} className="gap-1 text-gray-700"><XCircle className="h-4 w-4" /> Baja</Button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>
