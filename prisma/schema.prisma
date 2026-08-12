@@ -205,6 +205,17 @@ model Tramite {
   tramiteIngresado           Boolean   @default(false)
   sociedadInscripta          Boolean   @default(false)
 
+  // Estados granulares adicionales del flujo (Fase 2)
+  honorariosPagados       Boolean @default(false)
+  ciudadanoDigitalOk      Boolean @default(false)
+  homonimiaAnalizada      Boolean @default(false)
+  cuentaBancariaAbierta   Boolean @default(false)
+  borradorEnviado         Boolean @default(false)
+  borradorAprobadoCliente Boolean @default(false)
+  tramiteObservado        Boolean @default(false)
+  observacionesOrganismo  String? @db.Text
+  instruccionesFirma      String? @db.Text
+
   // Validación inicial del formulario
   estadoValidacion        EstadoValidacion @default(PENDIENTE_VALIDACION)
   observacionesValidacion String?          @db.Text
@@ -234,6 +245,15 @@ model Tramite {
   fechaDocumentosFirmados    DateTime?
   fechaTramiteIngresado      DateTime?
   fechaSociedadInscripta     DateTime?
+
+  // Tracking de las etapas de Fase 2
+  fechaHonorariosPagados       DateTime?
+  fechaCiudadanoDigitalOk      DateTime?
+  fechaHomonimiaAnalizada      DateTime?
+  fechaCuentaBancariaAbierta   DateTime?
+  fechaBorradorEnviado         DateTime?
+  fechaBorradorAprobadoCliente DateTime?
+  fechaTramiteObservado        DateTime?
 
   // Datos finales
   cuit             String?

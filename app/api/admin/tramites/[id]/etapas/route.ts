@@ -27,12 +27,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Validar que la etapa sea válida
     const etapasValidas = [
       'formularioCompleto',
+      'honorariosPagados',
+      'homonimiaAnalizada',
+      'ciudadanoDigitalOk',
       'denominacionReservada',
+      'cuentaBancariaAbierta',
       'capitalDepositado',
       'tasaPagada',
+      'borradorEnviado',
+      'borradorAprobadoCliente',
       'documentosRevisados',
       'documentosFirmados',
       'tramiteIngresado',
+      'tramiteObservado',
       'sociedadInscripta'
     ]
 
@@ -53,12 +60,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Mapeo de etapas a campos de fecha y tracking
     const mapeoEtapas: Record<string, { fecha: string, tracking: string }> = {
       'formularioCompleto': { fecha: 'fechaFormularioCompleto', tracking: 'fechaFormularioCompleto' },
+      'honorariosPagados': { fecha: '', tracking: 'fechaHonorariosPagados' },
+      'homonimiaAnalizada': { fecha: '', tracking: 'fechaHomonimiaAnalizada' },
+      'ciudadanoDigitalOk': { fecha: '', tracking: 'fechaCiudadanoDigitalOk' },
       'denominacionReservada': { fecha: 'fechaReservaNombre', tracking: 'fechaDenominacionReservada' },
+      'cuentaBancariaAbierta': { fecha: '', tracking: 'fechaCuentaBancariaAbierta' },
       'capitalDepositado': { fecha: 'fechaDepositoCapital', tracking: 'fechaCapitalDepositado' },
       'tasaPagada': { fecha: 'fechaPagoTasa', tracking: 'fechaTasaPagada' },
+      'borradorEnviado': { fecha: '', tracking: 'fechaBorradorEnviado' },
+      'borradorAprobadoCliente': { fecha: '', tracking: 'fechaBorradorAprobadoCliente' },
       'documentosRevisados': { fecha: '', tracking: 'fechaDocumentosRevisados' },
       'documentosFirmados': { fecha: '', tracking: 'fechaDocumentosFirmados' },
       'tramiteIngresado': { fecha: 'fechaIngresoTramite', tracking: 'fechaTramiteIngresado' },
+      'tramiteObservado': { fecha: '', tracking: 'fechaTramiteObservado' },
       'sociedadInscripta': { fecha: 'fechaInscripcion', tracking: 'fechaSociedadInscripta' }
     }
 
@@ -125,19 +139,25 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Notificar al usuario si es una etapa importante
     if (valor) {
       const mensajesEtapas: { [key: string]: string } = {
+        honorariosPagados: 'Confirmamos el pago de los honorarios. ¡Seguimos avanzando con tu trámite!',
         denominacionReservada: 'La denominación de tu sociedad ha sido reservada exitosamente.',
         capitalDepositado: 'Se ha confirmado el depósito del 25% del capital social.',
         tasaPagada: 'El pago de la tasa retributiva ha sido confirmado.',
+        borradorEnviado: 'Te enviamos el borrador de los documentos para que lo controles antes de la firma.',
         tramiteIngresado: 'Tu trámite ha sido ingresado en el organismo correspondiente.',
+        tramiteObservado: 'El organismo observó el trámite. Ya lo estamos gestionando; te mantendremos al tanto.',
         sociedadInscripta: '¡Felicitaciones! Tu sociedad ha sido inscripta exitosamente.'
       }
 
       const nombresEtapas: { [key: string]: string } = {
+        honorariosPagados: 'Honorarios Pagados',
         denominacionReservada: 'Reserva de Denominación',
         capitalDepositado: 'Capital Depositado',
         tasaPagada: 'Tasa Pagada',
+        borradorEnviado: 'Borrador Enviado',
         documentosFirmados: 'Documentos Firmados',
         tramiteIngresado: 'Trámite Ingresado',
+        tramiteObservado: 'Trámite Observado',
         sociedadInscripta: 'Sociedad Inscripta'
       }
 

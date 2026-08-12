@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, ArrowRight, CheckCircle, Clock, User, Building2 } from 'lucide-react'
@@ -15,6 +18,8 @@ interface ProximosPasosProps {
 
 type Responsable = 'cliente' | 'qms' | 'ninguno'
 
+type ConfirmarAccion = 'ciudadano_digital' | 'aprobar_borrador'
+
 interface Accion {
   tipo: string
   titulo: string
@@ -23,6 +28,8 @@ interface Accion {
   responsable: Responsable
   accion: string | null
   link: string | null
+  // Si está presente, muestra un botón que el cliente usa para confirmar el paso por sí mismo
+  confirmar?: ConfirmarAccion
 }
 
 export default function ProximosPasos({
@@ -32,6 +39,31 @@ export default function ProximosPasos({
   documentos = [],
   notificaciones = []
 }: ProximosPasosProps) {
+  const router = useRouter()
+  const [confirmando, setConfirmando] = useState<ConfirmarAccion | null>(null)
+
+  // El cliente confirma por sí mismo un paso que depende de él (Ciudadano Digital, aprobar borrador)
+  const confirmarPaso = async (accion: ConfirmarAccion) => {
+    setConfirmando(accion)
+    try {
+      const res = await fetch(`/api/tramites/${tramite.id}/confirmar`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accion })
+      })
+      if (res.ok) {
+        toast.success('¡Listo! Registramos tu confirmación.')
+        router.refresh()
+      } else {
+        toast.error('No se pudo registrar. Probá de nuevo.')
+      }
+    } catch {
+      toast.error('No se pudo registrar. Probá de nuevo.')
+    } finally {
+      setConfirmando(null)
+    }
+  }
+
   // Función helper para convertir conceptos a texto amigable
   const getConceptoTexto = (concepto: string) => {
     const mapa: Record<string, string> = {
@@ -94,6 +126,20 @@ export default function ProximosPasos({
         responsable: 'cliente',
         accion: 'Ver forma de pago',
         link: '#pago-honorarios' // Link al apartado de pagos en la misma página
+      })
+    }
+
+    // 1b. Ciudadano Digital Nivel 2: requisito del cliente una vez que el trámite arrancó
+    if (tramite.honorariosPagados && !tramite.ciudadanoDigitalOk && !tramite.sociedadInscripta) {
+      acciones.push({
+        tipo: 'CIUDADANO_DIGITAL',
+        titulo: '🪪 Necesitás Ciudadano Digital Nivel 2',
+        descripcion: 'Para avanzar con el trámite necesitás tener Ciudadano Digital Nivel 2 (es un requisito del sistema de la Provincia). Cuando lo tengas listo, confirmalo acá.',
+        urgencia: 'alta',
+        responsable: 'cliente',
+        accion: null,
+        link: null,
+        confirmar: 'ciudadano_digital'
       })
     }
 
@@ -176,6 +222,20 @@ export default function ProximosPasos({
       })
     }
 
+    // 4b. Borrador enviado: el cliente debe controlarlo y aprobarlo antes de la firma
+    if (tramite.borradorEnviado && !tramite.borradorAprobadoCliente) {
+      acciones.push({
+        tipo: 'CONTROLAR_BORRADOR',
+        titulo: '📝 Controlá el borrador',
+        descripcion: 'Te enviamos el borrador de los documentos para que lo revises. Miralo con atención y, si está todo correcto, aprobalo para que preparemos la versión final para la firma.',
+        urgencia: 'alta',
+        responsable: 'cliente',
+        accion: null,
+        link: null,
+        confirmar: 'aprobar_borrador'
+      })
+    }
+
     // 5. Si se pagó la tasa y se depositó capital, espera documentos
     if (tramite.tasaPagada && tramite.capitalDepositado && !tramite.documentosRevisados) {
       acciones.push({
@@ -246,12 +306,27 @@ export default function ProximosPasos({
     }
 
     // 8. Si el trámite fue ingresado, espera aprobación
-    if (tramite.tramiteIngresado && !tramite.sociedadInscripta) {
+    if (tramite.tramiteIngresado && !tramite.sociedadInscripta && !tramite.tramiteObservado) {
       acciones.push({
         tipo: 'ESPERA_APROBACION',
         titulo: '🏛️ Trámite en el Organismo',
         descripcion: `Tu trámite fue ingresado en el ${tramite.jurisdiccion === 'CORDOBA' ? 'IPJ' : 'IGJ'}. Esperando aprobación del organismo.`,
         urgencia: 'baja',
+        responsable: 'qms',
+        accion: null,
+        link: null
+      })
+    }
+
+    // 8b. Si el organismo observó el trámite, lo gestiona QMS
+    if (tramite.tramiteObservado && !tramite.sociedadInscripta) {
+      acciones.push({
+        tipo: 'OBSERVADO',
+        titulo: '🔎 El trámite fue observado',
+        descripcion: tramite.observacionesOrganismo
+          ? `El organismo hizo observaciones: ${tramite.observacionesOrganismo} Ya las estamos gestionando; te avisamos apenas se resuelva.`
+          : 'El organismo hizo observaciones al trámite. Ya las estamos gestionando; te avisamos apenas se resuelva.',
+        urgencia: 'media',
         responsable: 'qms',
         accion: null,
         link: null
@@ -410,6 +485,21 @@ export default function ProximosPasos({
                   </Button>
                 </Link>
               )
+            )}
+
+            {accion.confirmar && (
+              <Button
+                onClick={() => confirmarPaso(accion.confirmar!)}
+                disabled={confirmando === accion.confirmar}
+                className="gap-2 bg-orange-600 hover:bg-orange-700"
+              >
+                {confirmando === accion.confirmar
+                  ? 'Registrando...'
+                  : accion.confirmar === 'ciudadano_digital'
+                  ? 'Ya tengo Ciudadano Digital Nivel 2'
+                  : 'Aprobar borrador'}
+                <CheckCircle className="h-4 w-4" />
+              </Button>
             )}
 
             {accion.responsable === 'cliente' && (

@@ -669,18 +669,27 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
 
       {/* Control de Etapas - Gestión del Proceso */}
-      <EtapasManager 
+      <EtapasManager
         tramiteId={tramite.id}
         etapas={{
           formularioCompleto: tramite.formularioCompleto,
+          honorariosPagados: tramite.honorariosPagados,
+          homonimiaAnalizada: tramite.homonimiaAnalizada,
+          ciudadanoDigitalOk: tramite.ciudadanoDigitalOk,
           denominacionReservada: tramite.denominacionReservada,
+          cuentaBancariaAbierta: tramite.cuentaBancariaAbierta,
           capitalDepositado: tramite.capitalDepositado,
           tasaPagada: tramite.tasaPagada,
+          borradorEnviado: tramite.borradorEnviado,
+          borradorAprobadoCliente: tramite.borradorAprobadoCliente,
           documentosRevisados: tramite.documentosRevisados,
           documentosFirmados: tramite.documentosFirmados,
           tramiteIngresado: tramite.tramiteIngresado,
           sociedadInscripta: tramite.sociedadInscripta,
+          tramiteObservado: tramite.tramiteObservado,
         }}
+        instruccionesFirma={tramite.instruccionesFirma}
+        observacionesOrganismo={tramite.observacionesOrganismo}
       />
 
       {/* Comprobantes de Pago */}
