@@ -1,4 +1,5 @@
 import { sendEmail as sendEmailNodemailer } from '@/lib/email'
+import { prisma } from '@/lib/prisma'
 import * as templates from './templates'
 
 interface SendEmailParams {
@@ -25,6 +26,26 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
     })
 
     if (nodemailerResult.success) {
+      // Registrar el email enviado para poder verlo desde el trámite.
+      // Best-effort: si falla el registro, no se interrumpe el envío.
+      try {
+        await prisma.email.create({
+          data: {
+            messageId: nodemailerResult.messageId || `auto-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+            from: process.env.SMTP_FROM || 'contacto@quieromisas.com',
+            fromName: process.env.SMTP_FROM_NAME || 'QuieroMiSAS',
+            to: [to],
+            subject,
+            bodyHtml: html,
+            direction: 'OUTBOUND',
+            status: 'READ',
+            tramiteId: (data && typeof data.tramiteId === 'string') ? data.tramiteId : null
+          }
+        })
+      } catch {
+        // El registro es informativo; no debe frenar el flujo de envío.
+      }
+
       return { success: true, result: nodemailerResult }
     } else {
       throw new Error(nodemailerResult.error || 'Error al enviar email via Nodemailer')

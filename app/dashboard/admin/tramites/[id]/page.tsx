@@ -17,6 +17,7 @@ import DatosFinalesForm from '@/components/admin/DatosFinalesForm'
 import DocumentosReview from '@/components/admin/DocumentosReview'
 import ObservacionesForm from '@/components/admin/ObservacionesForm'
 import EtapasManager from '@/components/admin/EtapasManager'
+import EmailsTramite from '@/components/admin/EmailsTramite'
 import DenominacionSelector from '@/components/admin/DenominacionSelector'
 import PagosControl from '@/components/admin/PagosControl'
 import EnlacesPagoExterno from '@/components/admin/EnlacesPagoExterno'
@@ -80,6 +81,9 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           }
         },
         orderBy: { createdAt: 'asc' }
+      },
+      emails: {
+        orderBy: { createdAt: 'desc' }
       }
     }
   })
@@ -667,6 +671,9 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
 
       {/* Enviar Observación al Cliente */}
       <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
+
+      {/* Historial de emails del trámite */}
+      <EmailsTramite emails={tramite.emails} />
 
       {/* Control de Etapas - Gestión del Proceso */}
       <EtapasManager
