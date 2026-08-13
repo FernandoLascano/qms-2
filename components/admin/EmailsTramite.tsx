@@ -21,6 +21,7 @@ interface EmailsTramiteProps {
 
 export default function EmailsTramite({ emails }: EmailsTramiteProps) {
   const [abierto, setAbierto] = useState<string | null>(null)
+  const [seccionAbierta, setSeccionAbierta] = useState(false)
 
   const formatFecha = (fecha: Date | string) => {
     try {
@@ -38,17 +39,30 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
-            <Mail className="h-4 w-4 text-indigo-700" />
-          </span>
-          <span>Emails del Trámite</span>
-        </CardTitle>
-        <CardDescription>
-          Todos los mails enviados y recibidos vinculados a este trámite. Tocá uno para ver su contenido.
-        </CardDescription>
-      </CardHeader>
+      <button
+        type="button"
+        onClick={() => setSeccionAbierta((v) => !v)}
+        className="w-full text-left"
+      >
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
+              <Mail className="h-4 w-4 text-indigo-700" />
+            </span>
+            <span>Emails del Trámite</span>
+            <span className="ml-1 font-mono text-xs text-gray-500">({emails.length})</span>
+            {seccionAbierta ? (
+              <ChevronUp className="ml-auto h-5 w-5 text-gray-400" />
+            ) : (
+              <ChevronDown className="ml-auto h-5 w-5 text-gray-400" />
+            )}
+          </CardTitle>
+          <CardDescription>
+            Todos los mails enviados y recibidos vinculados a este trámite. Tocá para {seccionAbierta ? 'ocultar' : 'ver'}.
+          </CardDescription>
+        </CardHeader>
+      </button>
+      {seccionAbierta && (
       <CardContent>
         {emails.length === 0 ? (
           <p className="text-sm text-gray-500">
@@ -108,6 +122,7 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
           </div>
         )}
       </CardContent>
+      )}
     </Card>
   )
 }

@@ -30,6 +30,8 @@ interface Accion {
   link: string | null
   // Si está presente, muestra un botón que el cliente usa para confirmar el paso por sí mismo
   confirmar?: ConfirmarAccion
+  // Enlaces de ayuda (instructivo, WhatsApp, etc.) que se muestran en la tarjeta
+  ayuda?: { label: string; href: string }[]
 }
 
 export default function ProximosPasos({
@@ -134,12 +136,16 @@ export default function ProximosPasos({
       acciones.push({
         tipo: 'CIUDADANO_DIGITAL',
         titulo: '🪪 Necesitás Ciudadano Digital Nivel 2',
-        descripcion: 'Para avanzar con el trámite necesitás tener Ciudadano Digital Nivel 2 (es un requisito del sistema de la Provincia). Cuando lo tengas listo, confirmalo acá.',
+        descripcion: 'Para avanzar con el trámite necesitamos que todas las personas que intervengan en la Sociedad (ya sea como socias o administradores) tengan Ciudadano Digital Nivel 2. Cuando lo tengas listo, confirmalo acá.',
         urgencia: 'alta',
         responsable: 'cliente',
         accion: null,
         link: null,
-        confirmar: 'ciudadano_digital'
+        confirmar: 'ciudadano_digital',
+        ayuda: [
+          { label: '📄 Ver instructivo para obtenerlo', href: '/assets/img/CiudadanoDigital.jpeg' },
+          { label: '💬 Tengo dudas — hablar por WhatsApp', href: 'https://wa.me/5493512136212?text=Hola!%20Tengo%20una%20consulta%20sobre%20Ciudadano%20Digital%20Nivel%202%20para%20mi%20tr%C3%A1mite.' }
+        ]
       })
     }
 
@@ -500,6 +506,22 @@ export default function ProximosPasos({
                   : 'Aprobar borrador'}
                 <CheckCircle className="h-4 w-4" />
               </Button>
+            )}
+
+            {accion.ayuda && accion.ayuda.length > 0 && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {accion.ayuda.map((a) => (
+                  <a
+                    key={a.href}
+                    href={a.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-brand-700 underline hover:text-brand-800"
+                  >
+                    {a.label}
+                  </a>
+                ))}
+              </div>
             )}
 
             {accion.responsable === 'cliente' && (

@@ -12,6 +12,7 @@ import { es } from 'date-fns/locale'
 import { FileText, Building2, DollarSign, Users, User, CheckCircle, Calendar, Tag, Briefcase, MapPin } from 'lucide-react'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import EditarCBU from '@/components/admin/EditarCBU'
+import SolicitarCBUButton from '@/components/admin/SolicitarCBUButton'
 import EstadoManager from '@/components/admin/EstadoManager'
 import DatosFinalesForm from '@/components/admin/DatosFinalesForm'
 import DocumentosReview from '@/components/admin/DocumentosReview'
@@ -317,29 +318,39 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           icon={<Briefcase className="h-5 w-5 text-gray-600" />}
           action={<EditObjetoSocial {...editProps} />}
         >
-          <div className="mb-3">
-            {(() => {
-              // Detectar si es objeto pre-aprobado
-              const objetoText = tramite.objetoSocial || ''
-              const esPreAprobado =
-                objetoText === 'PREAPROBADO' ||
-                objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
-                objetoText.includes('1. Construcción de todo tipo de obras')
+          {(() => {
+            // Detectar si es objeto pre-aprobado
+            const objetoText = tramite.objetoSocial || ''
+            const esPreAprobado =
+              objetoText === 'PREAPROBADO' ||
+              objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
+              objetoText.includes('1. Construcción de todo tipo de obras')
 
-              return esPreAprobado ? (
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                  Pre-aprobado
-                </span>
-              ) : (
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                  Personalizado
-                </span>
-              )
-            })()}
-          </div>
-          <p className="text-sm text-gray-700 whitespace-pre-line">
-            {getObjetoSocialTexto(tramite.objetoSocial)}
-          </p>
+            return (
+              <>
+                <div className="mb-3">
+                  {esPreAprobado ? (
+                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                      Pre-aprobado
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                      Personalizado
+                    </span>
+                  )}
+                </div>
+                {esPreAprobado ? (
+                  <p className="text-sm text-gray-700">
+                    El cliente eligió el objeto social estándar pre-aprobado.
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-700 whitespace-pre-line">
+                    {getObjetoSocialTexto(tramite.objetoSocial)}
+                  </p>
+                )}
+              </>
+            )
+          })()}
         </CollapsibleCard>
 
         {/* Domicilio Legal */}
@@ -348,9 +359,17 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
           icon={<MapPin className="h-5 w-5 text-gray-600" />}
           action={<EditDomicilio {...editProps} />}
         >
-          <p className="text-sm text-gray-700">
-            {tramite.domicilioLegal}
-          </p>
+          {(!tramite.domicilioLegal || tramite.domicilioLegal.trim() === '' || tramite.domicilioLegal.trim().toLowerCase() === 'a informar') ? (
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+              <p className="text-sm text-amber-900">
+                🏢 El cliente <strong>no dispone de domicilio propio</strong> y solicitó el servicio de <strong>domicilio en Córdoba de QMS</strong> (costo anual a informar).
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-700">
+              {tramite.domicilioLegal}
+            </p>
+          )}
         </CollapsibleCard>
       </div>
 
@@ -577,6 +596,12 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         cbuPrincipal={(tramite.datosUsuario as any)?.cbuPrincipal}
         cbuSecundario={(tramite.datosUsuario as any)?.cbuSecundario}
       />
+      {!((tramite.datosUsuario as any)?.cbuPrincipal) && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <p className="flex-1 text-sm text-amber-900">El cliente todavía no informó los CBU.</p>
+          <SolicitarCBUButton tramiteId={tramite.id} />
+        </div>
+      )}
 
       {/* Validación Inicial del Formulario */}
       <ValidacionTramite
@@ -672,8 +697,22 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       {/* Enviar Observación al Cliente */}
       <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
 
-      {/* Historial de emails del trámite */}
-      <EmailsTramite emails={tramite.emails} />
+      {/* Comprobantes de Pago */}
+      <ComprobantesReview
+        tramiteId={tramite.id}
+        comprobantes={tramite.documentos.filter(doc =>
+          doc.tipo === 'COMPROBANTE_DEPOSITO' ||
+          doc.nombre.toLowerCase().includes('comprobante') ||
+          doc.descripcion?.toLowerCase().includes('comprobante')
+        )}
+        enlacesPago={tramite.enlacesPago}
+      />
+
+      {/* Documentos */}
+      <DocumentosReview tramiteId={tramite.id} documentos={tramite.documentos} />
+
+      {/* Chat con el Cliente */}
+      <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
 
       {/* Control de Etapas - Gestión del Proceso */}
       <EtapasManager
@@ -699,22 +738,8 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         observacionesOrganismo={tramite.observacionesOrganismo}
       />
 
-      {/* Comprobantes de Pago */}
-      <ComprobantesReview 
-        tramiteId={tramite.id} 
-        comprobantes={tramite.documentos.filter(doc => 
-          doc.tipo === 'COMPROBANTE_DEPOSITO' || 
-          doc.nombre.toLowerCase().includes('comprobante') ||
-          doc.descripcion?.toLowerCase().includes('comprobante')
-        )}
-        enlacesPago={tramite.enlacesPago}
-      />
-
-      {/* Documentos */}
-      <DocumentosReview tramiteId={tramite.id} documentos={tramite.documentos} />
-
-      {/* Chat con el Cliente */}
-      <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
+      {/* Historial de emails del trámite (colapsable, después de Control de Etapas) */}
+      <EmailsTramite emails={tramite.emails} />
 
       {/* Datos Finales */}
       <DatosFinalesForm
