@@ -42,7 +42,7 @@ const colors = {
 const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; nombre: string; preheader?: string }) => {
   return `
     <!DOCTYPE html>
-    <html lang="es">
+    <html lang="es" data-qms-signature="true">
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -869,7 +869,11 @@ export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, 
       </table>
     </div>
 
-    <p style="margin: 32px 0 0 0; color: ${colors.textMuted}; font-size: 14px; text-align: center; line-height: 1.6; font-style: italic;">
+    <p style="margin: 32px 0 16px 0; color: ${colors.text}; font-size: 15px; text-align: center; line-height: 1.7;">
+      Este es apenas el primer paso. Desde tu panel vas a poder acceder a la documentación de tu Sociedad cuando la necesites, y estamos para acompañarte en lo que siga: libros digitales, contabilidad, marcas y más.
+    </p>
+
+    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; font-size: 14px; text-align: center; line-height: 1.6; font-style: italic;">
       ¡Gracias por confiar en QuieroMiSAS!<br/>
       Éxitos en tu nueva empresa 🌟
     </p>
@@ -1226,8 +1230,11 @@ export const emailValidacionTramite = ({ nombre, denominacion, validado, observa
       </tr>
     </table>
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; font-size: 14px; line-height: 1.7; text-align: center;">
-      Te mantendremos informado sobre cada avance de tu trámite.
+    <p style="margin: 0 0 16px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+      <strong>¿Cómo seguimos?</strong> Un Agente de QuieroMiSAS se va a contactar con vos por <strong>WhatsApp o email</strong> para despejar dudas y coordinar el <strong>pago de los honorarios</strong>, y así avanzar con la constitución de tu Sociedad.
+    </p>
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+      Mientras tanto, para no perder tiempo, ya podés ir gestionando <strong>Ciudadano Digital Nivel 2</strong> para todas las personas que integren la Sociedad (es un requisito del sistema). Podés ver el instructivo <a href="${BASE_URL}/assets/img/CiudadanoDigital.jpeg" style="color: ${colors.primary}; font-weight: 600;">acá</a>.
     </p>
 
     <!-- CTA destacado -->

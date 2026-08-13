@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { enviarEmailEtapaCompletada } from '@/lib/emails/send'
+import { enviarEmailEtapaCompletada, enviarEmailNotificacion } from '@/lib/emails/send'
+
+const BASE_URL = process.env.NEXTAUTH_URL || 'https://www.quieromisas.com'
 
 // Etapas del trámite que se completan automáticamente al aprobarse un pago,
 // con las fechas de tracking que hay que setear y el mensaje al cliente.
@@ -75,6 +77,21 @@ export async function marcarEtapaPagada(tramiteId: string, etapa: EtapaPago): Pr
     await enviarEmailEtapaCompletada(tramite.user.email, tramite.user.name || 'Usuario', cfg.nombre, tramiteId)
   } catch {
     // Email no crítico
+  }
+
+  // Al confirmar los honorarios, avisamos el requisito de Ciudadano Digital Nivel 2
+  if (etapa === 'honorariosPagados') {
+    try {
+      await enviarEmailNotificacion(
+        tramite.user.email,
+        tramite.user.name || 'Usuario',
+        'Requisito: Ciudadano Digital Nivel 2',
+        `Para avanzar con el trámite necesitamos que todas las personas que integren la Sociedad (como socias o administradoras) tengan Ciudadano Digital Nivel 2. Es un requisito del sistema.\n\nPodés ver el instructivo para obtenerlo acá: ${BASE_URL}/assets/img/CiudadanoDigital.jpeg\n\nCuando lo tengas listo, confirmalo desde tu panel. Ante cualquier duda, escribinos por WhatsApp.`,
+        tramiteId
+      )
+    } catch {
+      // Email no crítico
+    }
   }
 
   return true

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { enviarEmailNotificacion } from '@/lib/emails/send'
 
 interface RouteParams {
   params: Promise<{
@@ -58,9 +59,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     })
 
-    // Avisar al equipo (notificación interna para admins)
+    // Avisar al equipo (notificación interna + email para admins)
     try {
-      const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true } })
+      const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true, email: true, name: true } })
       if (admins.length > 0) {
         await prisma.notificacion.createMany({
           data: admins.map((a) => ({
@@ -72,6 +73,20 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             link: `/dashboard/admin/tramites/${id}`
           }))
         })
+
+        await Promise.allSettled(
+          admins
+            .filter((a) => a.email)
+            .map((a) =>
+              enviarEmailNotificacion(
+                a.email,
+                a.name || 'Equipo',
+                config.tituloAdmin,
+                `El cliente avanzó un paso en el trámite "${tramite.denominacionSocial1}".`,
+                id
+              )
+            )
+        )
       }
     } catch {
       // Notificar a admins es best-effort, no crítico
