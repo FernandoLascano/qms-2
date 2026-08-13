@@ -39,7 +39,7 @@ const colors = {
 }
 
 // Template base con estilos modernos
-const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; nombre: string; preheader?: string }) => {
+export const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; nombre: string; preheader?: string }) => {
   return `
     <!DOCTYPE html>
     <html lang="es" data-qms-signature="true">
