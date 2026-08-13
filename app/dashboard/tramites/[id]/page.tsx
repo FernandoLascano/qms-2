@@ -232,6 +232,7 @@ async function TramiteDetallePage({ params }: PageProps) {
       <DocumentosParaFirmar
         tramiteId={tramite.id}
         documentos={tramite.documentos || []}
+        instruccionesFirma={tramite.instruccionesFirma}
       />
 
       {/* Mensajes del Equipo / Observaciones */}

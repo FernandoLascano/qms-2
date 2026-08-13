@@ -23,12 +23,14 @@ interface Documento {
 interface DocumentosParaFirmarProps {
   documentos: Documento[]
   tramiteId: string
+  instruccionesFirma?: string | null
 }
 
-export default function DocumentosParaFirmar({ documentos, tramiteId }: DocumentosParaFirmarProps) {
+export default function DocumentosParaFirmar({ documentos, tramiteId, instruccionesFirma }: DocumentosParaFirmarProps) {
   const router = useRouter()
   const [archivosSeleccionados, setArchivosSeleccionados] = useState<Record<string, File | null>>({})
   const [subiendo, setSubiendo] = useState<Record<string, boolean>>({})
+  const [subiendoTodos, setSubiendoTodos] = useState(false)
 
   // Tipos de documentos para firmar y sus correspondientes firmados
   const tiposParaFirmar = ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR']
@@ -285,6 +287,43 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
     }
   }
 
+  // Sube todos los firmados seleccionados de una sola vez (un solo refresco al final).
+  const handleSubirTodos = async () => {
+    const conArchivo = documentosPendientes.filter(doc => archivosSeleccionados[doc.id])
+    if (conArchivo.length === 0) {
+      toast.error('Elegí al menos un archivo firmado')
+      return
+    }
+    setSubiendoTodos(true)
+    let ok = 0
+    for (const doc of conArchivo) {
+      const archivo = archivosSeleccionados[doc.id]
+      if (!archivo || archivo.size === 0) continue
+      try {
+        const formData = new FormData()
+        formData.append('file', archivo)
+        formData.append('tramiteId', tramiteId)
+        formData.append('tipo', getTipoDocumentoFirmado(doc.tipo))
+        formData.append('nombre', `${doc.nombre} - Firmado`)
+        formData.append('descripcion', `Documento firmado correspondiente a: ${doc.nombre}`)
+        formData.append('documentoOriginalId', doc.id)
+        const response = await fetch('/api/documentos/upload', { method: 'POST', body: formData })
+        const result = await response.json()
+        if (response.ok && result.success) ok++
+      } catch {
+        // Seguimos con el resto
+      }
+    }
+    setSubiendoTodos(false)
+    if (ok > 0) {
+      toast.success(`${ok} documento(s) firmado(s) subido(s)`)
+      setArchivosSeleccionados({})
+      setTimeout(() => router.refresh(), 500)
+    } else {
+      toast.error('No se pudo subir ningún documento')
+    }
+  }
+
   // Filtrar documentos para firmar que:
   // 1. Son del tipo correcto (PARA_FIRMAR)
   // 2. Están en estado PENDIENTE
@@ -358,6 +397,40 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Instrucciones generales + instructivo + subida en lote */}
+        {documentosPendientes.length > 0 && (
+          <div className="rounded-lg bg-white border border-purple-200 p-4 space-y-2">
+            {instruccionesFirma && (
+              <p className="text-sm text-gray-800">
+                <strong>Instrucciones de firma:</strong> {instruccionesFirma}
+              </p>
+            )}
+            <a
+              href="/assets/img/FirmaDocumentos.jpeg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 underline hover:text-brand-800"
+            >
+              📄 Ver instructivo de firma con imágenes
+            </a>
+            {documentosPendientes.length > 1 && (
+              <div className="pt-2">
+                <Button
+                  onClick={handleSubirTodos}
+                  disabled={subiendoTodos}
+                  className="gap-2 bg-purple-600 hover:bg-purple-700"
+                >
+                  <Upload className="h-4 w-4" />
+                  {subiendoTodos ? 'Subiendo...' : 'Subir todos los firmados de una vez'}
+                </Button>
+                <p className="text-xs text-gray-500 mt-1">
+                  Elegí el archivo firmado en cada documento de abajo y subilos todos juntos.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Documentos Pendientes */}
         {documentosPendientes.length > 0 ? (
           <div className="space-y-4">
