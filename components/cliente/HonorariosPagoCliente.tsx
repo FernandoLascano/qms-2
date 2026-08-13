@@ -165,9 +165,10 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                             <CreditCard className="h-5 w-5 text-blue-600" />
                             <h6 className="font-semibold text-gray-900">Pago con Mercado Pago</h6>
                           </div>
-                          <p className="text-2xl font-bold text-green-600 mb-1">
+                          <p className="text-2xl font-bold text-gray-900 mb-1">
                             ${pago.monto.toLocaleString('es-AR')}
                           </p>
+                          <p className="text-xs text-gray-500 mb-1">Precio regular (con tarjeta / Mercado Pago)</p>
                           <p className="text-xs text-gray-600">
                             Tarjeta de crédito, débito, efectivo o transferencia
                           </p>
@@ -195,7 +196,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                             <Building2 className="h-5 w-5 text-green-600" />
                             <h6 className="font-semibold text-gray-900">Pago por Transferencia</h6>
                             <span className="px-2 py-1 text-xs font-bold bg-green-100 text-green-700 rounded-full">
-                              💰 Precio Diferencial
+                              💰 Precio promocional
                             </span>
                           </div>
                           <p className="text-2xl font-bold text-green-600 mb-1">

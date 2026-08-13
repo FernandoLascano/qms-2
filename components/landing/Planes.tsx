@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { AnimatedList } from './AnimatedList'
 import { ParallaxCard } from './ParallaxCard'
+import { PrecioDual } from '@/components/PrecioDual'
 
 // Definición de características por plan
 const caracteristicas = [
@@ -69,13 +70,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
               <h3 className="text-2xl font-bold mb-2 text-brand-900">Básico</h3>
               <p className="text-gray-600 text-sm mb-4">Para quienes están comenzando</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanBasico.toLocaleString('es-AR')}</span>
+                <PrecioDual transferencia={precios.precioPlanBasico} precioClassName="text-4xl font-bold text-gray-900" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
                 <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
-                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad</p>
               </div>
             </div>
 
@@ -121,13 +122,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
               <h3 className="text-2xl font-bold mb-2 text-brand-900">Emprendedor</h3>
               <p className="text-gray-600 text-sm mb-4">Para emprendedores en crecimiento</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-brand-700">${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</span>
+                <PrecioDual transferencia={precios.precioPlanEmprendedor} precioClassName="text-4xl font-bold text-brand-700" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
                 <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
-                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad</p>
               </div>
             </div>
 
@@ -167,13 +168,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
               <h3 className="text-2xl font-bold mb-2 text-brand-900">Premium</h3>
               <p className="text-gray-600 text-sm mb-4">Para empresas consolidadas</p>
               <div className="mb-2">
-                <span className="text-4xl font-bold text-gray-900">${precios.precioPlanPremium.toLocaleString('es-AR')}</span>
+                <PrecioDual transferencia={precios.precioPlanPremium} precioClassName="text-4xl font-bold text-gray-900" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
                 <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
-                <p className="text-xs text-gray-500">Por la constitución de la sociedad · + gastos</p>
+                <p className="text-xs text-gray-500">Por la constitución de la sociedad</p>
               </div>
             </div>
 

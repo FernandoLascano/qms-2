@@ -192,7 +192,8 @@ export async function POST(request: Request, { params }: RouteParams) {
           tramite.user.name,
           conceptoTexto,
           parseFloat(monto),
-          id
+          id,
+          montoTransferencia ? parseFloat(montoTransferencia) : null
         )
       } catch {
         // Email no crítico, continuar silenciosamente
