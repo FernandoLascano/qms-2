@@ -573,7 +573,7 @@ export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTe
 }
 
 // 3. Email cuando hay un pago pendiente
-export const emailPagoPendiente = ({ nombre, concepto, monto, tramiteId }: EmailTemplateProps) => {
+export const emailPagoPendiente = ({ nombre, concepto, monto, montoTransferencia, tramiteId }: EmailTemplateProps) => {
   const content = `
     <!-- Intro -->
     <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
@@ -602,6 +602,12 @@ export const emailPagoPendiente = ({ nombre, concepto, monto, tramiteId }: Email
                     <p style="margin: 0 0 16px 0; color: ${colors.dark}; font-size: 18px; font-weight: 700;">${concepto}</p>
                     <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Monto</p>
                     <p style="margin: 0; color: ${colors.warning}; font-size: 36px; font-weight: 900;">$${Number(monto).toLocaleString('es-AR')}</p>
+                    <p style="margin: 4px 0 0 0; color: ${colors.textMuted}; font-size: 12px;">Precio regular (tarjeta / Mercado Pago)</p>
+                    ${montoTransferencia ? `
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${colors.border};">
+                      <p style="margin: 0; color: ${colors.success}; font-size: 24px; font-weight: 900;">$${Number(montoTransferencia).toLocaleString('es-AR')}</p>
+                      <p style="margin: 2px 0 0 0; color: ${colors.success}; font-size: 12px; font-weight: 700;">Precio promocional pagando por transferencia · ahorrás $${(Number(monto) - Number(montoTransferencia)).toLocaleString('es-AR')}</p>
+                    </div>` : ''}
                   </td>
                 </tr>
               </table>

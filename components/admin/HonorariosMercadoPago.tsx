@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { precioRegular } from '@/lib/precios'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,17 +47,17 @@ const PRECIOS_DEFAULT: PreciosConfig = {
 }
 
 // Calcula los montos de honorarios de un plan a partir de la configuración:
-// - MercadoPago: precio del plan
-// - Transferencia: precio del plan con el % de descuento configurado
+// - Transferencia: el precio del plan (precio promocional, el que se quiere recibir)
+// - MercadoPago: el precio regular = transferencia + recargo (ver lib/precios)
 function montosDePlan(plan: 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM', precios: PreciosConfig) {
-  const precioPlan = {
+  const precioTransferencia = {
     BASICO: precios.precioPlanBasico,
     EMPRENDEDOR: precios.precioPlanEmprendedor,
     PREMIUM: precios.precioPlanPremium
   }[plan]
   return {
-    mercadoPago: precioPlan,
-    transferencia: Math.round(precioPlan * (1 - precios.descuentoTransferencia / 100))
+    mercadoPago: precioRegular(precioTransferencia),
+    transferencia: Math.round(precioTransferencia)
   }
 }
 

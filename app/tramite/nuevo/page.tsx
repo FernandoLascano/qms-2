@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { PrecioDual } from '@/components/PrecioDual'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -921,9 +922,9 @@ export default function NuevoTramitePage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { id: 'BASICO', nombre: 'Básico', precio: `$${precios.precioPlanBasico.toLocaleString('es-AR')} + gastos`, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales'] },
-                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', precio: `$${precios.precioPlanEmprendedor.toLocaleString('es-AR')} + gastos`, destacado: true, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar'] },
-                      { id: 'PREMIUM', nombre: 'Premium', precio: `$${precios.precioPlanPremium.toLocaleString('es-AR')} + gastos`, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar', 'Alta de Libros Digitales', 'Una reunión de asesoría societaria al mes'] }
+                      { id: 'BASICO', nombre: 'Básico', transferencia: precios.precioPlanBasico, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales'] },
+                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', transferencia: precios.precioPlanEmprendedor, destacado: true, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar'] },
+                      { id: 'PREMIUM', nombre: 'Premium', transferencia: precios.precioPlanPremium, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar', 'Alta de Libros Digitales', 'Una reunión de asesoría societaria al mes'] }
                     ].map(plan => (
                       <div
                         key={plan.id}
@@ -940,7 +941,9 @@ export default function NuevoTramitePage() {
                             <Check className="h-6 w-6 text-brand-600 flex-shrink-0" />
                           )}
                         </div>
-                        <p className="text-2xl font-bold text-brand-900 my-2">{plan.precio}</p>
+                        <div className="my-2">
+                          <PrecioDual transferencia={plan.transferencia} precioClassName="text-2xl font-bold text-brand-900" gastos />
+                        </div>
                         <ul className="text-sm text-gray-700 space-y-1">
                           {plan.features.map(feature => (
                             <li key={feature}>✓ {feature}</li>

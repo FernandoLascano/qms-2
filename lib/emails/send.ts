@@ -125,13 +125,14 @@ export async function enviarEmailPagoPendiente(
   nombre: string,
   concepto: string,
   monto: number,
-  tramiteId: string
+  tramiteId: string,
+  montoTransferencia?: number | null
 ) {
   return sendEmail({
     to: email,
     subject: '💳 Pago requerido - ' + concepto,
     template: 'emailPagoPendiente',
-    data: { nombre, concepto, monto, tramiteId }
+    data: { nombre, concepto, monto, montoTransferencia: montoTransferencia ?? undefined, tramiteId }
   })
 }
 
