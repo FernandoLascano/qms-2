@@ -22,8 +22,8 @@ export function PrecioDual({ transferencia, precioClassName = 'text-4xl font-bol
 
   return (
     <div className={centrado ? 'text-center' : ''}>
-      <p className="text-sm text-gray-400">
-        <span className="line-through">{formatARS(regular)}</span> con tarjeta
+      <p className="text-sm text-gray-400 line-through">
+        {formatARS(regular)}
       </p>
       <div className={`flex items-baseline gap-1 ${centrado ? 'justify-center' : ''}`}>
         <span className={precioClassName}>{formatARS(transferencia)}</span>
