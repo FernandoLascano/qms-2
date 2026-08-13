@@ -79,7 +79,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           ? 'Trámite validado exitosamente' 
           : 'Trámite requiere correcciones',
         mensaje: accion === 'VALIDADO'
-          ? `Tu trámite "${tramite.denominacionSocial1}" ha sido validado por nuestro equipo. Procederemos con el siguiente paso del proceso.`
+          ? `Tu trámite "${tramite.denominacionSocial1}" fue validado. Un Agente de QuieroMiSAS se va a contactar por WhatsApp o email para coordinar el pago de los honorarios. Mientras tanto, ya podés ir gestionando Ciudadano Digital Nivel 2 para todas las personas que integren la Sociedad.`
           : `Tu trámite "${tramite.denominacionSocial1}" requiere algunas correcciones.${observaciones ? `\n\nObservaciones: ${observaciones}` : ''}`,
         link: `/dashboard/tramites/${id}`
       }

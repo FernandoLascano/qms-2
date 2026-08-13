@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { enviarEmailBienvenida } from "@/lib/emails/send"
 
 /** Login Google: GOOGLE_CLIENT_ID/SECRET o los mismos valores que GA4 (GOOGLE_OAUTH_*). */
 const googleClientId =
@@ -97,6 +98,16 @@ export const authOptions: NextAuthOptions = {
         })
       } catch {
         // no bloquear el login si ya estaba verificado o hubo condición de carrera
+      }
+    },
+    // Se dispara una sola vez cuando el adaptador crea un usuario nuevo.
+    // Cubre el alta con Google (el alta manual manda su propio email de bienvenida).
+    async createUser({ user }) {
+      if (!user?.email) return
+      try {
+        await enviarEmailBienvenida(user.email, user.name || "")
+      } catch {
+        // el email de bienvenida no es crítico para el alta
       }
     },
   },

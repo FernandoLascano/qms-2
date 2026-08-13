@@ -1,12 +1,39 @@
 import { sendEmail as sendEmailNodemailer } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
+import { interpolar } from './render-template'
 import * as templates from './templates'
+import { EmailLayout } from './templates'
 
 interface SendEmailParams {
   to: string
   subject: string
   template: keyof typeof templates
   data: Record<string, any>
+}
+
+// Si existe una plantilla activa en la base con este nombre, la usamos (editable
+// por el admin). Devuelve el HTML y el asunto ya interpolados, o null si no hay override.
+async function resolverPlantillaEditable(
+  template: string,
+  subject: string,
+  data: Record<string, any>
+): Promise<{ html: string; subject: string } | null> {
+  try {
+    const db = await prisma.emailTemplate.findFirst({
+      where: { name: template, isActive: true }
+    })
+    if (!db || !db.bodyHtml) return null
+    const html = EmailLayout({
+      children: interpolar(db.bodyHtml, data),
+      nombre: typeof data.nombre === 'string' ? data.nombre : '',
+      preheader: ''
+    })
+    const finalSubject = db.subject ? interpolar(db.subject, data) : subject
+    return { html, subject: finalSubject }
+  } catch {
+    // Ante cualquier problema con la base, caemos a la plantilla de código.
+    return null
+  }
 }
 
 export async function sendEmail({ to, subject, template, data }: SendEmailParams) {
@@ -17,11 +44,14 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
       throw new Error(`Template "${template}" no encontrada`)
     }
 
-    const html = templateFunction(data as any)
+    // La plantilla editable de la base tiene prioridad; si no hay, usamos la de código.
+    const override = await resolverPlantillaEditable(template as string, subject, data)
+    const html = override ? override.html : templateFunction(data as any)
+    const asuntoFinal = override ? override.subject : subject
 
     const nodemailerResult = await sendEmailNodemailer({
       to,
-      subject,
+      subject: asuntoFinal,
       html
     })
 
@@ -35,7 +65,7 @@ export async function sendEmail({ to, subject, template, data }: SendEmailParams
             from: process.env.SMTP_FROM || 'contacto@quieromisas.com',
             fromName: process.env.SMTP_FROM_NAME || 'QuieroMiSAS',
             to: [to],
-            subject,
+            subject: asuntoFinal,
             bodyHtml: html,
             direction: 'OUTBOUND',
             status: 'READ',

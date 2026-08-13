@@ -140,11 +140,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (valor) {
       const mensajesEtapas: { [key: string]: string } = {
         honorariosPagados: 'Confirmamos el pago de los honorarios. ¡Seguimos avanzando con tu trámite!',
-        denominacionReservada: 'La denominación de tu sociedad ha sido reservada exitosamente.',
+        denominacionReservada: 'La denominación de tu sociedad fue reservada. Próximamente te vamos a enviar el enlace de pago de la tasa retributiva de servicios de IPJ y los datos para realizar el depósito en garantía del 25% del capital. Ese depósito se hace en una cuenta que se abre especialmente para el trámite y se restituye a los CBU informados una vez inscripta la Sociedad.',
         capitalDepositado: 'Se ha confirmado el depósito del 25% del capital social.',
         tasaPagada: 'El pago de la tasa retributiva ha sido confirmado.',
-        borradorEnviado: 'Te enviamos el borrador de los documentos para que lo controles antes de la firma.',
-        tramiteIngresado: 'Tu trámite ha sido ingresado en el organismo correspondiente.',
+        borradorEnviado: 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención desde tu panel y, si está todo correcto, aprobalo. Con tu aprobación preparamos la versión final para la firma.',
+        tramiteIngresado: '¡Tu sociedad está cada vez más cerca! Ya ingresamos formalmente el trámite en el organismo. Normalmente la resolución de inscripción sale dentro de los 1 a 4 días hábiles. Te avisamos apenas esté lista.',
         tramiteObservado: 'El organismo observó el trámite. Ya lo estamos gestionando; te mantendremos al tanto.',
         sociedadInscripta: '¡Felicitaciones! Tu sociedad ha sido inscripta exitosamente.'
       }

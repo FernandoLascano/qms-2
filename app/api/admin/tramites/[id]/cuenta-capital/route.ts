@@ -94,14 +94,14 @@ export async function POST(request: Request, { params }: RouteParams) {
       mensajeAdvertencia = `\n\n⚠️ IMPORTANTE: La cuenta estará operativa recién a partir del ${fechaFormateada}. No realices la transferencia antes de esa fecha, ya que no será procesada.\n`
     }
 
-    const mensajeNotificacion = `Para continuar con tu trámite, debés realizar el depósito del 25% del capital social.\n\n` +
-      `Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
-      `Datos de la cuenta:\n` +
+    const mensajeNotificacion = `Ya podés realizar el depósito en garantía del 25% del capital social. Es un requisito obligatorio del trámite: el dinero queda en garantía en una cuenta que se abre especialmente y se te reintegra a los CBU informados una vez inscripta la Sociedad.\n\n` +
+      `💰 Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
+      `🏦 Datos de la cuenta:\n` +
       `Banco: ${banco}\n` +
       `CBU: ${cbu}\n` +
       `${alias ? `Alias: ${alias}\n` : ''}` +
       `Titular: ${titular}${mensajeAdvertencia}\n\n` +
-      `Luego de realizar el depósito, subí el comprobante desde tu panel.`
+      `Una vez hecho el depósito, subí el comprobante desde tu panel y nosotros lo verificamos.`
 
     // Guardar notificación con datos estructurados en el mensaje (formato JSON al inicio para fácil parsing)
     const metadata = JSON.stringify({ 
