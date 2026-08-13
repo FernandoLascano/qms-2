@@ -22,15 +22,15 @@ export function PrecioDual({ transferencia, precioClassName = 'text-4xl font-bol
 
   return (
     <div className={centrado ? 'text-center' : ''}>
-      <p className="text-sm text-gray-400 line-through">
-        {formatARS(regular)}
+      <p className="text-sm text-gray-400">
+        Precio regular <span className="line-through">{formatARS(regular)}</span>
       </p>
       <div className={`flex items-baseline gap-1 ${centrado ? 'justify-center' : ''}`}>
         <span className={precioClassName}>{formatARS(transferencia)}</span>
         {gastos && <span className="text-sm text-gray-500">+ gastos</span>}
       </div>
       <p className="text-xs font-semibold text-green-700">
-        Ahorrás {formatARS(ahorro)} pagando por transferencia
+        Precio promocional por transferencia · ahorrás {formatARS(ahorro)}
       </p>
     </div>
   )
