@@ -73,6 +73,14 @@ export async function POST(request: Request, { params }: RouteParams) {
       }
     })
 
+    // Enviar los datos de la cuenta marca la etapa 6 (Cuenta Bancaria Abierta)
+    if (!tramite.cuentaBancariaAbierta) {
+      await prisma.tramite.update({
+        where: { id },
+        data: { cuentaBancariaAbierta: true, fechaCuentaBancariaAbierta: new Date() }
+      })
+    }
+
     // Construir mensaje con advertencia de fecha de activación si existe
     let mensajeAdvertencia = ''
     if (fechaActivacion) {

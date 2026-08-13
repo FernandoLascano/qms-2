@@ -42,6 +42,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       where: { id },
       data: {
         denominacionAprobada: denominacion,
+        // Elegir la denominación implica que el análisis de homonimia ya se hizo (etapa 3)
+        homonimiaAnalizada: true,
+        fechaHomonimiaAnalizada: new Date(),
         // Si es alternativa, actualizar también denominacionSocial1 para mostrar el nombre final
         ...(esAlternativa && { denominacionSocial1: denominacion })
       }

@@ -921,9 +921,9 @@ export default function NuevoTramitePage() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
-                      { id: 'BASICO', nombre: 'Básico', precio: `$${precios.precioPlanBasico.toLocaleString('es-AR')} + gastos` },
-                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', precio: `$${precios.precioPlanEmprendedor.toLocaleString('es-AR')} + gastos`, destacado: true },
-                      { id: 'PREMIUM', nombre: 'Premium', precio: `$${precios.precioPlanPremium.toLocaleString('es-AR')} + gastos` }
+                      { id: 'BASICO', nombre: 'Básico', precio: `$${precios.precioPlanBasico.toLocaleString('es-AR')} + gastos`, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales'] },
+                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', precio: `$${precios.precioPlanEmprendedor.toLocaleString('es-AR')} + gastos`, destacado: true, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar'] },
+                      { id: 'PREMIUM', nombre: 'Premium', precio: `$${precios.precioPlanPremium.toLocaleString('es-AR')} + gastos`, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar', 'Alta de Libros Digitales', 'Una reunión de asesoría societaria al mes'] }
                     ].map(plan => (
                       <div
                         key={plan.id}
@@ -942,9 +942,9 @@ export default function NuevoTramitePage() {
                         </div>
                         <p className="text-2xl font-bold text-brand-900 my-2">{plan.precio}</p>
                         <ul className="text-sm text-gray-700 space-y-1">
-                          <li>✓ Constitución de Sociedad</li>
-                          <li>✓ Obtención de CUIT</li>
-                          <li>✓ Guía de uso de Libros Digitales</li>
+                          {plan.features.map(feature => (
+                            <li key={feature}>✓ {feature}</li>
+                          ))}
                         </ul>
                       </div>
                     ))}
@@ -1058,7 +1058,7 @@ export default function NuevoTramitePage() {
                     <span className="text-brand-700 font-black text-xl">3</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Objeto Social</h2>
+                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Objeto y Domicilio Social</h2>
                     <p className="text-gray-500 mt-1">Actividad y domicilio legal</p>
                   </div>
                 </div>
@@ -1122,7 +1122,7 @@ export default function NuevoTramitePage() {
                     {formData.sinDomicilio && (
                       <div className="mt-2 ml-6 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                         <p className="text-sm text-yellow-900">
-                          💡 Por un costo extra anual (a determinar), Quiero Mi SAS puede proporcionarte un domicilio. En ese caso, se anula la carga del domicilio.
+                          💡 Por un costo extra anual (que te será informado una vez terminado el formulario), QMS QuieroMiSAS puede proporcionarte un domicilio en Córdoba.
                         </p>
                       </div>
                     )}
@@ -1222,7 +1222,7 @@ export default function NuevoTramitePage() {
                 <div className="border-t pt-6">
                   <h3 className="font-black text-lg text-gray-900 mb-2">Depósito del Capital (CBU)</h3>
                   <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-brand-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito inicial del 25% del capital social en una cuenta bancaria. Este dinero luego será reintegrado a los CBU informados.</p>
+                    <p className="text-sm text-brand-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
                     <p className="text-sm font-bold text-brand-900 mt-3">Requisitos de CBU:</p>
                     <ul className="text-xs text-gray-700 mt-2 space-y-1 ml-4">
                       <li>• El CBU Principal deberá ser del Administrador Titular</li>
@@ -1344,6 +1344,12 @@ export default function NuevoTramitePage() {
                   <p className="text-gray-500 mb-4">
                     Define quiénes serán los socios y su participación en el capital
                   </p>
+
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-amber-900">
+                      🪪 <strong>Importante:</strong> para avanzar con el trámite, todas las personas que intervengan en la Sociedad (como socias o administradoras) deberán tener <strong>Ciudadano Digital Nivel 2</strong>. Es un requisito del sistema; más adelante te vamos a pasar un instructivo para obtenerlo.
+                    </p>
+                  </div>
 
                   <div className="bg-gray-100 p-4 rounded-lg mb-4">
                     <div className="flex items-center justify-between mb-2">
