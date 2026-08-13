@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { registerPartnerConversion } from '@/lib/partners'
+import { etapaPorConcepto, marcarEtapaPagada } from '@/lib/tramites-etapas'
 
 interface RouteParams {
   params: Promise<{
@@ -46,15 +47,23 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         sourceId: enlace.id,
       })
 
-      await prisma.notificacion.create({
-        data: {
-          userId: enlace.tramite.userId,
-          tramiteId: enlace.tramiteId,
-          tipo: 'EXITO',
-          titulo: 'Pago Confirmado',
-          mensaje: `Hemos confirmado tu pago de ${enlace.concepto} por $${enlace.monto.toLocaleString('es-AR')}.`
-        }
-      })
+      // Si el pago corresponde a una etapa (tasa final, depósito, honorarios), marcarla.
+      // Esa etapa dispara su propio email; para no duplicar, solo mandamos la notificación
+      // genérica "Pago Confirmado" cuando el concepto no mueve una etapa (ej: tasa de reserva).
+      const etapa = etapaPorConcepto(enlace.concepto)
+      const etapaMarcada = etapa ? await marcarEtapaPagada(enlace.tramiteId, etapa) : false
+
+      if (!etapaMarcada) {
+        await prisma.notificacion.create({
+          data: {
+            userId: enlace.tramite.userId,
+            tramiteId: enlace.tramiteId,
+            tipo: 'EXITO',
+            titulo: 'Pago Confirmado',
+            mensaje: `Hemos confirmado tu pago de ${enlace.concepto} por $${enlace.monto.toLocaleString('es-AR')}.`
+          }
+        })
+      }
     }
 
     return NextResponse.json({ success: true })

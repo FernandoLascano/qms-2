@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { etapaPorConcepto, marcarEtapaPagada } from '@/lib/tramites-etapas'
 
 interface RouteParams {
   params: Promise<{
@@ -67,34 +68,42 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           fechaPago: new Date()
         }
       })
-      
-      // Notificar al usuario sobre la aprobación del pago
-      await prisma.notificacion.create({
-        data: {
-          userId: documento.userId,
-          tramiteId: documento.tramiteId,
-          tipo: 'EXITO',
-          titulo: 'Pago Aprobado',
-          mensaje: `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado como aprobado.`,
-          link: `/dashboard/tramites/${documento.tramiteId}`
-        }
-      })
 
-      // Enviar email al usuario
-      const usuario = await prisma.user.findUnique({
-        where: { id: documento.userId }
-      })
-      if (usuario) {
-        try {
-          await enviarEmailNotificacion(
-            usuario.email,
-            usuario.name || 'Usuario',
-            'Pago Aprobado',
-            `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
-            documento.tramiteId || undefined
-          )
-        } catch {
-          // Email no crítico
+      // Si el pago corresponde a una etapa del trámite, marcarla (dispara UN solo email de etapa)
+      const etapa = etapaPorConcepto(pagoActualizado.concepto)
+      const etapaMarcada = etapa && documento.tramiteId
+        ? await marcarEtapaPagada(documento.tramiteId, etapa)
+        : false
+
+      // Si no se marcó una etapa, enviar la confirmación genérica de pago aprobado
+      if (!etapaMarcada) {
+        await prisma.notificacion.create({
+          data: {
+            userId: documento.userId,
+            tramiteId: documento.tramiteId,
+            tipo: 'EXITO',
+            titulo: 'Pago Aprobado',
+            mensaje: `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado como aprobado.`,
+            link: `/dashboard/tramites/${documento.tramiteId}`
+          }
+        })
+
+        // Enviar email al usuario
+        const usuario = await prisma.user.findUnique({
+          where: { id: documento.userId }
+        })
+        if (usuario) {
+          try {
+            await enviarEmailNotificacion(
+              usuario.email,
+              usuario.name || 'Usuario',
+              'Pago Aprobado',
+              `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+              documento.tramiteId || undefined
+            )
+          } catch {
+            // Email no crítico
+          }
         }
       }
     } else if (documento.tipo === 'COMPROBANTE_DEPOSITO') {
@@ -221,33 +230,41 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             }
           })
 
-          // Crear notificación al usuario de pago aprobado
-          await prisma.notificacion.create({
-            data: {
-              userId: documento.userId,
-              tramiteId: documento.tramiteId,
-              tipo: 'EXITO',
-              titulo: 'Pago Aprobado',
-              mensaje: `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
-              link: `/dashboard/tramites/${documento.tramiteId}#enlaces-pago`
-            }
-          })
+          // Si el pago corresponde a una etapa del trámite, marcarla (dispara UN solo email de etapa)
+          const etapa = etapaPorConcepto(conceptoPago)
+          const etapaMarcada = etapa
+            ? await marcarEtapaPagada(documento.tramiteId, etapa)
+            : false
 
-          // Enviar email al usuario
-          const usuario = await prisma.user.findUnique({
-            where: { id: documento.userId }
-          })
-          if (usuario) {
-            try {
-              await enviarEmailNotificacion(
-                usuario.email,
-                usuario.name || 'Usuario',
-                'Pago Aprobado',
-                `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
-                documento.tramiteId || undefined
-              )
-            } catch {
-              // Email no crítico
+          // Si no se marcó una etapa (ej: tasa de reserva de nombre), enviar la confirmación genérica
+          if (!etapaMarcada) {
+            await prisma.notificacion.create({
+              data: {
+                userId: documento.userId,
+                tramiteId: documento.tramiteId,
+                tipo: 'EXITO',
+                titulo: 'Pago Aprobado',
+                mensaje: `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+                link: `/dashboard/tramites/${documento.tramiteId}#enlaces-pago`
+              }
+            })
+
+            // Enviar email al usuario
+            const usuario = await prisma.user.findUnique({
+              where: { id: documento.userId }
+            })
+            if (usuario) {
+              try {
+                await enviarEmailNotificacion(
+                  usuario.email,
+                  usuario.name || 'Usuario',
+                  'Pago Aprobado',
+                  `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
+                  documento.tramiteId || undefined
+                )
+              } catch {
+                // Email no crítico
+              }
             }
           }
         }
