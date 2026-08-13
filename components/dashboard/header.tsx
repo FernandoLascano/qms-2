@@ -10,6 +10,9 @@ import Link from 'next/link'
 const pageInfo: Record<string, { title: string; description: string; icon: LucideIcon }> = {
   '/dashboard': { title: 'Inicio', description: 'Resumen de tu cuenta', icon: Home },
   '/dashboard/tramites': { title: 'Mis Trámites', description: 'Gestiona tus trámites de constitución', icon: FileText },
+  '/dashboard/mi-sociedad': { title: 'Mi Sociedad', description: 'El legajo de tu sociedad', icon: Building2 },
+  '/dashboard/libros-digitales': { title: 'Libros Digitales', description: 'Guía de uso de los libros de tu sociedad', icon: BookOpen },
+  '/dashboard/servicios': { title: 'Servicios', description: 'Otros servicios para tu empresa', icon: Handshake },
   '/dashboard/documentos': { title: 'Documentos', description: 'Sube y gestiona tus documentos', icon: Upload },
   '/dashboard/notificaciones': { title: 'Notificaciones', description: 'Centro de notificaciones', icon: Bell },
   '/dashboard/configuracion': { title: 'Configuración', description: 'Configura tu cuenta', icon: Settings },

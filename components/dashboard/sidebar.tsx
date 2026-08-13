@@ -10,6 +10,9 @@ import { cn } from '@/lib/utils'
 const navigation = [
   { name: 'Inicio', href: '/dashboard', icon: Home },
   { name: 'Mis Trámites', href: '/dashboard/tramites', icon: FileText },
+  { name: 'Mi Sociedad', href: '/dashboard/mi-sociedad', icon: Building2 },
+  { name: 'Libros Digitales', href: '/dashboard/libros-digitales', icon: BookOpen },
+  { name: 'Servicios', href: '/dashboard/servicios', icon: Handshake },
   { name: 'Documentos', href: '/dashboard/documentos', icon: Upload },
   { name: 'Notificaciones', href: '/dashboard/notificaciones', icon: Bell },
   { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
