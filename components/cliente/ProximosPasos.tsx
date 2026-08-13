@@ -230,6 +230,7 @@ export default function ProximosPasos({
 
     // 4b. Borrador enviado: el cliente debe controlarlo y aprobarlo antes de la firma
     if (tramite.borradorEnviado && !tramite.borradorAprobadoCliente) {
+      const borradorDoc = documentos.find((d: any) => d.tipo === 'BORRADOR')
       acciones.push({
         tipo: 'CONTROLAR_BORRADOR',
         titulo: '📝 Controlá el borrador',
@@ -238,7 +239,8 @@ export default function ProximosPasos({
         responsable: 'cliente',
         accion: null,
         link: null,
-        confirmar: 'aprobar_borrador'
+        confirmar: 'aprobar_borrador',
+        ...(borradorDoc ? { ayuda: [{ label: '📄 Ver el borrador', href: `/api/documentos/${borradorDoc.id}/view` }] } : {})
       })
     }
 

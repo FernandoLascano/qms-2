@@ -24,6 +24,7 @@ import PagosControl from '@/components/admin/PagosControl'
 import EnlacesPagoExterno from '@/components/admin/EnlacesPagoExterno'
 import HonorariosMercadoPago from '@/components/admin/HonorariosMercadoPago'
 import SubirDocumentosParaCliente from '@/components/admin/SubirDocumentosParaCliente'
+import SubirBorrador from '@/components/admin/SubirBorrador'
 import ChatBox from '@/components/chat/ChatBox'
 import ComprobantesReview from '@/components/admin/ComprobantesReview'
 import CuentaCapital from '@/components/admin/CuentaCapital'
@@ -673,10 +674,18 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
         cuentaInicial={null}
       />
 
+      {/* Subir Borrador para que el Cliente lo controle */}
+      <SubirBorrador
+        tramiteId={tramite.id}
+        borradorEnviado={tramite.borradorEnviado}
+        borradorAprobadoCliente={tramite.borradorAprobadoCliente}
+      />
+
       {/* Subir Documentos para que el Cliente Firme */}
       <SubirDocumentosParaCliente
         tramiteId={tramite.id}
         userId={tramite.userId}
+        instruccionesFirma={tramite.instruccionesFirma}
         documentosEnviados={tramite.documentos
           .filter(doc =>
             doc.tipo === 'DOCUMENTO_PARA_FIRMAR' ||
