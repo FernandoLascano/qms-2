@@ -22,9 +22,10 @@ interface PageProps {
   params: Promise<{
     id: string
   }>
+  searchParams?: Promise<{ payment?: string }>
 }
 
-async function TramiteDetallePage({ params }: PageProps) {
+async function TramiteDetallePage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {
@@ -32,6 +33,7 @@ async function TramiteDetallePage({ params }: PageProps) {
   }
 
   const { id } = await params
+  const paymentStatus = (await searchParams)?.payment
 
   const tramite = await prisma.tramite.findFirst({
     where: {
@@ -123,6 +125,32 @@ async function TramiteDetallePage({ params }: PageProps) {
           {getEstadoTexto(tramite.estadoGeneral)}
         </span>
       </div>
+
+      {/* Aviso al volver de Mercado Pago */}
+      {paymentStatus === 'failure' && (
+        <div className="rounded-lg border-2 border-red-300 bg-red-50 p-4">
+          <p className="text-sm font-semibold text-red-900">Tu pago no se completó</p>
+          <p className="text-sm text-red-800 mt-1">
+            El pago con Mercado Pago no pudo procesarse. Podés intentar de nuevo con la misma tarjeta, con otra, o con otro medio de pago desde el botón &quot;Pagar con Mercado Pago&quot; más abajo.
+          </p>
+        </div>
+      )}
+      {paymentStatus === 'pending' && (
+        <div className="rounded-lg border-2 border-yellow-300 bg-yellow-50 p-4">
+          <p className="text-sm font-semibold text-yellow-900">Tu pago está en proceso</p>
+          <p className="text-sm text-yellow-800 mt-1">
+            Mercado Pago está procesando tu pago. Te avisamos apenas se confirme; no hace falta que lo hagas de nuevo.
+          </p>
+        </div>
+      )}
+      {paymentStatus === 'success' && (
+        <div className="rounded-lg border-2 border-green-300 bg-green-50 p-4">
+          <p className="text-sm font-semibold text-green-900">¡Pago recibido!</p>
+          <p className="text-sm text-green-800 mt-1">
+            Estamos confirmando tu pago con Mercado Pago. En cuanto se acredite, vas a ver la etapa completada.
+          </p>
+        </div>
+      )}
 
       {/* Próximos Pasos - Lo que el cliente DEBE hacer */}
       <ProximosPasos 

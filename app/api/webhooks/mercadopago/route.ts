@@ -230,6 +230,29 @@ export async function POST(request: Request) {
             }
           }
         }))
+      } else if (payment.status === 'rejected' || payment.status === 'cancelled') {
+        // Intento rechazado: avisamos al cliente pero dejamos el pago en PENDIENTE
+        // para que pueda reintentar (el botón de pago sigue disponible).
+        const externalReference = payment.external_reference
+        if (externalReference) {
+          const [tramiteId, concepto] = externalReference.split('|')
+          const pago = await prisma.pago.findFirst({
+            where: { tramiteId, concepto, estado: 'PENDIENTE' },
+            include: { tramite: true }
+          })
+          if (pago?.tramite) {
+            await prisma.notificacion.create({
+              data: {
+                userId: pago.tramite.userId,
+                tramiteId,
+                tipo: 'ALERTA',
+                titulo: 'Tu pago no se completó',
+                mensaje: 'El pago con Mercado Pago fue rechazado. Podés volver a intentarlo desde tu panel, con la misma u otra tarjeta o medio de pago.',
+                link: `/dashboard/tramites/${tramiteId}#pago-honorarios`
+              }
+            })
+          }
+        }
       }
     }
 
