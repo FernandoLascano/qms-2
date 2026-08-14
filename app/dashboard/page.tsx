@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Clock, CheckCircle, AlertCircle, Plus, ArrowRight, Bell, Upload, TrendingUp } from 'lucide-react'
+import { FileText, Clock, CheckCircle, AlertCircle, Plus, ArrowRight, Bell, Upload, TrendingUp, Building2, BookOpen, Handshake } from 'lucide-react'
 
 async function DashboardPage() {
   const session = await getServerSession(authOptions)
@@ -112,19 +112,22 @@ async function DashboardPage() {
     const progreso = calcularProgreso(t)
     return progreso === 100 || t.sociedadInscripta
   }).length
-  // "Requieren Atención" = trámites con acciones pendientes del usuario
-  const requierenAtencion = tramites.filter(t => {
-    // Tiene pagos pendientes
+  // Un trámite ya completado (sociedad inscripta / 100%) nunca requiere atención.
+  const requiereAtencion = (t: any) => {
+    const progreso = calcularProgreso(t)
+    if (progreso === 100 || t.sociedadInscripta) return false
     const tienePagosPendientes = t.pagos && t.pagos.length > 0
-    // Tiene enlaces de pago pendientes
     const tieneEnlacesPendientes = t.enlacesPago && t.enlacesPago.length > 0
-    // Tiene documentos para firmar pendientes
     const tieneDocumentosParaFirmar = t.documentos && t.documentos.length > 0
-    // Estado esperando cliente
     const esperandoCliente = t.estadoGeneral === 'ESPERANDO_CLIENTE'
-
     return tienePagosPendientes || tieneEnlacesPendientes || tieneDocumentosParaFirmar || esperandoCliente
-  }).length
+  }
+
+  // "Requieren Atención" = trámites con acciones pendientes del usuario
+  const requierenAtencion = tramites.filter(requiereAtencion).length
+
+  // Sociedades ya inscriptas del cliente (para mostrar el legajo en el inicio)
+  const sociedades = tramites.filter((t: any) => t.sociedadInscripta)
 
   // Obtener notificaciones no leídas
   const notificacionesNoLeidas = await prisma.notificacion.count({
@@ -292,6 +295,33 @@ async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Legajo de la Sociedad inscripta */}
+      {sociedades.length > 0 && (
+        <div className="space-y-3">
+          {sociedades.slice(0, 2).map((soc: any) => (
+            <Card key={soc.id} className="border-2 border-green-200 bg-green-50/40">
+              <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="h-11 w-11 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="h-6 w-6 text-green-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Tu sociedad</p>
+                    <h3 className="text-lg font-bold text-gray-900 truncate">{soc.denominacionAprobada || soc.denominacionSocial1}</h3>
+                    <p className="text-sm text-gray-600">
+                      {soc.cuit ? `CUIT ${soc.cuit}` : ''}{soc.cuit && soc.matricula ? ' · ' : ''}{soc.matricula ? `Mat. ${soc.matricula}` : ''}
+                    </p>
+                  </div>
+                </div>
+                <Link href="/dashboard/mi-sociedad" className="inline-flex items-center gap-2 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 whitespace-nowrap">
+                  Ver legajo completo <ArrowRight className="h-4 w-4" />
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {/* Trámites Activos */}
       <Card className="shadow-lg">
         <CardHeader className="border-b border-gray-100">
@@ -335,11 +365,7 @@ async function DashboardPage() {
             <div className="space-y-4">
               {tramites.slice(0, 5).map((tramite) => {
                 const progreso = calcularProgreso(tramite)
-                const tieneAccionesPendientes =
-                  (tramite.pagos && tramite.pagos.length > 0) ||
-                  (tramite.enlacesPago && tramite.enlacesPago.length > 0) ||
-                  (tramite.documentos && tramite.documentos.length > 0) ||
-                  tramite.estadoGeneral === 'ESPERANDO_CLIENTE'
+                const tieneAccionesPendientes = requiereAtencion(tramite)
 
                 // Si el formulario no está completo, redirigir al formulario para continuar
                 const href = !tramite.formularioCompleto
@@ -410,6 +436,57 @@ async function DashboardPage() {
       <div>
         <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <Link href="/dashboard/mi-sociedad" className="group">
+            <Card className="hover:shadow-xl hover:border-green-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-700 transition-colors">
+                    <Building2 className="h-6 w-6 text-green-700 group-hover:text-white transition-colors" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-700 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-green-700 transition-colors">Mi Sociedad</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">El legajo con los datos y documentos de tu sociedad</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/libros-digitales" className="group">
+            <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center group-hover:bg-brand-700 transition-colors">
+                    <BookOpen className="h-6 w-6 text-brand-700 group-hover:text-white transition-colors" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-brand-700 transition-colors">Libros Digitales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">Guía para llevar los libros de tu sociedad</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/servicios" className="group">
+            <Card className="hover:shadow-xl hover:border-amber-300 transition-all duration-200 h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
+                    <Handshake className="h-6 w-6 text-amber-700 group-hover:text-white transition-colors" />
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
+                </div>
+                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-amber-700 transition-colors">Servicios</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-500">Otros servicios para tu empresa</p>
+              </CardContent>
+            </Card>
+          </Link>
+
           <Link href="/tramite/nuevo" className="group">
             <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
               <CardHeader>
