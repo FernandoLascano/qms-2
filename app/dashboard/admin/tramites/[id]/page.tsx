@@ -685,7 +685,6 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       <SubirDocumentosParaCliente
         tramiteId={tramite.id}
         userId={tramite.userId}
-        instruccionesFirma={tramite.instruccionesFirma}
         documentosEnviados={tramite.documentos
           .filter(doc =>
             doc.tipo === 'DOCUMENTO_PARA_FIRMAR' ||

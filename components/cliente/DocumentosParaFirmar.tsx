@@ -23,10 +23,9 @@ interface Documento {
 interface DocumentosParaFirmarProps {
   documentos: Documento[]
   tramiteId: string
-  instruccionesFirma?: string | null
 }
 
-export default function DocumentosParaFirmar({ documentos, tramiteId, instruccionesFirma }: DocumentosParaFirmarProps) {
+export default function DocumentosParaFirmar({ documentos, tramiteId }: DocumentosParaFirmarProps) {
   const router = useRouter()
   const [archivosSeleccionados, setArchivosSeleccionados] = useState<Record<string, File | null>>({})
   const [subiendo, setSubiendo] = useState<Record<string, boolean>>({})
@@ -397,22 +396,12 @@ export default function DocumentosParaFirmar({ documentos, tramiteId, instruccio
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Instrucciones generales + instructivo + subida en lote */}
+        {/* Nota general + subida en lote. Las instrucciones específicas van en cada documento. */}
         {documentosPendientes.length > 0 && (
           <div className="rounded-lg bg-white border border-purple-200 p-4 space-y-2">
-            {instruccionesFirma && (
-              <p className="text-sm text-gray-800">
-                <strong>Instrucciones de firma:</strong> {instruccionesFirma}
-              </p>
-            )}
-            <a
-              href="/assets/img/FirmaDocumentos.jpeg"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 underline hover:text-brand-800"
-            >
-              📄 Ver instructivo de firma con imágenes
-            </a>
+            <p className="text-sm text-gray-700">
+              Cada documento tiene sus <strong>instrucciones de firma específicas</strong> (mirá el paso 2 de cada uno). Firmá cada uno como se indica y subí las versiones firmadas.
+            </p>
             {documentosPendientes.length > 1 && (
               <div className="pt-2">
                 <Button
@@ -485,6 +474,16 @@ export default function DocumentosParaFirmar({ documentos, tramiteId, instruccio
                   <p className="text-sm text-purple-900 font-bold bg-white/50 p-2 rounded border border-purple-100 italic">
                     {doc.descripcion || 'Firmar en todas las páginas indicadas'}
                   </p>
+                  {doc.tipo === 'ESTATUTO_PARA_FIRMAR' && (
+                    <a
+                      href="/assets/img/InstructivoFirma.jpeg"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 underline hover:text-brand-800"
+                    >
+                      📄 Ver instructivo de firma digital (Ciudadano Digital)
+                    </a>
+                  )}
                 </div>
               </div>
 

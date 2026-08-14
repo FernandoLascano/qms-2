@@ -16,12 +16,13 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const tramiteId = formData.get('tramiteId') as string
     const userId = formData.get('userId') as string
-    const instrucciones = (formData.get('instrucciones') as string) || ''
 
-    // Soporta múltiples documentos en un solo envío (para mandar un único email).
+    // Soporta múltiples documentos en un solo envío (para mandar un único email),
+    // cada uno con sus propias instrucciones.
     const files = formData.getAll('files') as File[]
     const tipos = formData.getAll('tipos') as string[]
     const nombres = formData.getAll('nombres') as string[]
+    const descripciones = formData.getAll('descripciones') as string[]
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'No se proporcionaron archivos' }, { status: 400 })
@@ -47,13 +48,14 @@ export async function POST(request: Request) {
 
       const nombre = (nombres[i] || file.name.replace(/\.[^/.]+$/, '')).trim()
       const tipo = tipos[i] || 'DOCUMENTO_PARA_FIRMAR'
+      const descripcion = (descripciones[i] || '').trim() || 'Documento para firmar'
 
       await prisma.documento.create({
         data: {
           tramiteId,
           userId,
           nombre,
-          descripcion: instrucciones || 'Documento para firmar',
+          descripcion,
           url: uploadResult.url,
           tamanio: buffer.length,
           mimeType: file.type || 'application/pdf',
@@ -68,18 +70,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se pudo subir ningún archivo. Intentá de nuevo.' }, { status: 500 })
     }
 
-    // Marca la etapa y guarda las instrucciones de firma para mostrárselas al cliente.
+    // Marca la etapa de documentos enviados.
     await prisma.tramite.update({
       where: { id: tramiteId },
-      data: {
-        documentosRevisados: true,
-        ...(instrucciones.trim() ? { instruccionesFirma: instrucciones.trim() } : {})
-      }
+      data: { documentosRevisados: true }
     })
 
     // UN SOLO aviso al cliente por todo el envío.
     const listado = nombresGuardados.map(n => `• ${n}`).join('\n')
-    const mensaje = `Los documentos de tu Sociedad ya están listos para firmar:\n${listado}\n\nDescargalos, firmalos y subí las versiones firmadas desde tu panel.${instrucciones.trim() ? `\n\nInstrucciones: ${instrucciones.trim()}` : ''}`
+    const mensaje = `Los documentos de tu Sociedad ya están listos para firmar:\n${listado}\n\nIngresá a tu panel: cada documento tiene sus instrucciones específicas de firma.`
 
     try {
       await prisma.notificacion.create({
