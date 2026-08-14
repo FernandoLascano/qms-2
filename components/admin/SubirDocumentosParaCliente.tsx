@@ -23,29 +23,44 @@ interface SubirDocumentosParaClienteProps {
   tramiteId: string
   userId: string
   documentosEnviados?: DocumentoEnviado[]
-  instruccionesFirma?: string | null
 }
 
-// Los 3 documentos habituales, con nombre y tipo predefinidos.
+// Los 3 documentos que se envían a firmar, con nombre, tipo e instrucciones predefinidas.
 const SLOTS = [
-  { key: 'estatuto', tipo: 'ESTATUTO_PARA_FIRMAR', label: 'Estatuto Social' },
-  { key: 'acta', tipo: 'ACTA_PARA_FIRMAR', label: 'Acta Constitutiva' },
-  { key: 'otro', tipo: 'DOCUMENTO_PARA_FIRMAR', label: 'Documento adicional (opcional)' }
+  {
+    key: 'actaEstatuto',
+    tipo: 'ESTATUTO_PARA_FIRMAR',
+    label: 'Acta Constitutiva y Estatuto',
+    instruccion:
+      'Este documento se firma DIGITALMENTE con Ciudadano Digital (CiDi). Seguí el paso a paso del instructivo que te dejamos en tu panel.'
+  },
+  {
+    key: 'arca',
+    tipo: 'DOCUMENTO_PARA_FIRMAR',
+    label: 'Declaración Jurada ARCA',
+    instruccion:
+      'Debe firmarla la persona designada como Administrador Titular. Imprimí el documento, firmalo y escanealo correctamente (en PDF, no fotos).'
+  },
+  {
+    key: 'pep',
+    tipo: 'DOCUMENTO_PARA_FIRMAR',
+    label: 'Declaraciones Juradas PEP',
+    instruccion:
+      'Imprimí las declaraciones. Cada persona designada como Administrador firma la que le corresponde. Completá SOLO los campos "Lugar y Fecha", "Firma" y "Aclaración". No completes ningún otro campo.'
+  }
 ] as const
-
-const INSTRUCCIONES_DEFAULT =
-  'Descargá cada documento, firmalo en todas las hojas (certificá la firma ante escribano, banco o autoridad si corresponde), escanealo en PDF y subí las versiones firmadas desde tu panel.'
 
 export default function SubirDocumentosParaCliente({
   tramiteId,
   userId,
-  documentosEnviados = [],
-  instruccionesFirma
+  documentosEnviados = []
 }: SubirDocumentosParaClienteProps) {
   const router = useRouter()
   const [subiendo, setSubiendo] = useState(false)
   const [archivos, setArchivos] = useState<Record<string, File | null>>({})
-  const [instrucciones, setInstrucciones] = useState(instruccionesFirma || INSTRUCCIONES_DEFAULT)
+  const [instrucciones, setInstrucciones] = useState<Record<string, string>>(
+    Object.fromEntries(SLOTS.map(s => [s.key, s.instruccion]))
+  )
 
   const setArchivo = (key: string, file: File | null) => {
     setArchivos(prev => ({ ...prev, [key]: file }))
@@ -63,11 +78,11 @@ export default function SubirDocumentosParaCliente({
       const formData = new FormData()
       formData.append('tramiteId', tramiteId)
       formData.append('userId', userId)
-      formData.append('instrucciones', instrucciones)
       for (const slot of seleccionados) {
         formData.append('files', archivos[slot.key] as File)
         formData.append('tipos', slot.tipo)
         formData.append('nombres', slot.label)
+        formData.append('descripciones', instrucciones[slot.key] || slot.instruccion)
       }
 
       const response = await fetch('/api/admin/documentos/subir-para-cliente', {
@@ -108,8 +123,8 @@ export default function SubirDocumentosParaCliente({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           {SLOTS.map(slot => (
-            <div key={slot.key} className="rounded-lg bg-white border border-purple-100 p-3">
-              <Label htmlFor={`doc-${slot.key}`} className="text-sm font-medium text-gray-900">
+            <div key={slot.key} className="rounded-lg bg-white border border-purple-100 p-3 space-y-2">
+              <Label htmlFor={`doc-${slot.key}`} className="text-sm font-semibold text-gray-900">
                 {slot.label}
               </Label>
               <Input
@@ -118,25 +133,26 @@ export default function SubirDocumentosParaCliente({
                 accept=".pdf,.doc,.docx"
                 disabled={subiendo}
                 onChange={(e) => setArchivo(slot.key, e.target.files?.[0] || null)}
-                className="cursor-pointer mt-1"
+                className="cursor-pointer"
               />
+              <div>
+                <Label htmlFor={`instr-${slot.key}`} className="text-xs text-gray-500">Instrucciones para el cliente (editable)</Label>
+                <Textarea
+                  id={`instr-${slot.key}`}
+                  value={instrucciones[slot.key]}
+                  onChange={(e) => setInstrucciones(prev => ({ ...prev, [slot.key]: e.target.value }))}
+                  disabled={subiendo}
+                  rows={3}
+                  className="mt-1 text-sm"
+                />
+              </div>
             </div>
           ))}
         </div>
 
-        <div>
-          <Label htmlFor="instruccionesFirma">Instrucciones de firma (las ve el cliente)</Label>
-          <Textarea
-            id="instruccionesFirma"
-            value={instrucciones}
-            onChange={(e) => setInstrucciones(e.target.value)}
-            disabled={subiendo}
-            rows={4}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            El cliente también verá el instructivo de firma con imágenes en su panel.
-          </p>
-        </div>
+        <p className="text-xs text-gray-500">
+          Cada documento se envía con sus instrucciones. El Acta y Estatuto además muestra el instructivo de firma digital (imágenes) en el panel del cliente.
+        </p>
 
         <Button
           onClick={handleEnviar}
