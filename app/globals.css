@@ -1,33 +1,179 @@
 @import "tailwindcss";
 
-/* ============================================
-   PALETA DE MARCA - Rebranding fácil
-   Cambiá estos valores para cambiar toda la marca.
-   Ej: para verde usar #059669 como --brand-600
-   Ej: para azul usar #2563eb como --brand-600
-   ============================================ */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================================
+   SISTEMA DE DISEÑO QMS
+   ============================================================================
 
-  /* Brand (color principal de marca) - Igual al logo #991D23 */
-  --brand-50: #fef2f2;
-  --brand-100: #fde2e3;
-  --brand-200: #fbc8ca;
-  --brand-300: #f69b9e;
-  --brand-400: #ed666a;
-  --brand-500: #dc3d42;
-  --brand-600: #b0242b;
-  --brand-700: #991D23;
-  --brand-800: #7a181d;
-  --brand-900: #66161a;
+   Tres capas. Nunca escribas un color literal en un .tsx.
+
+     CAPA 1  PRIMITIVAS   → --brand-h  (LA variable de marca)
+     CAPA 2  SEMÁNTICAS   → --surface, --ink, --primary, --danger…
+     CAPA 3  COMPONENTES  → components/ui/* usan sólo utilidades semánticas
+
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  PARA REBRANDEAR: cambiá --brand-h (y opcionalmente --brand-c).      │
+   │  Toda la app se actualiza sola.                                      │
+   │                                                                      │
+   │    24.5 = rojo QMS (actual)   150 = verde    250 = azul              │
+   │    45   = naranja             285 = violeta  200 = turquesa          │
+   │                                                                      │
+   │  Para los emails (HTML no soporta variables CSS) corré:              │
+   │    node scripts/brand-tokens.mjs 250                                 │
+   │  y pegá los hex en lib/emails/templates.tsx                          │
+   └──────────────────────────────────────────────────────────────────────┘
+   ============================================================================ */
+
+:root {
+  /* ═══════════════════ CAPA 1 · PRIMITIVAS ═══════════════════ */
+
+  /* ---- Marca -------------------------------------------------------------
+     La rampa se genera con una escalera fija de luminosidad y croma.
+     Sólo cambia el tono. Con --brand-h: 24.5 el paso 700 da exactamente
+     #991D23 (el color del logo).                                          */
+  --brand-h: 24.5;
+  --brand-c: 0.1955;
+
+  --brand-50:  oklch(0.970 calc(var(--brand-c) * 0.066) var(--brand-h));
+  --brand-100: oklch(0.935 calc(var(--brand-c) * 0.152) var(--brand-h));
+  --brand-200: oklch(0.878 calc(var(--brand-c) * 0.298) var(--brand-h));
+  --brand-300: oklch(0.782 calc(var(--brand-c) * 0.559) var(--brand-h));
+  --brand-400: oklch(0.679 calc(var(--brand-c) * 0.856) var(--brand-h));
+  --brand-500: oklch(0.598 calc(var(--brand-c) * 1.000) var(--brand-h));
+  --brand-600: oklch(0.496 calc(var(--brand-c) * 0.897) var(--brand-h));
+  --brand-700: oklch(0.446 calc(var(--brand-c) * 0.813) var(--brand-h));
+  --brand-800: oklch(0.382 calc(var(--brand-c) * 0.676) var(--brand-h));
+  --brand-900: oklch(0.340 calc(var(--brand-c) * 0.576) var(--brand-h));
+
+  /* ---- Neutrales ---------------------------------------------------------
+     Gris levemente frío, independiente de la marca: si mañana la marca es
+     verde, los grises no se vuelven verdes.                               */
+  --n-h: 265;
+  --n-c: 0.006;
+
+  --n-0:   #ffffff;
+  --n-50:  oklch(0.985 var(--n-c) var(--n-h));
+  --n-100: oklch(0.967 var(--n-c) var(--n-h));
+  --n-200: oklch(0.928 var(--n-c) var(--n-h));
+  --n-300: oklch(0.868 var(--n-c) var(--n-h));
+  --n-400: oklch(0.715 var(--n-c) var(--n-h));
+  --n-500: oklch(0.596 var(--n-c) var(--n-h));
+  --n-600: oklch(0.497 var(--n-c) var(--n-h));
+  --n-700: oklch(0.412 var(--n-c) var(--n-h));
+  --n-800: oklch(0.318 var(--n-c) var(--n-h));
+  --n-900: oklch(0.242 var(--n-c) var(--n-h));
+  --n-950: oklch(0.170 var(--n-c) var(--n-h));
+
+  /* ---- Estados -----------------------------------------------------------
+     Misma escalera de luminosidad que la marca, tono fijo. NO se rebrandean:
+     "éxito" tiene que ser verde aunque la marca sea verde.
+     Contrastes verificados (texto 700 sobre fondo 50): 6.6 a 7.4 → AA.     */
+  --success-50:  oklch(0.970 0.0086 150);
+  --success-100: oklch(0.935 0.0198 150);
+  --success-200: oklch(0.878 0.0387 150);
+  --success-500: oklch(0.598 0.1300 150);
+  --success-600: oklch(0.496 0.1166 150);
+  --success-700: oklch(0.446 0.1057 150);
+  --success-800: oklch(0.382 0.0879 150);
+
+  --warning-50:  oklch(0.970 0.0069 70);
+  --warning-100: oklch(0.935 0.0160 70);
+  --warning-200: oklch(0.878 0.0313 70);
+  --warning-500: oklch(0.598 0.1050 70);
+  --warning-600: oklch(0.496 0.0942 70);
+  --warning-700: oklch(0.446 0.0853 70);
+  --warning-800: oklch(0.382 0.0710 70);
+
+  --danger-50:  oklch(0.970 0.0112 27);
+  --danger-100: oklch(0.935 0.0258 27);
+  --danger-200: oklch(0.878 0.0507 27);
+  --danger-500: oklch(0.598 0.1700 27);
+  --danger-600: oklch(0.496 0.1525 27);
+  --danger-700: oklch(0.446 0.1382 27);
+  --danger-800: oklch(0.382 0.1149 27);
+
+  --info-50:  oklch(0.970 0.0092 250);
+  --info-100: oklch(0.935 0.0213 250);
+  --info-200: oklch(0.878 0.0417 250);
+  --info-500: oklch(0.598 0.1400 250);
+  --info-600: oklch(0.496 0.1256 250);
+  --info-700: oklch(0.446 0.1138 250);
+  --info-800: oklch(0.382 0.0946 250);
+
+  /* ═══════════════════ CAPA 2 · SEMÁNTICAS ═══════════════════
+     Esto es lo que usan los componentes. Si necesitás un color nuevo,
+     agregá un token acá — no un hex en el componente.                      */
+
+  /* Superficies */
+  --canvas:        var(--n-100);   /* fondo de la app                       */
+  --surface:       var(--n-0);     /* cards, sidebar, header                */
+  --surface-2:     var(--n-50);    /* zonas internas, cabeceras de tabla    */
+  --surface-3:     var(--n-100);   /* hover de filas, code                  */
+
+  /* Bordes */
+  --line:          var(--n-200);   /* divisores, borde de card              */
+  --line-strong:   var(--n-300);   /* hover, separadores marcados           */
+  --line-input:    var(--n-400);   /* borde de controles de formulario      */
+
+  /* Texto — contraste sobre --surface verificado
+     ink 16.3:1 · ink-2 6.1:1 · ink-3 4.0:1 (sólo ≥18px o decorativo)      */
+  --ink:           var(--n-900);
+  --ink-2:         var(--n-600);
+  --ink-3:         var(--n-500);
+  --ink-invert:    var(--n-0);
+
+  /* Marca / acción primaria */
+  --primary:        var(--brand-700);
+  --primary-hover:  var(--brand-800);
+  --primary-active: var(--brand-900);
+  --primary-soft:   var(--brand-50);
+  --primary-line:   var(--brand-200);
+  --on-primary:     var(--n-0);
+  --ring:           var(--brand-600);
+
+  /* Estados semánticos: <tono> = texto · -soft = fondo · -line = borde
+     -solid = relleno fuerte                                               */
+  --success:        var(--success-700);
+  --success-soft:   var(--success-50);
+  --success-line:   var(--success-200);
+  --success-solid:  var(--success-600);
+
+  --warning:        var(--warning-700);
+  --warning-soft:   var(--warning-50);
+  --warning-line:   var(--warning-200);
+  --warning-solid:  var(--warning-600);
+
+  --danger:         var(--danger-700);
+  --danger-soft:    var(--danger-50);
+  --danger-line:    var(--danger-200);
+  --danger-solid:   var(--danger-600);
+
+  --info:           var(--info-700);
+  --info-soft:      var(--info-50);
+  --info-line:      var(--info-200);
+  --info-solid:     var(--info-600);
+
+  /* ---- Forma -------------------------------------------------------------
+     Una variable manda toda la redondez del módulo.                       */
+  --radius: 10px;
+
+  /* ---- Sombras -----------------------------------------------------------
+     Neutras y bajas. Las cards NO llevan sombra en reposo: sólo borde.    */
+  --shadow-raise: 0 2px 6px -1px oklch(0.170 0.006 265 / 0.08),
+                  0 1px 2px -1px oklch(0.170 0.006 265 / 0.05);
+  --shadow-pop:   0 8px 24px -6px oklch(0.170 0.006 265 / 0.12),
+                  0 2px 6px -2px oklch(0.170 0.006 265 / 0.06);
+  --shadow-modal: 0 20px 48px -12px oklch(0.170 0.006 265 / 0.20),
+                  0 4px 12px -4px oklch(0.170 0.006 265 / 0.08);
 }
 
+/* ============================================================================
+   REGISTRO EN TAILWIND
+   Nombres nuevos a propósito: no piso rounded-lg / shadow-md / text-sm,
+   que ya usa la landing. El dashboard usa sólo estos.
+   ============================================================================ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  /* Brand palette - usa las variables de :root */
-  --color-brand-50: var(--brand-50);
+  /* --- Color: rampas crudas (usar sólo si no hay token semántico) --- */
+  --color-brand-50:  var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
   --color-brand-300: var(--brand-300);
@@ -37,46 +183,177 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-n-0:   var(--n-0);
+  --color-n-50:  var(--n-50);
+  --color-n-100: var(--n-100);
+  --color-n-200: var(--n-200);
+  --color-n-300: var(--n-300);
+  --color-n-400: var(--n-400);
+  --color-n-500: var(--n-500);
+  --color-n-600: var(--n-600);
+  --color-n-700: var(--n-700);
+  --color-n-800: var(--n-800);
+  --color-n-900: var(--n-900);
+  --color-n-950: var(--n-950);
+
+  /* --- Color: semánticos (lo que se usa el 95% del tiempo) --- */
+  --color-canvas:      var(--canvas);
+  --color-surface:     var(--surface);
+  --color-surface-2:   var(--surface-2);
+  --color-surface-3:   var(--surface-3);
+
+  --color-line:        var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-input:  var(--line-input);
+
+  --color-ink:         var(--ink);
+  --color-ink-2:       var(--ink-2);
+  --color-ink-3:       var(--ink-3);
+  --color-ink-invert:  var(--ink-invert);
+
+  --color-primary:        var(--primary);
+  --color-primary-hover:  var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-soft:   var(--primary-soft);
+  --color-primary-line:   var(--primary-line);
+  --color-on-primary:     var(--on-primary);
+  --color-ring:           var(--ring);
+
+  --color-success:       var(--success);
+  --color-success-soft:  var(--success-soft);
+  --color-success-line:  var(--success-line);
+  --color-success-solid: var(--success-solid);
+
+  --color-warning:       var(--warning);
+  --color-warning-soft:  var(--warning-soft);
+  --color-warning-line:  var(--warning-line);
+  --color-warning-solid: var(--warning-solid);
+
+  --color-danger:        var(--danger);
+  --color-danger-soft:   var(--danger-soft);
+  --color-danger-line:   var(--danger-line);
+  --color-danger-solid:  var(--danger-solid);
+
+  --color-info:          var(--info);
+  --color-info-soft:     var(--info-soft);
+  --color-info-line:     var(--info-line);
+  --color-info-solid:    var(--info-solid);
+
+  /* --- Tipografía --------------------------------------------------------
+     Escala de 7 pasos con interlineado y peso incluidos.
+     Pesos permitidos en todo el módulo: 400 · 500 · 600.                  */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  --text-display: 1.75rem;                    /* 28 · título de página     */
+  --text-display--line-height: 2.125rem;
+  --text-display--font-weight: 600;
+  --text-display--letter-spacing: -0.02em;
+
+  --text-title: 1.25rem;                      /* 20 · título de sección    */
+  --text-title--line-height: 1.75rem;
+  --text-title--font-weight: 600;
+  --text-title--letter-spacing: -0.01em;
+
+  --text-heading: 1rem;                       /* 16 · título de card       */
+  --text-heading--line-height: 1.5rem;
+  --text-heading--font-weight: 600;
+
+  --text-body: 0.9375rem;                     /* 15 · texto general        */
+  --text-body--line-height: 1.5rem;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: 0.8125rem;                  /* 13 · denso / metadatos    */
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-sm--font-weight: 400;
+
+  --text-label: 0.75rem;                      /* 12 · badges, overlines    */
+  --text-label--line-height: 1rem;
+  --text-label--font-weight: 500;
+
+  --text-metric: 1.625rem;                    /* 26 · números de KPI       */
+  --text-metric--line-height: 1.875rem;
+  --text-metric--font-weight: 600;
+  --text-metric--letter-spacing: -0.02em;
+
+  /* --- Radios (derivados de --radius) --- */
+  --radius-chip:    calc(var(--radius) - 4px);   /*  6 · badges, chips     */
+  --radius-control: var(--radius);               /* 10 · botones, inputs   */
+  --radius-card:    calc(var(--radius) + 4px);   /* 14 · cards, paneles    */
+  --radius-modal:   calc(var(--radius) + 10px);  /* 20 · modales           */
+
+  /* --- Sombras --- */
+  --shadow-raise: var(--shadow-raise);
+  --shadow-pop:   var(--shadow-pop);
+  --shadow-modal: var(--shadow-modal);
+
+  /* --- Espaciado con nombre (densidad mixta) ---
+     Cliente = card / Admin = card-sm                                      */
+  --spacing-card:    1.25rem;   /* 20 */
+  --spacing-card-sm: 1rem;      /* 16 */
+  --spacing-section: 2rem;      /* 32 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ============================================================================
+   BASE
+   ============================================================================ */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button {
   cursor: pointer;
 }
 
-/* Animación shimmer para barras de progreso */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+/* Foco visible y consistente en todo el módulo. Ningún componente puede
+   quitar el outline sin reponer un anillo.                                */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: calc(var(--radius) - 6px);
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+/* Números alineados en columnas (KPIs, montos, porcentajes). */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
+
+/* ============================================================================
+   ANIMACIONES
+   ============================================================================ */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer { animation: shimmer 2s infinite; }
 
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes beam-pulse {
   0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.35; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.animate-skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

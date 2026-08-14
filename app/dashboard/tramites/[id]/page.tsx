@@ -1,14 +1,21 @@
 import { getServerSession } from 'next-auth'
+import { notFound } from 'next/navigation'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { Building2, Calendar, CheckCircle, Download, FileText, User, Users } from 'lucide-react'
+
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getObjetoSocialTexto } from '@/lib/constants'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { getEstado } from '@/lib/tramites/estado'
+
+import { PageHeader, SectionHeader } from '@/components/ui/page-header'
+import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Calendar, Building2, DollarSign, Users, User, CheckCircle, Clock, FileText, Download } from 'lucide-react'
-import Link from 'next/link'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { notFound } from 'next/navigation'
+import { Badge } from '@/components/ui/badge'
+import { DataList, DataItem } from '@/components/ui/data-list'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
+
 import EnlacesPagoCliente from '@/components/cliente/EnlacesPagoCliente'
 import HonorariosPagoCliente from '@/components/cliente/HonorariosPagoCliente'
 import ProximosPasos from '@/components/cliente/ProximosPasos'
@@ -19,544 +26,392 @@ import DepositoCapitalCliente from '@/components/cliente/DepositoCapitalCliente'
 import ChatBox from '@/components/chat/ChatBox'
 
 interface PageProps {
-  params: Promise<{
-    id: string
-  }>
+  params: Promise<{ id: string }>
   searchParams?: Promise<{ payment?: string }>
+}
+
+/** Aviso al volver de Mercado Pago. */
+const AVISOS_PAGO = {
+  failure: {
+    tone: 'danger' as const,
+    titulo: 'Tu pago no se completó',
+    texto:
+      'El pago con Mercado Pago no pudo procesarse. Podés intentar de nuevo con la misma tarjeta, con otra o con otro medio de pago, desde el bloque de pago más abajo.',
+  },
+  pending: {
+    tone: 'warning' as const,
+    titulo: 'Tu pago está en proceso',
+    texto:
+      'Mercado Pago lo está procesando. Te avisamos apenas se confirme; no hace falta que lo hagas de nuevo.',
+  },
+  success: {
+    tone: 'success' as const,
+    titulo: '¡Pago recibido!',
+    texto:
+      'Estamos confirmando el pago con Mercado Pago. En cuanto se acredite vas a ver la etapa completada.',
+  },
 }
 
 async function TramiteDetallePage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
-
-  if (!session?.user?.id) {
-    return null
-  }
+  if (!session?.user?.id) return null
 
   const { id } = await params
   const paymentStatus = (await searchParams)?.payment
 
   const tramite = await prisma.tramite.findFirst({
-    where: {
-      id: id,
-      userId: session.user.id // Solo puede ver sus propios trámites
-    },
+    where: { id, userId: session.user.id },
     include: {
-      enlacesPago: {
-        orderBy: { createdAt: 'desc' }
-      },
-      pagos: {
-        orderBy: { createdAt: 'desc' }
-      },
-      documentos: {
-        orderBy: { createdAt: 'desc' }
-      },
-      notificaciones: {
-        orderBy: { createdAt: 'desc' },
-        take: 10
-      },
+      enlacesPago: { orderBy: { createdAt: 'desc' } },
+      pagos: { orderBy: { createdAt: 'desc' } },
+      documentos: { orderBy: { createdAt: 'desc' } },
+      notificaciones: { orderBy: { createdAt: 'desc' }, take: 10 },
       mensajes: {
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'asc' }
-      }
-    }
+        include: { user: { select: { name: true, email: true } } },
+        orderBy: { createdAt: 'asc' },
+      },
+    },
   })
 
-  if (!tramite) {
-    notFound()
-  }
+  if (!tramite) notFound()
 
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []
+  const datosUsuario = (tramite.datosUsuario as any) || {}
+  const estado = getEstado(tramite, 'cliente')
+  const nombre = tramite.denominacionAprobada || tramite.denominacionSocial1
 
-  const getEstadoColor = (estado: string) => {
-    switch (estado) {
-      case 'COMPLETADO':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'EN_PROCESO':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'ESPERANDO_CLIENTE':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'ESPERANDO_APROBACION':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'CANCELADO':
-        return 'bg-brand-100 text-brand-800 border-brand-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
+  const aviso = paymentStatus ? AVISOS_PAGO[paymentStatus as keyof typeof AVISOS_PAGO] : undefined
 
-  const getEstadoTexto = (estado: string) => {
-    switch (estado) {
-      case 'COMPLETADO': return 'Completado'
-      case 'EN_PROCESO': return 'En Proceso'
-      case 'ESPERANDO_CLIENTE': return 'Requiere tu atención'
-      case 'ESPERANDO_APROBACION': return 'Esperando aprobación'
-      case 'INICIADO': return 'Iniciado'
-      case 'CANCELADO': return 'Cancelado'
-      default: return estado
-    }
-  }
+  const resolucion = tramite.documentos.find(
+    (d: any) => d.tipo === 'RESOLUCION_FINAL' && d.estado === 'APROBADO',
+  )
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/tramites">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold text-brand-900">
-            {tramite.denominacionAprobada || tramite.denominacionSocial1}
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Detalle completo del trámite
-          </p>
-        </div>
-        <span className={`px-4 py-2 rounded-full text-sm font-medium border ${getEstadoColor(tramite.estadoGeneral)}`}>
-          {getEstadoTexto(tramite.estadoGeneral)}
-        </span>
-      </div>
-
-      {/* Aviso al volver de Mercado Pago */}
-      {paymentStatus === 'failure' && (
-        <div className="rounded-lg border-2 border-red-300 bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-900">Tu pago no se completó</p>
-          <p className="text-sm text-red-800 mt-1">
-            El pago con Mercado Pago no pudo procesarse. Podés intentar de nuevo con la misma tarjeta, con otra, o con otro medio de pago desde el botón &quot;Pagar con Mercado Pago&quot; más abajo.
-          </p>
-        </div>
-      )}
-      {paymentStatus === 'pending' && (
-        <div className="rounded-lg border-2 border-yellow-300 bg-yellow-50 p-4">
-          <p className="text-sm font-semibold text-yellow-900">Tu pago está en proceso</p>
-          <p className="text-sm text-yellow-800 mt-1">
-            Mercado Pago está procesando tu pago. Te avisamos apenas se confirme; no hace falta que lo hagas de nuevo.
-          </p>
-        </div>
-      )}
-      {paymentStatus === 'success' && (
-        <div className="rounded-lg border-2 border-green-300 bg-green-50 p-4">
-          <p className="text-sm font-semibold text-green-900">¡Pago recibido!</p>
-          <p className="text-sm text-green-800 mt-1">
-            Estamos confirmando tu pago con Mercado Pago. En cuanto se acredite, vas a ver la etapa completada.
-          </p>
-        </div>
-      )}
-
-      {/* Próximos Pasos - Lo que el cliente DEBE hacer */}
-      <ProximosPasos 
-        tramite={tramite}
-        pagos={tramite.pagos || []}
-        enlacesPago={tramite.enlacesPago || []}
-        documentos={tramite.documentos || []}
-        notificaciones={tramite.notificaciones || []}
+    <div className="space-y-section">
+      <PageHeader
+        title={nombre}
+        breadcrumbs={[
+          { label: 'Mis trámites', href: '/dashboard/tramites' },
+          { label: nombre },
+        ]}
+        badge={<Badge tone={estado.tone} dot>{estado.label}</Badge>}
+        description={`${tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} · Plan ${tramite.plan}`}
       />
 
-      {/* Timeline de Progreso */}
-      <TimelineProgreso tramite={tramite} />
+      {aviso && (
+        <Card tone={aviso.tone}>
+          <CardBody padding="compact">
+            <p className="text-body font-medium text-ink">{aviso.titulo}</p>
+            <p className="mt-0.5 text-body-sm text-ink-2 text-pretty">{aviso.texto}</p>
+          </CardBody>
+        </Card>
+      )}
 
-      {/* Datos Finales - Si está inscripta (MOVIDO AQUÍ ARRIBA) */}
+      {/* Sociedad inscripta: los datos oficiales van primero */}
       {(tramite.cuit || tramite.matricula || tramite.numeroResolucion) && (
-        <div className="space-y-6">
-          <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg animate-in fade-in slide-in-from-top-4 duration-500">
-            <CardHeader>
-              <CardTitle className="text-green-900 flex items-center gap-2 text-2xl">
-                <CheckCircle className="h-8 w-8" />
-                🎉 ¡Tu Sociedad Está Inscripta!
-              </CardTitle>
-              <CardDescription className="text-green-700 text-base">
-                Estos son los datos oficiales de tu sociedad. Ya puedes comenzar a operar.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-4">
-                {tramite.cuit && (
-                  <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">CUIT</p>
-                    <p className="text-2xl font-bold text-green-900 text-center">{tramite.cuit}</p>
-                  </div>
-                )}
-                {tramite.matricula && (
-                  <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">Matrícula</p>
-                    <p className="text-2xl font-bold text-green-900 text-center">{tramite.matricula}</p>
-                  </div>
-                )}
-                {tramite.numeroResolucion && (
-                  <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-                    <p className="text-sm text-green-700 mb-1 font-medium text-center uppercase tracking-wider">Fecha Inscrip.</p>
-                    <p className="text-2xl font-bold text-green-900 text-center">
-                      {tramite.fechaInscripcion ? format(new Date(tramite.fechaInscripcion), "dd/MM/yyyy") : tramite.numeroResolucion}
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Resolución de Inscripción - Documento destacado */}
-              {(() => {
-                const resolucionDoc = tramite.documentos.find(
-                  (doc: any) => doc.tipo === 'RESOLUCION_FINAL' && doc.estado === 'APROBADO'
-                )
-                
-                if (resolucionDoc) {
-                  return (
-                    <div className="bg-white/60 backdrop-blur-sm border-2 border-green-400 rounded-xl p-6 shadow-md">
-                      <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="bg-green-600 p-4 rounded-full shadow-lg shrink-0">
-                          <FileText className="h-10 w-10 text-white" />
-                        </div>
-                        <div className="flex-1 text-center md:text-left">
-                          <h3 className="text-xl font-bold text-green-900 mb-2">
-                            📄 Resolución de Inscripción Oficial
-                          </h3>
-                          <p className="text-green-800 mb-4">
-                            Ya puedes descargar el documento oficial emitido por el organismo.
-                          </p>
-                          <a
-                            href={`/api/documentos/${resolucionDoc.id}/view?download=1`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-4 rounded-full shadow-xl transition-all active:scale-95 hover:shadow-green-200"
-                          >
-                            <Download className="h-5 w-5" />
-                            DESCARGAR RESOLUCIÓN
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                }
-                return null
-              })()}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Pago de Honorarios - DEBE estar visible para que funcione el link #pago-honorarios */}
-      <HonorariosPagoCliente pagos={tramite.pagos || []} />
-
-      {/* Enlaces de Pago Externos (Tasas) - DEBE estar visible para que funcione el link #enlaces-pago */}
-      <EnlacesPagoCliente enlaces={tramite.enlacesPago || []} />
-
-      {/* Depósito de Capital - Card para subir comprobante */}
-      <DepositoCapitalCliente
-        tramiteId={tramite.id}
-        capitalSocial={tramite.capitalSocial}
-        documentos={tramite.documentos || []}
-        notificaciones={tramite.notificaciones || []}
-      />
-
-      {/* Documentos Para Firmar */}
-      <DocumentosParaFirmar
-        tramiteId={tramite.id}
-        documentos={tramite.documentos || []}
-      />
-
-      {/* Mensajes del Equipo / Observaciones */}
-      {tramite.notificaciones && tramite.notificaciones.length > 0 && (
-        <MensajesDelEquipo notificaciones={tramite.notificaciones} />
-      )}
-
-      {/* Chat del Trámite - Antes de Información Detallada */}
-      <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
-
-      {/* Divisor */}
-      <div className="border-t-2 border-gray-200 my-8">
-        <h3 className="text-xl font-bold text-brand-900 mt-8 mb-4">
-          📋 Información Detallada
-        </h3>
-        <p className="text-gray-600 mb-6">
-          Datos completos de tu trámite y sociedad
-        </p>
-      </div>
-
-      {/* Info General */}
-      <Card>
-        <CardHeader>
-          <CardTitle variant="section" className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Información General
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Fecha de Inicio</p>
-            <p className="font-semibold text-gray-900">
-              {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Jurisdicción</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Plan Contratado</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              {tramite.plan}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Capital Social</p>
-            <p className="font-semibold text-gray-900">
-              ${tramite.capitalSocial.toLocaleString('es-AR')}
-            </p>
-          </div>
-          {(() => {
-            const datosUsuario = (tramite.datosUsuario as any) || {}
-            const fechaCierre = datosUsuario.fechaCierre
-            return fechaCierre ? (
+        <Card tone="success">
+          <CardBody className="space-y-5">
+            <div className="flex items-start gap-3">
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-success-solid/12 text-success"
+                aria-hidden
+              >
+                <CheckCircle className="h-4.5 w-4.5" />
+              </span>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Cierre de Ejercicio</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {fechaCierre}
+                <h2 className="text-title text-ink">Tu sociedad está inscripta</h2>
+                <p className="mt-0.5 text-body text-ink-2">
+                  Estos son los datos oficiales. Ya podés empezar a operar.
                 </p>
               </div>
-            ) : null
-          })()}
-        </CardContent>
-      </Card>
+            </div>
 
-      {/* Denominaciones Propuestas */}
-      <Card>
-        <CardHeader>
-          <CardTitle variant="section">Denominaciones Propuestas</CardTitle>
-          <CardDescription>Opciones de nombre para la sociedad</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="p-3 border rounded-lg bg-gray-50">
-            <span className="text-xs text-gray-500">Opción 1 (Preferida)</span>
-            <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial1}</p>
+            <DataList columns={3}>
+              {tramite.cuit && <DataItem label="CUIT" value={tramite.cuit} mono />}
+              {tramite.matricula && (
+                <DataItem label="Matrícula" value={tramite.matricula} mono />
+              )}
+              {tramite.fechaInscripcion && (
+                <DataItem
+                  label="Fecha de inscripción"
+                  value={format(new Date(tramite.fechaInscripcion), 'dd/MM/yyyy')}
+                  icon={Calendar}
+                />
+              )}
+              {tramite.numeroResolucion && (
+                <DataItem label="Resolución" value={tramite.numeroResolucion} mono />
+              )}
+            </DataList>
+
+            {resolucion && (
+              <Button asChild variant="secondary">
+                <a
+                  href={`/api/documentos/${resolucion.id}/view?download=1`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="h-4 w-4" aria-hidden />
+                  Descargar la resolución de inscripción
+                </a>
+              </Button>
+            )}
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Columna principal + resumen lateral */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0 space-y-section">
+          <ProximosPasos
+            tramite={tramite}
+            pagos={tramite.pagos || []}
+            enlacesPago={tramite.enlacesPago || []}
+            documentos={tramite.documentos || []}
+            notificaciones={tramite.notificaciones || []}
+          />
+
+          {/* Bloques de acción: cada uno se oculta solo si no aplica */}
+          <div className="space-y-4">
+            <HonorariosPagoCliente pagos={tramite.pagos || []} />
+            <EnlacesPagoCliente enlaces={tramite.enlacesPago || []} />
+            <DepositoCapitalCliente
+              tramiteId={tramite.id}
+              capitalSocial={tramite.capitalSocial}
+              documentos={tramite.documentos || []}
+              notificaciones={tramite.notificaciones || []}
+            />
+            <DocumentosParaFirmar
+              tramiteId={tramite.id}
+              documentos={tramite.documentos || []}
+            />
+            {tramite.notificaciones?.length > 0 && (
+              <MensajesDelEquipo notificaciones={tramite.notificaciones} />
+            )}
           </div>
-          {tramite.denominacionSocial2 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 2</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial2}</p>
-            </div>
-          )}
-          {tramite.denominacionSocial3 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 3</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial3}</p>
-            </div>
-          )}
-          {tramite.denominacionAprobada && (
-            <div className="p-3 border-2 border-green-500 rounded-lg bg-green-50">
-              <span className="text-xs text-green-700 font-medium flex items-center gap-1">
-                <CheckCircle className="h-4 w-4" />
-                Denominación Aprobada
-              </span>
-              <p className="font-bold text-green-900 mt-1">{tramite.denominacionAprobada}</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Objeto Social */}
-        <Card>
-          <CardHeader>
-            <CardTitle variant="section">Objeto Social</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-700 whitespace-pre-line">
-              {getObjetoSocialTexto(tramite.objetoSocial)}
-            </p>
-          </CardContent>
-        </Card>
+          <section className="space-y-4">
+            <SectionHeader
+              title="Hablá con el equipo"
+              description="Cualquier duda sobre el trámite, escribinos por acá."
+            />
+            <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
+          </section>
+        </div>
 
-        {/* Domicilio Legal */}
-        <Card>
-          <CardHeader>
-            <CardTitle variant="section">Domicilio Legal</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-700">
-              {tramite.domicilioLegal}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Lateral: dónde está el trámite */}
+        <aside className="min-w-0 space-y-4 xl:sticky xl:top-24 xl:self-start">
+          <SectionHeader title="Progreso" as="h2" />
+          <TimelineProgreso tramite={tramite} />
+        </aside>
       </div>
 
-      {/* Socios */}
-      <Card>
-        <CardHeader>
-          <CardTitle variant="section" className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Socios / Accionistas ({socios.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            {socios.map((socio: any, index: number) => {
-              const capitalSocial = tramite.capitalSocial || 0
-              
-              // Calcular el aporteCapital correctamente
-              let aporteCapital = 0
-              if (typeof socio.aporteCapital === 'number') {
-                aporteCapital = socio.aporteCapital
-              } else if (typeof socio.aporteCapital === 'string') {
-                // Si viene como string, puede tener formato con puntos o comas
-                const aporteStr = socio.aporteCapital.replace(/\./g, '').replace(',', '.')
-                aporteCapital = parseFloat(aporteStr) || 0
-              } else {
-                aporteCapital = 0
-              }
-              
-              // Calcular porcentaje desde el aporteCapital
-              let porcentaje = capitalSocial > 0 ? ((aporteCapital / capitalSocial) * 100) : 0
-              
-              // Si el porcentaje calculado es > 100 o el aporte es mucho mayor que el capital, hay un error
-              if (porcentaje > 100 || aporteCapital > capitalSocial * 1.1) {
-                // Intentar corregir usando el porcentaje guardado
-                let porcentajeGuardado = 0
-                
-                // Intentar obtener el porcentaje de diferentes campos
-                if (socio.aportePorcentaje) {
-                  porcentajeGuardado = parseFloat(String(socio.aportePorcentaje).replace('%', '').replace(',', '.')) || 0
-                } else if (socio.porcentaje) {
-                  porcentajeGuardado = parseFloat(String(socio.porcentaje).replace('%', '').replace(',', '.')) || 0
-                }
-                
-                // Si el porcentaje guardado es > 100, probablemente está en formato incorrecto (2500 en lugar de 25)
-                if (porcentajeGuardado > 100 && porcentajeGuardado <= 10000) {
-                  porcentajeGuardado = porcentajeGuardado / 100
-                }
-                
-                // Si tenemos un porcentaje válido, recalcular el aporte
-                if (porcentajeGuardado > 0 && porcentajeGuardado <= 100) {
-                  aporteCapital = (capitalSocial * porcentajeGuardado) / 100
-                  porcentaje = porcentajeGuardado
-                } else {
-                  // Si no hay porcentaje válido, intentar calcular desde el aporte pero dividiendo por 100 si es muy grande
-                  if (aporteCapital > capitalSocial) {
-                    // El aporte puede estar guardado con un error de formato (multiplicado por 100)
-                    const aporteCorregido = aporteCapital / 100
-                    if (aporteCorregido <= capitalSocial) {
-                      aporteCapital = aporteCorregido
-                      porcentaje = capitalSocial > 0 ? ((aporteCapital / capitalSocial) * 100) : 0
-                    }
-                  }
-                }
-              }
-              
-              // Formatear porcentaje para mostrar
-              const porcentajeFormateado = porcentaje.toFixed(2)
-              
-              // Construir domicilio completo con formato: calle - ciudad - departamento - provincia
-              const domicilioCompleto = [
-                socio.domicilio,
-                socio.ciudad,
-                socio.departamento,
-                socio.provincia
-              ].filter(Boolean).join(' - ') || 'No especificado'
-              
-              return (
-                <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">
-                        {socio.nombre} {socio.apellido}
-                      </h4>
-                      <p className="text-sm text-gray-500">DNI: {socio.dni} • CUIT: {socio.cuit}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">Aporte</p>
-                      <p className="font-bold text-blue-600">${Math.round(aporteCapital).toLocaleString('es-AR')}</p>
-                      <p className="text-xs text-gray-500">{porcentajeFormateado}%</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Domicilio</p>
-                      <p className="text-gray-900">{domicilioCompleto}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Estado Civil</p>
-                      <p className="text-gray-900">{socio.estadoCivil}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Profesión</p>
-                      <p className="text-gray-900">{socio.profesion}</p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Datos del trámite: consulta, no acción → al final y plegado */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Datos del trámite"
+          description="Todo lo que cargaste en el formulario."
+        />
 
-      {/* Administradores */}
-      <Card>
-        <CardHeader>
-          <CardTitle variant="section" className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Órgano de Administración ({administradores.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            {administradores.map((admin: any, index: number) => {
-              // Construir domicilio completo con formato: calle - ciudad - departamento - provincia
-              const domicilioCompleto = [
-                admin.domicilio,
-                admin.ciudad,
-                admin.departamento,
-                admin.provincia
-              ].filter(Boolean).join(' - ') || admin.domicilio || 'No especificado'
-              
-              return (
-                <div key={index} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-gray-900">
-                        {admin.nombre} {admin.apellido}
-                      </h4>
-                      <p className="text-sm text-gray-500">DNI: {admin.dni} • CUIT: {admin.cuit}</p>
-                    </div>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                      {admin.cargo}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Domicilio</p>
-                      <p className="text-gray-900">{domicilioCompleto}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Estado Civil</p>
-                      <p className="text-gray-900">{admin.estadoCivil}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Profesión</p>
-                      <p className="text-gray-900">{admin.profesion}</p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+        <div className="space-y-3">
+          <CollapsibleSection
+            title="Información general"
+            icon={<FileText className="h-4 w-4" />}
+            defaultOpen
+            padding="default"
+          >
+            <DataList columns={4}>
+              <DataItem
+                label="Fecha de inicio"
+                value={format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+              />
+              <DataItem
+                label="Jurisdicción"
+                value={tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+                icon={Building2}
+              />
+              <DataItem label="Plan contratado" value={tramite.plan} />
+              <DataItem
+                label="Capital social"
+                value={`$${tramite.capitalSocial.toLocaleString('es-AR')}`}
+              />
+              {datosUsuario.fechaCierre && (
+                <DataItem
+                  label="Cierre de ejercicio"
+                  value={datosUsuario.fechaCierre}
+                  icon={Calendar}
+                />
+              )}
+            </DataList>
+          </CollapsibleSection>
 
+          <CollapsibleSection
+            title="Denominación"
+            summary={tramite.denominacionAprobada ? 'Aprobada' : '3 opciones'}
+            padding="default"
+          >
+            <div className="space-y-2">
+              {tramite.denominacionAprobada && (
+                <div className="rounded-control border border-success-line bg-success-soft p-3">
+                  <p className="text-label text-success">Denominación aprobada</p>
+                  <p className="mt-0.5 text-body font-medium text-ink">
+                    {tramite.denominacionAprobada}
+                  </p>
+                </div>
+              )}
+              {[tramite.denominacionSocial1, tramite.denominacionSocial2, tramite.denominacionSocial3]
+                .filter(Boolean)
+                .map((den, i) => (
+                  <div key={den} className="rounded-control border border-line bg-surface-2 p-3">
+                    <p className="text-label text-ink-2">
+                      Opción {i + 1}
+                      {i === 0 && ' (preferida)'}
+                    </p>
+                    <p className="mt-0.5 text-body text-ink">{den}</p>
+                  </div>
+                ))}
+            </div>
+          </CollapsibleSection>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <CollapsibleSection title="Objeto social" padding="default">
+              <p className="whitespace-pre-line text-body-sm text-ink-2">
+                {getObjetoSocialTexto(tramite.objetoSocial)}
+              </p>
+            </CollapsibleSection>
+
+            <CollapsibleSection title="Domicilio legal" padding="default">
+              <p className="text-body-sm text-ink-2">{tramite.domicilioLegal}</p>
+            </CollapsibleSection>
+          </div>
+
+          <CollapsibleSection
+            title="Socios y accionistas"
+            icon={<Users className="h-4 w-4" />}
+            summary={`${socios.length} ${socios.length === 1 ? 'socio' : 'socios'}`}
+            padding="default"
+          >
+            <div className="space-y-3">
+              {socios.map((socio: any, i: number) => (
+                <PersonaCard
+                  key={i}
+                  persona={socio}
+                  capitalSocial={tramite.capitalSocial}
+                  mostrarAporte
+                />
+              ))}
+            </div>
+          </CollapsibleSection>
+
+          <CollapsibleSection
+            title="Órgano de administración"
+            icon={<User className="h-4 w-4" />}
+            summary={`${administradores.length} ${administradores.length === 1 ? 'persona' : 'personas'}`}
+            padding="default"
+          >
+            <div className="space-y-3">
+              {administradores.map((admin: any, i: number) => (
+                <PersonaCard key={i} persona={admin} />
+              ))}
+            </div>
+          </CollapsibleSection>
+        </div>
+      </section>
     </div>
   )
 }
 
-export default TramiteDetallePage
+/* ── Ficha de socio / administrador ──────────────────────────────────── */
 
+function PersonaCard({
+  persona,
+  capitalSocial,
+  mostrarAporte = false,
+}: {
+  persona: any
+  capitalSocial?: number
+  mostrarAporte?: boolean
+}) {
+  const domicilio =
+    [persona.domicilio, persona.ciudad, persona.departamento, persona.provincia]
+      .filter(Boolean)
+      .join(' · ') || 'No especificado'
+
+  const { aporte, porcentaje } = mostrarAporte
+    ? normalizarAporte(persona, capitalSocial ?? 0)
+    : { aporte: 0, porcentaje: 0 }
+
+  return (
+    <div className="rounded-control border border-line bg-surface-2 p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-body font-medium text-ink">
+            {persona.nombre} {persona.apellido}
+          </p>
+          <p className="text-body-sm text-ink-2 tnum">
+            DNI {persona.dni}
+            {persona.cuit && (
+              <>
+                <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                CUIT {persona.cuit}
+              </>
+            )}
+          </p>
+        </div>
+
+        {mostrarAporte ? (
+          <div className="text-right">
+            <p className="text-body font-medium text-ink tnum">
+              ${Math.round(aporte).toLocaleString('es-AR')}
+            </p>
+            <p className="text-label text-ink-2 tnum">{porcentaje.toFixed(2)}%</p>
+          </div>
+        ) : persona.cargo ? (
+          <Badge tone="info">{persona.cargo}</Badge>
+        ) : null}
+      </div>
+
+      <DataList columns={3} className="mt-3">
+        <DataItem label="Domicilio" value={domicilio} />
+        <DataItem label="Estado civil" value={persona.estadoCivil} />
+        <DataItem label="Profesión" value={persona.profesion} />
+      </DataList>
+    </div>
+  )
+}
+
+/**
+ * Los aportes vienen del formulario en formatos mezclados (número, string con
+ * puntos o comas, porcentaje guardado ×100). Esto los normaliza.
+ */
+function normalizarAporte(socio: any, capitalSocial: number) {
+  let aporte =
+    typeof socio.aporteCapital === 'number'
+      ? socio.aporteCapital
+      : parseFloat(String(socio.aporteCapital ?? '').replace(/\./g, '').replace(',', '.')) || 0
+
+  let porcentaje = capitalSocial > 0 ? (aporte / capitalSocial) * 100 : 0
+
+  if (porcentaje > 100 || aporte > capitalSocial * 1.1) {
+    let guardado =
+      parseFloat(
+        String(socio.aportePorcentaje ?? socio.porcentaje ?? '')
+          .replace('%', '')
+          .replace(',', '.'),
+      ) || 0
+
+    if (guardado > 100 && guardado <= 10_000) guardado /= 100
+
+    if (guardado > 0 && guardado <= 100) {
+      aporte = (capitalSocial * guardado) / 100
+      porcentaje = guardado
+    } else if (aporte > capitalSocial && aporte / 100 <= capitalSocial) {
+      aporte /= 100
+      porcentaje = capitalSocial > 0 ? (aporte / capitalSocial) * 100 : 0
+    }
+  }
+
+  return { aporte, porcentaje }
+}
+
+export default TramiteDetallePage

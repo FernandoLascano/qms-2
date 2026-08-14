@@ -1,248 +1,204 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Check, CheckCheck, X } from 'lucide-react'
-import { useNotifications } from '@/hooks/useNotifications'
-import { Button } from '@/components/ui/button'
+import { Bell, CheckCheck, X } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useNotifications } from '@/hooks/useNotifications'
+import { Button } from '@/components/ui/button'
+import { Badge, CountBadge, type Tone } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/states'
+import { cn } from '@/lib/utils'
+
+/** El tipo de notificación se traduce al mismo mapa de tonos que el resto del módulo. */
+const TONO: Record<string, { tone: Tone; label: string }> = {
+  EXITO: { tone: 'success', label: 'Listo' },
+  ERROR: { tone: 'danger', label: 'Error' },
+  ALERTA: { tone: 'warning', label: 'Alerta' },
+  ACCION_REQUERIDA: { tone: 'warning', label: 'Acción requerida' },
+  MENSAJE: { tone: 'info', label: 'Mensaje' },
+  INFO: { tone: 'neutral', label: 'Info' },
+}
 
 export default function NotificationBell() {
   const router = useRouter()
   const { notifications, count, isConnected, markAsRead, markAllAsRead } = useNotifications()
   const [isOpen, setIsOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
 
-  const getTipoConfig = (tipo: string) => {
-    switch (tipo) {
-      case 'EXITO':
-        return {
-          badge: 'bg-green-100 text-green-700 border-green-200',
-          bg: 'bg-green-50',
-          icon: '✓'
-        }
-      case 'ERROR':
-        return {
-          badge: 'bg-brand-100 text-brand-700 border-brand-200',
-          bg: 'bg-brand-50',
-          icon: '✕'
-        }
-      case 'ALERTA':
-        return {
-          badge: 'bg-orange-100 text-orange-700 border-orange-200',
-          bg: 'bg-orange-50',
-          icon: '⚠'
-        }
-      case 'ACCION_REQUERIDA':
-        return {
-          badge: 'bg-purple-100 text-purple-700 border-purple-200',
-          bg: 'bg-purple-50',
-          icon: '!'
-        }
-      case 'MENSAJE':
-        return {
-          badge: 'bg-blue-100 text-blue-700 border-blue-200',
-          bg: 'bg-blue-50',
-          icon: '💬'
-        }
-      default:
-        return {
-          badge: 'bg-gray-100 text-gray-700 border-gray-200',
-          bg: 'bg-gray-50',
-          icon: 'ℹ'
-        }
-    }
-  }
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isOpen])
 
-  const handleNotificationClick = async (notification: any) => {
-    // Marcar como leída
+  const abrirNotificacion = async (notification: any) => {
     await markAsRead(notification.id)
-
-    // Cerrar el panel primero
     setIsOpen(false)
 
-    // Navegar al link si existe
-    if (notification.link) {
-      const currentPath = window.location.pathname
-      const hasHash = notification.link.includes('#')
-      const [basePath, hash] = hasHash ? notification.link.split('#') : [notification.link, null]
-      const basePathClean = basePath.split('?')[0]
-      const isSamePage = currentPath === basePathClean
+    if (!notification.link) return
 
-      if (isSamePage) {
-        // Ya estamos en la misma página - refrescar datos
+    const [basePath, hash] = notification.link.includes('#')
+      ? notification.link.split('#')
+      : [notification.link, null]
+    const mismaPagina = window.location.pathname === basePath.split('?')[0]
+
+    const irAlAncla = () => {
+      if (!hash) return
+      setTimeout(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
+    }
+
+    if (mismaPagina) {
+      router.refresh()
+      irAlAncla()
+    } else {
+      router.push(notification.link)
+      setTimeout(() => {
         router.refresh()
-
-        // Si hay hash, hacer scroll después del refresh
-        if (hash) {
-          setTimeout(() => {
-            const element = document.getElementById(hash)
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            }
-          }, 500)
-        }
-      } else {
-        // Navegar a otra página - siempre refrescar después para cargar datos actualizados
-        router.push(notification.link)
-
-        // Refrescar después de navegar para asegurar datos actualizados
-        setTimeout(() => {
-          router.refresh()
-          // Si hay hash, hacer scroll después del refresh
-          if (hash) {
-            setTimeout(() => {
-              const element = document.getElementById(hash)
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
-            }, 300)
-          }
-        }, 500)
-      }
+        irAlAncla()
+      }, 400)
     }
   }
 
   return (
     <div className="relative">
-      {/* Botón de campana */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+        type="button"
+        onClick={() => setIsOpen((v) => !v)}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={count > 0 ? `Notificaciones: ${count} sin leer` : 'Notificaciones'}
+        className="relative flex h-9 w-9 items-center justify-center rounded-control text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
       >
-        <Bell className="h-6 w-6 text-gray-700" />
-
-        {/* Badge con contador */}
+        <Bell className="h-5 w-5" aria-hidden />
         {count > 0 && (
-          <span className="absolute -top-1 -right-1 bg-brand-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-            {count > 9 ? '9+' : count}
+          <span className="absolute -right-1 -top-1">
+            <CountBadge count={count} />
           </span>
         )}
-
-        {/* Indicador de conexión */}
-        <span className={`absolute bottom-0 right-0 h-2 w-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-gray-400'}`} />
+        <span
+          className={cn(
+            'absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full',
+            isConnected ? 'bg-success-solid' : 'bg-n-400',
+          )}
+          title={isConnected ? 'Conectado en tiempo real' : 'Sin conexión en tiempo real'}
+        />
       </button>
 
-      {/* Panel de notificaciones */}
       {isOpen && (
         <>
-          {/* Overlay para cerrar al hacer clic fuera */}
-          <div
-            className="fixed inset-0 z-40 cursor-pointer"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} aria-hidden />
 
-          {/* Panel */}
-          <div className="absolute right-0 mt-2 w-[420px] bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[calc(100vh-100px)] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-gray-50 to-white">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-brand-100 rounded-lg">
-                  <Bell className="h-5 w-5 text-brand-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Notificaciones</h3>
-                  {count > 0 && (
-                    <p className="text-xs text-gray-500">{count} sin leer</p>
-                  )}
-                </div>
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-label="Notificaciones"
+            className={cn(
+              'fixed inset-x-3 top-16 z-50 flex max-h-[calc(100vh-5rem)] flex-col',
+              'sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-96',
+              'overflow-hidden rounded-card border border-line bg-surface shadow-pop',
+            )}
+          >
+            <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+              <div>
+                <h2 className="text-heading text-ink">Notificaciones</h2>
+                {count > 0 && <p className="text-label text-ink-2">{count} sin leer</p>}
               </div>
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                aria-label="Cerrar"
+                className="flex h-8 w-8 items-center justify-center rounded-control text-ink-2 hover:bg-surface-3"
               >
-                <X className="h-5 w-5 text-gray-500" />
+                <X className="h-4 w-4" aria-hidden />
               </button>
             </div>
 
-            {/* Lista de notificaciones */}
             <div className="flex-1 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-12 text-center text-gray-500">
-                  <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                    <Bell className="h-10 w-10 text-gray-300" />
-                  </div>
-                  <p className="font-semibold text-gray-700 mb-1">Todo al día</p>
-                  <p className="text-sm text-gray-500">No tienes notificaciones nuevas</p>
-                </div>
+                <EmptyState
+                  icon={Bell}
+                  title="Todo al día"
+                  description="No tenés notificaciones nuevas."
+                />
               ) : (
-                <div className="divide-y divide-gray-50">
-                  {notifications.map((notification) => {
-                    const config = getTipoConfig(notification.tipo)
+                <ul className="divide-y divide-line">
+                  {notifications.map((n) => {
+                    const cfg = TONO[n.tipo] ?? TONO.INFO
                     return (
-                      <div
-                        key={notification.id}
-                        onClick={() => handleNotificationClick(notification)}
-                        className={`p-4 cursor-pointer transition-all hover:shadow-sm ${
-                          !notification.leida ? 'bg-blue-50/50 border-l-4 border-l-blue-500' : 'hover:bg-gray-50/50'
-                        }`}
-                      >
-                        <div className="flex gap-3">
-                          {/* Icono - Mejorado para mayor visibilidad */}
-                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.bg} flex items-center justify-center text-xl font-bold shadow-sm border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('brand') ? 'border-brand-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}>
-                            {config.icon}
-                          </div>
-
-                          {/* Contenido */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <p className={`font-semibold text-sm leading-tight ${!notification.leida ? 'text-gray-900' : 'text-gray-700'}`}>
-                                {notification.titulo}
-                              </p>
-                              {!notification.leida && (
-                                <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
+                      <li key={n.id}>
+                        <button
+                          type="button"
+                          onClick={() => abrirNotificacion(n)}
+                          className={cn(
+                            'block w-full px-4 py-3 text-left transition-colors hover:bg-surface-2',
+                            !n.leida && 'bg-primary-soft/40',
+                          )}
+                        >
+                          <div className="flex items-start gap-2">
+                            <p
+                              className={cn(
+                                'flex-1 text-body-sm font-medium',
+                                n.leida ? 'text-ink-2' : 'text-ink',
                               )}
-                            </div>
-
-                            <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                              {notification.mensaje}
+                            >
+                              {n.titulo}
                             </p>
-
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {notification.tramite && (
-                                <>
-                                  <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                                    📋 {notification.tramite.denominacion}
-                                  </span>
-                                  <span className="text-xs text-gray-400">•</span>
-                                </>
-                              )}
-                              <span className={`text-xs px-2 py-0.5 rounded-md font-medium border ${config.badge}`}>
-                                {notification.tipo.replace('_', ' ')}
-                              </span>
-                              <span className="text-xs text-gray-400">•</span>
-                              <span className="text-xs text-gray-500">
-                                {format(new Date(notification.createdAt), "d MMM, HH:mm", { locale: es })}
-                              </span>
-                            </div>
+                            {!n.leida && (
+                              <span
+                                className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                                aria-label="Sin leer"
+                              />
+                            )}
                           </div>
-                        </div>
-                      </div>
+
+                          <p className="mt-0.5 line-clamp-2 text-body-sm text-ink-2">
+                            {n.mensaje}
+                          </p>
+
+                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                            <Badge tone={cfg.tone} size="sm">
+                              {cfg.label}
+                            </Badge>
+                            {n.tramite && (
+                              <Badge tone="neutral" size="sm">
+                                {n.tramite.denominacion}
+                              </Badge>
+                            )}
+                            <span className="text-label text-ink-3">
+                              {format(new Date(n.createdAt), "d MMM, HH:mm", { locale: es })}
+                            </span>
+                          </div>
+                        </button>
+                      </li>
                     )
                   })}
-                </div>
+                </ul>
               )}
             </div>
 
-            {/* Footer */}
             {notifications.length > 0 && (
-              <div className="p-3 border-t border-gray-100 bg-white flex gap-2">
+              <div className="flex gap-2 border-t border-line p-3">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="flex-1 gap-2 text-gray-700 border-gray-200 hover:bg-gray-50"
+                  className="flex-1"
                 >
-                  <CheckCheck className="h-4 w-4" />
+                  <CheckCheck className="h-4 w-4" aria-hidden />
                   Marcar leídas
                 </Button>
                 <Button
                   size="sm"
+                  className="flex-1"
                   onClick={() => {
                     router.push('/dashboard/notificaciones')
                     setIsOpen(false)
                   }}
-                  className="flex-1 bg-brand-600 hover:bg-brand-700 text-white"
                 >
                   Ver todas
                 </Button>

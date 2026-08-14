@@ -2,84 +2,77 @@
 
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { User, Home, FileText, Upload, Bell, Settings, Shield, BarChart3, Building2, BookOpen, Calendar, Users, Clock, CreditCard, Mail, Handshake } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import NotificationBell from './NotificationBell'
 import Link from 'next/link'
+import { Plus } from 'lucide-react'
+import NotificationBell from './NotificationBell'
+import { itemPorRuta } from '@/lib/dashboard/navigation'
 
-const pageInfo: Record<string, { title: string; description: string; icon: LucideIcon }> = {
-  '/dashboard': { title: 'Inicio', description: 'Resumen de tu cuenta', icon: Home },
-  '/dashboard/tramites': { title: 'Mis Trámites', description: 'Gestiona tus trámites de constitución', icon: FileText },
-  '/dashboard/mi-sociedad': { title: 'Mi Sociedad', description: 'El legajo de tu sociedad', icon: Building2 },
-  '/dashboard/libros-digitales': { title: 'Libros Digitales', description: 'Guía de uso de los libros de tu sociedad', icon: BookOpen },
-  '/dashboard/servicios': { title: 'Servicios', description: 'Otros servicios para tu empresa', icon: Handshake },
-  '/dashboard/documentos': { title: 'Documentos', description: 'Sube y gestiona tus documentos', icon: Upload },
-  '/dashboard/notificaciones': { title: 'Notificaciones', description: 'Centro de notificaciones', icon: Bell },
-  '/dashboard/configuracion': { title: 'Configuración', description: 'Configura tu cuenta', icon: Settings },
-  '/dashboard/admin': { title: 'Panel de Admin', description: 'Gestión administrativa', icon: Shield },
-  '/dashboard/admin/analytics': { title: 'Analytics', description: 'Métricas y estadísticas', icon: BarChart3 },
-  '/dashboard/admin/sociedades': { title: 'Sociedades', description: 'Gestión de sociedades', icon: Building2 },
-  '/dashboard/admin/usuarios': { title: 'Usuarios', description: 'Gestión de usuarios', icon: Users },
-  '/dashboard/admin/emails': { title: 'Email', description: 'Bandeja de correo electrónico', icon: Mail },
-  '/dashboard/admin/consultas-chat': { title: 'Consultas Chat', description: 'Preguntas del asistente y análisis IA', icon: Bell },
-  '/dashboard/admin/jurisdicciones': { title: 'Jurisdicciones', description: 'Gestión de jurisdicciones y gastos', icon: Settings },
-  '/dashboard/admin/partners': { title: 'Partners', description: 'Gestión de referidos y condiciones económicas', icon: Handshake },
-  '/dashboard/admin/blog': { title: 'Blog', description: 'Gestión de artículos', icon: BookOpen },
-  '/dashboard/admin/calendario': { title: 'Calendario', description: 'Eventos y recordatorios', icon: Calendar },
-  '/dashboard/admin/configuracion': { title: 'Configuración Sistema', description: 'Configuración del sistema', icon: Settings },
-  '/dashboard/admin/tramites': { title: 'Todos los Trámites', description: 'Gestión de trámites', icon: FileText },
-  '/dashboard/admin/tracking-tiempo': { title: 'Tracking de Tiempo', description: 'Análisis de tiempos', icon: Clock },
-  '/dashboard/admin/configuracion-cuentas': { title: 'Cuentas Bancarias', description: 'Configuración de cuentas', icon: CreditCard },
-}
-
+/**
+ * Header delgado.
+ *
+ * Ya no muestra el título de la página: eso lo hace <PageHeader> dentro de
+ * cada pantalla. Antes el título aparecía dos veces (acá como h1 y en la
+ * página como h1/h2 en text-4xl font-black), lo que además rompía la
+ * jerarquía semántica.
+ *
+ * El CTA "Nuevo trámite" es sólo para clientes: los admin no inician trámites
+ * (app/dashboard/page.tsx los redirige), así que el botón no tenía sentido.
+ */
 export function Header() {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const isAdmin = session?.user?.rol === 'ADMIN'
+  const actual = itemPorRuta(pathname)
 
-  // Obtener info de la página actual
-  const exactPage = pageInfo[pathname || '']
-  const matchedPrefix = Object.keys(pageInfo)
-    .filter((key) => pathname?.startsWith(key))
-    .sort((a, b) => b.length - a.length)[0]
-  const currentPage = exactPage || (matchedPrefix ? pageInfo[matchedPrefix] : { title: 'Dashboard', description: '', icon: Home })
-  const PageIcon = currentPage.icon
+  const iniciales = (session?.user?.name ?? 'U')
+    .split(' ')
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join('')
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-      <div className="flex h-16 md:h-20 items-center justify-between px-4 md:px-8">
-        {/* Left side - Page info */}
-        <div className="flex items-center gap-4 ml-12 md:ml-0">
-          <div className="hidden md:flex h-12 w-12 rounded-xl bg-brand-50 items-center justify-center">
-            <PageIcon className="h-6 w-6 text-brand-700" />
-          </div>
-          <div>
-            <h1 className="text-lg md:text-xl font-bold text-gray-900">{currentPage.title}</h1>
-            <p className="text-xs md:text-sm text-gray-500 hidden sm:block">{currentPage.description}</p>
-          </div>
-        </div>
+    <header className="sticky top-0 z-20 border-b border-line bg-surface/95 backdrop-blur">
+      <div className="flex h-16 items-center justify-between gap-3 px-4 pl-16 md:px-6 md:pl-6">
+        {/* Ubicación actual: contexto discreto, no título */}
+        <p className="min-w-0 truncate text-body-sm text-ink-2">
+          <span className="text-ink-3">{isAdmin ? 'Administración' : 'Mi cuenta'}</span>
+          {actual && (
+            <>
+              <span className="mx-1.5 text-ink-3" aria-hidden>
+                /
+              </span>
+              <span className="text-ink">{actual.name}</span>
+            </>
+          )}
+        </p>
 
-        {/* Right side - Actions */}
-        <div className="flex items-center gap-3 md:gap-4">
-          {/* Quick action button */}
-          <Link
-            href="/tramite/nuevo"
-            className="hidden lg:flex items-center gap-2 px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-sm font-semibold rounded-xl shadow-lg shadow-brand-200 transition-all duration-200"
-          >
-            <FileText className="h-4 w-4" />
-            Nuevo Trámite
-          </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          {!isAdmin && (
+            <Link
+              href="/tramite/nuevo"
+              className="hidden h-9 items-center gap-1.5 rounded-control bg-primary px-3 text-body-sm font-medium text-on-primary transition-colors hover:bg-primary-hover lg:inline-flex"
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Nuevo trámite
+            </Link>
+          )}
 
-          {/* Notificaciones en tiempo real */}
           <NotificationBell />
 
-          {/* User dropdown */}
-          <div className="flex items-center gap-3 pl-3 md:pl-4 border-l border-gray-200">
-            <div className="text-right hidden md:block">
-              <p className="text-sm font-semibold text-gray-900 truncate max-w-[150px]">{session?.user?.name}</p>
-              <p className="text-xs text-gray-500 truncate max-w-[150px]">{session?.user?.email}</p>
+          <div className="flex items-center gap-2.5 border-l border-line pl-2 md:pl-3">
+            <div className="hidden text-right md:block">
+              <p className="max-w-40 truncate text-body-sm font-medium text-ink">
+                {session?.user?.name}
+              </p>
+              <p className="max-w-40 truncate text-label text-ink-2">
+                {session?.user?.email}
+              </p>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-200">
-              <User className="h-5 w-5 text-white" />
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-body-sm font-medium text-primary"
+              aria-hidden
+            >
+              {iniciales}
             </div>
           </div>
         </div>

@@ -18,20 +18,16 @@ export default async function DashboardLayout({
 
   return (
     <SessionGate>
-    <div className="flex h-screen overflow-hidden bg-gray-100">
-      {/* Sidebar */}
-      <Sidebar />
+      <div className="flex h-screen overflow-hidden bg-canvas">
+        <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden md:ml-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <Header />
+          <main id="contenido" className="flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
     </SessionGate>
   )
 }
