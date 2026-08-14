@@ -196,7 +196,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                             <Building2 className="h-5 w-5 text-success" />
                             <h6 className="font-semibold text-ink">Pago por Transferencia</h6>
                             <span className="px-2 py-1 text-label font-semibold bg-success-soft text-success rounded-full">
-                              💰 Precio promocional
+                              Precio promocional
                             </span>
                           </div>
                           <p className="text-title font-semibold text-success mb-1">
@@ -299,7 +299,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                       ${pago.monto.toLocaleString('es-AR')}
                     </p>
                     <p className="text-label text-ink-2">
-                      ✅ Pagado el {new Date(pago.createdAt).toLocaleDateString('es-AR')}
+                      Pagado el {new Date(pago.createdAt).toLocaleDateString('es-AR')}
                     </p>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
         {/* Info */}
         <div className="bg-success-soft border border-success-line rounded-control p-3">
           <p className="text-label text-success">
-            💳 <strong>Pago seguro:</strong> Elige la opción que prefieras. Si pagas por transferencia, 
+            <strong>Pago seguro:</strong> Elige la opción que prefieras. Si pagas por transferencia,
             sube el comprobante y el administrador validará el pago.
           </p>
         </div>

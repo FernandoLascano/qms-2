@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface Post {
   id: string
@@ -41,8 +42,13 @@ export default function AdminBlogPage() {
     }
   }
 
-  const deletePost = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este post?')) return
+  const [postAEliminar, setPostAEliminar] = useState<{ id: string; titulo: string } | null>(null)
+  const [eliminando, setEliminando] = useState(false)
+
+  const deletePost = async () => {
+    const id = postAEliminar?.id
+    if (!id) return
+    setEliminando(true)
 
     try {
       const res = await fetch(`/api/blog/${id}`, {
@@ -50,7 +56,8 @@ export default function AdminBlogPage() {
       })
 
       if (res.ok) {
-        toast.success('Post eliminado exitosamente')
+        toast.success('Post eliminado')
+        setPostAEliminar(null)
         fetchPosts()
       } else {
         toast.error('Error al eliminar post')
@@ -58,6 +65,8 @@ export default function AdminBlogPage() {
     } catch (error) {
       console.error('Error al eliminar post:', error)
       toast.error('Error al eliminar post')
+    } finally {
+      setEliminando(false)
     }
   }
 
@@ -244,7 +253,8 @@ export default function AdminBlogPage() {
                     </Link>
 
                     <button
-                      onClick={() => deletePost(post.id)}
+                      aria-label={`Eliminar «${post.titulo}»`}
+                      onClick={() => setPostAEliminar({ id: post.id, titulo: post.titulo })}
                       className="p-2 bg-primary-soft text-primary rounded-control hover:bg-brand-200 transition cursor-pointer"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -256,6 +266,20 @@ export default function AdminBlogPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!postAEliminar}
+        onOpenChange={(abierto) => !abierto && setPostAEliminar(null)}
+        title="¿Eliminar este artículo?"
+        description={
+          postAEliminar
+            ? `Se va a borrar «${postAEliminar.titulo}» del blog. No se puede deshacer.`
+            : undefined
+        }
+        confirmLabel="Eliminar artículo"
+        loading={eliminando}
+        onConfirm={deletePost}
+      />
     </div>
   )
 }

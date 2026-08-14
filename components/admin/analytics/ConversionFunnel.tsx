@@ -34,7 +34,7 @@ export function ConversionFunnel({ registrados, conTramite, completados }: Conve
 
   return (
     <div className="bg-surface rounded-control shadow-raise p-6">
-      <h3 className="text-heading font-semibold text-ink mb-6">🎯 Embudo de Conversión</h3>
+      <h3 className="text-heading font-semibold text-ink mb-6">Embudo de Conversión</h3>
       <div className="space-y-4">
         {etapas.map((etapa, index) => (
           <div key={index} className="space-y-2">

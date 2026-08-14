@@ -120,7 +120,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
           <>
             <div className="bg-warning-soft border border-warning-line rounded-control p-4">
               <p className="text-body-sm text-warning mb-3">
-                <strong>⚠️ Uso excepcional:</strong> Este formulario permite editar información básica del trámite. 
+                <strong>Uso excepcional:</strong> Este formulario permite editar información básica del trámite.
                 Úsalo solo cuando el cliente reporte errores en los datos cargados.
               </p>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

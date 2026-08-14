@@ -54,7 +54,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-info">
           <MessageCircle className="h-6 w-6" />
-          💬 Mensajes del Equipo
+          Mensajes del Equipo
         </CardTitle>
         <CardDescription className="text-info">
           Comunicaciones importantes sobre tu trámite

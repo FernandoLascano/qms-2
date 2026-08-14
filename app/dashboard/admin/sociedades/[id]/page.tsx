@@ -64,12 +64,12 @@ async function SociedadDetallePage({ params }: PageProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/admin/sociedades">
-            <Button variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/dashboard/admin/sociedades">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver a Sociedades
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div>
             <h1 className="text-display font-semibold text-ink flex items-center gap-3">
               <Building2 className="h-8 w-8 text-primary" />
@@ -120,7 +120,7 @@ async function SociedadDetallePage({ params }: PageProps) {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-title font-semibold text-success mb-2">
-                    📄 Resolución de Inscripción
+                    Resolución de Inscripción
                   </h3>
                   <p className="text-success mb-4">
                     Documento oficial de inscripción de la sociedad
@@ -166,7 +166,7 @@ async function SociedadDetallePage({ params }: PageProps) {
       {/* Divisor */}
       <div className="border-t-2 border-line my-8">
         <h3 className="text-title font-semibold text-primary mt-8 mb-4">
-          📋 Información Completa del Trámite
+          Información Completa del Trámite
         </h3>
         <p className="text-ink-2 mb-6">
           Todos los datos del trámite de constitución

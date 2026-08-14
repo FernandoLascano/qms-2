@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { useEffect, useState } from 'react'
 
 interface PartnerItem {
@@ -42,7 +44,16 @@ export default function AdminPartnersPage() {
   }, [])
 
   if (loading) {
-    return <div className="py-10 text-body-sm text-ink-2">Cargando partners...</div>
+    return (
+      <div className="space-y-section">
+        <PageHeader
+          title="Partners"
+          description="Referidos y condiciones económicas."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Partners' }]}
+        />
+        <PageSkeleton cards={2} />
+      </div>
+    )
   }
 
   return (

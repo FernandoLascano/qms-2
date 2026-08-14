@@ -258,16 +258,16 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                     )}
                     {pago.estado !== 'APROBADO' && pago.montoTransferencia && (
                       <p className="text-label text-success font-medium mt-2">
-                        💰 Opción de transferencia disponible (precio diferencial)
+                        Opción de transferencia disponible (precio diferencial)
                       </p>
                     )}
                     {pago.estado === 'PROCESANDO' && (
                       <p className="text-label text-warning font-medium mt-2">
-                        ⏳ Comprobante subido, esperando validación
+                        Comprobante subido, esperando validación
                       </p>
                     )}
                     {pago.estado === 'APROBADO' && (
-                      <p className="text-label text-success font-medium">✅ Pagado</p>
+                      <p className="text-label text-success font-medium">Pagado</p>
                     )}
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   placeholder="155000"
                   disabled={generando}
                 />
-                <p className="text-label text-success mt-1">💰 Precio diferencial (descuento por transferencia)</p>
+                <p className="text-label text-success mt-1">Precio diferencial (descuento por transferencia)</p>
               </div>
             </div>
 
@@ -419,7 +419,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
         {/* Info */}
         <div className="bg-info-soft border border-info-line rounded-control p-3">
           <p className="text-label text-info">
-            💡 <strong>Tip:</strong> El link de Mercado Pago se enviará automáticamente al cliente. 
+            <strong>Tip:</strong> El link de Mercado Pago se enviará automáticamente al cliente.
             Cuando pague, recibirás una notificación y el pago se marcará como completado.
           </p>
         </div>
@@ -427,7 +427,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
         {/* Advertencia si no está configurado */}
         <div className="bg-warning-soft border border-warning-line rounded-control p-3">
           <p className="text-label text-warning">
-            ⚠️ <strong>Configuración requerida:</strong> Asegúrate de tener configurado tu Access Token 
+            <strong>Configuración requerida:</strong> Asegúrate de tener configurado tu Access Token
             de Mercado Pago en las variables de entorno (MERCADOPAGO_ACCESS_TOKEN).
           </p>
         </div>

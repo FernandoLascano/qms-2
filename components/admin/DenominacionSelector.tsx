@@ -113,7 +113,7 @@ export default function DenominacionSelector({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           accion: 'REQUIERE_CORRECCIONES',
-          observaciones: `⚠️ DENOMINACIONES RECHAZADAS - Se requieren 3 nuevas alternativas\n\n${motivoRechazo}`
+          observaciones: `DENOMINACIONES RECHAZADAS - Se requieren 3 nuevas alternativas\n\n${motivoRechazo}`
         })
       })
 

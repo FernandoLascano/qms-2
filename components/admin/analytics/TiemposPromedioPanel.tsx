@@ -30,7 +30,7 @@ export function TiemposPromedioPanel({ total, desdeValidacion, porEtapa }: Tiemp
           <Clock className="w-6 h-6 text-info" />
         </div>
         <div>
-          <h3 className="text-heading font-semibold text-ink">⏱️ Tiempo Promedio</h3>
+          <h3 className="text-heading font-semibold text-ink">Tiempo Promedio</h3>
           <p className="text-body-sm text-ink-2">Por etapa del trámite</p>
         </div>
       </div>

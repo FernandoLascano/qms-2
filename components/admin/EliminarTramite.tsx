@@ -98,6 +98,7 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Cerrar"
                   onClick={() => {
                     setMostrarModal(false)
                     setConfirmacion('')

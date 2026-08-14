@@ -384,7 +384,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-info">
           <FileText className="h-6 w-6" />
-          ✍️ Documentos para Firmar
+          Documentos para Firmar
         </CardTitle>
         <CardDescription className="text-info">
           {documentosPendientes.length > 0 
@@ -481,7 +481,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                       rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-2 text-body-sm font-medium text-primary underline hover:text-primary"
                     >
-                      📄 Ver instructivo de firma digital (Ciudadano Digital)
+                      Ver instructivo de firma digital (Ciudadano Digital)
                     </a>
                   )}
                 </div>
@@ -594,9 +594,9 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                               estaRechazado ? 'text-primary' : 'text-warning'
                             }`}>
                               {estaRechazado ? (
-                                <>⚠️ Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
+                                <>Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
                               ) : (
-                                <>⏳ Subido el {new Date(documentoFirmado.createdAt).toLocaleDateString('es-AR')}. Esperando validación por Quiero Mi SAS.</>
+                                <>Subido el {new Date(documentoFirmado.createdAt).toLocaleDateString('es-AR')}. Esperando validación por Quiero Mi SAS.</>
                               )}
                             </p>
                             {estaRechazado && documentoFirmado.observaciones && (
@@ -691,7 +691,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                         </div>
                         {documentoFirmado && (
                           <p className="text-label text-success mb-1">
-                            ✓ Firmado y aprobado el {new Date(documentoFirmado.fechaAprobacion || documentoFirmado.createdAt).toLocaleDateString('es-AR')}
+                            Firmado y aprobado el {new Date(documentoFirmado.fechaAprobacion || documentoFirmado.createdAt).toLocaleDateString('es-AR')}
                           </p>
                         )}
                         {doc.descripcion && (
@@ -715,7 +715,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
               <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-body-sm font-medium text-warning mb-1">
-                  ⚠️ Importante
+                  Importante
                 </p>
                 <p className="text-body-sm text-warning">
                   Una vez que hayas firmado los documentos, sube cada uno con el botón "Subir Firmado". 

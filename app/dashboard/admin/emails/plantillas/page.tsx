@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Pencil, Trash2, RefreshCw, Shield } from 'lucide-react'
 import { toast } from 'sonner'
@@ -19,6 +20,8 @@ interface EmailTpl {
 export default function EmailPlantillasPage() {
   const [list, setList] = useState<EmailTpl[]>([])
   const [loading, setLoading] = useState(true)
+  const [aEliminar, setAEliminar] = useState<{ id: string; displayName: string } | null>(null)
+  const [eliminando, setEliminando] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -57,16 +60,21 @@ export default function EmailPlantillasPage() {
     }
   }
 
-  const remove = async (id: string, name: string) => {
-    if (!confirm(`¿Eliminar la plantilla "${name}"? Esta acción no se puede deshacer.`)) return
+  const remove = async () => {
+    const id = aEliminar?.id
+    if (!id) return
+    setEliminando(true)
     try {
       const res = await fetch(`/api/admin/email-templates/${id}`, { method: 'DELETE' })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Error al eliminar')
       toast.success('Plantilla eliminada')
+      setAEliminar(null)
       load()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : 'Error')
+    } finally {
+      setEliminando(false)
     }
   }
 
@@ -174,7 +182,7 @@ export default function EmailPlantillasPage() {
                         {!t.isSystem && (
                           <button
                             type="button"
-                            onClick={() => remove(t.id, t.displayName)}
+                            onClick={() => setAEliminar({ id: t.id, displayName: t.displayName })}
                             className="inline-flex items-center gap-1 px-3 py-1 rounded-control border border-danger-line text-danger hover:bg-danger-soft text-label font-semibold"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -190,6 +198,20 @@ export default function EmailPlantillasPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={!!aEliminar}
+        onOpenChange={(abierto) => !abierto && setAEliminar(null)}
+        title="¿Eliminar esta plantilla?"
+        description={
+          aEliminar
+            ? `Se va a borrar «${aEliminar.displayName}». Los emails que la usen dejarán de encontrarla.`
+            : undefined
+        }
+        confirmLabel="Eliminar plantilla"
+        loading={eliminando}
+        onConfirm={remove}
+      />
     </div>
   )
 }

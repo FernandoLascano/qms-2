@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -178,8 +180,13 @@ export default function UsuariosAdminPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-section">
+        <PageHeader
+          title="Usuarios"
+          description="Cuentas de la plataforma y sus permisos."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Usuarios' }]}
+        />
+        <PageSkeleton cards={2} />
       </div>
     )
   }

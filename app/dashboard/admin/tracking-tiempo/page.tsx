@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { PageHeader } from '@/components/ui/page-header'
 import TrackingTiempo from '@/components/admin/TrackingTiempo'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -14,20 +15,12 @@ export default async function TrackingTiempoPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div>
-          <h2 className="text-display text-ink">Tracking de Tiempo</h2>
-          <p className="text-ink-2 mt-1">
-            Analiza tiempos promedio y cuellos de botella en el proceso
-          </p>
-        </div>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        title="Tiempos del proceso"
+        description="Cuánto tarda cada etapa y dónde se traba el trámite."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Tiempos' }]}
+      />
 
       <TrackingTiempo />
     </div>

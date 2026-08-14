@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { MapPin, Save, Loader2, Plus, Trash2, GripVertical, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -135,8 +137,13 @@ export default function JurisdiccionesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-line" />
+      <div className="space-y-section">
+        <PageHeader
+          title="Jurisdicciones"
+          description="Gastos y parámetros por jurisdicción."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Jurisdicciones' }]}
+        />
+        <PageSkeleton cards={2} />
       </div>
     )
   }

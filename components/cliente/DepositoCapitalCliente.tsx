@@ -193,7 +193,7 @@ export default function DepositoCapitalCliente({
             </p>
             {cuentaNoActiva && (
               <div className="bg-warning-soft border-2 border-warning-line rounded-control p-3 mb-3">
-                <p className="text-body-sm font-semibold text-warning mb-1">⚠️ Importante: Cuenta aún no activa</p>
+                <p className="text-body-sm font-semibold text-warning mb-1">Importante: Cuenta aún no activa</p>
                 <p className="text-label text-warning">
                   Esta cuenta estará operativa recién a partir del{' '}
                   <strong>{new Date(fechaActivacion!).toLocaleDateString('es-AR', { 
@@ -241,7 +241,7 @@ export default function DepositoCapitalCliente({
           </div>
         ) : (
           <div className="bg-warning-soft border border-warning-line rounded-control p-3 text-label text-warning">
-            <p className="font-semibold mb-1">⚠️ Datos no disponibles</p>
+            <p className="font-semibold mb-1">Datos no disponibles</p>
             <p>Los datos de la cuenta bancaria aún no han sido proporcionados. Contacta al equipo si necesitas esta información.</p>
           </div>
         )}
@@ -251,15 +251,15 @@ export default function DepositoCapitalCliente({
             <p className="text-body-sm text-warning">
               {comprobanteSubido.estado === 'APROBADO' ? (
                 <>
-                  <strong>✅ Comprobante aprobado:</strong> Tu comprobante de depósito fue aprobado.
+                  <strong>Comprobante aprobado:</strong> Tu comprobante de depósito fue aprobado.
                 </>
               ) : comprobanteSubido.estado === 'PENDIENTE' || comprobanteSubido.estado === 'EN_REVISION' ? (
                 <>
-                  <strong>⏳ Comprobante en revisión:</strong> Tu comprobante de depósito está siendo revisado por el equipo.
+                  <strong>Comprobante en revisión:</strong> Tu comprobante de depósito está siendo revisado por el equipo.
                 </>
               ) : (
                 <>
-                  <strong>📄 Comprobante subido:</strong> Tu comprobante de depósito fue recibido y está siendo procesado.
+                  <strong>Comprobante subido:</strong> Tu comprobante de depósito fue recibido y está siendo procesado.
                 </>
               )}
             </p>

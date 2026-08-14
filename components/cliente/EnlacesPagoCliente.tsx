@@ -172,7 +172,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                     </p>
                     <div className="flex items-center gap-4 text-label text-ink-2 mb-2">
                       <span>
-                        📅 Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
+                        Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
                       </span>
                       {enlace.fechaVencimiento && (
                         <span className="flex items-center gap-1">
@@ -299,7 +299,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       ${enlace.monto.toLocaleString('es-AR')}
                     </p>
                     <p className="text-label text-ink-2">
-                      ✅ Pagado el {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
+                      Pagado el {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
                     </p>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Info */}
         <div className="bg-info-soft border border-info-line rounded-control p-3">
           <p className="text-label text-info">
-            💡 <strong>Importante:</strong> Después de realizar el pago, usa el botón "Ya Pagué" 
+            <strong>Importante:</strong> Después de realizar el pago, usa el botón "Ya Pagué"
             para adjuntar tu comprobante y que podamos verificarlo.
           </p>
         </div>

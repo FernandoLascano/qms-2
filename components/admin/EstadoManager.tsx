@@ -166,7 +166,7 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
             </div>
             {estadoSugerido !== nuevoEstado && estadoSugerido !== estadoActual && (
               <p className="text-label text-ink-2 mt-2">
-                💡 El estado sugerido basado en las etapas es: <strong>{ESTADOS.find(e => e.value === estadoSugerido)?.label}</strong>
+                El estado sugerido basado en las etapas es: <strong>{ESTADOS.find(e => e.value === estadoSugerido)?.label}</strong>
               </p>
             )}
           </div>

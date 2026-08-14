@@ -1,26 +1,23 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { controlBase } from "@/components/ui/input"
 
 export interface SelectProps
-  extends React.SelectHTMLAttributes<HTMLSelectElement> {}
+  extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  invalid?: boolean
+}
 
 const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, children, ...props }, ref) => {
-    return (
-      <select
-        className={cn(
-          "flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900",
-          "focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          className
-        )}
-        ref={ref}
-        {...props}
-      >
-        {children}
-      </select>
-    )
-  }
+  ({ className, children, invalid, ...props }, ref) => (
+    <select
+      ref={ref}
+      aria-invalid={invalid || undefined}
+      className={cn(controlBase, "h-10 px-3 pr-9", className)}
+      {...props}
+    >
+      {children}
+    </select>
+  ),
 )
 
 Select.displayName = "Select"

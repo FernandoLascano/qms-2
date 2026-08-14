@@ -18,7 +18,7 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
 
   return (
     <div className="bg-surface rounded-control shadow-raise p-6">
-      <h3 className="text-heading font-semibold text-ink mb-4">📈 Tendencias</h3>
+      <h3 className="text-heading font-semibold text-ink mb-4">Tendencias</h3>
       
       <div className="space-y-4">
         <div className="flex items-center justify-between p-4 bg-info-soft rounded-control border border-info-line">

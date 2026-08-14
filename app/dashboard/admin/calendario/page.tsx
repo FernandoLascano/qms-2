@@ -16,11 +16,11 @@ export default async function CalendarioPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin">
-          <Button variant="ghost" size="icon" className="rounded-control hover:bg-surface-3">
+        <Button asChild variant="ghost" size="icon" aria-label="Volver al panel" className="rounded-control hover:bg-surface-3">
+            <Link href="/dashboard/admin">
             <ArrowLeft className="h-5 w-5" />
+          </Link>
           </Button>
-        </Link>
         <div>
           <h1 className="text-display text-ink">
             Calendario de Eventos

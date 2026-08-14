@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,7 +24,7 @@ import {
   CheckCircle2,
   XCircle,
   Forward
-} from 'lucide-react'
+, X } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ConfigData {
@@ -207,8 +209,13 @@ export default function ConfiguracionAdminPage() {
 
   if (loadingData) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-section">
+        <PageHeader
+          title="Configuración del sistema"
+          description="Precios, comisiones y parámetros generales."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Configuración' }]}
+        />
+        <PageSkeleton cards={2} />
       </div>
     )
   }
@@ -709,7 +716,7 @@ export default function ConfiguracionAdminPage() {
                 const ok = Math.abs(suma - 100) < 0.001
                 return (
                   <p className={`text-body-sm mt-3 ${ok ? 'text-success' : 'text-danger'}`}>
-                    Suma del esquema base (MW + Operador + Fondos): {suma}% {ok ? '✓' : '— debe ser 100%'}
+                    Suma del esquema base (MW + Operador + Fondos): {suma}% {ok ? '' : '— debe ser 100%'}
                   </p>
                 )
               })()}
@@ -740,10 +747,11 @@ export default function ConfiguracionAdminPage() {
                           type="button"
                           variant="outline"
                           size="icon"
+                          aria-label="Quitar esta dirección"
                           className="text-ink-2 hover:text-danger shrink-0"
                           onClick={() => setConfig({ ...config, domicilioSedeDirecciones: config.domicilioSedeDirecciones.filter((_, i) => i !== idx) })}
                         >
-                          ✕
+                          <X className="h-4 w-4" aria-hidden />
                         </Button>
                       </div>
                     ))}

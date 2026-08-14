@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -121,7 +123,18 @@ export default function DomiciliosPage() {
     return <span className="text-label font-semibold px-2 py-0.5 rounded-full bg-success-soft text-success">Vigente</span>
   }
 
-  if (loading) return <div className="p-8 text-ink-2">Cargando…</div>
+  if (loading) {
+    return (
+      <div className="space-y-section">
+        <PageHeader
+          title="Domicilios en sede"
+          description="Sociedades con domicilio legal de QMS."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Domicilios' }]}
+        />
+        <PageSkeleton cards={2} />
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto text-ink">

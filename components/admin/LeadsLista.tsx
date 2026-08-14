@@ -264,6 +264,7 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                         <Button
                           variant="outline"
                           size="icon"
+                          aria-label={`Ver ${lead.seguimientos.length} contacto(s) de este lead`}
                           onClick={() => setHistorialDe(lead)}
                           title={`Ver ${lead.seguimientos.length} contacto(s)`}
                         >

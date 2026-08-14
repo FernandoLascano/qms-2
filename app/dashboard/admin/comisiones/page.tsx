@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -236,7 +238,16 @@ export default function ComisionesPage() {
   const liqDe = (b: Beneficiario) => liquidaciones.find((l) => l.periodo === periodoSel && l.beneficiario === b)
 
   if (loading) {
-    return <div className="p-8 text-ink-2">Cargando…</div>
+    return (
+      <div className="space-y-section">
+        <PageHeader
+          title="Comisiones"
+          description="Liquidación de comisiones por trámite."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Comisiones' }]}
+        />
+        <PageSkeleton cards={2} />
+      </div>
+    )
   }
 
   return (

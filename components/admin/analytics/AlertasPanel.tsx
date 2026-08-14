@@ -38,7 +38,7 @@ export function AlertasPanel({ alertas }: AlertasPanelProps) {
   if (alertas.length === 0) {
     return (
       <div className="bg-surface rounded-control shadow-raise p-6">
-        <h3 className="text-heading font-semibold text-ink mb-4">⚠️ Alertas Recientes</h3>
+        <h3 className="text-heading font-semibold text-ink mb-4">Alertas Recientes</h3>
         <p className="text-ink-2 text-center py-4">No hay alertas en este momento</p>
       </div>
     )
@@ -46,7 +46,7 @@ export function AlertasPanel({ alertas }: AlertasPanelProps) {
 
   return (
     <div className="bg-surface rounded-control shadow-raise p-6">
-      <h3 className="text-heading font-semibold text-ink mb-4">⚠️ Alertas Recientes</h3>
+      <h3 className="text-heading font-semibold text-ink mb-4">Alertas Recientes</h3>
       <div className="space-y-3">
         {alertas.map((alerta, index) => (
           <div

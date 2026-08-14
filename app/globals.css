@@ -11,15 +11,18 @@
      CAPA 3  COMPONENTES  → components/ui/* usan sólo utilidades semánticas
 
    ┌──────────────────────────────────────────────────────────────────────┐
-   │  PARA REBRANDEAR: cambiá --brand-h (y opcionalmente --brand-c).      │
-   │  Toda la app se actualiza sola.                                      │
+   │  PARA REBRANDEAR: cambiá --brand-h. Toda la app se actualiza sola.   │
    │                                                                      │
    │    24.5 = rojo QMS (actual)   150 = verde    250 = azul              │
    │    45   = naranja             285 = violeta  200 = turquesa          │
    │                                                                      │
-   │  Para los emails (HTML no soporta variables CSS) corré:              │
-   │    node scripts/brand-tokens.mjs 250                                 │
-   │  y pegá los hex en lib/emails/templates.tsx                          │
+   │  Antes de fijar un tono nuevo, corré:                                │
+   │    node scripts/brand-tokens.mjs <tono>                              │
+   │                                                                      │
+   │  Si avisa "fuera de gamut", bajá --brand-c hasta que deje de         │
+   │  hacerlo (los azules y violetas suelen necesitar ~0,15 en vez de     │
+   │  0,1955). Ese mismo comando imprime los hex para pegar en            │
+   │  lib/emails/templates.tsx, que al ser HTML no soporta variables.     │
    └──────────────────────────────────────────────────────────────────────┘
    ============================================================================ */
 

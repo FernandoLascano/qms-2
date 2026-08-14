@@ -172,7 +172,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         {/* Info */}
         <div className="bg-info-soft border border-info-line rounded-control p-3">
           <p className="text-label text-info">
-            💡 <strong>Tip:</strong> Registra cada pago que realice el cliente para llevar un control completo del trámite.
+            <strong>Tip:</strong> Registra cada pago que realice el cliente para llevar un control completo del trámite.
           </p>
         </div>
         </div>

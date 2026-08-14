@@ -177,7 +177,7 @@ export default function ValidacionTramite({
 
         {estadoActual === 'VALIDADO' && (
           <div className="bg-success-soft border border-success-line rounded-control p-4">
-            <p className="text-success font-medium mb-2">✅ Trámite Validado</p>
+            <p className="text-success font-medium mb-2">Trámite Validado</p>
             <p className="text-body-sm text-success">
               Este trámite ha sido validado y está listo para continuar con el proceso.
             </p>
@@ -200,7 +200,7 @@ export default function ValidacionTramite({
 
         <div className="bg-info-soft border border-info-line rounded-control p-3">
           <p className="text-label text-info">
-            💡 <strong>Tip:</strong> Revisa cuidadosamente toda la información del formulario antes de validar. Si encuentras errores o información incompleta, solicita correcciones al cliente.
+            <strong>Tip:</strong> Revisa cuidadosamente toda la información del formulario antes de validar. Si encuentras errores o información incompleta, solicita correcciones al cliente.
           </p>
         </div>
       </CardContent>

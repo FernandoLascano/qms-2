@@ -231,7 +231,7 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
                     <p className={`text-label text-ink-2 mt-1 ${esMio ? 'text-right' : 'text-left'}`}>
                       {format(new Date(mensaje.createdAt), "d MMM, HH:mm", { locale: es })}
                       {esMio && mensaje.leido && (
-                        <span className="ml-2 text-info">✓✓</span>
+                        <span className="ml-2 text-info"></span>
                       )}
                     </p>
                   </div>

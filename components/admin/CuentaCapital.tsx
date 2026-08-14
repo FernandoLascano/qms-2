@@ -262,7 +262,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
                         )}
                         {envio.fechaActivacion && (
                           <p className="text-[10px] text-warning font-semibold mt-1">
-                            ⚠️ Activa desde: {format(new Date(envio.fechaActivacion), "d/M/yyyy", { locale: es })}
+                            Activa desde: {format(new Date(envio.fechaActivacion), "d/M/yyyy", { locale: es })}
                           </p>
                         )}
                       </div>

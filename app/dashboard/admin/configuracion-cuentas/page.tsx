@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -101,28 +103,24 @@ export default function ConfiguracionCuentasPage() {
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-ink-2">Cargando...</p>
+      <div className="space-y-section">
+        <PageHeader
+          title="Cuentas bancarias"
+          description="Cuentas pre-configuradas para transferencias."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Cuentas bancarias' }]}
+        />
+        <PageSkeleton cards={2} />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h2 className="text-display text-ink">Configuración de Cuentas Bancarias</h2>
-          <p className="text-ink-2 mt-1">
-            Gestiona las cuentas bancarias pre-configuradas para transferencias
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Cuentas bancarias"
+        description="Cuentas pre-configuradas para transferencias y depósitos de capital."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Cuentas bancarias' }]}
+      />
 
       {/* Agregar Nueva Cuenta */}
       <Card>

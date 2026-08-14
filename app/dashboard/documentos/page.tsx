@@ -95,12 +95,12 @@ async function DocumentosPage() {
             Gestiona todos los documentos de tus trámites
           </p>
         </div>
-        <Link href="/dashboard/documentos/subir">
-          <Button size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise font-semibold">
+        <Button asChild size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise font-semibold">
+            <Link href="/dashboard/documentos/subir">
             <Upload className="h-5 w-5" />
             Subir Documento
+          </Link>
           </Button>
-        </Link>
       </div>
 
       {/* Estadísticas */}
@@ -178,12 +178,12 @@ async function DocumentosPage() {
               <p className="text-ink-2 mb-8 max-w-md mx-auto text-heading">
                 Comienza subiendo los documentos necesarios para tu trámite de constitución.
               </p>
-              <Link href="/dashboard/documentos/subir">
-                <Button size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise">
+              <Button asChild size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise">
+            <Link href="/dashboard/documentos/subir">
                   <Upload className="h-5 w-5" />
                   Subir Mi Primer Documento
-                </Button>
-              </Link>
+                </Link>
+          </Button>
             </div>
           </CardContent>
         </Card>

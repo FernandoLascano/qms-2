@@ -136,7 +136,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                     </p>
                     {enlace.reportadoVencido && (
                       <p className="text-label text-primary font-medium">
-                        ⚠️ Cliente reportó que el enlace está vencido
+                        Cliente reportó que el enlace está vencido
                       </p>
                     )}
                     <a
@@ -234,7 +234,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
         {/* Info */}
         <div className="bg-warning-soft border border-warning-line rounded-control p-3">
           <p className="text-label text-warning">
-            💡 <strong>Tip:</strong> El cliente verá este enlace en su panel y recibirá una notificación. 
+            <strong>Tip:</strong> El cliente verá este enlace en su panel y recibirá una notificación.
             Si el enlace vence, puede reportarlo y recibirás una alerta para enviar uno nuevo.
           </p>
         </div>

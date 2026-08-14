@@ -130,11 +130,11 @@ export default function SubirDocumentoPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/documentos">
-          <Button variant="ghost" size="icon">
+        <Button asChild variant="ghost" size="icon" aria-label="Volver a Documentos">
+            <Link href="/dashboard/documentos">
             <ArrowLeft className="h-5 w-5" />
+          </Link>
           </Button>
-        </Link>
         <div>
           <h2 className="text-display text-ink">Subir Documento</h2>
           <p className="text-ink-2 mt-1">
@@ -269,16 +269,16 @@ export default function SubirDocumentoPage() {
 
             {/* Botones */}
             <div className="flex gap-4">
-              <Link href="/dashboard/documentos" className="flex-1">
-                <Button
+              <Button asChild
                   type="button"
                   variant="outline"
                   className="w-full"
                   disabled={subiendo}
                 >
+            <Link href="/dashboard/documentos" className="flex-1">
                   Cancelar
-                </Button>
-              </Link>
+                </Link>
+          </Button>
               <Button
                 type="submit"
                 className="flex-1 gap-2"

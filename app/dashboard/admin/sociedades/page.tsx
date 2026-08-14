@@ -140,7 +140,7 @@ async function SociedadesPage() {
                               {sociedad.denominacionAprobada || sociedad.denominacionSocial1}
                             </h3>
                             <span className="px-2 py-1 bg-success-soft text-success text-label font-semibold rounded-full">
-                              ✓ Inscripta
+                              Inscripta
                             </span>
                           </div>
                           
