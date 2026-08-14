@@ -11,9 +11,12 @@ export default async function LibrosDigitalesPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return null
 
-  // La "Guía de uso de Libros Digitales" está incluida en todos los planes.
-  // Mostramos si el cliente tiene al menos un trámite.
-  const tieneTramite = await prisma.tramite.count({ where: { userId: session.user.id } })
+  // La guía solo se habilita para clientes que ya tienen su sociedad inscripta
+  // (abonaron y completaron el trámite). No es de acceso libre al registrarse.
+  const sociedadesInscriptas = await prisma.tramite.count({
+    where: { userId: session.user.id, sociedadInscripta: true }
+  })
+  const habilitada = sociedadesInscriptas > 0
 
   return (
     <div className="space-y-6">
@@ -25,12 +28,14 @@ export default async function LibrosDigitalesPage() {
         </div>
       </div>
 
-      {tieneTramite === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-600">
-          La guía de Libros Digitales está incluida en tu plan y va a estar disponible acá cuando inicies tu trámite de constitución.
-        </div>
-      ) : (
+      {habilitada ? (
         <GuiaLibrosDigitales />
+      ) : (
+        <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
+          <BookOpen className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-700">La guía estará disponible cuando tu sociedad esté inscripta.</p>
+          <p className="text-sm text-gray-500 mt-1">Es un beneficio incluido en tu plan, para usar una vez constituida tu sociedad.</p>
+        </div>
       )}
     </div>
   )

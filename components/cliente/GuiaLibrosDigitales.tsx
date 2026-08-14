@@ -15,6 +15,16 @@ function Importante({ children }: { children: ReactNode }) {
   )
 }
 
+function Captura({ src, alt }: { src: string; alt: string }) {
+  return (
+    <figure className="my-3">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="w-full rounded-lg border border-gray-200 shadow-sm" />
+      <figcaption className="text-xs text-gray-400 mt-1 text-center">{alt}</figcaption>
+    </figure>
+  )
+}
+
 const PASOS: { titulo: string; contenido: ReactNode }[] = [
   {
     titulo: 'Marco normativo y obligatoriedad',
@@ -70,6 +80,9 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           <li>Identificá la Sociedad buscándola por <strong>CUIT</strong> y presioná <strong>Buscar</strong>.</li>
           <li>Seleccioná la Sociedad correcta con el botón <strong>Iniciar</strong>.</li>
         </ol>
+        <Captura src="/assets/img/guia-ld-acceso-1.png" alt="Iniciar el trámite buscando la sociedad por CUIT." />
+        <Captura src="/assets/img/guia-ld-acceso-2.png" alt="El sistema muestra las sociedades coincidentes; seleccioná la correcta con Iniciar." />
+        <Captura src="/assets/img/guia-ld-acceso-3.png" alt="Acceso a los Libros Digitales de la sociedad." />
       </div>
     )
   },
@@ -102,11 +115,14 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           nombre único); <strong>Historial</strong> muestra los documentos ya cargados; y <strong>Adjuntar</strong> permite cargar un
           documento indicando su <strong>fecha de registro</strong> (la fecha en que fue emitido).
         </p>
+        <Captura src="/assets/img/guia-ld-carga-2.png" alt="Pantalla de Libros Digitales: datos de la entidad y grilla de libros con Adjuntar e Historial." />
+        <Captura src="/assets/img/guia-ld-carga-1.png" alt="Adjuntar un documento indicando la fecha de registro." />
         <p>
           Con <strong>Ver</strong> visualizás el documento y con <strong>Eliminar</strong> lo borrás — pero no se puede eliminar una
           vez finalizada la subida. Al presionar <strong>Finalizar</strong>, los documentos se asocian al CUIT de la sociedad y se
           cierra el portal.
         </p>
+        <Captura src="/assets/img/guia-ld-carga-3.png" alt="Historial de documentos cargados en el libro seleccionado." />
         <Importante>
           <p>Una vez finalizada la carga, no se podrá eliminar ni alterar el documento (queda vinculado al CUIT de la Sociedad). Para agregar otros documentos, deberás iniciar un nuevo trámite en el Portal.</p>
         </Importante>
@@ -137,6 +153,8 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           <li>Ingresá el <strong>CUIT</strong>, presioná <strong>Buscar</strong> y luego <strong>Iniciar</strong> en la sociedad.</li>
           <li>Entrá al libro con <strong>Historial</strong>, mirá los documentos con <strong>Ver</strong>, tildá los que quieras y presioná <strong>Descargar</strong>.</li>
         </ol>
+        <Captura src="/assets/img/guia-ld-consulta-1.png" alt="Consulta: grilla de libros para seleccionar y descargar documentos." />
+        <Captura src="/assets/img/guia-ld-consulta-2.png" alt="Selección de documentos a descargar en el comprobante." />
         <p>
           Abrí el comprobante con <strong>Adobe Acrobat Reader de escritorio</strong> (no desde Google Chrome): en el margen vas a
           ver un ícono de <em>“clip”</em> donde podés consultar el documento adjunto.
