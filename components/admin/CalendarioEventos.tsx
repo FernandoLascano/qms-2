@@ -187,7 +187,7 @@ export default function CalendarioEventos() {
           </div>
           <Dialog open={mostrarDialogo} onOpenChange={setMostrarDialogo}>
             <DialogTrigger asChild>
-              <Button className="gap-2 bg-brand-600 hover:bg-brand-700">
+              <Button className="gap-2 bg-primary hover:bg-primary">
                 <Plus className="h-4 w-4" />
                 Nuevo Evento
               </Button>
@@ -213,7 +213,7 @@ export default function CalendarioEventos() {
                   <textarea
                     value={nuevoEvento.descripcion}
                     onChange={(e) => setNuevoEvento(prev => ({ ...prev, descripcion: e.target.value }))}
-                    className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                    className="w-full min-h-[100px] px-3 py-2 border rounded-chip"
                     placeholder="Detalles del evento..."
                   />
                 </div>
@@ -223,7 +223,7 @@ export default function CalendarioEventos() {
                     <select
                       value={nuevoEvento.tipo}
                       onChange={(e) => setNuevoEvento(prev => ({ ...prev, tipo: e.target.value }))}
-                      className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent"
+                      className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                     >
                       <option value="REUNION_CLIENTE">Reunión con Cliente</option>
                       <option value="VENCIMIENTO_DENOMINACION">Vencimiento de Denominación</option>
@@ -275,7 +275,7 @@ export default function CalendarioEventos() {
                   <Button variant="outline" onClick={() => setMostrarDialogo(false)}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleCrearEvento} className="bg-brand-600 hover:bg-brand-700">
+                  <Button onClick={handleCrearEvento} className="bg-primary hover:bg-primary">
                     Crear Evento
                   </Button>
                 </div>
@@ -287,7 +287,7 @@ export default function CalendarioEventos() {
       <CardContent>
         {cargando ? (
           <div className="flex items-center justify-center h-96">
-            <p className="text-gray-500">Cargando eventos...</p>
+            <p className="text-ink-2">Cargando eventos...</p>
           </div>
         ) : (
           <div style={{ height: '600px' }}>

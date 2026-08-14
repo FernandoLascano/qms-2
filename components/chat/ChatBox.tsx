@@ -157,15 +157,15 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
   return (
     <Card>
       <CardHeader 
-        className="border-b cursor-pointer hover:bg-gray-50 transition-colors"
+        className="border-b cursor-pointer hover:bg-surface-2 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <MessageCircle className="h-5 w-5 text-blue-600" />
+            <MessageCircle className="h-5 w-5 text-info" />
             <CardTitle>Chat del Trámite</CardTitle>
             {mensajesNoLeidos > 0 && (
-              <span className="px-2 py-0.5 bg-brand-500 text-white text-xs font-bold rounded-full">
+              <span className="px-2 py-0.5 bg-brand-500 text-on-primary text-label font-semibold rounded-full">
                 {mensajesNoLeidos}
               </span>
             )}
@@ -196,10 +196,10 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
 
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
         {mensajes.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-            <MessageCircle className="h-12 w-12 mb-3 text-gray-300" />
-            <p className="text-sm">No hay mensajes aún</p>
-            <p className="text-xs mt-1">Inicia la conversación</p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-ink-2">
+            <MessageCircle className="h-12 w-12 mb-3 text-ink-3" />
+            <p className="text-body-sm">No hay mensajes aún</p>
+            <p className="text-label mt-1">Inicia la conversación</p>
           </div>
         ) : (
           <>
@@ -213,25 +213,25 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
                 >
                   <div className={`max-w-[70%] ${esMio ? 'order-2' : 'order-1'}`}>
                     <div
-                      className={`rounded-lg px-4 py-2 ${
+                      className={`rounded-control px-4 py-2 ${
                         esMio
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-info-solid text-on-primary'
+                          : 'bg-surface-3 text-ink'
                       }`}
                     >
                       {!esMio && (
-                        <p className="text-xs font-semibold mb-1 opacity-70">
+                        <p className="text-label font-semibold mb-1 opacity-70">
                           {mensaje.user.name}
                         </p>
                       )}
-                      <p className="text-sm whitespace-pre-wrap break-words">
+                      <p className="text-body-sm whitespace-pre-wrap break-words">
                         {mensaje.contenido}
                       </p>
                     </div>
-                    <p className={`text-xs text-gray-500 mt-1 ${esMio ? 'text-right' : 'text-left'}`}>
+                    <p className={`text-label text-ink-2 mt-1 ${esMio ? 'text-right' : 'text-left'}`}>
                       {format(new Date(mensaje.createdAt), "d MMM, HH:mm", { locale: es })}
                       {esMio && mensaje.leido && (
-                        <span className="ml-2 text-blue-600">✓✓</span>
+                        <span className="ml-2 text-info">✓✓</span>
                       )}
                     </p>
                   </div>
@@ -257,7 +257,7 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
                 <Send className="h-4 w-4" />
               </Button>
             </form>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-label text-ink-2 mt-2">
               Los mensajes se actualizan automáticamente
             </p>
           </div>

@@ -159,7 +159,7 @@ export default async function DesignSystemPage() {
         titulo="Tipografía"
         nota="Inter. Siete pasos, con interlineado y peso incluidos en el token. Pesos permitidos: 400, 500 y 600."
       >
-        <div className="space-y-5">
+        <div className="space-y-4">
           {[
             ['text-display', 'Constituí tu SAS', '28 / 34 · 600 · título de página'],
             ['text-title', 'Trámites recientes', '20 / 28 · 600 · título de sección'],

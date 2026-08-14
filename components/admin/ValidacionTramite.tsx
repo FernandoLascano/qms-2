@@ -68,21 +68,21 @@ export default function ValidacionTramite({
     switch (estadoActual) {
       case 'VALIDADO':
         return (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+          <div className="flex items-center gap-2 px-3 py-1 bg-success-soft text-success rounded-full text-body-sm font-semibold">
             <CheckCircle className="h-4 w-4" />
             Validado
           </div>
         )
       case 'REQUIERE_CORRECCIONES':
         return (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-semibold">
+          <div className="flex items-center gap-2 px-3 py-1 bg-warning-soft text-warning rounded-full text-body-sm font-semibold">
             <XCircle className="h-4 w-4" />
             Requiere Correcciones
           </div>
         )
       default:
         return (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+          <div className="flex items-center gap-2 px-3 py-1 bg-warning-soft text-warning rounded-full text-body-sm font-semibold">
             <AlertCircle className="h-4 w-4" />
             Pendiente de Validación
           </div>
@@ -93,21 +93,21 @@ export default function ValidacionTramite({
   return (
     <Card className={`border-2 ${
       estadoActual === 'VALIDADO' 
-        ? 'border-green-200 bg-green-50' 
+        ? 'border-success-line bg-success-soft' 
         : estadoActual === 'REQUIERE_CORRECCIONES'
-        ? 'border-orange-200 bg-orange-50'
-        : 'border-yellow-200 bg-yellow-50'
+        ? 'border-warning-line bg-warning-soft'
+        : 'border-warning-line bg-warning-soft'
     }`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               {estadoActual === 'VALIDADO' ? (
-                <CheckCircle className="h-5 w-5 text-green-600" />
+                <CheckCircle className="h-5 w-5 text-success" />
               ) : estadoActual === 'REQUIERE_CORRECCIONES' ? (
-                <XCircle className="h-5 w-5 text-orange-600" />
+                <XCircle className="h-5 w-5 text-warning" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <AlertCircle className="h-5 w-5 text-warning" />
               )}
               Validación Inicial del Formulario
             </CardTitle>
@@ -139,7 +139,7 @@ export default function ValidacionTramite({
               <Button
                 onClick={() => handleValidar('VALIDADO')}
                 disabled={procesando}
-                className="flex-1 bg-green-600 hover:bg-green-700"
+                className="flex-1 bg-success-solid hover:bg-success-solid"
               >
                 {procesando ? (
                   <>
@@ -176,30 +176,30 @@ export default function ValidacionTramite({
         )}
 
         {estadoActual === 'VALIDADO' && (
-          <div className="bg-green-100 border border-green-300 rounded-lg p-4">
-            <p className="text-green-900 font-medium mb-2">✅ Trámite Validado</p>
-            <p className="text-sm text-green-800">
+          <div className="bg-success-soft border border-success-line rounded-control p-4">
+            <p className="text-success font-medium mb-2">✅ Trámite Validado</p>
+            <p className="text-body-sm text-success">
               Este trámite ha sido validado y está listo para continuar con el proceso.
             </p>
           </div>
         )}
 
         {estadoActual === 'REQUIERE_CORRECCIONES' && observacionesValidacion && (
-          <div className="bg-white border-2 border-orange-400 rounded-lg p-4">
-            <p className="text-orange-900 font-bold mb-3 flex items-center gap-2">
+          <div className="bg-surface border-2 border-warning-line rounded-control p-4">
+            <p className="text-warning font-semibold mb-3 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
               Correcciones Requeridas
             </p>
-            <div className="bg-orange-50 border border-orange-200 rounded-md p-3">
-              <p className="text-base text-gray-900 leading-relaxed whitespace-pre-wrap font-medium">
+            <div className="bg-warning-soft border border-warning-line rounded-chip p-3">
+              <p className="text-body text-ink leading-relaxed whitespace-pre-wrap font-medium">
                 {observacionesValidacion}
               </p>
             </div>
           </div>
         )}
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-900">
+        <div className="bg-info-soft border border-info-line rounded-control p-3">
+          <p className="text-label text-info">
             💡 <strong>Tip:</strong> Revisa cuidadosamente toda la información del formulario antes de validar. Si encuentras errores o información incompleta, solicita correcciones al cliente.
           </p>
         </div>

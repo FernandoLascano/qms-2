@@ -82,17 +82,17 @@ async function TramitesPage() {
                           {tramite.denominacionAprobada || tramite.denominacionSocial1}
                         </h2>
                         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-ink-2">
-                          <span className="inline-flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-2">
                             <Calendar className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                             {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", {
                               locale: es,
                             })}
                           </span>
-                          <span className="inline-flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-2">
                             <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                             {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
                           </span>
-                          <span className="inline-flex items-center gap-1.5">
+                          <span className="inline-flex items-center gap-2">
                             <Users className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                             {socios.length} {socios.length === 1 ? 'socio' : 'socios'}
                           </span>

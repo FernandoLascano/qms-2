@@ -46,36 +46,36 @@ export default function MigrateDomiciliosButton() {
   }
 
   return (
-    <div className="bg-white hover:bg-brand-50 border-2 border-gray-200 hover:border-brand-700 rounded-xl p-6 transition-all duration-200 hover:shadow-lg">
+    <div className="bg-surface hover:bg-primary-soft border-2 border-line hover:border-primary-line rounded-control p-6 transition-all duration-200 hover:shadow-raise">
       <div className="flex items-start justify-between mb-4">
-        <div className="p-3 bg-brand-100 rounded-lg">
-          <RefreshCw className={`h-6 w-6 text-brand-700 ${migrando ? 'animate-spin' : ''}`} />
+        <div className="p-3 bg-primary-soft rounded-control">
+          <RefreshCw className={`h-6 w-6 text-primary ${migrando ? 'animate-spin' : ''}`} />
         </div>
         {resultado && (
           <div className="flex items-center gap-2">
             {resultado.errores === 0 ? (
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-success" />
             ) : (
-              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <AlertCircle className="h-5 w-5 text-warning" />
             )}
           </div>
         )}
       </div>
-      <h3 className="text-lg font-bold text-gray-900 mb-2">Migrar Domicilios</h3>
-      <p className="text-sm text-gray-600 mb-4">
+      <h3 className="text-heading font-semibold text-ink mb-2">Migrar Domicilios</h3>
+      <p className="text-body-sm text-ink-2 mb-4">
         Actualizar campos de ciudad, departamento y provincia en trámites existentes
       </p>
       
       {resultado && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-          <p className="text-gray-700">
+        <div className="mb-4 p-3 bg-surface-2 rounded-control text-body-sm">
+          <p className="text-ink-2">
             <strong>Total:</strong> {resultado.total} trámites
           </p>
-          <p className="text-green-700">
+          <p className="text-success">
             <strong>Actualizados:</strong> {resultado.actualizados}
           </p>
           {resultado.errores > 0 && (
-            <p className="text-orange-700">
+            <p className="text-warning">
               <strong>Errores:</strong> {resultado.errores}
             </p>
           )}
@@ -85,7 +85,7 @@ export default function MigrateDomiciliosButton() {
       <Button
         onClick={ejecutarMigracion}
         disabled={migrando}
-        className="w-full bg-brand-600 hover:bg-brand-700 text-white"
+        className="w-full bg-primary hover:bg-primary text-on-primary"
       >
         {migrando ? (
           <>

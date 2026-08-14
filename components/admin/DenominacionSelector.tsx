@@ -142,54 +142,54 @@ export default function DenominacionSelector({
     const isSelected = denominacionAprobada === texto
 
     return (
-      <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all ${
-        isSelected ? 'bg-green-50 border-green-500 shadow-md' :
-        denominacionAprobada ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-100 hover:border-purple-200'
+      <div className={`flex items-center justify-between p-4 border-2 rounded-control transition-all ${
+        isSelected ? 'bg-success-soft border-success-line shadow-raise' :
+        denominacionAprobada ? 'bg-surface-2 border-line' : 'bg-surface border-line hover:border-info-line'
       }`}>
         <div className="flex-1">
-          <p className={`text-xs mb-1 font-semibold ${
-            isSelected ? 'text-green-700' :
-            denominacionAprobada ? 'text-gray-400' : 'text-gray-500'
+          <p className={`text-label mb-1 font-semibold ${
+            isSelected ? 'text-success' :
+            denominacionAprobada ? 'text-ink-3' : 'text-ink-2'
           }`}>
             {label}
           </p>
-          <p className={`text-lg font-bold ${
-            isSelected ? 'text-green-900' :
-            denominacionAprobada ? 'text-gray-400' : 'text-gray-900'
+          <p className={`text-heading font-semibold ${
+            isSelected ? 'text-success' :
+            denominacionAprobada ? 'text-ink-3' : 'text-ink'
           }`}>
             {texto}
           </p>
         </div>
 
         {isSelected ? (
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm animate-in zoom-in duration-300">
+          <div className="flex items-center gap-2 px-4 py-2 bg-success-solid text-on-primary rounded-full shadow-raise animate-in zoom-in duration-300">
             <CheckCircle className="h-5 w-5" />
-            <span className="font-bold">SELECCIONADA</span>
+            <span className="font-semibold">SELECCIONADA</span>
           </div>
         ) : denominacionAprobada ? (
           // Si ya hay una denominación aprobada, no mostrar botón
-          <span className="text-sm text-gray-400 italic">No seleccionada</span>
+          <span className="text-body-sm text-ink-3 italic">No seleccionada</span>
         ) : (
           <Dialog open={dialogOpen[texto]} onOpenChange={(open) => setDialogOpen(prev => ({ ...prev, [texto]: open }))}>
             <DialogTrigger asChild>
               <Button
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700 shadow-sm transition-all active:scale-95"
+                className="bg-info-solid hover:bg-info-solid shadow-raise transition-all"
                 disabled={seleccionando}
               >
                 Aprobar Esta
               </Button>
             </DialogTrigger>
-            <DialogContent className="border-2 border-purple-100">
+            <DialogContent className="border-2 border-info-line">
               <DialogHeader>
-                <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                  <Info className="h-8 w-8 text-purple-600" />
+                <div className="mx-auto w-16 h-16 bg-info-soft rounded-full flex items-center justify-center mb-4">
+                  <Info className="h-8 w-8 text-info" />
                 </div>
-                <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                <DialogTitle className="text-title text-center font-semibold text-ink">
                   ¿Confirmar Denominación?
                 </DialogTitle>
-                <DialogDescription className="text-center text-gray-600 pt-2">
-                  Estás por marcar <span className="font-bold text-purple-700">"{texto}"</span> como la denominación oficial aprobada para este trámite.
+                <DialogDescription className="text-center text-ink-2 pt-2">
+                  Estás por marcar <span className="font-semibold text-info">"{texto}"</span> como la denominación oficial aprobada para este trámite.
                   <br /><br />
                   Esto se verá reflejado en el panel del cliente.
                 </DialogDescription>
@@ -198,13 +198,13 @@ export default function DenominacionSelector({
                 <Button
                   variant="outline"
                   onClick={() => setDialogOpen(prev => ({ ...prev, [texto]: false }))}
-                  className="border-gray-300 font-semibold px-8"
+                  className="border-line-strong font-semibold px-8"
                 >
                   Cancelar
                 </Button>
                 <Button
                   onClick={() => handleSeleccionar(texto)}
-                  className="bg-purple-600 hover:bg-purple-700 font-bold px-8 shadow-md"
+                  className="bg-info-solid hover:bg-info-solid font-semibold px-8 shadow-raise"
                   disabled={seleccionando}
                 >
                   {seleccionando ? 'Procesando...' : 'Sí, Confirmar'}
@@ -218,21 +218,21 @@ export default function DenominacionSelector({
   }
 
   return (
-    <div className="rounded-lg h-full">
+    <div className="rounded-control h-full">
       <CollapsibleCard
         title="Examen de Homonimia"
         description="Marca la denominación definitiva tras el examen del IPJ/IGJ"
-        icon={<Search className="h-5 w-5 text-purple-700" />}
+        icon={<Search className="h-5 w-5 text-info" />}
       >
         <div className="space-y-4">
           {/* Si hay una denominación alternativa aprobada, mostrarla primero */}
           {esAlternativa && denominacionAprobada && (
-            <div className="flex items-center justify-between p-4 border-2 rounded-lg bg-green-50 border-green-500 shadow-md">
+            <div className="flex items-center justify-between p-4 border-2 rounded-control bg-success-soft border-success-line shadow-raise">
               <div className="flex-1">
-                <p className="text-xs mb-1 font-semibold text-green-700">
+                <p className="text-label mb-1 font-semibold text-success">
                   Denominación Alternativa (Aprobada)
                 </p>
-                <p className="text-lg font-bold text-green-900">
+                <p className="text-heading font-semibold text-success">
                   {denominacionAprobada}
                 </p>
               </div>
@@ -242,27 +242,27 @@ export default function DenominacionSelector({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-green-400 text-green-700 hover:bg-green-100"
+                      className="border-success-line text-success hover:bg-success-soft"
                       onClick={() => setDenominacionPersonalizada(denominacionAprobada)}
                     >
                       <Pencil className="h-4 w-4 mr-1" />
                       Editar
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-2 border-blue-100">
+                  <DialogContent className="border-2 border-info-line">
                     <DialogHeader>
-                      <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                        <Pencil className="h-8 w-8 text-blue-600" />
+                      <div className="mx-auto w-16 h-16 bg-info-soft rounded-full flex items-center justify-center mb-4">
+                        <Pencil className="h-8 w-8 text-info" />
                       </div>
-                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                      <DialogTitle className="text-title text-center font-semibold text-ink">
                         Editar Denominación
                       </DialogTitle>
-                      <DialogDescription className="text-center text-gray-600 pt-2">
+                      <DialogDescription className="text-center text-ink-2 pt-2">
                         Modificá la denominación si es necesario realizar algún ajuste.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                      <Label htmlFor="denominacion-personalizada" className="text-base font-semibold mb-2 block text-gray-900">
+                      <Label htmlFor="denominacion-personalizada" className="text-body font-semibold mb-2 block text-ink">
                         Denominación *
                       </Label>
                       <Input
@@ -270,7 +270,7 @@ export default function DenominacionSelector({
                         value={denominacionPersonalizada}
                         onChange={(e) => setDenominacionPersonalizada(e.target.value)}
                         placeholder="Ej: MI EMPRESA ALTERNATIVA SAS"
-                        className="text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="text-ink placeholder:text-ink-3 bg-surface border-line-strong focus:border-info-line focus:ring-info-solid"
                       />
                     </div>
                     <DialogFooter className="sm:justify-center gap-2">
@@ -280,14 +280,14 @@ export default function DenominacionSelector({
                           setDialogPersonalizada(false)
                           setDenominacionPersonalizada('')
                         }}
-                        className="border-gray-300 font-semibold px-8"
+                        className="border-line-strong font-semibold px-8"
                         disabled={seleccionando}
                       >
                         Cancelar
                       </Button>
                       <Button
                         onClick={handleAprobarPersonalizada}
-                        className="bg-blue-600 hover:bg-blue-700 font-bold px-8 shadow-md"
+                        className="bg-info-solid hover:bg-info-solid font-semibold px-8 shadow-raise"
                         disabled={seleccionando || !denominacionPersonalizada.trim()}
                       >
                         {seleccionando ? 'Procesando...' : 'Guardar Cambios'}
@@ -295,9 +295,9 @@ export default function DenominacionSelector({
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-                <div className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-full shadow-sm">
+                <div className="flex items-center gap-2 px-4 py-2 bg-success-solid text-on-primary rounded-full shadow-raise">
                   <CheckCircle className="h-5 w-5" />
-                  <span className="font-bold">SELECCIONADA</span>
+                  <span className="font-semibold">SELECCIONADA</span>
                 </div>
               </div>
             </div>
@@ -308,12 +308,12 @@ export default function DenominacionSelector({
             <RenderOpcion texto={denominacion1} label="Opción 1 (Preferida)" index={1} />
           )}
           {esAlternativa && (
-            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-              <p className="text-xs mb-1 font-semibold text-gray-400">Opciones originales (no seleccionadas)</p>
+            <div className="bg-surface-2 border-2 border-line rounded-control p-4">
+              <p className="text-label mb-1 font-semibold text-ink-3">Opciones originales (no seleccionadas)</p>
               <div className="space-y-2 mt-2">
-                <p className="text-sm text-gray-400">{denominacion1}</p>
-                {denominacion2 && <p className="text-sm text-gray-400">{denominacion2}</p>}
-                {denominacion3 && <p className="text-sm text-gray-400">{denominacion3}</p>}
+                <p className="text-body-sm text-ink-3">{denominacion1}</p>
+                {denominacion2 && <p className="text-body-sm text-ink-3">{denominacion2}</p>}
+                {denominacion3 && <p className="text-body-sm text-ink-3">{denominacion3}</p>}
               </div>
             </div>
           )}
@@ -323,41 +323,41 @@ export default function DenominacionSelector({
           {!denominacionAprobada && (
             <>
               {/* Opción para ingresar denominación personalizada */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mt-6">
+              <div className="bg-info-soft border-2 border-info-line rounded-control p-4 mt-6">
                 <div className="flex items-center gap-2 mb-2">
-                  <Pencil className="h-4 w-4 text-blue-600" />
-                  <p className="text-sm font-bold text-blue-900">¿Ninguna opción es viable?</p>
+                  <Pencil className="h-4 w-4 text-info" />
+                  <p className="text-body-sm font-semibold text-info">¿Ninguna opción es viable?</p>
                 </div>
-                <p className="text-sm text-blue-800 mb-3">
+                <p className="text-body-sm text-info mb-3">
                   Si el cliente acordó una denominación diferente con el registro, podés ingresarla manualmente.
                 </p>
                 <Dialog open={dialogPersonalizada} onOpenChange={setDialogPersonalizada}>
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full border-blue-300 text-blue-700 hover:bg-blue-100 hover:border-blue-400"
+                      className="w-full border-info-line text-info hover:bg-info-soft hover:border-info-line"
                       disabled={seleccionando}
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Ingresar Denominación Alternativa
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-2 border-blue-100">
+                  <DialogContent className="border-2 border-info-line">
                     <DialogHeader>
-                      <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                        <Pencil className="h-8 w-8 text-blue-600" />
+                      <div className="mx-auto w-16 h-16 bg-info-soft rounded-full flex items-center justify-center mb-4">
+                        <Pencil className="h-8 w-8 text-info" />
                       </div>
-                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                      <DialogTitle className="text-title text-center font-semibold text-ink">
                         Denominación Alternativa
                       </DialogTitle>
-                      <DialogDescription className="text-center text-gray-600 pt-2">
+                      <DialogDescription className="text-center text-ink-2 pt-2">
                         Ingresá la denominación que fue acordada con el registro.
                         <br />
                         Esta será marcada como la denominación oficial aprobada.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                      <Label htmlFor="denominacion-personalizada" className="text-base font-semibold mb-2 block text-gray-900">
+                      <Label htmlFor="denominacion-personalizada" className="text-body font-semibold mb-2 block text-ink">
                         Nueva Denominación *
                       </Label>
                       <Input
@@ -365,7 +365,7 @@ export default function DenominacionSelector({
                         value={denominacionPersonalizada}
                         onChange={(e) => setDenominacionPersonalizada(e.target.value)}
                         placeholder="Ej: MI EMPRESA ALTERNATIVA SAS"
-                        className="text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="text-ink placeholder:text-ink-3 bg-surface border-line-strong focus:border-info-line focus:ring-info-solid"
                       />
                     </div>
                     <DialogFooter className="sm:justify-center gap-2">
@@ -375,14 +375,14 @@ export default function DenominacionSelector({
                           setDialogPersonalizada(false)
                           setDenominacionPersonalizada('')
                         }}
-                        className="border-gray-300 font-semibold px-8"
+                        className="border-line-strong font-semibold px-8"
                         disabled={seleccionando}
                       >
                         Cancelar
                       </Button>
                       <Button
                         onClick={handleAprobarPersonalizada}
-                        className="bg-blue-600 hover:bg-blue-700 font-bold px-8 shadow-md"
+                        className="bg-info-solid hover:bg-info-solid font-semibold px-8 shadow-raise"
                         disabled={seleccionando || !denominacionPersonalizada.trim()}
                       >
                         {seleccionando ? 'Procesando...' : 'Aprobar Esta Denominación'}
@@ -392,34 +392,34 @@ export default function DenominacionSelector({
                 </Dialog>
               </div>
 
-              <div className="bg-brand-50 border-2 border-brand-200 rounded-lg p-4 mt-4">
+              <div className="bg-primary-soft border-2 border-primary-line rounded-control p-4 mt-4">
                 <Dialog open={dialogRechazar} onOpenChange={setDialogRechazar}>
                   <DialogTrigger asChild>
                     <Button
                       variant="destructive"
-                      className="w-full bg-brand-600 hover:bg-brand-700 shadow-md transition-all active:scale-95"
+                      className="w-full bg-primary hover:bg-primary shadow-raise transition-all"
                       disabled={rechazando}
                     >
                       <XCircle className="h-5 w-5 mr-2" />
                       Rechazar Todas y Solicitar 3 Nuevas Denominaciones
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="border-2 border-brand-100">
+                  <DialogContent className="border-2 border-primary-line">
                     <DialogHeader>
-                      <div className="mx-auto w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mb-4">
-                        <XCircle className="h-8 w-8 text-brand-600" />
+                      <div className="mx-auto w-16 h-16 bg-primary-soft rounded-full flex items-center justify-center mb-4">
+                        <XCircle className="h-8 w-8 text-primary" />
                       </div>
-                      <DialogTitle className="text-2xl text-center font-bold text-gray-900">
+                      <DialogTitle className="text-title text-center font-semibold text-ink">
                         Rechazar Todas las Denominaciones
                       </DialogTitle>
-                      <DialogDescription className="text-center text-gray-600 pt-2">
+                      <DialogDescription className="text-center text-ink-2 pt-2">
                         Se le solicitará al cliente que envíe 3 nuevas alternativas de denominación.
                         <br />
-                        Es <span className="font-bold text-brand-700">obligatorio</span> explicar los motivos del rechazo.
+                        Es <span className="font-semibold text-primary">obligatorio</span> explicar los motivos del rechazo.
                       </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
-                      <Label htmlFor="motivo-rechazo" className="text-base font-semibold mb-2 block text-gray-900">
+                      <Label htmlFor="motivo-rechazo" className="text-body font-semibold mb-2 block text-ink">
                         Motivos del Rechazo *
                       </Label>
                       <Textarea
@@ -428,7 +428,7 @@ export default function DenominacionSelector({
                         onChange={(e) => setMotivoRechazo(e.target.value)}
                         placeholder="Explica detalladamente por qué se rechazan las denominaciones (ej: homonimia con empresas existentes, términos no permitidos, etc.)"
                         rows={6}
-                        className="resize-none text-gray-900 placeholder:text-gray-400 bg-white border-gray-300 focus:border-brand-500 focus:ring-brand-500"
+                        className="resize-none text-ink placeholder:text-ink-3 bg-surface border-line-strong focus:border-primary-line focus:ring-ring"
                       />
                     </div>
                     <DialogFooter className="sm:justify-center gap-2">
@@ -438,14 +438,14 @@ export default function DenominacionSelector({
                           setDialogRechazar(false)
                           setMotivoRechazo('')
                         }}
-                        className="border-gray-300 font-semibold px-8"
+                        className="border-line-strong font-semibold px-8"
                         disabled={rechazando}
                       >
                         Cancelar
                       </Button>
                       <Button
                         onClick={handleRechazarTodas}
-                        className="bg-brand-600 hover:bg-brand-700 font-bold px-8 shadow-md"
+                        className="bg-primary hover:bg-primary font-semibold px-8 shadow-raise"
                         disabled={rechazando || !motivoRechazo.trim()}
                       >
                         {rechazando ? 'Procesando...' : 'Confirmar Rechazo'}
@@ -455,11 +455,11 @@ export default function DenominacionSelector({
                 </Dialog>
               </div>
 
-              <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div className="bg-warning-soft border-2 border-warning-line rounded-control p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-warning mt-0.5" />
                 <div>
-                  <p className="text-sm font-bold text-amber-900">Pendiente de Selección</p>
-                  <p className="text-sm text-amber-800">
+                  <p className="text-body-sm font-semibold text-warning">Pendiente de Selección</p>
+                  <p className="text-body-sm text-warning">
                     Aún no has marcado ninguna denominación como aprobada.
                     Selecciona una opción una vez que tengas el resultado del examen.
                   </p>
@@ -469,12 +469,12 @@ export default function DenominacionSelector({
           )}
           
           {denominacionAprobada && (
-            <div className="bg-blue-50 border-2 border-blue-100 rounded-lg p-4 mt-6">
+            <div className="bg-info-soft border-2 border-info-line rounded-control p-4 mt-6">
               <div className="flex items-center gap-2 mb-2">
-                <Info className="h-4 w-4 text-blue-600" />
-                <p className="text-sm font-bold text-blue-900">Pasos Sugeridos</p>
+                <Info className="h-4 w-4 text-info" />
+                <p className="text-body-sm font-semibold text-info">Pasos Sugeridos</p>
               </div>
-              <p className="text-sm text-blue-800">
+              <p className="text-body-sm text-info">
                 Ya has seleccionado una denominación. Puedes enviar una observación al cliente 
                 para informarle y avanzar con el trámite.
               </p>

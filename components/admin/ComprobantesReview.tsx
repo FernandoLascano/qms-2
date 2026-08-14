@@ -90,13 +90,13 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'APROBADO':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-success-soft text-success border-success-line'
       case 'RECHAZADO':
-        return 'bg-brand-100 text-brand-800 border-brand-200'
+        return 'bg-primary-soft text-primary border-primary-line'
       case 'EN_REVISION':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-info-soft text-info border-info-line'
       default:
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-warning-soft text-warning border-warning-line'
     }
   }
 
@@ -128,17 +128,17 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
   }
 
   return (
-    <div className="rounded-lg">
+    <div className="rounded-control">
       <CollapsibleCard
         title={`Comprobantes de Pago${comprobantes.length > 0 ? ` (${comprobantes.length})` : ''}`}
         description={comprobantes.length > 0 
           ? "Revisa y verifica los comprobantes de pago subidos por el cliente"
           : "Comprobantes de pago subidos por el cliente"
         }
-        icon={<FileText className="h-5 w-5 text-sky-700" />}
+        icon={<FileText className="h-5 w-5 text-info" />}
       >
         {comprobantes.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-ink-2 py-8">
             El cliente aún no ha subido comprobantes de pago
           </p>
         ) : (
@@ -147,26 +147,26 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
             const enlaceRelacionado = getEnlaceRelacionado(comprobante.nombre)
             
             return (
-              <div key={comprobante.id} className="border-2 rounded-lg p-4 hover:bg-gray-50 transition">
+              <div key={comprobante.id} className="border-2 rounded-control p-4 hover:bg-surface-2 transition">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-semibold text-gray-900">{comprobante.nombre}</h4>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getEstadoColor(comprobante.estado)}`}>
+                      <h4 className="font-semibold text-ink">{comprobante.nombre}</h4>
+                      <span className={`px-3 py-1 rounded-full text-label font-medium border ${getEstadoColor(comprobante.estado)}`}>
                         {getEstadoTexto(comprobante.estado)}
                       </span>
                     </div>
 
                     {enlaceRelacionado && (
-                      <div className="bg-blue-50 border border-blue-200 rounded p-2 mb-2">
-                        <p className="text-xs text-blue-900 flex items-center gap-1">
+                      <div className="bg-info-soft border border-info-line rounded p-2 mb-2">
+                        <p className="text-label text-info flex items-center gap-1">
                           <FileText className="h-3 w-3" />
                           <strong>Pago relacionado:</strong> {getConceptoTexto(enlaceRelacionado.concepto)} - ${enlaceRelacionado.monto.toLocaleString('es-AR')}
                         </p>
                       </div>
                     )}
 
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-body-sm text-ink-2">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {format(new Date(comprobante.fechaSubida), "d 'de' MMM, HH:mm", { locale: es })}
@@ -176,8 +176,8 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                     </div>
 
                     {comprobante.observaciones && (
-                      <div className="bg-brand-50 border border-brand-200 rounded p-2 mt-2">
-                        <p className="text-sm text-brand-600 flex items-center gap-1">
+                      <div className="bg-primary-soft border border-primary-line rounded p-2 mt-2">
+                        <p className="text-body-sm text-primary flex items-center gap-1">
                           <AlertCircle className="h-4 w-4" />
                           <strong>Observación:</strong> {comprobante.observaciones}
                         </p>
@@ -247,7 +247,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                     <>
                       <Button
                         size="sm"
-                        className="gap-2 bg-green-600 hover:bg-green-700"
+                        className="gap-2 bg-success-solid hover:bg-success-solid"
                         onClick={() => handleAprobar(comprobante.id)}
                         disabled={procesando === comprobante.id}
                       >

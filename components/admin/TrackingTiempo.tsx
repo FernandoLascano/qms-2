@@ -50,7 +50,7 @@ export default function TrackingTiempo() {
       <Card>
         <CardContent className="py-16">
           <div className="flex items-center justify-center">
-            <p className="text-gray-500">Cargando métricas...</p>
+            <p className="text-ink-2">Cargando métricas...</p>
           </div>
         </CardContent>
       </Card>
@@ -95,13 +95,13 @@ export default function TrackingTiempo() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Tiempo Promedio Total</CardTitle>
+            <CardTitle className="text-body-sm font-medium text-ink-2">Tiempo Promedio Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-brand-600">
+            <div className="text-display font-semibold text-primary">
               {Math.round(data.tiempoPromedioTotal * 10) / 10} días
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-label text-ink-2 mt-1">
               Desde inicio hasta inscripción
             </p>
           </CardContent>
@@ -109,13 +109,13 @@ export default function TrackingTiempo() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Trámites Analizados</CardTitle>
+            <CardTitle className="text-body-sm font-medium text-ink-2">Trámites Analizados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
+            <div className="text-display font-semibold text-info">
               {data.totalTramites}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-label text-ink-2 mt-1">
               Trámites con formulario completo
             </p>
           </CardContent>
@@ -123,13 +123,13 @@ export default function TrackingTiempo() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Etapas con Datos</CardTitle>
+            <CardTitle className="text-body-sm font-medium text-ink-2">Etapas con Datos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-display font-semibold text-success">
               {Object.values(data.promedios).filter(v => v > 0).length}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-label text-ink-2 mt-1">
               Etapas con información disponible
             </p>
           </CardContent>
@@ -171,7 +171,7 @@ export default function TrackingTiempo() {
             </ResponsiveContainer>
           ) : (
             <div className="flex items-center justify-center h-96">
-              <p className="text-gray-500">No hay datos suficientes para mostrar el gráfico</p>
+              <p className="text-ink-2">No hay datos suficientes para mostrar el gráfico</p>
             </div>
           )}
         </CardContent>
@@ -182,7 +182,7 @@ export default function TrackingTiempo() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
+              <AlertCircle className="h-5 w-5 text-warning" />
               Cuellos de Botella
             </CardTitle>
             <CardDescription>
@@ -192,19 +192,19 @@ export default function TrackingTiempo() {
           <CardContent>
             <div className="space-y-4">
               {cuellosDeBotella.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div key={index} className="flex items-center justify-between p-4 bg-warning-soft rounded-control border border-warning-line">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-full bg-warning-solid text-on-primary flex items-center justify-center font-semibold">
                       {index + 1}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{item.etapa}</p>
-                      <p className="text-sm text-gray-600">{item.dias} días promedio</p>
+                      <p className="font-semibold text-ink">{item.etapa}</p>
+                      <p className="text-body-sm text-ink-2">{item.dias} días promedio</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-orange-600">{item.dias}</p>
-                    <p className="text-xs text-gray-500">días</p>
+                    <p className="text-title font-semibold text-warning">{item.dias}</p>
+                    <p className="text-label text-ink-2">días</p>
                   </div>
                 </div>
               ))}
@@ -229,17 +229,17 @@ export default function TrackingTiempo() {
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Etapa</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-700">Días Promedio</th>
+                  <th className="text-left py-3 px-4 font-semibold text-ink-2">Etapa</th>
+                  <th className="text-right py-3 px-4 font-semibold text-ink-2">Días Promedio</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(data.promedios).map(([etapa, dias]) => (
-                  <tr key={etapa} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-900">
+                  <tr key={etapa} className="border-b hover:bg-surface-2">
+                    <td className="py-3 px-4 text-ink">
                       {nombresEtapas[etapa] || etapa}
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-gray-900">
+                    <td className="py-3 px-4 text-right font-medium text-ink">
                       {dias > 0 ? `${Math.round(dias * 10) / 10} días` : '-'}
                     </td>
                   </tr>

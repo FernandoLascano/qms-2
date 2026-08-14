@@ -107,8 +107,8 @@ async function AdminLeadsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-brand-900">Leads</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-display text-ink">Leads</h2>
+          <p className="text-ink-2 mt-1">
             Clientes que empezaron el formulario y no lo terminaron
           </p>
         </div>

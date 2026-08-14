@@ -120,19 +120,19 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
   }
 
   return (
-    <div className="rounded-lg h-full">
+    <div className="rounded-control h-full">
       <CollapsibleCard
         title="Depósito de Capital (Cuenta Bancaria)"
         description="Informa al cliente dónde debe depositar el 25% del capital social."
-        icon={<Banknote className="h-5 w-5 text-blue-700" />}
+        icon={<Banknote className="h-5 w-5 text-info" />}
       >
         <div className="space-y-6">
-        <div className="bg-blue-50 border-2 border-blue-100 rounded-lg p-4">
-          <p className="text-blue-900 font-bold flex items-center gap-2">
+        <div className="bg-info-soft border-2 border-info-line rounded-control p-4">
+          <p className="text-info font-semibold flex items-center gap-2">
             <Banknote className="h-5 w-5" />
             Monto Sugerido (25%): ${montoSugerido.toLocaleString('es-AR')}
           </p>
-          <p className="text-xs text-blue-700 mt-1 italic">
+          <p className="text-label text-info mt-1 italic">
             Capital social total: ${capitalSocial.toLocaleString('es-AR')}
           </p>
         </div>
@@ -146,7 +146,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               onChange={(e) => setBanco(e.target.value)}
               placeholder="Banco Nación, Banco Provincia, etc."
               disabled={guardando}
-              className="border-gray-200 focus:border-blue-300"
+              className="border-line focus:border-info-line"
             />
           </div>
 
@@ -158,7 +158,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               onChange={(e) => setTitular(e.target.value)}
               placeholder="QuieroMiSAS S.A.S."
               disabled={guardando}
-              className="border-gray-200 focus:border-blue-300"
+              className="border-line focus:border-info-line"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               placeholder="22 dígitos"
               disabled={guardando}
               maxLength={22}
-              className="border-gray-200 focus:border-blue-300"
+              className="border-line focus:border-info-line"
             />
           </div>
 
@@ -183,24 +183,24 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               onChange={(e) => setAlias(e.target.value)}
               placeholder="QUIEROMISAS.CAPITAL"
               disabled={guardando}
-              className="border-gray-200 focus:border-blue-300"
+              className="border-line focus:border-info-line"
             />
           </div>
 
           <div className="md:col-span-2 space-y-2">
             <Label htmlFor="montoEsperado">Monto exacto a depositar (ARS) *</Label>
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-gray-400">$</span>
+              <span className="absolute left-3 top-2.5 text-ink-3">$</span>
               <Input
                 id="montoEsperado"
                 type="number"
                 value={montoEsperado}
                 onChange={(e) => setMontoEsperado(e.target.value)}
                 disabled={guardando}
-                className="pl-7 border-gray-200 focus:border-blue-300"
+                className="pl-7 border-line focus:border-info-line"
               />
             </div>
-            <p className="text-[11px] text-gray-500 italic">
+            <p className="text-[11px] text-ink-2 italic">
               Este es el monto que se le informará al cliente en su panel.
             </p>
           </div>
@@ -213,10 +213,10 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               value={fechaActivacion}
               onChange={(e) => setFechaActivacion(e.target.value)}
               disabled={guardando}
-              className="border-gray-200 focus:border-blue-300"
+              className="border-line focus:border-info-line"
               min={new Date().toISOString().split('T')[0]}
             />
-            <p className="text-[11px] text-gray-500 italic">
+            <p className="text-[11px] text-ink-2 italic">
               Si la cuenta estará operativa en una fecha futura, indícalo aquí. El cliente recibirá una advertencia.
             </p>
           </div>
@@ -225,7 +225,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
         <Button
           onClick={handleGuardar}
           disabled={guardando}
-          className="w-full bg-blue-600 hover:bg-blue-700 font-bold h-12 shadow-md transition-all active:scale-95"
+          className="w-full bg-info-solid hover:bg-info-solid font-semibold h-12 shadow-raise transition-all"
         >
           <Send className="h-4 w-4 mr-2" />
           {guardando ? 'Enviando...' : 'Enviar Instrucciones al Cliente'}
@@ -233,46 +233,46 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
 
         {/* Historial de Envío */}
         {historialEnvios.length > 0 && (
-          <div className="mt-8 pt-6 border-t border-gray-100">
+          <div className="mt-8 pt-6 border-t border-line">
             <div className="flex items-center gap-2 mb-4">
-              <History className="h-4 w-4 text-gray-500" />
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Historial de Envío</h4>
+              <History className="h-4 w-4 text-ink-2" />
+              <h4 className="text-label font-semibold text-ink-2 uppercase tracking-widest">Historial de Envío</h4>
             </div>
             <div className="space-y-3">
               {historialEnvios.map((envio, idx) => (
-                <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm">
+                <div key={idx} className="p-3 bg-surface-2 rounded-control border border-line text-body-sm">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      <div className="w-8 h-8 rounded-full bg-success-soft flex items-center justify-center shrink-0">
+                        <CheckCircle className="h-4 w-4 text-success" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900">{envio.banco !== 'No especificado' ? envio.banco : 'Datos enviados'}</p>
+                        <p className="font-semibold text-ink">{envio.banco !== 'No especificado' ? envio.banco : 'Datos enviados'}</p>
                         {envio.cbu !== 'No especificado' && (
-                          <p className="text-[10px] text-gray-500 font-mono mt-0.5">CBU: {envio.cbu}</p>
+                          <p className="text-[10px] text-ink-2 font-mono mt-0.5">CBU: {envio.cbu}</p>
                         )}
                         {envio.alias && (
-                          <p className="text-[10px] text-gray-500 mt-0.5">Alias: {envio.alias}</p>
+                          <p className="text-[10px] text-ink-2 mt-0.5">Alias: {envio.alias}</p>
                         )}
                         {envio.titular && (
-                          <p className="text-[10px] text-gray-500 mt-0.5">Titular: {envio.titular}</p>
+                          <p className="text-[10px] text-ink-2 mt-0.5">Titular: {envio.titular}</p>
                         )}
                         {envio.montoEsperado && (
-                          <p className="text-[10px] text-gray-600 font-semibold mt-1">Monto: ${envio.montoEsperado.toLocaleString('es-AR')}</p>
+                          <p className="text-[10px] text-ink-2 font-semibold mt-1">Monto: ${envio.montoEsperado.toLocaleString('es-AR')}</p>
                         )}
                         {envio.fechaActivacion && (
-                          <p className="text-[10px] text-orange-600 font-semibold mt-1">
+                          <p className="text-[10px] text-warning font-semibold mt-1">
                             ⚠️ Activa desde: {format(new Date(envio.fechaActivacion), "d/M/yyyy", { locale: es })}
                           </p>
                         )}
                       </div>
                     </div>
                     <div className="text-right flex flex-col items-end shrink-0 ml-3">
-                      <div className="flex items-center gap-1 text-gray-600 font-medium text-xs">
+                      <div className="flex items-center gap-1 text-ink-2 font-medium text-label">
                         <Clock className="h-3 w-3" />
                         {format(envio.fecha, "d/M/yy HH:mm", { locale: es })}
                       </div>
-                      <span className="text-[9px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full mt-1 font-bold">
+                      <span className="text-[9px] bg-success-soft text-success px-2 py-0.5 rounded-full mt-1 font-semibold">
                         ENVIADO
                       </span>
                     </div>

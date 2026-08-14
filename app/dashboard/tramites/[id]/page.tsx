@@ -111,7 +111,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
       {/* Sociedad inscripta: los datos oficiales van primero */}
       {(tramite.cuit || tramite.matricula || tramite.numeroResolucion) && (
         <Card tone="success">
-          <CardBody className="space-y-5">
+          <CardBody className="space-y-4">
             <div className="flex items-start gap-3">
               <span
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-success-solid/12 text-success"

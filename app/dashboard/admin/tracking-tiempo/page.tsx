@@ -22,8 +22,8 @@ export default async function TrackingTiempoPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-3xl font-bold text-brand-900">Tracking de Tiempo</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-display text-ink">Tracking de Tiempo</h2>
+          <p className="text-ink-2 mt-1">
             Analiza tiempos promedio y cuellos de botella en el proceso
           </p>
         </div>

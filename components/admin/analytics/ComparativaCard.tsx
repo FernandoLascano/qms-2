@@ -32,36 +32,36 @@ export function ComparativaCard({
 
   const cambioAbsoluto = Math.abs(cambio)
   const TrendIcon = esPositivo ? TrendingUp : TrendingDown
-  const colorTendencia = esPositivo ? 'text-green-600' : 'text-brand-600'
-  const bgTendencia = esPositivo ? 'bg-green-50' : 'bg-brand-50'
+  const colorTendencia = esPositivo ? 'text-success' : 'text-primary'
+  const bgTendencia = esPositivo ? 'bg-success-soft' : 'bg-primary-soft'
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+    <div className="bg-surface rounded-control shadow-raise p-6 hover:shadow-raise transition">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{titulo}</p>
-          <h3 className="text-3xl font-bold text-gray-900">
+          <p className="text-body-sm font-medium text-ink-2 mb-1">{titulo}</p>
+          <h3 className="text-display font-semibold text-ink">
             {formatearValor(valorActual)}
           </h3>
         </div>
         {icono && (
-          <div className="p-3 rounded-lg bg-gray-50">
+          <div className="p-3 rounded-control bg-surface-2">
             {icono}
           </div>
         )}
       </div>
 
-      <div className={`flex items-center gap-2 p-3 rounded-lg ${bgTendencia}`}>
+      <div className={`flex items-center gap-2 p-3 rounded-control ${bgTendencia}`}>
         <TrendIcon className={`w-5 h-5 ${colorTendencia}`} />
         <div className="flex-1">
-          <span className={`text-sm font-bold ${colorTendencia}`}>
+          <span className={`text-body-sm font-semibold ${colorTendencia}`}>
             {esPositivo ? '+' : ''}{cambioAbsoluto.toFixed(1)}%
           </span>
-          <span className="text-xs text-gray-600 ml-2">vs mes anterior</span>
+          <span className="text-label text-ink-2 ml-2">vs mes anterior</span>
         </div>
       </div>
 
-      <div className="mt-3 text-xs text-gray-500">
+      <div className="mt-3 text-label text-ink-2">
         Mes anterior: {formatearValor(valorAnterior)}
       </div>
     </div>

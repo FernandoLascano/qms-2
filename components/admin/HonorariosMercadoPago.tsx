@@ -203,47 +203,47 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
   )
 
   return (
-    <div className="border-green-200 bg-green-50 rounded-lg">
+    <div className="border-success-line bg-success-soft rounded-control">
       <CollapsibleCard
         title="Pago de Honorarios"
         description="Genera link de pago único con opción de Mercado Pago o Transferencia Bancaria"
-        icon={<DollarSign className="h-5 w-5 text-green-700" />}
+        icon={<DollarSign className="h-5 w-5 text-success" />}
       >
         <div className="space-y-4">
         {/* Pagos Generados */}
         {pagosHonorarios.length > 0 && (
           <div className="space-y-3 mb-4">
-            <h4 className="font-medium text-sm text-gray-700">Links de Pago Generados</h4>
+            <h4 className="font-medium text-body-sm text-ink-2">Links de Pago Generados</h4>
             {pagosHonorarios.map((pago) => (
               <div
                 key={pago.id}
-                className={`p-4 border-2 rounded-lg ${
+                className={`p-4 border-2 rounded-control ${
                   pago.estado === 'PAGADO' 
-                    ? 'bg-green-100 border-green-400' 
-                    : 'bg-blue-50 border-blue-300'
+                    ? 'bg-success-soft border-success-line' 
+                    : 'bg-info-soft border-info-line'
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm text-gray-900">{pago.concepto}</p>
+                      <p className="font-medium text-body-sm text-ink">{pago.concepto}</p>
                       {pago.estado === 'PAGADO' && (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       )}
                     </div>
                     <div className="space-y-1 mb-2">
                       {pago.mercadoPagoLink && (
-                        <p className="text-lg font-bold text-green-600">
+                        <p className="text-heading font-semibold text-success">
                           Mercado Pago: ${pago.monto.toLocaleString('es-AR')}
                         </p>
                       )}
                       {pago.montoTransferencia && (
-                        <p className="text-lg font-bold text-blue-600">
+                        <p className="text-heading font-semibold text-info">
                           Transferencia: ${pago.montoTransferencia.toLocaleString('es-AR')}
                         </p>
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-label text-ink-2 mb-2">
                       Generado: {new Date(pago.createdAt).toLocaleDateString('es-AR')}
                     </p>
                     {pago.estado !== 'APROBADO' && pago.mercadoPagoLink && (
@@ -251,23 +251,23 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                         href={pago.mercadoPagoLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline break-all block mb-1"
+                        className="text-label text-info hover:underline break-all block mb-1"
                       >
                         Link Mercado Pago: {pago.mercadoPagoLink.substring(0, 50)}...
                       </a>
                     )}
                     {pago.estado !== 'APROBADO' && pago.montoTransferencia && (
-                      <p className="text-xs text-green-700 font-medium mt-2">
+                      <p className="text-label text-success font-medium mt-2">
                         💰 Opción de transferencia disponible (precio diferencial)
                       </p>
                     )}
                     {pago.estado === 'PROCESANDO' && (
-                      <p className="text-xs text-orange-700 font-medium mt-2">
+                      <p className="text-label text-warning font-medium mt-2">
                         ⏳ Comprobante subido, esperando validación
                       </p>
                     )}
                     {pago.estado === 'APROBADO' && (
-                      <p className="text-xs text-green-700 font-medium">✅ Pagado</p>
+                      <p className="text-label text-success font-medium">✅ Pagado</p>
                     )}
                   </div>
                 </div>
@@ -278,8 +278,8 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
 
         {/* Generar Nuevo Link */}
         <div className="border-t pt-4">
-          <h4 className="font-medium text-sm text-gray-700 mb-3">Generar Link de Pago de Honorarios</h4>
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
+          <h4 className="font-medium text-body-sm text-ink-2 mb-3">Generar Link de Pago de Honorarios</h4>
+          <div className="space-y-4 bg-surface p-4 rounded-control border">
             {/* Selector de Plan */}
             <div>
               <Label htmlFor="planHonorarios">Plan *</Label>
@@ -293,14 +293,14 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   setMonto(montos.mercadoPago.toString())
                   setMontoTransferencia(montos.transferencia.toString())
                 }}
-                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
+                className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={generando}
               >
                 <option value="BASICO">Básico - ${precios.precioPlanBasico.toLocaleString('es-AR')}</option>
                 <option value="EMPRENDEDOR">Emprendedor - ${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</option>
                 <option value="PREMIUM">Premium - ${precios.precioPlanPremium.toLocaleString('es-AR')}</option>
               </select>
-              <p className="text-xs text-gray-500 mt-1">Los montos se cargarán automáticamente según el plan seleccionado</p>
+              <p className="text-label text-ink-2 mt-1">Los montos se cargarán automáticamente según el plan seleccionado</p>
             </div>
 
             {/* Montos */}
@@ -315,7 +315,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   placeholder="320000"
                   disabled={generando}
                 />
-                <p className="text-xs text-gray-500 mt-1">Precio con tarjeta/crédito</p>
+                <p className="text-label text-ink-2 mt-1">Precio con tarjeta/crédito</p>
               </div>
 
               <div>
@@ -328,13 +328,13 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   placeholder="155000"
                   disabled={generando}
                 />
-                <p className="text-xs text-green-600 mt-1">💰 Precio diferencial (descuento por transferencia)</p>
+                <p className="text-label text-success mt-1">💰 Precio diferencial (descuento por transferencia)</p>
               </div>
             </div>
 
             {/* Datos Bancarios */}
             <div className="border-t pt-4">
-              <h5 className="font-medium text-sm text-gray-700 mb-3">Datos Bancarios para Transferencia</h5>
+              <h5 className="font-medium text-body-sm text-ink-2 mb-3">Datos Bancarios para Transferencia</h5>
               <div className="space-y-3">
                 {/* Selector de cuenta pre-configurada */}
                 {cuentasPreConfiguradas.length > 0 && (
@@ -344,7 +344,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                       id="cuentaPreConfigurada"
                       value={cuentaSeleccionada}
                       onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-600"
+                      className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                       disabled={generando}
                     >
                       <option value="">-- Seleccionar cuenta --</option>
@@ -354,7 +354,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                         </option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-1">O completa los datos manualmente abajo</p>
+                    <p className="text-label text-ink-2 mt-1">O completa los datos manualmente abajo</p>
                   </div>
                 )}
 
@@ -408,7 +408,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
             <Button
               onClick={handleGenerarLinkPago}
               disabled={generando || !monto || !montoTransferencia || !datosBancarios.cbu || !datosBancarios.banco || !datosBancarios.titular}
-              className="w-full gap-2 bg-green-600 hover:bg-green-700"
+              className="w-full gap-2 bg-success-solid hover:bg-success-solid"
             >
               <Send className="h-4 w-4" />
               {generando ? 'Generando...' : 'Generar Link de Pago'}
@@ -417,16 +417,16 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
         </div>
 
         {/* Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-900">
+        <div className="bg-info-soft border border-info-line rounded-control p-3">
+          <p className="text-label text-info">
             💡 <strong>Tip:</strong> El link de Mercado Pago se enviará automáticamente al cliente. 
             Cuando pague, recibirás una notificación y el pago se marcará como completado.
           </p>
         </div>
 
         {/* Advertencia si no está configurado */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-xs text-yellow-900">
+        <div className="bg-warning-soft border border-warning-line rounded-control p-3">
+          <p className="text-label text-warning">
             ⚠️ <strong>Configuración requerida:</strong> Asegúrate de tener configurado tu Access Token 
             de Mercado Pago en las variables de entorno (MERCADOPAGO_ACCESS_TOKEN).
           </p>

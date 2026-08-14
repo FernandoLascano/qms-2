@@ -50,11 +50,11 @@ interface Lead {
 }
 
 const ESTADOS: Record<string, { texto: string; clase: string }> = {
-  NUEVO: { texto: 'Nuevo', clase: 'bg-amber-100 text-amber-800 border-amber-200' },
-  CONTACTADO: { texto: 'Contactado', clase: 'bg-blue-100 text-blue-800 border-blue-200' },
-  EN_CONVERSACION: { texto: 'En conversación', clase: 'bg-purple-100 text-purple-800 border-purple-200' },
-  CONVERTIDO: { texto: 'Convertido', clase: 'bg-green-100 text-green-800 border-green-200' },
-  DESCARTADO: { texto: 'Descartado', clase: 'bg-gray-100 text-gray-700 border-gray-200' },
+  NUEVO: { texto: 'Nuevo', clase: 'bg-warning-soft text-warning border-warning-line' },
+  CONTACTADO: { texto: 'Contactado', clase: 'bg-info-soft text-info border-info-line' },
+  EN_CONVERSACION: { texto: 'En conversación', clase: 'bg-info-soft text-info border-info-line' },
+  CONVERTIDO: { texto: 'Convertido', clase: 'bg-success-soft text-success border-success-line' },
+  DESCARTADO: { texto: 'Descartado', clase: 'bg-surface-3 text-ink-2 border-line' },
 }
 
 const CANALES = [
@@ -168,11 +168,11 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
           <button
             key={f.valor}
             onClick={() => setFiltro(f.valor)}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+            className={`px-4 py-2 rounded-control text-body-sm font-semibold border transition-colors ${
               filtro === f.valor
-                ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-white text-gray-700 border-gray-200 hover:border-brand-300'
-            } ${f.valor === 'A_SEGUIR' && contadores.A_SEGUIR > 0 && filtro !== f.valor ? 'text-red-700 border-red-200' : ''}`}
+                ? 'bg-primary text-on-primary border-primary-line'
+                : 'bg-surface text-ink-2 border-line hover:border-primary-line'
+            } ${f.valor === 'A_SEGUIR' && contadores.A_SEGUIR > 0 && filtro !== f.valor ? 'text-danger border-danger-line' : ''}`}
           >
             {f.texto} ({contadores[f.valor]})
           </button>
@@ -182,11 +182,11 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
       {visibles.length === 0 ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <Users className="h-16 w-16 text-ink-3 mx-auto mb-4" />
+            <h3 className="text-title font-semibold text-ink mb-2">
               No hay leads con este filtro
             </h3>
-            <p className="text-gray-500">Probá con otro filtro para ver más.</p>
+            <p className="text-ink-2">Probá con otro filtro para ver más.</p>
           </CardContent>
         </Card>
       ) : (
@@ -196,30 +196,30 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
             const atrasado = vencido(lead)
 
             return (
-              <Card key={lead.id} className={atrasado ? 'border-red-300 bg-red-50/30' : ''}>
+              <Card key={lead.id} className={atrasado ? 'border-danger-line bg-danger-soft/30' : ''}>
                 <CardContent className="p-6">
                   <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-[260px]">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-900">{lead.nombre}</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${estado.clase}`}>
+                        <h3 className="text-title font-semibold text-ink">{lead.nombre}</h3>
+                        <span className={`px-3 py-1 rounded-full text-label font-medium border ${estado.clase}`}>
                           {estado.texto}
                         </span>
                         {atrasado && (
-                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-red-600 text-white flex items-center gap-1">
+                          <span className="px-2 py-1 rounded-full text-label font-semibold bg-danger-solid text-on-primary flex items-center gap-1">
                             <AlarmClock className="h-3 w-3" />
                             Seguimiento vencido
                           </span>
                         )}
                       </div>
 
-                      <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
+                      <p className="text-body-sm text-ink-2 mb-2 flex items-center gap-1">
                         <Building2 className="h-4 w-4" />
-                        {lead.denominacion || <span className="italic text-gray-400">Sin denominación elegida</span>}
+                        {lead.denominacion || <span className="italic text-ink-3">Sin denominación elegida</span>}
                       </p>
 
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 hover:text-brand-700">
+                      <div className="flex flex-wrap items-center gap-4 text-body-sm text-ink-2">
+                        <a href={`mailto:${lead.email}`} className="flex items-center gap-1 hover:text-primary">
                           <Mail className="h-4 w-4" />
                           {lead.email}
                         </a>
@@ -228,13 +228,13 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                             href={`https://wa.me/${telefonoWhatsapp(lead.telefono)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 hover:text-green-700"
+                            className="flex items-center gap-1 hover:text-success"
                           >
                             <Phone className="h-4 w-4" />
                             {lead.telefono}
                           </a>
                         ) : (
-                          <span className="flex items-center gap-1 text-gray-400 italic">
+                          <span className="flex items-center gap-1 text-ink-3 italic">
                             <Phone className="h-4 w-4" />
                             Sin teléfono
                           </span>
@@ -273,28 +273,28 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-4 gap-4 text-sm">
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Formulario completado</p>
-                      <p className="font-semibold text-gray-900">{lead.avance}%</p>
+                  <div className="grid md:grid-cols-4 gap-4 text-body-sm">
+                    <div className="bg-surface-2 p-3 rounded">
+                      <p className="text-ink-2 mb-1">Formulario completado</p>
+                      <p className="font-semibold text-ink">{lead.avance}%</p>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Última actividad</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="bg-surface-2 p-3 rounded">
+                      <p className="text-ink-2 mb-1">Última actividad</p>
+                      <p className="font-semibold text-ink">
                         hace {formatDistanceToNow(new Date(lead.ultimaActividad), { locale: es })}
                       </p>
                     </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Último contacto</p>
-                      <p className="font-semibold text-gray-900">
+                    <div className="bg-surface-2 p-3 rounded">
+                      <p className="text-ink-2 mb-1">Último contacto</p>
+                      <p className="font-semibold text-ink">
                         {lead.leadUltimoContacto
                           ? format(new Date(lead.leadUltimoContacto), "d 'de' MMM", { locale: es })
                           : 'Nunca'}
                       </p>
                     </div>
-                    <div className={`p-3 rounded ${atrasado ? 'bg-red-100' : 'bg-gray-50'}`}>
-                      <p className="text-gray-500 mb-1">Próximo contacto</p>
-                      <p className={`font-semibold ${atrasado ? 'text-red-800' : 'text-gray-900'}`}>
+                    <div className={`p-3 rounded ${atrasado ? 'bg-danger-soft' : 'bg-surface-2'}`}>
+                      <p className="text-ink-2 mb-1">Próximo contacto</p>
+                      <p className={`font-semibold ${atrasado ? 'text-danger' : 'text-ink'}`}>
                         {lead.leadProximoContacto
                           ? format(new Date(lead.leadProximoContacto), "d 'de' MMM", { locale: es })
                           : 'Sin agendar'}
@@ -303,9 +303,9 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                   </div>
 
                   <div className="mt-4">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-n-200 rounded-full h-2">
                       <div
-                        className="h-2 rounded-full bg-gradient-to-r from-amber-500 to-brand-600 transition-all"
+                        className="h-2 rounded-full bg-primary transition-all"
                         style={{ width: `${lead.avance}%` }}
                       />
                     </div>
@@ -380,17 +380,17 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {historialDe?.seguimientos.map((s) => (
-              <div key={s.id} className="border border-gray-200 rounded-lg p-3">
-                <div className="flex items-center justify-between mb-1 text-xs text-gray-500">
-                  <span className="font-semibold text-gray-700">
+              <div key={s.id} className="border border-line rounded-control p-3">
+                <div className="flex items-center justify-between mb-1 text-label text-ink-2">
+                  <span className="font-semibold text-ink-2">
                     {CANALES.find((c) => c.valor === s.canal)?.texto || s.canal}
                   </span>
                   <span>
                     {format(new Date(s.createdAt), "d 'de' MMM yyyy, HH:mm", { locale: es })}
                   </span>
                 </div>
-                <p className="text-sm text-gray-900 whitespace-pre-wrap">{s.nota}</p>
-                <p className="text-xs text-gray-500 mt-1">por {s.admin}</p>
+                <p className="text-body-sm text-ink whitespace-pre-wrap">{s.nota}</p>
+                <p className="text-label text-ink-2 mt-1">por {s.admin}</p>
               </div>
             ))}
           </div>

@@ -160,7 +160,7 @@ export default function NotificationBell() {
                             {n.mensaje}
                           </p>
 
-                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
                             <Badge tone={cfg.tone} size="sm">
                               {cfg.label}
                             </Badge>

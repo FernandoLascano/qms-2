@@ -50,8 +50,8 @@ export default function SubirBorrador({ tramiteId, borradorEnviado, borradorApro
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
-            <FileText className="h-4 w-4 text-purple-700" />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-info-soft">
+            <FileText className="h-4 w-4 text-info" />
           </span>
           <span>Borrador para el Cliente</span>
         </CardTitle>
@@ -61,12 +61,12 @@ export default function SubirBorrador({ tramiteId, borradorEnviado, borradorApro
       </CardHeader>
       <CardContent className="space-y-3">
         {borradorAprobadoCliente ? (
-          <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-900">
-            <CheckCircle className="h-4 w-4 text-green-600" />
+          <div className="flex items-center gap-2 rounded-control bg-success-soft border border-success-line p-3 text-body-sm text-success">
+            <CheckCircle className="h-4 w-4 text-success" />
             El cliente ya aprobó el borrador.
           </div>
         ) : borradorEnviado ? (
-          <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900">
+          <div className="rounded-control bg-info-soft border border-info-line p-3 text-body-sm text-info">
             Borrador enviado. Esperando que el cliente lo apruebe. Podés subir uno nuevo si necesitás corregirlo.
           </div>
         ) : null}

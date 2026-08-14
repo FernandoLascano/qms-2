@@ -1,567 +1,337 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { FileText, Users, Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight, Calendar, CreditCard, BookOpen, UserSearch } from 'lucide-react'
 import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import {
+  ArrowRight,
+  CheckCircle,
+  ClipboardCheck,
+  Clock,
+  FileText,
+  UserSearch,
+  Users,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { PageHeader, SectionHeader } from '@/components/ui/page-header'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { StatCard } from '@/components/ui/stat-card'
+import { EmptyState } from '@/components/ui/states'
 import { ServiceStatus } from '@/components/dashboard/service-status'
+import { getEstado } from '@/lib/tramites/estado'
+import { cn } from '@/lib/utils'
+
+interface Tarea {
+  icono: LucideIcon
+  cantidad: number
+  titulo: string
+  detalle: string
+  href: string
+  urgente?: boolean
+}
 
 async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
+  if (!session?.user?.id || session.user.rol !== 'ADMIN') redirect('/dashboard')
 
-  // Verificar que sea admin
-  if (!session?.user?.id || session.user.rol !== 'ADMIN') {
-    redirect('/dashboard')
-  }
-
-  // Obtener todas las estadísticas en paralelo con queries livianas (solo counts)
   const [
     totalTramites,
     completados,
     enProceso,
-    tramitesIniciados,
-    tramitesEsperandoCliente,
+    esperandoCliente,
     totalUsuarios,
     documentosPendientes,
-    tramitesPendientesValidacion,
+    pendientesValidacion,
     tramitesRecientes,
     leadsSinContactar,
-    leadsASeguir
+    leadsASeguir,
   ] = await Promise.all([
     // Los borradores sin enviar no son trámites: se cuentan aparte, como leads.
     prisma.tramite.count({ where: { formularioCompleto: true } }),
     prisma.tramite.count({ where: { sociedadInscripta: true } }),
     prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
-    prisma.tramite.count({ where: { formularioCompleto: true, estadoGeneral: 'INICIADO' } }),
     prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
     prisma.user.count(),
     prisma.documento.count({ where: { estado: 'PENDIENTE' } }),
     prisma.tramite.count({
-      where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' }
+      where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' },
     }),
     prisma.tramite.findMany({
-      take: 5,
+      take: 6,
       where: { formularioCompleto: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
         denominacionSocial1: true,
+        denominacionAprobada: true,
         estadoGeneral: true,
-        createdAt: true,
-        user: { select: { name: true, email: true } }
-      }
+        estadoValidacion: true,
+        formularioCompleto: true,
+        sociedadInscripta: true,
+        denominacionReservada: true,
+        capitalDepositado: true,
+        tasaPagada: true,
+        documentosFirmados: true,
+        tramiteIngresado: true,
+        updatedAt: true,
+        user: { select: { name: true, email: true } },
+      },
     }),
     prisma.tramite.count({
       where: {
         formularioCompleto: false,
         leadEstado: 'NUEVO',
-        user: { tramites: { none: { formularioCompleto: true } } }
-      }
+        user: { tramites: { none: { formularioCompleto: true } } },
+      },
     }),
     prisma.tramite.count({
       where: {
         formularioCompleto: false,
         leadEstado: { notIn: ['CONVERTIDO', 'DESCARTADO'] },
         leadProximoContacto: { lte: new Date() },
-        user: { tramites: { none: { formularioCompleto: true } } }
-      }
-    })
+        user: { tramites: { none: { formularioCompleto: true } } },
+      },
+    }),
   ])
 
+  /**
+   * Bandeja de trabajo: reemplaza los dos banners condicionales y las ocho
+   * tarjetas de acción rápida de ocho colores. Cada fila es una tarea real con
+   * su enlace al filtro exacto; si el contador es cero, la fila no aparece.
+   */
+  const bandeja: Tarea[] = [
+    {
+      icono: ClipboardCheck,
+      cantidad: pendientesValidacion,
+      titulo: 'Validar formularios nuevos',
+      detalle: 'Trámites enviados que esperan tu revisión inicial',
+      href: '/dashboard/admin/tramites?filter=pendientes-validacion',
+      urgente: true,
+    },
+    {
+      icono: FileText,
+      cantidad: documentosPendientes,
+      titulo: 'Aprobar documentos',
+      detalle: 'Documentos y comprobantes subidos por clientes',
+      href: '/dashboard/admin/tramites?filter=documentos-pendientes',
+      urgente: true,
+    },
+    {
+      icono: UserSearch,
+      cantidad: leadsSinContactar,
+      titulo: 'Contactar leads nuevos',
+      detalle: 'Empezaron el formulario y no lo terminaron',
+      href: '/dashboard/admin/leads',
+    },
+    {
+      icono: Clock,
+      cantidad: leadsASeguir,
+      titulo: 'Seguimientos vencidos',
+      detalle: 'Leads con la fecha de próximo contacto ya pasada',
+      href: '/dashboard/admin/leads',
+    },
+    {
+      icono: Users,
+      cantidad: esperandoCliente,
+      titulo: 'Esperando al cliente',
+      detalle: 'Trámites frenados por una acción del cliente',
+      href: '/dashboard/admin/tramites?filter=esperando-cliente',
+    },
+  ].filter((t) => t.cantidad > 0)
+
+  const totalPendiente = bandeja.reduce((acc, t) => acc + t.cantidad, 0)
+
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-          Administración
-        </span>
-        <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Panel de <span className="text-brand-700">Control</span>
-        </h2>
-        <p className="text-gray-500 mt-2 text-lg">
-          Gestiona todos los trámites y usuarios de la plataforma
-        </p>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        title="Hoy"
+        description={
+          totalPendiente > 0
+            ? `Tenés ${totalPendiente} ${totalPendiente === 1 ? 'asunto' : 'asuntos'} para resolver.`
+            : 'No hay nada pendiente de tu lado. Buen momento para revisar métricas.'
+        }
+        actions={
+          <Button asChild variant="secondary">
+            <Link href="/dashboard/admin/tramites">
+              Ver todos los trámites
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </Button>
+        }
+      />
 
-      {/* Estado de servicios (health check en vivo) */}
-      <ServiceStatus />
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:shadow-lg hover:border-gray-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Trámites</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-gray-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-gray-900">{totalTramites}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              En el sistema
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-blue-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">En Proceso</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-blue-600">{enProceso}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              Requieren atención
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Completados</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-green-600">{completados}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              Finalizados
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className={`hover:shadow-lg ${tramitesEsperandoCliente > 0 ? 'border-2 border-orange-300 bg-orange-50' : 'hover:border-orange-200'}`}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Esperando Cliente</CardTitle>
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${tramitesEsperandoCliente > 0 ? 'bg-orange-200' : 'bg-orange-100'}`}>
-              <AlertCircle className={`h-5 w-5 ${tramitesEsperandoCliente > 0 ? 'text-orange-600' : 'text-orange-400'}`} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-black ${tramitesEsperandoCliente > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
-              {tramitesEsperandoCliente}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Acción requerida
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Alerta de Leads sin seguimiento */}
-      {(leadsSinContactar > 0 || leadsASeguir > 0) && (
-        <Card className="border-2 border-amber-400 bg-amber-50 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-amber-200 flex items-center justify-center flex-shrink-0">
-                <UserSearch className="h-6 w-6 text-amber-700" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-amber-900 mb-1">
-                  Leads esperando seguimiento
-                </h3>
-                <p className="text-sm text-amber-800 mb-4">
-                  {leadsSinContactar > 0 && (
-                    <>
-                      <strong>{leadsSinContactar}</strong> lead{leadsSinContactar !== 1 ? 's' : ''} sin contactar
-                      {leadsASeguir > 0 ? ' y ' : '. '}
-                    </>
-                  )}
-                  {leadsASeguir > 0 && (
-                    <>
-                      <strong>{leadsASeguir}</strong> con el seguimiento vencido.{' '}
-                    </>
-                  )}
-                  Empezaron el formulario y no lo terminaron.
-                </p>
-                <Link href="/dashboard/admin/leads">
-                  <Button className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-lg">
-                    Ver Leads
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Alerta de Trámites Pendientes de Validación */}
-      {tramitesPendientesValidacion > 0 && (
-        <Card className="border-2 border-yellow-400 bg-yellow-50 shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-xl bg-yellow-200 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="h-6 w-6 text-yellow-700" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-yellow-900 mb-1">
-                  Trámites Pendientes de Validación
-                </h3>
-                <p className="text-sm text-yellow-800 mb-4">
-                  Tienes <strong>{tramitesPendientesValidacion}</strong> trámite{tramitesPendientesValidacion !== 1 ? 's' : ''} esperando tu revisión inicial.
-                </p>
-                <Link href="/dashboard/admin/tramites?filter=pendientes-validacion">
-                  <Button className="bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl shadow-lg">
-                    Ver Trámites Pendientes
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Stats Adicionales */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-3">
-        <Card className="hover:shadow-lg hover:border-purple-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Usuarios Registrados</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Users className="h-5 w-5 text-purple-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-purple-600">{totalUsuarios}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-orange-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Docs. Pendientes</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-orange-600">{documentosPendientes}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-gray-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Iniciados</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-gray-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-gray-900">{tramitesIniciados}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Acciones Rápidas */}
-      <div>
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Ver Trámites */}
-          <Link href="/dashboard/admin/tramites" className="group">
-            <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center group-hover:bg-brand-700 transition-colors">
-                    <FileText className="h-6 w-6 text-brand-700 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    {totalTramites}
-                  </span>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-brand-700 transition-colors">
-                  Ver Trámites
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Gestionar todos los trámites
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Documentos Pendientes */}
-          <Link href="/dashboard/admin/tramites?filter=documentos-pendientes" className="group">
-            <Card className="hover:shadow-xl hover:border-yellow-400 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-yellow-100 flex items-center justify-center group-hover:bg-yellow-500 transition-colors">
-                    <FileText className="h-6 w-6 text-yellow-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    Revisar
-                  </span>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-yellow-600 transition-colors">
-                  Docs. Pendientes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Aprobar documentos de clientes
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Analytics */}
-          <Link href="/dashboard/admin/analytics" className="group">
-            <Card className="hover:shadow-xl hover:border-purple-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center group-hover:bg-purple-600 transition-colors">
-                    <TrendingUp className="h-6 w-6 text-purple-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="text-xs font-semibold text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-                    Nuevo
-                  </span>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
-                  Analytics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Métricas y reportes
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Calendario */}
-          <Link href="/dashboard/admin/calendario" className="group">
-            <Card className="hover:shadow-xl hover:border-blue-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                    <Calendar className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
-                  </div>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                  Calendario
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Eventos y vencimientos
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Tracking de Tiempo */}
-          <Link href="/dashboard/admin/tracking-tiempo" className="group">
-            <Card className="hover:shadow-xl hover:border-green-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                    <Clock className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
-                  </div>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-green-600 transition-colors">
-                  Tracking Tiempo
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Análisis de tiempos
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Cuentas Bancarias */}
-          <Link href="/dashboard/admin/configuracion-cuentas" className="group">
-            <Card className="hover:shadow-xl hover:border-indigo-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center group-hover:bg-indigo-600 transition-colors">
-                    <CreditCard className="h-6 w-6 text-indigo-600 group-hover:text-white transition-colors" />
-                  </div>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                  Cuentas Bancarias
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Configurar cuentas
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Blog */}
-          <Link href="/dashboard/admin/blog" className="group">
-            <Card className="hover:shadow-xl hover:border-rose-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-rose-100 flex items-center justify-center group-hover:bg-rose-600 transition-colors">
-                    <BookOpen className="h-6 w-6 text-rose-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    SEO
-                  </span>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-rose-600 transition-colors">
-                  Blog
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Gestionar artículos
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          {/* Usuarios */}
-          <Link href="/dashboard/admin/usuarios" className="group">
-            <Card className="hover:shadow-xl hover:border-cyan-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-4">
-                  <div className="h-12 w-12 rounded-xl bg-cyan-100 flex items-center justify-center group-hover:bg-cyan-600 transition-colors">
-                    <Users className="h-6 w-6 text-cyan-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                    {totalUsuarios}
-                  </span>
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 group-hover:text-cyan-600 transition-colors">
-                  Usuarios
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Administrar usuarios
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
-      </div>
-
-      {/* Trámites Recientes */}
-      <div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900">Trámites Recientes</h3>
-            <p className="text-sm text-gray-500">Últimos {tramitesRecientes.length} trámites creados</p>
-          </div>
-          <Link
-            href="/dashboard/admin/tramites"
-            className="text-sm font-semibold text-brand-700 hover:text-brand-800 flex items-center gap-1 transition"
-          >
-            Ver todos
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        {tramitesRecientes.length === 0 ? (
-          <Card className="border-2 border-dashed border-gray-300">
-            <CardContent className="py-12 text-center">
-              <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-8 w-8 text-gray-400" />
-              </div>
-              <p className="text-gray-600 font-medium mb-2">No hay trámites aún</p>
-              <p className="text-sm text-gray-500">Los trámites aparecerán aquí cuando los clientes los creen</p>
-            </CardContent>
+      {/* ─── Bandeja de trabajo ───────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Para resolver" as="h2" />
+        {bandeja.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={CheckCircle}
+              title="Bandeja vacía"
+              description="No hay formularios por validar, documentos por aprobar ni leads sin contactar."
+            />
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {tramitesRecientes.map((tramite) => {
-              const getEstadoColor = (estado: string) => {
-                switch (estado) {
-                  case 'COMPLETADO':
-                    return 'bg-green-100 text-green-800 border-green-200'
-                  case 'EN_PROCESO':
-                    return 'bg-blue-100 text-blue-800 border-blue-200'
-                  case 'ESPERANDO_CLIENTE':
-                    return 'bg-orange-100 text-orange-800 border-orange-200'
-                  case 'ESPERANDO_APROBACION':
-                    return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                  case 'INICIADO':
-                    return 'bg-purple-100 text-purple-800 border-purple-200'
-                  default:
-                    return 'bg-gray-100 text-gray-800 border-gray-200'
-                }
-              }
+          <Card className="overflow-hidden">
+            <ul className="divide-y divide-line">
+              {bandeja.map((tarea) => (
+                <li key={tarea.titulo}>
+                  <Link
+                    href={tarea.href}
+                    className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2"
+                  >
+                    <span
+                      className={cn(
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-control',
+                        tarea.urgente
+                          ? 'bg-warning-solid/12 text-warning'
+                          : 'bg-surface-3 text-ink-2',
+                      )}
+                      aria-hidden
+                    >
+                      <tarea.icono className="h-4.5 w-4.5" />
+                    </span>
 
-              const getEstadoIcon = (estado: string) => {
-                switch (estado) {
-                  case 'COMPLETADO':
-                    return <CheckCircle className="w-4 h-4" />
-                  case 'EN_PROCESO':
-                    return <Clock className="w-4 h-4" />
-                  case 'ESPERANDO_CLIENTE':
-                    return <AlertCircle className="w-4 h-4" />
-                  default:
-                    return <FileText className="w-4 h-4" />
-                }
-              }
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-body font-medium text-ink">{tarea.titulo}</span>
+                      <span className="block truncate text-body-sm text-ink-2">
+                        {tarea.detalle}
+                      </span>
+                    </span>
 
-              const fechaCreacion = new Date(tramite.createdAt)
-              const fechaFormateada = fechaCreacion.toLocaleDateString('es-AR', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric'
-              })
-
-              return (
-                <Link
-                  key={tramite.id}
-                  href={`/dashboard/admin/tramites/${tramite.id}`}
-                  className="group"
-                >
-                  <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200">
-                    <CardContent className="p-5">
-                      {/* Header con denominación y estado */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-brand-700 transition-colors truncate">
-                            {tramite.denominacionSocial1}
-                          </h4>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Calendar className="w-3 h-3" />
-                            <span>{fechaFormateada}</span>
-                          </div>
-                        </div>
-                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${getEstadoColor(tramite.estadoGeneral)}`}>
-                          {getEstadoIcon(tramite.estadoGeneral)}
-                          <span className="hidden sm:inline">
-                            {tramite.estadoGeneral.replace(/_/g, ' ')}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Info del cliente */}
-                      <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-                        <div className="w-9 h-9 bg-gradient-to-br from-brand-600 to-brand-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand-200">
-                          <span className="text-white font-bold text-sm">
-                            {tramite.user.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {tramite.user.name}
-                          </p>
-                          <p className="text-xs text-gray-500 truncate">
-                            {tramite.user.email}
-                          </p>
-                        </div>
-                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
+                    <Badge tone={tarea.urgente ? 'warning' : 'neutral'}>
+                      <span className="tnum">{tarea.cantidad}</span>
+                    </Badge>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
         )}
-      </div>
+      </section>
+
+      {/* ─── Métricas ─────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Estado general" as="h2" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard
+            label="Trámites activos"
+            value={enProceso}
+            hint="Sin inscribir"
+            icon={Clock}
+            href="/dashboard/admin/tramites"
+          />
+          <StatCard
+            label="Sociedades inscriptas"
+            value={completados}
+            hint="Finalizadas"
+            icon={CheckCircle}
+            href="/dashboard/admin/sociedades"
+          />
+          <StatCard
+            label="Trámites totales"
+            value={totalTramites}
+            hint="Formulario enviado"
+            icon={FileText}
+          />
+          <StatCard
+            label="Usuarios registrados"
+            value={totalUsuarios}
+            hint="Cuentas"
+            icon={Users}
+            href="/dashboard/admin/usuarios"
+          />
+        </div>
+      </section>
+
+      {/* ─── Movimiento reciente ──────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Movimiento reciente"
+          description="Últimos trámites con actividad"
+          as="h2"
+          actions={
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/dashboard/admin/tramites">
+                Ver todos
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </Button>
+          }
+        />
+
+        {tramitesRecientes.length === 0 ? (
+          <Card>
+            <EmptyState
+              icon={FileText}
+              title="Todavía no hay trámites"
+              description="Van a aparecer acá en cuanto los clientes envíen el formulario."
+            />
+          </Card>
+        ) : (
+          <Card className="overflow-hidden">
+            <ul className="divide-y divide-line">
+              {tramitesRecientes.map((tramite) => {
+                const estado = getEstado(tramite, 'admin')
+                return (
+                  <li key={tramite.id}>
+                    <Link
+                      href={`/dashboard/admin/tramites/${tramite.id}`}
+                      className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-body font-medium text-ink">
+                          {tramite.denominacionAprobada || tramite.denominacionSocial1}
+                        </span>
+                        <span className="block truncate text-body-sm text-ink-2">
+                          {tramite.user.name}
+                          <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                          {tramite.user.email}
+                        </span>
+                      </span>
+
+                      <time
+                        dateTime={new Date(tramite.updatedAt).toISOString()}
+                        className="hidden shrink-0 text-body-sm text-ink-3 tnum sm:block"
+                      >
+                        {format(new Date(tramite.updatedAt), 'd MMM', { locale: es })}
+                      </time>
+
+                      <Badge tone={estado.tone} dot>
+                        {estado.label}
+                      </Badge>
+
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </Card>
+        )}
+      </section>
+
+      {/* ─── Servicios ────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Servicios"
+          description="Estado en vivo de las integraciones"
+          as="h2"
+        />
+        <ServiceStatus />
+      </section>
     </div>
   )
 }

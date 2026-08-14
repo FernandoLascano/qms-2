@@ -102,7 +102,7 @@ export default function ConfiguracionCuentasPage() {
   if (cargando) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-600">Cargando...</p>
+        <p className="text-ink-2">Cargando...</p>
       </div>
     )
   }
@@ -117,8 +117,8 @@ export default function ConfiguracionCuentasPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold text-brand-900">Configuración de Cuentas Bancarias</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-display text-ink">Configuración de Cuentas Bancarias</h2>
+          <p className="text-ink-2 mt-1">
             Gestiona las cuentas bancarias pre-configuradas para transferencias
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function ConfiguracionCuentasPage() {
         </CardHeader>
         <CardContent>
           {cuentas.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-ink-2 text-center py-8">
               No hay cuentas configuradas. Agrega una cuenta arriba.
             </p>
           ) : (
@@ -208,38 +208,38 @@ export default function ConfiguracionCuentasPage() {
               {cuentas.map((cuenta) => (
                 <div
                   key={cuenta.id}
-                  className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition"
+                  className="border rounded-control p-4 bg-surface-2 hover:bg-surface-3 transition"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm text-gray-500">Nombre</p>
-                        <p className="font-semibold text-gray-900">{cuenta.nombre}</p>
+                        <p className="text-body-sm text-ink-2">Nombre</p>
+                        <p className="font-semibold text-ink">{cuenta.nombre}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Banco</p>
-                        <p className="font-semibold text-gray-900">{cuenta.banco}</p>
+                        <p className="text-body-sm text-ink-2">Banco</p>
+                        <p className="font-semibold text-ink">{cuenta.banco}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">CBU</p>
-                        <p className="font-semibold text-gray-900 font-mono">{cuenta.cbu}</p>
+                        <p className="text-body-sm text-ink-2">CBU</p>
+                        <p className="font-semibold text-ink font-mono">{cuenta.cbu}</p>
                       </div>
                       {cuenta.alias && (
                         <div>
-                          <p className="text-sm text-gray-500">Alias</p>
-                          <p className="font-semibold text-gray-900">{cuenta.alias}</p>
+                          <p className="text-body-sm text-ink-2">Alias</p>
+                          <p className="font-semibold text-ink">{cuenta.alias}</p>
                         </div>
                       )}
                       <div className="md:col-span-2">
-                        <p className="text-sm text-gray-500">Titular</p>
-                        <p className="font-semibold text-gray-900">{cuenta.titular}</p>
+                        <p className="text-body-sm text-ink-2">Titular</p>
+                        <p className="font-semibold text-ink">{cuenta.titular}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => eliminarCuenta(cuenta.id)}
-                      className="text-brand-600 hover:text-brand-700 hover:bg-brand-50"
+                      className="text-primary hover:text-primary hover:bg-primary-soft"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -254,7 +254,7 @@ export default function ConfiguracionCuentasPage() {
               <Button
                 onClick={guardarCuentas}
                 disabled={guardando}
-                className="gap-2 bg-brand-600 hover:bg-brand-700"
+                className="gap-2 bg-primary hover:bg-primary"
               >
                 <Save className="h-4 w-4" />
                 {guardando ? 'Guardando...' : 'Guardar Cambios'}

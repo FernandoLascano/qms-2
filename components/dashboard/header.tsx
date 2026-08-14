@@ -12,7 +12,7 @@ import { itemPorRuta } from '@/lib/dashboard/navigation'
  *
  * Ya no muestra el título de la página: eso lo hace <PageHeader> dentro de
  * cada pantalla. Antes el título aparecía dos veces (acá como h1 y en la
- * página como h1/h2 en text-4xl font-black), lo que además rompía la
+ * página como h1/h2 en text-display font-semibold), lo que además rompía la
  * jerarquía semántica.
  *
  * El CTA "Nuevo trámite" es sólo para clientes: los admin no inician trámites
@@ -50,7 +50,7 @@ export function Header() {
           {!isAdmin && (
             <Link
               href="/tramite/nuevo"
-              className="hidden h-9 items-center gap-1.5 rounded-control bg-primary px-3 text-body-sm font-medium text-on-primary transition-colors hover:bg-primary-hover lg:inline-flex"
+              className="hidden h-9 items-center gap-2 rounded-control bg-primary px-3 text-body-sm font-medium text-on-primary transition-colors hover:bg-primary-hover lg:inline-flex"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Nuevo trámite

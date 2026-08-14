@@ -23,13 +23,13 @@ type Notificacion = {
 }
 
 const TIPOS_NOTIFICACION = [
-  { value: 'TODOS', label: 'Todas', color: 'bg-gray-100 text-gray-700 border-gray-300' },
-  { value: 'INFO', label: 'Info', color: 'bg-gray-100 text-gray-700 border-gray-300' },
-  { value: 'EXITO', label: 'Éxito', color: 'bg-green-100 text-green-700 border-green-300' },
-  { value: 'ALERTA', label: 'Alerta', color: 'bg-orange-100 text-orange-700 border-orange-300' },
-  { value: 'ERROR', label: 'Error', color: 'bg-brand-100 text-brand-700 border-brand-300' },
-  { value: 'ACCION_REQUERIDA', label: 'Acción Requerida', color: 'bg-purple-100 text-purple-700 border-purple-300' },
-  { value: 'MENSAJE', label: 'Mensaje', color: 'bg-blue-100 text-blue-700 border-blue-300' }
+  { value: 'TODOS', label: 'Todas', color: 'bg-surface-3 text-ink-2 border-line-strong' },
+  { value: 'INFO', label: 'Info', color: 'bg-surface-3 text-ink-2 border-line-strong' },
+  { value: 'EXITO', label: 'Éxito', color: 'bg-success-soft text-success border-success-line' },
+  { value: 'ALERTA', label: 'Alerta', color: 'bg-warning-soft text-warning border-warning-line' },
+  { value: 'ERROR', label: 'Error', color: 'bg-primary-soft text-primary border-primary-line' },
+  { value: 'ACCION_REQUERIDA', label: 'Acción Requerida', color: 'bg-info-soft text-info border-info-line' },
+  { value: 'MENSAJE', label: 'Mensaje', color: 'bg-info-soft text-info border-info-line' }
 ]
 
 const FILTROS_LEIDA = [
@@ -50,38 +50,38 @@ export default function NotificacionesPage() {
     switch (tipo) {
       case 'EXITO':
         return {
-          badge: 'bg-green-100 text-green-700 border-green-200',
-          bg: 'bg-green-50',
+          badge: 'bg-success-soft text-success border-success-line',
+          bg: 'bg-success-soft',
           icon: '✓'
         }
       case 'ERROR':
         return {
-          badge: 'bg-brand-100 text-brand-700 border-brand-200',
-          bg: 'bg-brand-50',
+          badge: 'bg-primary-soft text-primary border-primary-line',
+          bg: 'bg-primary-soft',
           icon: '✕'
         }
       case 'ALERTA':
         return {
-          badge: 'bg-orange-100 text-orange-700 border-orange-200',
-          bg: 'bg-orange-50',
+          badge: 'bg-warning-soft text-warning border-warning-line',
+          bg: 'bg-warning-soft',
           icon: '⚠'
         }
       case 'ACCION_REQUERIDA':
         return {
-          badge: 'bg-purple-100 text-purple-700 border-purple-200',
-          bg: 'bg-purple-50',
+          badge: 'bg-info-soft text-info border-info-line',
+          bg: 'bg-info-soft',
           icon: '!'
         }
       case 'MENSAJE':
         return {
-          badge: 'bg-blue-100 text-blue-700 border-blue-200',
-          bg: 'bg-blue-50',
+          badge: 'bg-info-soft text-info border-info-line',
+          bg: 'bg-info-soft',
           icon: '💬'
         }
       default:
         return {
-          badge: 'bg-gray-100 text-gray-700 border-gray-200',
-          bg: 'bg-gray-50',
+          badge: 'bg-surface-3 text-ink-2 border-line',
+          bg: 'bg-surface-2',
           icon: 'ℹ'
         }
     }
@@ -180,28 +180,25 @@ export default function NotificacionesPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-          Centro de alertas
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          <span className="text-brand-700">Notificaciones</span>
+        <h1 className="text-display text-ink">
+          Notificaciones
         </h1>
-        <p className="text-gray-500 mt-2 text-lg">
+        <p className="mt-1 text-body text-ink-2">
           {count > 0 ? `Tenés ${count} notificación${count > 1 ? 'es' : ''} sin leer` : 'Todas las notificaciones leídas'}
         </p>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-lg">
+      <div className="bg-surface rounded-card border border-line p-6 shadow-raise">
         <div className="flex items-center gap-2 mb-4">
-          <Filter className="h-5 w-5 text-gray-500" />
-          <h2 className="font-semibold text-gray-900">Filtros</h2>
+          <Filter className="h-5 w-5 text-ink-2" />
+          <h2 className="font-semibold text-ink">Filtros</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Filtro por tipo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-body-sm font-medium text-ink-2 mb-2">
               Tipo de notificación
             </label>
             <div className="flex flex-wrap gap-2">
@@ -209,10 +206,10 @@ export default function NotificacionesPage() {
                 <button
                   key={tipo.value}
                   onClick={() => setTipoFiltro(tipo.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-control text-body-sm font-medium border transition-all cursor-pointer ${
                     tipoFiltro === tipo.value
-                      ? tipo.color + ' ring-2 ring-offset-2 ring-gray-300'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      ? tipo.color + ' ring-2 ring-offset-2 ring-line-strong'
+                      : 'bg-surface text-ink-2 border-line-strong hover:bg-surface-2'
                   }`}
                 >
                   {tipo.label}
@@ -223,7 +220,7 @@ export default function NotificacionesPage() {
 
           {/* Filtro por estado */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-body-sm font-medium text-ink-2 mb-2">
               Estado
             </label>
             <div className="flex flex-wrap gap-2">
@@ -231,10 +228,10 @@ export default function NotificacionesPage() {
                 <button
                   key={filtro.value}
                   onClick={() => setLeidaFiltro(filtro.value)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-control text-body-sm font-medium border transition-all cursor-pointer ${
                     leidaFiltro === filtro.value
-                      ? 'bg-brand-100 text-brand-700 border-brand-300 ring-2 ring-offset-2 ring-brand-300'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                      ? 'bg-primary-soft text-primary border-primary-line ring-2 ring-offset-2 ring-ring'
+                      : 'bg-surface text-ink-2 border-line-strong hover:bg-surface-2'
                   }`}
                 >
                   {filtro.label}
@@ -246,12 +243,12 @@ export default function NotificacionesPage() {
 
         {/* Botón marcar todas como leídas */}
         {count > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-line">
             <Button
               variant="outline"
               size="sm"
               onClick={marcarTodasComoLeidas}
-              className="gap-2 text-gray-700 border-gray-200 hover:bg-gray-50"
+              className="gap-2 text-ink-2 border-line hover:bg-surface-2"
             >
               <Check className="h-4 w-4" />
               Marcar todas como leídas
@@ -261,41 +258,41 @@ export default function NotificacionesPage() {
       </div>
 
       {/* Lista de notificaciones */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
+      <div className="bg-surface rounded-card border border-line overflow-hidden shadow-raise">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+            <Loader2 className="h-8 w-8 text-ink-3 animate-spin" />
           </div>
         ) : notificaciones.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <Bell className="h-10 w-10 text-gray-300" />
+          <div className="p-12 text-center text-ink-2">
+            <div className="w-20 h-20 mx-auto mb-4 bg-surface-3 rounded-full flex items-center justify-center">
+              <Bell className="h-10 w-10 text-ink-3" />
             </div>
-            <p className="font-semibold text-gray-700 mb-1">No hay notificaciones</p>
-            <p className="text-sm text-gray-500">
+            <p className="font-semibold text-ink-2 mb-1">No hay notificaciones</p>
+            <p className="text-body-sm text-ink-2">
               {tipoFiltro !== 'TODOS' || leidaFiltro !== 'todas'
                 ? 'No se encontraron notificaciones con los filtros seleccionados'
                 : 'No tienes notificaciones en este momento'}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-line">
             {notificaciones.map((notificacion) => {
               const config = getTipoConfig(notificacion.tipo)
               return (
                 <div
                   key={notificacion.id}
                   onClick={() => handleNotificacionClick(notificacion)}
-                  className={`p-5 cursor-pointer transition-all hover:shadow-sm ${
+                  className={`p-card cursor-pointer transition-all hover:shadow-raise ${
                     !notificacion.leida
-                      ? 'bg-blue-50/50 border-l-4 border-l-blue-500'
-                      : 'hover:bg-gray-50/50'
+                      ? 'bg-info-soft/50 border-l-4 border-l-blue-500'
+                      : 'hover:bg-surface-2/50'
                   }`}
                 >
                   <div className="flex gap-4">
                     {/* Icono - Mejorado para mayor visibilidad */}
                     <div
-                      className={`flex-shrink-0 w-14 h-14 rounded-xl ${config.bg} flex items-center justify-center text-2xl font-bold shadow-md border-2 ${config.badge.includes('green') ? 'border-green-300' : config.badge.includes('brand') ? 'border-brand-300' : config.badge.includes('orange') ? 'border-orange-300' : config.badge.includes('purple') ? 'border-purple-300' : 'border-gray-300'}`}
+                      className={`flex-shrink-0 w-14 h-14 rounded-control ${config.bg} flex items-center justify-center text-title font-semibold shadow-raise border-2 ${config.badge.includes('green') ? 'border-success-line' : config.badge.includes('brand') ? 'border-primary-line' : config.badge.includes('orange') ? 'border-warning-line' : config.badge.includes('purple') ? 'border-info-line' : 'border-line-strong'}`}
                     >
                       {config.icon}
                     </div>
@@ -304,45 +301,45 @@ export default function NotificacionesPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <h3
-                          className={`font-semibold text-base leading-tight ${
-                            !notificacion.leida ? 'text-gray-900' : 'text-gray-700'
+                          className={`font-semibold text-body leading-tight ${
+                            !notificacion.leida ? 'text-ink' : 'text-ink-2'
                           }`}
                         >
                           {notificacion.titulo}
                         </h3>
                         {!notificacion.leida && (
-                          <div className="h-2.5 w-2.5 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                          <div className="h-2.5 w-2.5 bg-info-solid rounded-full flex-shrink-0 mt-2" />
                         )}
                       </div>
 
-                      <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                      <p className="text-body-sm text-ink-2 mb-3 leading-relaxed">
                         {notificacion.mensaje}
                       </p>
 
                       <div className="flex items-center gap-3 flex-wrap">
                         {notificacion.tramite && (
                           <>
-                            <span className="text-xs px-2.5 py-1 rounded-lg font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                            <span className="text-label px-3 py-1 rounded-control font-semibold bg-info-soft text-info border border-info-line">
                               📋 {notificacion.tramite.denominacion}
                             </span>
-                            <span className="text-xs text-gray-400">•</span>
+                            <span className="text-label text-ink-3">•</span>
                           </>
                         )}
                         <span
-                          className={`text-xs px-2.5 py-1 rounded-lg font-medium border ${config.badge}`}
+                          className={`text-label px-3 py-1 rounded-control font-medium border ${config.badge}`}
                         >
                           {notificacion.tipo.replace('_', ' ')}
                         </span>
-                        <span className="text-xs text-gray-400">•</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-label text-ink-3">•</span>
+                        <span className="text-label text-ink-2">
                           {format(new Date(notificacion.createdAt), "d 'de' MMMM 'de' yyyy, HH:mm", {
                             locale: es
                           })}
                         </span>
                         {notificacion.leida && (
                           <>
-                            <span className="text-xs text-gray-400">•</span>
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                            <span className="text-label text-ink-3">•</span>
+                            <span className="text-label text-ink-2 flex items-center gap-1">
                               <Check className="h-3 w-3" />
                               Leída
                             </span>
@@ -361,7 +358,7 @@ export default function NotificacionesPage() {
       {/* Footer info */}
       {notificaciones.length > 0 && (
         <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-body-sm text-ink-2">
             Mostrando {notificaciones.length} {notificaciones.length === 1 ? 'notificación' : 'notificaciones'}
           </p>
         </div>

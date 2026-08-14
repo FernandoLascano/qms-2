@@ -150,7 +150,7 @@ export default function PartnerDetailPage() {
 
   if (loading || !partner) {
     return (
-      <div className="flex min-h-[300px] items-center justify-center text-sm text-gray-500">
+      <div className="flex min-h-[300px] items-center justify-center text-body-sm text-ink-2">
         Cargando partner...
       </div>
     )
@@ -162,19 +162,19 @@ export default function PartnerDetailPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <span className="inline-block text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">
+          <span className="inline-block text-label font-semibold uppercase tracking-[0.16em] text-primary">
             Partner
           </span>
-          <h1 className="mt-1 text-3xl font-black text-gray-900">{partner.nombre}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="mt-1 text-display font-semibold text-ink">{partner.nombre}</h1>
+          <p className="mt-1 text-body-sm text-ink-2">
             Landing publica:{' '}
-            <span className="font-mono text-xs text-gray-700">/partners/{partner.slug}</span>
+            <span className="font-mono text-label text-ink-2">/partners/{partner.slug}</span>
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <span
-            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-              partner.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+            className={`inline-flex items-center rounded-full px-3 py-1 text-label font-semibold ${
+              partner.activo ? 'bg-success-soft text-success' : 'bg-surface-3 text-ink-2'
             }`}
           >
             {partner.activo ? 'Activo' : 'Inactivo'}
@@ -182,7 +182,7 @@ export default function PartnerDetailPage() {
           <Link
             href={`/partners/${partner.slug}`}
             target="_blank"
-            className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:border-brand-300"
+            className="rounded-control border border-line-strong bg-surface px-4 py-2 text-body-sm font-semibold text-ink-2 hover:border-primary-line"
           >
             Ver landing
           </Link>
@@ -199,25 +199,25 @@ export default function PartnerDetailPage() {
             { label: 'Cobrado', value: moneyArs(stats.totalCobrado) },
             { label: 'Comision est.', value: moneyArs(stats.totalComisionEstimada) },
           ].map((item) => (
-            <div key={item.label} className="rounded-2xl border border-gray-200 bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">{item.label}</p>
-              <p className="mt-1 text-2xl font-black text-gray-900">{item.value}</p>
+            <div key={item.label} className="rounded-card border border-line bg-surface px-4 py-3">
+              <p className="text-label font-semibold uppercase tracking-wide text-ink-2">{item.label}</p>
+              <p className="mt-1 text-title font-semibold text-ink">{item.value}</p>
             </div>
           ))}
         </div>
       )}
 
-      {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-control bg-danger-soft px-4 py-3 text-body-sm text-danger">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="shadow-sm">
+        <Card className="shadow-raise">
           <CardHeader>
             <CardTitle variant="section">Configuracion general</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSave} className="space-y-5">
+            <form onSubmit={handleSave} className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="partner-nombre">Nombre</Label>
                   <Input
                     id="partner-nombre"
@@ -225,7 +225,7 @@ export default function PartnerDetailPage() {
                     onChange={(e) => setPartner({ ...partner, nombre: e.target.value })}
                   />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="partner-slug">Slug</Label>
                   <Input
                     id="partner-slug"
@@ -235,10 +235,10 @@ export default function PartnerDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3">
+              <div className="flex items-center justify-between rounded-control border border-line bg-surface-2 p-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Partner activo</p>
-                  <p className="text-xs text-gray-500">Controla si la landing queda publica.</p>
+                  <p className="text-body-sm font-medium text-ink">Partner activo</p>
+                  <p className="text-label text-ink-2">Controla si la landing queda publica.</p>
                 </div>
                 <Switch
                   checked={partner.activo}
@@ -249,7 +249,7 @@ export default function PartnerDetailPage() {
               <div className="space-y-2">
                 <Label>Logo</Label>
                 {partner.logoUrl && (
-                  <div className="flex h-16 max-w-xs items-center justify-start rounded-lg border border-gray-200 bg-white px-2">
+                  <div className="flex h-16 max-w-xs items-center justify-start rounded-control border border-line bg-surface px-2">
                     <img
                       src={partner.logoUrl}
                       alt={partner.nombre}
@@ -257,7 +257,7 @@ export default function PartnerDetailPage() {
                     />
                   </div>
                 )}
-                <label className="inline-flex cursor-pointer items-center rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:border-brand-300">
+                <label className="inline-flex cursor-pointer items-center rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink-2 hover:border-primary-line">
                   {uploading ? 'Subiendo logo...' : 'Seleccionar logo'}
                   <input
                     type="file"
@@ -269,10 +269,10 @@ export default function PartnerDetailPage() {
                     }}
                   />
                 </label>
-                <p className="text-xs text-gray-500">Formatos sugeridos: PNG/JPG/WebP/SVG.</p>
+                <p className="text-label text-ink-2">Formatos sugeridos: PNG/JPG/WebP/SVG.</p>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="partner-beneficios">Beneficios (uno por linea)</Label>
                 <Textarea
                   id="partner-beneficios"
@@ -290,7 +290,7 @@ export default function PartnerDetailPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="partner-notas">Notas de condiciones</Label>
                 <Textarea
                   id="partner-notas"
@@ -301,11 +301,11 @@ export default function PartnerDetailPage() {
               </div>
 
               <div className="flex items-center justify-between gap-3 pt-1">
-                <p className="text-xs text-gray-500">Los cambios impactan en la landing y en metricas futuras.</p>
+                <p className="text-label text-ink-2">Los cambios impactan en la landing y en metricas futuras.</p>
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="h-10 rounded-xl bg-brand-700 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-200 hover:-translate-y-0.5 hover:bg-brand-800"
+                  className="h-10 rounded-control bg-primary px-5 text-body-sm font-semibold text-on-primary shadow-raise hover:-translate-y-0.5 hover:bg-primary-hover"
                 >
                   {saving ? 'Guardando...' : 'Guardar cambios'}
                 </Button>
@@ -314,34 +314,34 @@ export default function PartnerDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card className="shadow-raise">
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <CardTitle variant="section">Condiciones economicas</CardTitle>
               {!hasEconomicConfig && (
-                <span className="rounded-full bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-800">
+                <span className="rounded-full bg-warning-soft px-3 py-1 text-label font-medium text-warning">
                   Sin configurar
                 </span>
               )}
             </div>
             <CardDescription>Configuracion interna del convenio para este partner.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-4">
             <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3">
+              <div className="flex items-center justify-between rounded-control border border-line bg-surface-2 p-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Aplicar descuento</p>
-                  <p className="text-xs text-gray-500">Visible para el cliente en landing y planes.</p>
+                  <p className="text-body-sm font-medium text-ink">Aplicar descuento</p>
+                  <p className="text-label text-ink-2">Visible para el cliente en landing y planes.</p>
                 </div>
                 <Switch
                   checked={partner.aplicaDescuento}
                   onCheckedChange={(checked) => setPartner({ ...partner, aplicaDescuento: checked })}
                 />
               </div>
-              <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-3">
+              <div className="flex items-center justify-between rounded-control border border-line bg-surface-2 p-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Aplicar comision interna</p>
-                  <p className="text-xs text-gray-500">Solo para reportes internos de partner.</p>
+                  <p className="text-body-sm font-medium text-ink">Aplicar comision interna</p>
+                  <p className="text-label text-ink-2">Solo para reportes internos de partner.</p>
                 </div>
                 <Switch
                   checked={partner.aplicaComision}
@@ -352,7 +352,7 @@ export default function PartnerDetailPage() {
 
             {partner.aplicaDescuento && (
               <div className="grid gap-4 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="descuento-tipo">Tipo</Label>
                   <select
                     id="descuento-tipo"
@@ -360,13 +360,13 @@ export default function PartnerDetailPage() {
                     onChange={(e) =>
                       setPartner({ ...partner, descuentoTipo: e.target.value as 'MONTO' | 'PORCENTAJE' })
                     }
-                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-gray-900"
+                    className="w-full rounded-control border border-line-strong px-3 py-2 text-ink"
                   >
                     <option value="PORCENTAJE">Porcentaje</option>
                     <option value="MONTO">Monto fijo</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <Label htmlFor="descuento-valor">Valor</Label>
                   <Input
                     id="descuento-valor"
@@ -383,7 +383,7 @@ export default function PartnerDetailPage() {
             )}
 
             {partner.aplicaComision && (
-              <div className="max-w-xs space-y-1.5">
+              <div className="max-w-xs space-y-2">
                 <Label htmlFor="comision-porcentaje">Comision (%)</Label>
                 <Input
                   id="comision-porcentaje"
@@ -395,7 +395,7 @@ export default function PartnerDetailPage() {
                     setPartner({ ...partner, comisionPorcentaje: e.target.value ? Number(e.target.value) : null })
                   }
                 />
-                <p className="mt-1 text-xs text-gray-500">Solo visible internamente; no se muestra en la landing.</p>
+                <p className="mt-1 text-label text-ink-2">Solo visible internamente; no se muestra en la landing.</p>
               </div>
             )}
           </CardContent>
@@ -404,36 +404,36 @@ export default function PartnerDetailPage() {
 
       {stats && (
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900">Referidos identificados</h3>
-            <p className="mb-3 text-xs text-gray-500">Ultimos 20</p>
+          <div className="rounded-card border border-line bg-surface p-card shadow-raise">
+            <h3 className="text-body-sm font-semibold text-ink">Referidos identificados</h3>
+            <p className="mb-3 text-label text-ink-2">Ultimos 20</p>
             {stats.referredUsersList.length === 0 ? (
-              <p className="text-sm text-gray-500">Sin referidos.</p>
+              <p className="text-body-sm text-ink-2">Sin referidos.</p>
             ) : (
               <div className="space-y-2">
                 {stats.referredUsersList.map((user) => (
-                  <div key={user.id} className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-                    <div className="text-sm font-semibold text-gray-900">{user.name || 'Sin nombre'}</div>
-                    <div className="text-xs text-gray-600">{user.email}</div>
+                  <div key={user.id} className="rounded-control border border-line bg-surface-2 px-3 py-2">
+                    <div className="text-body-sm font-semibold text-ink">{user.name || 'Sin nombre'}</div>
+                    <div className="text-label text-ink-2">{user.email}</div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-900">Conversiones identificadas</h3>
-            <p className="mb-3 text-xs text-gray-500">Ultimas 20</p>
+          <div className="rounded-card border border-line bg-surface p-card shadow-raise">
+            <h3 className="text-body-sm font-semibold text-ink">Conversiones identificadas</h3>
+            <p className="mb-3 text-label text-ink-2">Ultimas 20</p>
             {stats.conversionsList.length === 0 ? (
-              <p className="text-sm text-gray-500">Sin conversiones.</p>
+              <p className="text-body-sm text-ink-2">Sin conversiones.</p>
             ) : (
               <div className="space-y-2">
                 {stats.conversionsList.map((conversion) => (
-                  <div key={conversion.id} className="rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
-                    <div className="text-sm font-semibold text-gray-900">
+                  <div key={conversion.id} className="rounded-control border border-line bg-surface-2 px-3 py-2">
+                    <div className="text-body-sm font-semibold text-ink">
                       {conversion.user.name || 'Sin nombre'} - {moneyArs(conversion.montoCobrado)}
                     </div>
-                    <div className="text-xs text-gray-600">{conversion.user.email}</div>
+                    <div className="text-label text-ink-2">{conversion.user.email}</div>
                   </div>
                 ))}
               </div>

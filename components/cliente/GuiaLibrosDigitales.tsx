@@ -8,9 +8,9 @@ import { ChevronDown, ChevronUp, CheckCircle2, Circle } from 'lucide-react'
 
 function Importante({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 my-3">
-      <p className="text-xs font-bold text-amber-900 mb-1">IMPORTANTE</p>
-      <div className="text-sm text-amber-900 space-y-1">{children}</div>
+    <div className="rounded-control bg-warning-soft border border-warning-line p-3 my-3">
+      <p className="text-label font-semibold text-warning mb-1">IMPORTANTE</p>
+      <div className="text-body-sm text-warning space-y-1">{children}</div>
     </div>
   )
 }
@@ -19,8 +19,8 @@ function Captura({ src, alt }: { src: string; alt: string }) {
   return (
     <figure className="my-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="w-full rounded-lg border border-gray-200 shadow-sm" />
-      <figcaption className="text-xs text-gray-400 mt-1 text-center">{alt}</figcaption>
+      <img src={src} alt={alt} className="w-full rounded-control border border-line shadow-raise" />
+      <figcaption className="text-label text-ink-3 mt-1 text-center">{alt}</figcaption>
     </figure>
   )
 }
@@ -29,7 +29,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
   {
     titulo: 'Marco normativo y obligatoriedad',
     contenido: (
-      <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+      <div className="space-y-3 text-body-sm text-ink-2 leading-relaxed">
         <p>
           Los libros digitales son un sistema de asiento de actas a través de medios electrónicos, para que las entidades
           lleven el registro de sus libros sociales y contables de manera digital. Tienen la <strong>misma validez legal</strong> que
@@ -50,7 +50,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
   {
     titulo: 'Acceso a los Libros Digitales',
     contenido: (
-      <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+      <div className="space-y-3 text-body-sm text-ink-2 leading-relaxed">
         <p>
           <strong>¿Quién puede acceder?</strong> Para iniciar los libros digitales, la máxima autoridad de la entidad —en las SAS,
           el <strong>Administrador Titular</strong>— debe vincularse como <strong>Representante Legal</strong> de la entidad en
@@ -63,7 +63,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
         </p>
         <p>
           Si no aparece, mirá este video para hacer la vinculación:{' '}
-          <a href="https://www.youtube.com/watch?v=O_63UQyEZIs" target="_blank" rel="noopener noreferrer" className="text-brand-700 font-medium underline">
+          <a href="https://www.youtube.com/watch?v=O_63UQyEZIs" target="_blank" rel="noopener noreferrer" className="text-primary font-medium underline">
             ver video de vinculación
           </a>.
         </p>
@@ -72,7 +72,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           un tercero con el servicio de IPJ delegado. <strong>Ni IPJ ni QuieroMiSAS tienen acceso a los libros sociales de tu
           Sociedad.</strong>
         </p>
-        <p className="font-medium text-gray-900">Pasos en el Portal de Trámites (logueado con tu clave CiDi Nivel 2):</p>
+        <p className="font-medium text-ink">Pasos en el Portal de Trámites (logueado con tu clave CiDi Nivel 2):</p>
         <ol className="list-decimal ml-5 space-y-1">
           <li>Seleccioná la opción <strong>Registro Público</strong>.</li>
           <li>Seleccioná <strong>Libros Digitales</strong>.</li>
@@ -89,7 +89,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
   {
     titulo: 'Carga de actas',
     contenido: (
-      <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+      <div className="space-y-3 text-body-sm text-ink-2 leading-relaxed">
         <p>
           <strong>Habilitación:</strong> cada libro queda habilitado cuando se adjunta el primer documento, y la fecha de
           habilitación será la de ese primer documento. Se recomienda adjuntar primero la <strong>resolución de inscripción</strong>
@@ -132,7 +132,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
   {
     titulo: 'Consulta de Libros Digitales',
     contenido: (
-      <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+      <div className="space-y-3 text-body-sm text-ink-2 leading-relaxed">
         <p>
           La consulta permite <strong>descargar un comprobante</strong> de las actas o asientos ya adjuntados. Al descargar, el
           sistema genera un PDF llamado <strong>“Comprobante de Documentación Digital”</strong> que garantiza que el acta está
@@ -146,7 +146,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           <strong>¿Quién puede consultar?</strong> Solo el Representante Legal de la Sociedad o un tercero con el servicio de IPJ
           delegado en CiDi.
         </p>
-        <p className="font-medium text-gray-900">Pasos:</p>
+        <p className="font-medium text-ink">Pasos:</p>
         <ol className="list-decimal ml-5 space-y-1">
           <li>Ingresá al Portal de Trámites de IPJ y logueate con tu clave CiDi Nivel 2.</li>
           <li>Seleccioná <strong>Registro Público</strong> → <strong>Consulta Libros Digitales</strong> → <strong>Iniciar</strong>.</li>
@@ -180,9 +180,9 @@ export default function GuiaLibrosDigitales() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between rounded-lg bg-brand-50 border border-brand-100 p-3">
-        <p className="text-sm text-brand-900">Guía paso a paso para usar los Libros Digitales de tu sociedad.</p>
-        <span className="text-xs font-medium text-brand-700 whitespace-nowrap">{completados}/{PASOS.length} vistos</span>
+      <div className="flex items-center justify-between rounded-control bg-primary-soft border border-primary-line p-3">
+        <p className="text-body-sm text-primary">Guía paso a paso para usar los Libros Digitales de tu sociedad.</p>
+        <span className="text-label font-medium text-primary whitespace-nowrap">{completados}/{PASOS.length} vistos</span>
       </div>
 
       <div className="space-y-2">
@@ -192,30 +192,30 @@ export default function GuiaLibrosDigitales() {
             <Card key={i} className="overflow-hidden">
               <button
                 onClick={() => toggle(i)}
-                className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition"
+                className="w-full flex items-center gap-3 p-4 text-left hover:bg-surface-2 transition"
               >
                 {leidos[i] ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-success flex-shrink-0" />
                 ) : (
-                  <Circle className="h-5 w-5 text-gray-300 flex-shrink-0" />
+                  <Circle className="h-5 w-5 text-ink-3 flex-shrink-0" />
                 )}
-                <span className="flex-1 font-medium text-gray-900">
-                  <span className="text-brand-700 mr-2">{i + 1}.</span>
+                <span className="flex-1 font-medium text-ink">
+                  <span className="text-primary mr-2">{i + 1}.</span>
                   {paso.titulo}
                 </span>
                 {estaAbierto ? (
-                  <ChevronUp className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <ChevronUp className="h-5 w-5 text-ink-3 flex-shrink-0" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                  <ChevronDown className="h-5 w-5 text-ink-3 flex-shrink-0" />
                 )}
               </button>
-              {estaAbierto && <div className="border-t border-gray-100 p-4 pt-3">{paso.contenido}</div>}
+              {estaAbierto && <div className="border-t border-line p-4 pt-3">{paso.contenido}</div>}
             </Card>
           )
         })}
       </div>
 
-      <p className="text-xs text-gray-400 text-center pt-2">
+      <p className="text-label text-ink-3 text-center pt-2">
         Fuente: Inspección de Personas Jurídicas de Córdoba (ipj.cba.gov.ar). Guía orientativa de QuieroMiSAS.
       </p>
     </div>

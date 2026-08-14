@@ -50,14 +50,14 @@ export default function ServiciosCatalogo() {
         const yaConsultado = consultados[s.nombre]
         return (
           <Card key={s.nombre} className="flex flex-col">
-            <CardContent className="flex flex-col gap-3 p-5 h-full">
-              <div className="text-3xl">{s.icono}</div>
+            <CardContent className="flex flex-col gap-3 p-card h-full">
+              <div className="text-display">{s.icono}</div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{s.nombre}</h3>
-                <p className="text-sm text-gray-600 mt-1">{s.desc}</p>
+                <h3 className="font-semibold text-ink">{s.nombre}</h3>
+                <p className="text-body-sm text-ink-2 mt-1">{s.desc}</p>
               </div>
               {yaConsultado ? (
-                <div className="flex items-center gap-2 text-sm font-medium text-green-700">
+                <div className="flex items-center gap-2 text-body-sm font-medium text-success">
                   <Check className="h-4 w-4" /> Consulta enviada
                 </div>
               ) : (
@@ -65,7 +65,7 @@ export default function ServiciosCatalogo() {
                   <Button
                     onClick={() => consultar(s.nombre)}
                     disabled={enviando === s.nombre}
-                    className="w-full bg-brand-700 hover:bg-brand-800"
+                    className="w-full bg-primary hover:bg-primary-hover"
                   >
                     {enviando === s.nombre ? 'Enviando...' : 'Me interesa'}
                   </Button>
@@ -73,7 +73,7 @@ export default function ServiciosCatalogo() {
                     href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Hola! Quiero consultar por el servicio: ${s.nombre}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1 text-sm font-medium text-green-700 hover:text-green-800"
+                    className="inline-flex items-center justify-center gap-1 text-body-sm font-medium text-success hover:text-success"
                   >
                     <MessageCircle className="h-4 w-4" /> Consultar por WhatsApp
                   </a>

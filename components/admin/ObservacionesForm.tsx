@@ -47,9 +47,9 @@ export default function ObservacionesForm({ tramiteId, userId }: ObservacionesFo
   }
 
   return (
-    <Card className="border-blue-200 bg-blue-50">
+    <Card className="border-info-line bg-info-soft">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-blue-900">
+        <CardTitle className="flex items-center gap-2 text-info">
           <MessageSquare className="h-5 w-5" />
           Enviar Observación al Cliente
         </CardTitle>
@@ -62,7 +62,7 @@ export default function ObservacionesForm({ tramiteId, userId }: ObservacionesFo
           <textarea
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
-            className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
             rows={4}
             placeholder="Ej: Hola, necesitamos que subas el comprobante de domicilio actualizado..."
             disabled={enviando}
@@ -71,7 +71,7 @@ export default function ObservacionesForm({ tramiteId, userId }: ObservacionesFo
         <Button
           onClick={handleEnviar}
           disabled={enviando || !mensaje.trim()}
-          className="gap-2 bg-blue-600 hover:bg-blue-700"
+          className="gap-2 bg-info-solid hover:bg-info-solid"
         >
           <Send className="h-4 w-4" />
           {enviando ? 'Enviando...' : 'Enviar Observación'}

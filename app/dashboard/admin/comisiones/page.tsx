@@ -236,19 +236,19 @@ export default function ComisionesPage() {
   const liqDe = (b: Beneficiario) => liquidaciones.find((l) => l.periodo === periodoSel && l.beneficiario === b)
 
   if (loading) {
-    return <div className="p-8 text-gray-500">Cargando…</div>
+    return <div className="p-8 text-ink-2">Cargando…</div>
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto text-gray-900">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto text-ink">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-brand-700 flex items-center justify-center">
-            <Coins className="h-6 w-6 text-white" />
+          <div className="h-11 w-11 rounded-control bg-primary flex items-center justify-center">
+            <Coins className="h-6 w-6 text-on-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-gray-900">Liquidación de Comisiones</h1>
-            <p className="text-sm text-gray-500">Distribución de ingresos según el contrato asociativo (cláusula 4)</p>
+            <h1 className="text-title font-semibold text-ink">Liquidación de Comisiones</h1>
+            <p className="text-body-sm text-ink-2">Distribución de ingresos según el contrato asociativo (cláusula 4)</p>
           </div>
         </div>
         <Button onClick={sincronizar} disabled={saving} variant="outline" className="gap-2">
@@ -257,13 +257,13 @@ export default function ComisionesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
+      <div className="flex gap-1 border-b border-line mb-6">
         {([['movimientos', 'Movimientos'], ['liquidacion', 'Liquidación'], ['fondo', 'Fondo de Desarrollo']] as const).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition ${
-              tab === k ? 'border-brand-700 text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'
+            className={`px-4 py-2 text-body-sm font-semibold border-b-2 -mb-px transition ${
+              tab === k ? 'border-primary-line text-primary' : 'border-transparent text-ink-2 hover:text-ink'
             }`}
           >
             {label}
@@ -284,7 +284,7 @@ export default function ComisionesPage() {
                 <div><Label>Honorario (sin gastos)</Label><Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" /></div>
                 <div>
                   <Label>Originador</Label>
-                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
+                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
                     {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
                   </select>
                 </div>
@@ -298,9 +298,9 @@ export default function ComisionesPage() {
           <Card>
             <CardHeader><CardTitle variant="section">Movimientos ({movimientos.length})</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm text-gray-800">
+              <table className="w-full text-body-sm text-ink">
                 <thead>
-                  <tr className="text-left text-gray-600 border-b">
+                  <tr className="text-left text-ink-2 border-b">
                     <th className="py-2 pr-3">Fecha</th><th className="pr-3">Cliente</th><th className="pr-3">Asunto</th>
                     <th className="pr-3">Origen</th><th className="pr-3 text-right">Honorario</th><th className="pr-3">Originador</th>
                     <th className="pr-3 text-right">Com. orig.</th><th className="pr-3 text-right">MW</th><th className="pr-3 text-right">Operador</th>
@@ -309,31 +309,31 @@ export default function ComisionesPage() {
                 </thead>
                 <tbody>
                   {movimientos.length === 0 && (
-                    <tr><td colSpan={12} className="py-6 text-center text-gray-500">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
+                    <tr><td colSpan={12} className="py-6 text-center text-ink-2">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
                   )}
                   {movimientos.map((m) => {
                     const r = calcularReparto(m.monto, m.originador, porcentajes)
                     return (
-                      <tr key={m.id} className="border-b last:border-0 hover:bg-gray-50">
+                      <tr key={m.id} className="border-b last:border-0 hover:bg-surface-2">
                         <td className="py-2 pr-3 whitespace-nowrap">{fmtFecha(m.fecha)}</td>
                         <td className="pr-3">{m.cliente}</td>
                         <td className="pr-3">{m.asunto}</td>
                         <td className="pr-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${m.origen === 'PAGO' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{m.origen === 'PAGO' ? 'Sistema' : 'Manual'}</span>
+                          <span className={`text-label px-2 py-0.5 rounded-full ${m.origen === 'PAGO' ? 'bg-info-soft text-info' : 'bg-surface-3 text-ink-2'}`}>{m.origen === 'PAGO' ? 'Sistema' : 'Manual'}</span>
                         </td>
                         <td className="pr-3 text-right font-medium whitespace-nowrap">{fmt(m.monto)}</td>
                         <td className="pr-3">
-                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs text-gray-900">
+                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-chip border border-line-strong bg-surface px-2 text-label text-ink">
                             {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
                           </select>
                         </td>
                         <td className="pr-3 text-right whitespace-nowrap">{r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}</td>
                         <td className="pr-3 text-right whitespace-nowrap">{fmt(r.mw)}</td>
                         <td className="pr-3 text-right whitespace-nowrap">{fmt(r.operadorFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoJustiniano)}</td>
+                        <td className="pr-3 text-right whitespace-nowrap text-ink-2">{fmt(r.fondoFernando)}</td>
+                        <td className="pr-3 text-right whitespace-nowrap text-ink-2">{fmt(r.fondoJustiniano)}</td>
                         <td className="text-right">
-                          <button onClick={() => eliminarMovimiento(m.id)} className="text-gray-500 hover:text-red-600 p-1" title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}><Trash2 className="h-4 w-4" /></button>
+                          <button onClick={() => eliminarMovimiento(m.id)} className="text-ink-2 hover:text-danger p-1" title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}><Trash2 className="h-4 w-4" /></button>
                         </td>
                       </tr>
                     )
@@ -350,10 +350,10 @@ export default function ComisionesPage() {
         <div className="space-y-6">
           <div className="flex items-center gap-3 flex-wrap">
             <Label className="mb-0">Período:</Label>
-            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium text-gray-900">
+            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-chip border border-line-strong bg-surface px-3 text-body-sm font-medium text-ink">
               {periodos.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
-            <span className="text-sm text-gray-500">Ingreso bruto: <strong className="text-gray-900">{fmt(totales.ingresoBruto)}</strong></span>
+            <span className="text-body-sm text-ink-2">Ingreso bruto: <strong className="text-ink">{fmt(totales.ingresoBruto)}</strong></span>
             <Button onClick={exportarCSV} variant="outline" size="sm" className="gap-2 ml-auto"><Download className="h-4 w-4" /> Exportar CSV</Button>
           </div>
 
@@ -366,13 +366,13 @@ export default function ComisionesPage() {
                   const liq = liqDe(b)
                   const pagado = !!liq?.pagado
                   return (
-                    <div key={b} className={`flex items-center justify-between rounded-lg border p-4 ${pagado ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
+                    <div key={b} className={`flex items-center justify-between rounded-control border p-4 ${pagado ? 'bg-success-soft border-success-line' : 'bg-surface'}`}>
                       <div>
-                        <p className="font-semibold text-gray-900">{BENEFICIARIO_LABEL[b]}</p>
-                        {pagado && liq?.fechaPago && <p className="text-xs text-green-700">Pagado el {fmtFecha(liq.fechaPago)}</p>}
+                        <p className="font-semibold text-ink">{BENEFICIARIO_LABEL[b]}</p>
+                        {pagado && liq?.fechaPago && <p className="text-label text-success">Pagado el {fmtFecha(liq.fechaPago)}</p>}
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-lg font-bold text-gray-900">{fmt(monto)}</span>
+                        <span className="text-heading font-semibold text-ink">{fmt(monto)}</span>
                         <Button
                           size="sm"
                           variant={pagado ? 'outline' : 'default'}
@@ -386,9 +386,9 @@ export default function ComisionesPage() {
                     </div>
                   )
                 })}
-                <div className="flex justify-between border-t pt-3 text-sm">
-                  <span className="font-semibold text-gray-900">Subtotal a pagar</span>
-                  <span className="font-bold text-gray-900">{fmt(totales.subtotalPagable)}</span>
+                <div className="flex justify-between border-t pt-3 text-body-sm">
+                  <span className="font-semibold text-ink">Subtotal a pagar</span>
+                  <span className="font-semibold text-ink">{fmt(totales.subtotalPagable)}</span>
                 </div>
               </div>
             </CardContent>
@@ -397,11 +397,11 @@ export default function ComisionesPage() {
           <Card>
             <CardHeader><CardTitle variant="section">Fondo de Desarrollo del período (acumula, no se paga)</CardTitle></CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Fernando (12%)</span><strong className="text-gray-900">{fmt(totales.fondoFernando)}</strong></div>
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Justiniano (8%)</span><strong className="text-gray-900">{fmt(totales.fondoJustiniano)}</strong></div>
+              <div className="grid grid-cols-2 gap-4 text-body-sm">
+                <div className="flex justify-between rounded-control bg-surface-2 p-3"><span className="text-ink-2">Fondo Fernando (12%)</span><strong className="text-ink">{fmt(totales.fondoFernando)}</strong></div>
+                <div className="flex justify-between rounded-control bg-surface-2 p-3"><span className="text-ink-2">Fondo Justiniano (8%)</span><strong className="text-ink">{fmt(totales.fondoJustiniano)}</strong></div>
               </div>
-              <p className={`text-sm mt-3 ${Math.abs(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo) < 0.01 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-body-sm mt-3 ${Math.abs(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo) < 0.01 ? 'text-success' : 'text-danger'}`}>
                 Control: bruto − pagable − fondo = {fmt(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo)}
               </p>
             </CardContent>
@@ -419,10 +419,10 @@ export default function ComisionesPage() {
               return (
                 <Card key={b}>
                   <CardHeader><CardTitle variant="section">Fondo {BENEFICIARIO_LABEL[b]}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <div className="flex justify-between"><span className="text-gray-600">Acumulado histórico</span><span className="text-gray-900">{fmt(acum)}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Distribuido</span><span className="text-gray-900">− {fmt(distrib)}</span></div>
-                    <div className="flex justify-between border-t pt-1 font-bold"><span className="text-gray-900">Saldo disponible</span><span className="text-green-700">{fmt(acum - distrib)}</span></div>
+                  <CardContent className="space-y-1 text-body-sm">
+                    <div className="flex justify-between"><span className="text-ink-2">Acumulado histórico</span><span className="text-ink">{fmt(acum)}</span></div>
+                    <div className="flex justify-between"><span className="text-ink-2">Distribuido</span><span className="text-ink">− {fmt(distrib)}</span></div>
+                    <div className="flex justify-between border-t pt-1 font-semibold"><span className="text-ink">Saldo disponible</span><span className="text-success">{fmt(acum - distrib)}</span></div>
                   </CardContent>
                 </Card>
               )
@@ -436,7 +436,7 @@ export default function ComisionesPage() {
                 <div><Label>Fecha</Label><Input type="date" value={dist.fecha} onChange={(e) => setDist({ ...dist, fecha: e.target.value })} /></div>
                 <div>
                   <Label>Beneficiario</Label>
-                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
+                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
                     <option value="FERNANDO">Fernando</option>
                     <option value="JUSTINIANO">Justiniano</option>
                   </select>
@@ -451,17 +451,17 @@ export default function ComisionesPage() {
           <Card>
             <CardHeader><CardTitle variant="section">Distribuciones registradas</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm text-gray-800">
-                <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
+              <table className="w-full text-body-sm text-ink">
+                <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
                 <tbody>
-                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-gray-500">Sin distribuciones registradas.</td></tr>}
+                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-ink-2">Sin distribuciones registradas.</td></tr>}
                   {distribuciones.map((d) => (
                     <tr key={d.id} className="border-b last:border-0">
                       <td className="py-2 pr-3">{fmtFecha(d.fecha)}</td>
                       <td className="pr-3">{BENEFICIARIO_LABEL[d.beneficiario]}</td>
                       <td className="pr-3 text-right">{fmt(d.monto)}</td>
-                      <td className="pr-3 text-gray-600">{d.notas || '—'}</td>
-                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-gray-500 hover:text-red-600 p-1"><Trash2 className="h-4 w-4" /></button></td>
+                      <td className="pr-3 text-ink-2">{d.notas || '—'}</td>
+                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-ink-2 hover:text-danger p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
                 </tbody>

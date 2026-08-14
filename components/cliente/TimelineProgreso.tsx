@@ -53,7 +53,7 @@ export default function TimelineProgreso({ tramite }: { tramite: any }) {
 
   return (
     <Card>
-      <CardBody className="space-y-5">
+      <CardBody className="space-y-4">
         <LabeledProgress
           value={progreso}
           caption={completo ? 'Trámite completado' : 'Progreso del trámite'}

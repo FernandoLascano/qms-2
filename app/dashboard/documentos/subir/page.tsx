@@ -136,8 +136,8 @@ export default function SubirDocumentoPage() {
           </Button>
         </Link>
         <div>
-          <h2 className="text-3xl font-bold text-brand-900">Subir Documento</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-display text-ink">Subir Documento</h2>
+          <p className="text-ink-2 mt-1">
             Carga los documentos necesarios para tu trámite
           </p>
         </div>
@@ -171,9 +171,9 @@ export default function SubirDocumentoPage() {
                 ))}
               </Select>
               {tramites.length === 0 && (
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-body-sm text-ink-2 mt-1">
                   No tienes trámites activos.{' '}
-                  <Link href="/tramite/nuevo" className="text-blue-600 hover:underline">
+                  <Link href="/tramite/nuevo" className="text-info hover:underline">
                     Crear uno ahora
                   </Link>
                 </p>
@@ -221,7 +221,7 @@ export default function SubirDocumentoPage() {
                 id="descripcion"
                 value={formData.descripcion}
                 onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
-                className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
                 rows={3}
                 placeholder="Información adicional sobre el documento..."
                 disabled={subiendo}
@@ -234,23 +234,23 @@ export default function SubirDocumentoPage() {
               <div className="mt-2">
                 <label
                   htmlFor="file"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition"
+                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-line-strong rounded-control cursor-pointer hover:bg-surface-2 transition"
                 >
                   {archivo ? (
                     <div className="text-center">
-                      <FileText className="h-10 w-10 text-blue-600 mx-auto mb-2" />
-                      <p className="text-sm font-medium text-gray-900">{archivo.name}</p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <FileText className="h-10 w-10 text-info mx-auto mb-2" />
+                      <p className="text-body-sm font-medium text-ink">{archivo.name}</p>
+                      <p className="text-label text-ink-2 mt-1">
                         {(archivo.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   ) : (
                     <div className="text-center">
-                      <Upload className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600">
-                        <span className="font-medium text-blue-600">Click para subir</span> o arrastra el archivo
+                      <Upload className="h-10 w-10 text-ink-3 mx-auto mb-2" />
+                      <p className="text-body-sm text-ink-2">
+                        <span className="font-medium text-info">Click para subir</span> o arrastra el archivo
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-label text-ink-2 mt-1">
                         PDF, JPG o PNG (máx. 10MB)
                       </p>
                     </div>
@@ -302,12 +302,12 @@ export default function SubirDocumentoPage() {
       </Card>
 
       {/* Información */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-info-line bg-info-soft">
         <CardHeader>
-          <CardTitle className="text-blue-900">Documentos Requeridos</CardTitle>
+          <CardTitle className="text-info">Documentos Requeridos</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2 text-sm text-blue-900">
+          <ul className="space-y-2 text-body-sm text-info">
             <li>• DNI de todos los socios (frente y dorso)</li>
             <li>• Constancia de CUIT de todos los socios</li>
             <li>• Comprobante de domicilio de la sociedad</li>

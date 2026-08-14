@@ -116,44 +116,44 @@ export default function DomiciliosPage() {
   function badgeVencimiento(item: Item) {
     if (!item.fechaVencimiento) return null
     const dias = diasHasta(item.fechaVencimiento)
-    if (dias < 0) return <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Vencido hace {Math.abs(dias)} d</span>
-    if (dias <= config.diasAlerta) return <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Vence en {dias} d</span>
-    return <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Vigente</span>
+    if (dias < 0) return <span className="text-label font-semibold px-2 py-0.5 rounded-full bg-danger-soft text-danger">Vencido hace {Math.abs(dias)} d</span>
+    if (dias <= config.diasAlerta) return <span className="text-label font-semibold px-2 py-0.5 rounded-full bg-warning-soft text-warning">Vence en {dias} d</span>
+    return <span className="text-label font-semibold px-2 py-0.5 rounded-full bg-success-soft text-success">Vigente</span>
   }
 
-  if (loading) return <div className="p-8 text-gray-600">Cargando…</div>
+  if (loading) return <div className="p-8 text-ink-2">Cargando…</div>
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto text-gray-900">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto text-ink">
       <div className="flex items-center gap-3 mb-6">
-        <div className="h-11 w-11 rounded-xl bg-brand-700 flex items-center justify-center">
-          <Building className="h-6 w-6 text-white" />
+        <div className="h-11 w-11 rounded-control bg-primary flex items-center justify-center">
+          <Building className="h-6 w-6 text-on-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Domicilios en Sede</h1>
-          <p className="text-sm text-gray-500">Clientes con domicilio legal en la oficina · vencimientos y renovaciones</p>
+          <h1 className="text-title font-semibold text-ink">Domicilios en Sede</h1>
+          <p className="text-body-sm text-ink-2">Clientes con domicilio legal en la oficina · vencimientos y renovaciones</p>
         </div>
       </div>
 
       {/* Parámetros */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs text-gray-500">Direcciones de la sede</p>
+        <div className="rounded-control border bg-surface p-4">
+          <p className="text-label text-ink-2">Direcciones de la sede</p>
           {config.direcciones.length > 0 ? (
-            <ul className="text-sm font-semibold text-gray-900 list-disc list-inside">
+            <ul className="text-body-sm font-semibold text-ink list-disc list-inside">
               {config.direcciones.map((d, i) => <li key={i}>{d}</li>)}
             </ul>
           ) : (
-            <p className="text-sm font-semibold text-gray-900">— (configuralas)</p>
+            <p className="text-body-sm font-semibold text-ink">— (configuralas)</p>
           )}
         </div>
-        <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs text-gray-500">Precio anual (default)</p>
-          <p className="text-sm font-semibold text-gray-900">{config.precioAnual ? fmt(config.precioAnual) : '— (configuralo)'}</p>
+        <div className="rounded-control border bg-surface p-4">
+          <p className="text-label text-ink-2">Precio anual (default)</p>
+          <p className="text-body-sm font-semibold text-ink">{config.precioAnual ? fmt(config.precioAnual) : '— (configuralo)'}</p>
         </div>
-        <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs text-gray-500">Alerta de vencimiento</p>
-          <p className="text-sm font-semibold text-gray-900">{config.diasAlerta} días antes</p>
+        <div className="rounded-control border bg-surface p-4">
+          <p className="text-label text-ink-2">Alerta de vencimiento</p>
+          <p className="text-body-sm font-semibold text-ink">{config.diasAlerta} días antes</p>
         </div>
       </div>
 
@@ -161,14 +161,14 @@ export default function DomiciliosPage() {
       <Card className="mb-6">
         <CardHeader><CardTitle variant="section">Cargar una sociedad que ya contrató</CardTitle></CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-500 mb-3">Para clientes a los que ya les ofreciste y aceptaron: elegí la sociedad y cargá el vencimiento.</p>
+          <p className="text-body-sm text-ink-2 mb-3">Para clientes a los que ya les ofreciste y aceptaron: elegí la sociedad y cargá el vencimiento.</p>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
             <div className="md:col-span-2">
-              <label className="text-sm font-medium text-gray-900">Sociedad</label>
+              <label className="text-body-sm font-medium text-ink">Sociedad</label>
               <select
                 value={nuevo.tramiteId}
                 onChange={(e) => setNuevo({ ...nuevo, tramiteId: e.target.value })}
-                className="mt-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900"
+                className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink"
               >
                 <option value="">— Elegí una sociedad —</option>
                 {disponibles.map((d) => (
@@ -177,27 +177,27 @@ export default function DomiciliosPage() {
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-900">Dirección</label>
+              <label className="text-body-sm font-medium text-ink">Dirección</label>
               <select
                 value={nuevo.direccion}
                 onChange={(e) => setNuevo({ ...nuevo, direccion: e.target.value })}
-                className="mt-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900"
+                className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink"
               >
                 <option value="">{config.direcciones[0] ? `(default: ${config.direcciones[0]})` : '— elegí —'}</option>
                 {config.direcciones.map((d, i) => <option key={i} value={d}>{d}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-900">Monto anual</label>
-              <Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder={String(config.precioAnual || 0)} className="mt-1 text-gray-900" />
+              <label className="text-body-sm font-medium text-ink">Monto anual</label>
+              <Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder={String(config.precioAnual || 0)} className="mt-1 text-ink" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-900">Inicio</label>
-              <Input type="date" value={nuevo.fechaInicio} onChange={(e) => setNuevo({ ...nuevo, fechaInicio: e.target.value, fechaVencimiento: masUnAnioISO(e.target.value) })} className="mt-1 text-gray-900" />
+              <label className="text-body-sm font-medium text-ink">Inicio</label>
+              <Input type="date" value={nuevo.fechaInicio} onChange={(e) => setNuevo({ ...nuevo, fechaInicio: e.target.value, fechaVencimiento: masUnAnioISO(e.target.value) })} className="mt-1 text-ink" />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-900">Vencimiento</label>
-              <Input type="date" value={nuevo.fechaVencimiento} onChange={(e) => setNuevo({ ...nuevo, fechaVencimiento: e.target.value })} className="mt-1 text-gray-900" />
+              <label className="text-body-sm font-medium text-ink">Vencimiento</label>
+              <Input type="date" value={nuevo.fechaVencimiento} onChange={(e) => setNuevo({ ...nuevo, fechaVencimiento: e.target.value })} className="mt-1 text-ink" />
             </div>
           </div>
           <div className="mt-3">
@@ -211,39 +211,39 @@ export default function DomiciliosPage() {
         <CardHeader><CardTitle variant="section">Pendientes de contactar ({pendientes.length})</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           {pendientes.length === 0 ? (
-            <p className="text-sm text-gray-500 py-2">No hay solicitudes pendientes.</p>
+            <p className="text-body-sm text-ink-2 py-2">No hay solicitudes pendientes.</p>
           ) : (
-            <table className="w-full text-sm text-gray-800">
-              <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th></th></tr></thead>
+            <table className="w-full text-body-sm text-ink">
+              <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th></th></tr></thead>
               <tbody>
                 {pendientes.map((i) => (
                   <tr key={i.id} className="border-b last:border-0 align-top">
                     <td className="py-2 pr-3">
-                      <div className="font-medium text-gray-900">{i.tramite.cliente}</div>
-                      {i.tramite.email && <div className="text-xs text-gray-500">{i.tramite.email}</div>}
+                      <div className="font-medium text-ink">{i.tramite.cliente}</div>
+                      {i.tramite.email && <div className="text-label text-ink-2">{i.tramite.email}</div>}
                     </td>
                     <td className="pr-3">
-                      <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-brand-700 hover:underline inline-flex items-center gap-1">
+                      <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-primary hover:underline inline-flex items-center gap-1">
                         {i.tramite.denominacion} <ExternalLink className="h-3 w-3" />
                       </Link>
                     </td>
-                    <td className="pr-3 text-gray-600 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
+                    <td className="pr-3 text-ink-2 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
                     <td className="text-right">
                       {activando?.id === i.id ? (
                         <div className="flex items-center gap-2 justify-end flex-wrap">
-                          <select value={activando.direccion} onChange={(e) => setActivando({ ...activando, direccion: e.target.value })} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs text-gray-900">
+                          <select value={activando.direccion} onChange={(e) => setActivando({ ...activando, direccion: e.target.value })} className="h-8 rounded-chip border border-line-strong bg-surface px-2 text-label text-ink">
                             <option value="">Dirección…</option>
                             {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
                           </select>
-                          <span className="text-gray-600 text-xs">$</span>
-                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ ...activando, monto: e.target.value })} className="h-8 w-28 text-gray-900" />
+                          <span className="text-ink-2 text-label">$</span>
+                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ ...activando, monto: e.target.value })} className="h-8 w-28 text-ink" />
                           <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: Number(activando.monto), direccion: activando.direccion || undefined }, 'Servicio activado')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Confirmar</Button>
                           <Button size="sm" variant="outline" onClick={() => setActivando(null)}>Cancelar</Button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 justify-end">
                           <Button size="sm" onClick={() => setActivando({ id: i.id, monto: String(config.precioAnual || ''), direccion: config.direcciones[0] || '' })} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Activar</Button>
-                          <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Marcado como no contratado')} className="gap-1 text-gray-700"><XCircle className="h-4 w-4" /> No contrató</Button>
+                          <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Marcado como no contratado')} className="gap-1 text-ink-2"><XCircle className="h-4 w-4" /> No contrató</Button>
                         </div>
                       )}
                     </td>
@@ -260,39 +260,39 @@ export default function DomiciliosPage() {
         <CardHeader><CardTitle variant="section">Activos ({activos.length})</CardTitle></CardHeader>
         <CardContent>
           {activos.length === 0 ? (
-            <p className="text-sm text-gray-500 py-2">No hay servicios activos.</p>
+            <p className="text-body-sm text-ink-2 py-2">No hay servicios activos.</p>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {activos.map((i) => (
-                <div key={i.id} className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition">
+                <div key={i.id} className="rounded-control border border-line bg-surface p-card shadow-raise hover:shadow-raise transition">
                   {editando?.id === i.id ? (
                     /* ---- Modo edición ---- */
                     <div className="space-y-3">
-                      <p className="font-bold text-gray-900">{i.tramite.denominacion}</p>
+                      <p className="font-semibold text-ink">{i.tramite.denominacion}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Dirección</label>
-                          <select value={editando.direccion} onChange={(e) => setEditando({ ...editando, direccion: e.target.value })} className="mt-1 flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
+                          <label className="text-label font-medium text-ink-2">Dirección</label>
+                          <select value={editando.direccion} onChange={(e) => setEditando({ ...editando, direccion: e.target.value })} className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
                             <option value="">— sin dirección —</option>
                             {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Monto anual</label>
-                          <Input type="number" value={editando.monto} onChange={(e) => setEditando({ ...editando, monto: e.target.value })} className="mt-1 text-gray-900" />
+                          <label className="text-label font-medium text-ink-2">Monto anual</label>
+                          <Input type="number" value={editando.monto} onChange={(e) => setEditando({ ...editando, monto: e.target.value })} className="mt-1 text-ink" />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Vencimiento</label>
-                          <Input type="date" value={editando.fechaVencimiento} onChange={(e) => setEditando({ ...editando, fechaVencimiento: e.target.value })} className="mt-1 text-gray-900" />
+                          <label className="text-label font-medium text-ink-2">Vencimiento</label>
+                          <Input type="date" value={editando.fechaVencimiento} onChange={(e) => setEditando({ ...editando, fechaVencimiento: e.target.value })} className="mt-1 text-ink" />
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Notas</label>
-                          <Input value={editando.notas} onChange={(e) => setEditando({ ...editando, notas: e.target.value })} className="mt-1 text-gray-900" placeholder="Opcional" />
+                          <label className="text-label font-medium text-ink-2">Notas</label>
+                          <Input value={editando.notas} onChange={(e) => setEditando({ ...editando, notas: e.target.value })} className="mt-1 text-ink" placeholder="Opcional" />
                         </div>
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'editar', direccion: editando.direccion || null, montoAnual: editando.monto !== '' ? Number(editando.monto) : null, fechaVencimiento: editando.fechaVencimiento, notas: editando.notas }, 'Cambios guardados')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Guardar</Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditando(null)} className="text-gray-700">Cancelar</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditando(null)} className="text-ink-2">Cancelar</Button>
                       </div>
                     </div>
                   ) : (
@@ -300,41 +300,41 @@ export default function DomiciliosPage() {
                     <>
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="font-bold text-gray-900 hover:text-brand-700 truncate block">{i.tramite.denominacion}</Link>
-                          <p className="text-sm text-gray-600 truncate">{i.tramite.cliente}{i.tramite.email ? ` · ${i.tramite.email}` : ''}</p>
+                          <Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="font-semibold text-ink hover:text-primary truncate block">{i.tramite.denominacion}</Link>
+                          <p className="text-body-sm text-ink-2 truncate">{i.tramite.cliente}{i.tramite.email ? ` · ${i.tramite.email}` : ''}</p>
                         </div>
                         {badgeVencimiento(i)}
                       </div>
 
-                      <div className="mt-4 flex items-center gap-2 text-sm text-gray-800">
-                        <MapPin className="h-4 w-4 text-brand-700 shrink-0" />
-                        <span className="truncate">{i.direccion || <span className="text-amber-700">Sin dirección asignada</span>}</span>
+                      <div className="mt-4 flex items-center gap-2 text-body-sm text-ink">
+                        <MapPin className="h-4 w-4 text-primary shrink-0" />
+                        <span className="truncate">{i.direccion || <span className="text-warning">Sin dirección asignada</span>}</span>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 text-sm">
+                      <div className="mt-3 grid grid-cols-2 gap-3 rounded-control bg-surface-2 p-3 text-body-sm">
                         <div>
-                          <p className="text-xs text-gray-500">Monto anual</p>
-                          <p className="font-semibold text-gray-900">{i.montoAnual != null ? fmt(i.montoAnual) : '—'}</p>
+                          <p className="text-label text-ink-2">Monto anual</p>
+                          <p className="font-semibold text-ink">{i.montoAnual != null ? fmt(i.montoAnual) : '—'}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Vence</p>
-                          <p className="font-semibold text-gray-900">{fmtFecha(i.fechaVencimiento)}</p>
+                          <p className="text-label text-ink-2 flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Vence</p>
+                          <p className="font-semibold text-ink">{fmtFecha(i.fechaVencimiento)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Inicio</p>
-                          <p className="text-gray-700">{fmtFecha(i.fechaInicio)}</p>
+                          <p className="text-label text-ink-2">Inicio</p>
+                          <p className="text-ink-2">{fmtFecha(i.fechaInicio)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Último cobro</p>
-                          <p className="text-gray-700">{fmtFecha(i.ultimoCobro)}</p>
+                          <p className="text-label text-ink-2">Último cobro</p>
+                          <p className="text-ink-2">{fmtFecha(i.ultimoCobro)}</p>
                         </div>
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'renovar' }, 'Renovado 1 año')} className="gap-1"><RefreshCw className="h-4 w-4" /> Renovar 1 año</Button>
-                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-gray-700" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditando({ id: i.id, direccion: i.direccion || '', monto: i.montoAnual != null ? String(i.montoAnual) : '', fechaVencimiento: toDateInput(i.fechaVencimiento), notas: i.notas || '' })} className="gap-1 text-gray-700"><Pencil className="h-4 w-4" /> Editar</Button>
-                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Servicio dado de baja')} className="gap-1 text-gray-700"><XCircle className="h-4 w-4" /> Baja</Button>
+                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-ink-2" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditando({ id: i.id, direccion: i.direccion || '', monto: i.montoAnual != null ? String(i.montoAnual) : '', fechaVencimiento: toDateInput(i.fechaVencimiento), notas: i.notas || '' })} className="gap-1 text-ink-2"><Pencil className="h-4 w-4" /> Editar</Button>
+                        <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'cancelar' }, 'Servicio dado de baja')} className="gap-1 text-ink-2"><XCircle className="h-4 w-4" /> Baja</Button>
                       </div>
                     </>
                   )}
@@ -350,14 +350,14 @@ export default function DomiciliosPage() {
         <Card>
           <CardHeader><CardTitle variant="section">Cancelados / no contrataron ({cancelados.length})</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm text-gray-800">
-              <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th></th></tr></thead>
+            <table className="w-full text-body-sm text-ink">
+              <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th></th></tr></thead>
               <tbody>
                 {cancelados.map((i) => (
                   <tr key={i.id} className="border-b last:border-0">
-                    <td className="py-2 pr-3 text-gray-900">{i.tramite.cliente}</td>
-                    <td className="pr-3"><Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-brand-700 hover:underline">{i.tramite.denominacion}</Link></td>
-                    <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: config.precioAnual, direccion: config.direcciones[0] || undefined }, 'Reactivado')} className="text-gray-700">Reactivar</Button></td>
+                    <td className="py-2 pr-3 text-ink">{i.tramite.cliente}</td>
+                    <td className="pr-3"><Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-primary hover:underline">{i.tramite.denominacion}</Link></td>
+                    <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: config.precioAnual, direccion: config.direcciones[0] || undefined }, 'Reactivado')} className="text-ink-2">Reactivar</Button></td>
                   </tr>
                 ))}
               </tbody>

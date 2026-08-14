@@ -25,9 +25,9 @@ interface HealthResponse {
 const REFRESH_MS = 300_000
 
 const DOT: Record<ServiceStatus, string> = {
-  ok: 'bg-green-500',
-  down: 'bg-red-500',
-  unconfigured: 'bg-gray-300',
+  ok: 'bg-success-solid',
+  down: 'bg-danger-solid',
+  unconfigured: 'bg-n-300',
 }
 
 const STATUS_LABEL: Record<ServiceStatus, string> = {
@@ -37,9 +37,9 @@ const STATUS_LABEL: Record<ServiceStatus, string> = {
 }
 
 const STATUS_TEXT: Record<ServiceStatus, string> = {
-  ok: 'text-green-700',
-  down: 'text-red-700',
-  unconfigured: 'text-gray-400',
+  ok: 'text-success',
+  down: 'text-danger',
+  unconfigured: 'text-ink-3',
 }
 
 export function ServiceStatus() {
@@ -86,23 +86,23 @@ export function ServiceStatus() {
   const downCount = services.filter((s) => s.status === 'down').length
 
   return (
-    <Card className={degraded ? 'border-2 border-red-300' : ''}>
+    <Card className={degraded ? 'border-2 border-danger-line' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <div className="flex items-center gap-2">
           <div
-            className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-              degraded ? 'bg-red-100' : 'bg-green-100'
+            className={`h-10 w-10 rounded-control flex items-center justify-center ${
+              degraded ? 'bg-danger-soft' : 'bg-success-soft'
             }`}
           >
             {degraded ? (
-              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <AlertTriangle className="h-5 w-5 text-danger" />
             ) : (
-              <Activity className="h-5 w-5 text-green-600" />
+              <Activity className="h-5 w-5 text-success" />
             )}
           </div>
           <div>
-            <CardTitle className="text-base font-bold text-gray-900">Estado de servicios</CardTitle>
-            <p className="text-xs text-gray-500">
+            <CardTitle className="text-body font-semibold text-ink">Estado de servicios</CardTitle>
+            <p className="text-label text-ink-2">
               {loading && !data
                 ? 'Verificando…'
                 : error
@@ -115,7 +115,7 @@ export function ServiceStatus() {
         </div>
         <div className="flex items-center gap-3">
           {data && !error && (
-            <span className="text-xs text-gray-400 hidden sm:inline">
+            <span className="text-label text-ink-3 hidden sm:inline">
               hace {secondsAgo < 60 ? `${secondsAgo}s` : `${Math.floor(secondsAgo / 60)}min`}
             </span>
           )}
@@ -123,7 +123,7 @@ export function ServiceStatus() {
             type="button"
             onClick={load}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-control border border-line px-3 py-1 text-label font-medium text-ink-2 hover:bg-surface-2 transition disabled:opacity-60"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
@@ -132,7 +132,7 @@ export function ServiceStatus() {
       </CardHeader>
       <CardContent>
         {error ? (
-          <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-control bg-danger-soft border border-danger-line px-4 py-3 text-body-sm text-danger">
             No se pudo obtener el estado de los servicios ({error}).
           </div>
         ) : (
@@ -141,28 +141,28 @@ export function ServiceStatus() {
               <div key={s.key} className="flex items-center gap-3">
                 <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
                   {s.status === 'ok' && (
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success-solid opacity-60" />
                   )}
                   <span
                     className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                      loading && !data ? 'bg-gray-200 animate-pulse' : DOT[s.status]
+                      loading && !data ? 'bg-n-200 animate-pulse' : DOT[s.status]
                     }`}
                   />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{s.label}</p>
+                  <p className="text-body-sm font-medium text-ink truncate">{s.label}</p>
                   {s.detail && s.status !== 'ok' && (
-                    <p className="text-xs text-gray-400 truncate" title={s.detail}>
+                    <p className="text-label text-ink-3 truncate" title={s.detail}>
                       {s.detail}
                     </p>
                   )}
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className={`text-xs font-semibold ${STATUS_TEXT[s.status]}`}>
+                  <p className={`text-label font-semibold ${STATUS_TEXT[s.status]}`}>
                     {loading && !data ? '—' : STATUS_LABEL[s.status]}
                   </p>
                   {s.status === 'ok' && s.latencyMs != null && (
-                    <p className="text-[11px] text-gray-400">{s.latencyMs} ms</p>
+                    <p className="text-[11px] text-ink-3">{s.latencyMs} ms</p>
                   )}
                 </div>
               </div>
@@ -171,7 +171,7 @@ export function ServiceStatus() {
         )}
 
         {!error && !degraded && data && (
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-green-600">
+          <div className="mt-4 flex items-center gap-2 text-label text-success">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Sin incidencias detectadas
           </div>

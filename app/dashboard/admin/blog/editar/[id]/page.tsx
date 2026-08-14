@@ -338,8 +338,8 @@ export default function EditarPostPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-700 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Cargando post...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-line mx-auto"></div>
+          <p className="text-ink-2 mt-4">Cargando post...</p>
         </div>
       </div>
     )
@@ -352,19 +352,19 @@ export default function EditarPostPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/admin/blog"
-            className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+            className="p-2 hover:bg-surface-3 rounded-control transition cursor-pointer"
           >
-            <ArrowLeft className="w-6 h-6 text-gray-900" />
+            <ArrowLeft className="w-6 h-6 text-ink" />
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-brand-900">Editar Nota</h1>
-            <p className="text-gray-600 mt-1">Modifica los campos que necesites</p>
+            <h1 className="text-display text-ink">Editar Nota</h1>
+            <p className="text-ink-2 mt-1">Modifica los campos que necesites</p>
           </div>
         </div>
         <button
           type="button"
           onClick={() => setMostrarModalIA(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition shadow-lg cursor-pointer"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-control hover:from-purple-700 hover:to-pink-700 transition shadow-raise cursor-pointer"
         >
           <Sparkles className="w-5 h-5" />
           Generar con IA
@@ -374,12 +374,12 @@ export default function EditarPostPage() {
       {/* Modal de IA */}
       {mostrarModalIA && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-600" />
+          <div className="bg-surface rounded-card shadow-modal max-w-2xl w-full p-8">
+            <h2 className="text-title font-semibold text-ink mb-4 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-info" />
               Generar Artículo con IA
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-ink-2 mb-6">
               Describe el tema sobre el que quieres escribir y la IA generará un artículo completo con contenido, metadatos y SEO optimizado.
             </p>
             <textarea
@@ -387,7 +387,7 @@ export default function EditarPostPage() {
               onChange={(e) => setPromptIA(e.target.value)}
               placeholder="Ejemplo: 'Escribe un artículo sobre las ventajas de constituir una S.A.S. versus una S.R.L. en Argentina, enfocado en emprendedores tecnológicos'"
               rows={6}
-              className="w-full border-2 border-purple-200 rounded-lg px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              className="w-full border-2 border-info-line rounded-control px-4 py-3 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-info-solid focus:border-transparent resize-none"
               disabled={generandoIA}
             />
             <div className="flex items-center justify-end gap-3 mt-6">
@@ -397,7 +397,7 @@ export default function EditarPostPage() {
                   setMostrarModalIA(false)
                   setPromptIA('')
                 }}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+                className="px-6 py-2 border border-line-strong text-ink-2 rounded-control hover:bg-surface-2 transition cursor-pointer"
                 disabled={generandoIA}
               >
                 Cancelar
@@ -406,7 +406,7 @@ export default function EditarPostPage() {
                 type="button"
                 onClick={generarArticuloCompleto}
                 disabled={generandoIA || !promptIA.trim()}
-                className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="flex items-center gap-2 px-6 py-2 bg-primary text-on-primary rounded-control hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {generandoIA ? (
                   <>
@@ -427,26 +427,26 @@ export default function EditarPostPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Información Básica */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Información Básica</h2>
+        <div className="bg-surface rounded-control shadow-raise p-6">
+          <h2 className="text-title font-semibold text-ink mb-4">Información Básica</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Título * <span className="text-gray-500 font-normal">(se auto-genera el slug)</span>
+              <label className="block text-body-sm font-medium text-ink-2 mb-1">
+                Título * <span className="text-ink-2 font-normal">(se auto-genera el slug)</span>
               </label>
               <input
                 type="text"
                 name="titulo"
                 value={formData.titulo}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-body-sm font-medium text-ink-2 mb-1">
                 Slug (URL) *
               </label>
               <input
@@ -454,14 +454,14 @@ export default function EditarPostPage() {
                 name="slug"
                 value={formData.slug}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">URL: /blog/{formData.slug}</p>
+              <p className="text-body-sm text-ink-2 mt-1">URL: /blog/{formData.slug}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-body-sm font-medium text-ink-2 mb-1">
                 Descripción/Resumen *
               </label>
               <textarea
@@ -469,19 +469,19 @@ export default function EditarPostPage() {
                 value={formData.descripcion}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 required
               />
             </div>
 
             <div className="grid md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                <label className="block text-body-sm font-medium text-ink-2 mb-1">Categoría</label>
                 <select
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full border border-line-strong rounded-control px-4 py-2 text-ink focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   <option value="Emprendimiento">Emprendimiento</option>
                   <option value="Guías">Guías</option>
@@ -493,26 +493,26 @@ export default function EditarPostPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Autor</label>
+                <label className="block text-body-sm font-medium text-ink-2 mb-1">Autor</label>
                 <input
                   type="text"
                   name="autor"
                   value={formData.autor}
                   onChange={handleInputChange}
                   placeholder="QuieroMiSAS"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo de lectura</label>
+                <label className="block text-body-sm font-medium text-ink-2 mb-1">Tiempo de lectura</label>
                 <input
                   type="text"
                   name="lectura"
                   value={formData.lectura}
                   onChange={handleInputChange}
                   placeholder="5 min"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
               </div>
             </div>
@@ -520,8 +520,8 @@ export default function EditarPostPage() {
         </div>
 
         {/* Imágenes */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Imágenes</h2>
+        <div className="bg-surface rounded-control shadow-raise p-6">
+          <h2 className="text-title font-semibold text-ink mb-4">Imágenes</h2>
 
           <BlogHeroImageField
             imagenHero={formData.imagenHero}
@@ -536,12 +536,12 @@ export default function EditarPostPage() {
         </div>
 
         {/* Tags */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Tags y Etiquetas</h2>
+        <div className="bg-surface rounded-control shadow-raise p-6">
+          <h2 className="text-title font-semibold text-ink mb-4">Tags y Etiquetas</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+              <label className="block text-body-sm font-medium text-ink-2 mb-2">Tags</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -549,12 +549,12 @@ export default function EditarPostPage() {
                   onChange={(e) => setNewTag(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   placeholder="Agregar tag..."
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="flex-1 border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition cursor-pointer"
+                  className="px-4 py-2 bg-primary text-on-primary rounded-control hover:bg-primary-hover transition cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -563,13 +563,13 @@ export default function EditarPostPage() {
                 {formData.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 bg-brand-100 text-brand-700 rounded-full text-sm flex items-center gap-2"
+                    className="px-3 py-1 bg-primary-soft text-primary rounded-full text-body-sm flex items-center gap-2"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="hover:text-brand-900 cursor-pointer"
+                      className="hover:text-primary cursor-pointer"
                     >
                       ×
                     </button>
@@ -581,14 +581,14 @@ export default function EditarPostPage() {
         </div>
 
         {/* SEO Avanzado */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-surface rounded-control shadow-raise p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">SEO Avanzado</h2>
+            <h2 className="text-title font-semibold text-ink">SEO Avanzado</h2>
             <button
               type="button"
               onClick={generarDescripcionConIA}
               disabled={generandoIA || !formData.titulo}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-info-soft text-info rounded-control hover:bg-info-solid transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-body-sm"
             >
               <Wand2 className="w-4 h-4" />
               Generar con IA
@@ -597,35 +597,35 @@ export default function EditarPostPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Meta Title <span className="text-gray-500 font-normal">(si es diferente del título)</span>
+              <label className="block text-body-sm font-medium text-ink-2 mb-1">
+                Meta Title <span className="text-ink-2 font-normal">(si es diferente del título)</span>
               </label>
               <input
                 type="text"
                 name="metaTitle"
                 value={formData.metaTitle}
                 onChange={handleInputChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+              <label className="block text-body-sm font-medium text-ink-2 mb-1">Meta Description</label>
               <textarea
                 name="metaDescription"
                 value={formData.metaDescription}
                 onChange={handleInputChange}
                 rows={2}
                 placeholder="Descripción para Google (150-160 caracteres)"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-body-sm text-ink-2 mt-1">
                 {formData.metaDescription.length}/160 caracteres
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Keywords SEO</label>
+              <label className="block text-body-sm font-medium text-ink-2 mb-2">Keywords SEO</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -633,12 +633,12 @@ export default function EditarPostPage() {
                   onChange={(e) => setNewKeyword(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
                   placeholder="Agregar keyword..."
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="flex-1 border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                 />
                 <button
                   type="button"
                   onClick={addKeyword}
-                  className="px-4 py-2 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition cursor-pointer"
+                  className="px-4 py-2 bg-primary text-on-primary rounded-control hover:bg-primary-hover transition cursor-pointer"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -647,13 +647,13 @@ export default function EditarPostPage() {
                 {formData.keywords.map((keyword) => (
                   <span
                     key={keyword}
-                    className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm flex items-center gap-2"
+                    className="px-3 py-1 bg-info-soft text-info rounded-full text-body-sm flex items-center gap-2"
                   >
                     {keyword}
                     <button
                       type="button"
                       onClick={() => removeKeyword(keyword)}
-                      className="hover:text-blue-900 cursor-pointer"
+                      className="hover:text-info cursor-pointer"
                     >
                       ×
                     </button>
@@ -665,35 +665,35 @@ export default function EditarPostPage() {
         </div>
 
         {/* Contenido (Secciones) */}
-        <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-surface rounded-control shadow-raise p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Contenido del Artículo</h2>
+            <h2 className="text-title font-semibold text-ink">Contenido del Artículo</h2>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => addSection('h2')}
-                className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm cursor-pointer"
+                className="px-3 py-1 bg-info-soft text-info rounded-control hover:bg-info-solid transition text-body-sm cursor-pointer"
               >
                 + Título
               </button>
               <button
                 type="button"
                 onClick={() => addSection('p')}
-                className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm cursor-pointer"
+                className="px-3 py-1 bg-info-soft text-info rounded-control hover:bg-info-solid transition text-body-sm cursor-pointer"
               >
                 + Párrafo
               </button>
               <button
                 type="button"
                 onClick={() => addSection('list')}
-                className="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm cursor-pointer"
+                className="px-3 py-1 bg-success-soft text-success rounded-control hover:bg-success-solid transition text-body-sm cursor-pointer"
               >
                 + Lista
               </button>
               <button
                 type="button"
                 onClick={() => addSection('quote')}
-                className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm cursor-pointer"
+                className="px-3 py-1 bg-warning-soft text-warning rounded-control hover:bg-warning-solid transition text-body-sm cursor-pointer"
               >
                 + Cita
               </button>
@@ -702,9 +702,9 @@ export default function EditarPostPage() {
 
           <div className="space-y-4">
             {sections.map((section, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4">
+              <div key={index} className="border border-line rounded-control p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-body-sm font-medium text-ink-2">
                     {section.type === 'h2' && 'Subtítulo'}
                     {section.type === 'p' && 'Párrafo'}
                     {section.type === 'list' && 'Lista'}
@@ -713,7 +713,7 @@ export default function EditarPostPage() {
                   <button
                     type="button"
                     onClick={() => removeSection(index)}
-                    className="text-brand-600 hover:text-brand-800 cursor-pointer"
+                    className="text-primary hover:text-primary cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -728,12 +728,12 @@ export default function EditarPostPage() {
                           value={item}
                           onChange={(e) => updateListItem(index, itemIndex, e.target.value)}
                           placeholder={`Item ${itemIndex + 1}`}
-                          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                          className="flex-1 border border-line-strong rounded-control px-3 py-2 text-body-sm text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                         />
                         <button
                           type="button"
                           onClick={() => removeListItem(index, itemIndex)}
-                          className="px-2 text-brand-600 hover:text-brand-800 cursor-pointer"
+                          className="px-2 text-primary hover:text-primary cursor-pointer"
                         >
                           ×
                         </button>
@@ -742,7 +742,7 @@ export default function EditarPostPage() {
                     <button
                       type="button"
                       onClick={() => addListItem(index)}
-                      className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                      className="text-body-sm text-info hover:text-info cursor-pointer"
                     >
                       + Agregar item
                     </button>
@@ -757,7 +757,7 @@ export default function EditarPostPage() {
                       })
                     }
                     rows={section.type === 'h2' ? 1 : 3}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    className="w-full border border-line-strong rounded-control px-3 py-2 text-body-sm text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
                   />
                 )}
               </div>
@@ -766,8 +766,8 @@ export default function EditarPostPage() {
         </div>
 
         {/* Opciones de Publicación */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Opciones de Publicación</h2>
+        <div className="bg-surface rounded-control shadow-raise p-6">
+          <h2 className="text-title font-semibold text-ink mb-4">Opciones de Publicación</h2>
 
           <div className="space-y-3">
             <label className="flex items-center gap-3 cursor-pointer">
@@ -776,9 +776,9 @@ export default function EditarPostPage() {
                 name="publicado"
                 checked={formData.publicado}
                 onChange={handleInputChange}
-                className="w-5 h-5 text-brand-700 border-gray-300 rounded focus:ring-brand-500"
+                className="w-5 h-5 text-primary border-line-strong rounded focus:ring-ring"
               />
-              <span className="text-gray-700">Publicar inmediatamente</span>
+              <span className="text-ink-2">Publicar inmediatamente</span>
             </label>
 
             <label className="flex items-center gap-3 cursor-pointer">
@@ -787,25 +787,25 @@ export default function EditarPostPage() {
                 name="destacado"
                 checked={formData.destacado}
                 onChange={handleInputChange}
-                className="w-5 h-5 text-purple-700 border-gray-300 rounded focus:ring-purple-500"
+                className="w-5 h-5 text-info border-line-strong rounded focus:ring-info-solid"
               />
-              <span className="text-gray-700">Marcar como destacado (aparece en home)</span>
+              <span className="text-ink-2">Marcar como destacado (aparece en home)</span>
             </label>
           </div>
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex items-center justify-end gap-4 sticky bottom-0 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+        <div className="flex items-center justify-end gap-4 sticky bottom-0 bg-surface p-4 rounded-control shadow-raise border border-line">
           <Link
             href="/dashboard/admin/blog"
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+            className="px-6 py-3 border border-line-strong text-ink-2 rounded-control hover:bg-surface-2 transition cursor-pointer"
           >
             Cancelar
           </Link>
           <button
             type="button"
             onClick={() => setMostrarPreview(true)}
-            className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 border border-line-strong text-ink-2 rounded-control hover:bg-surface-2 transition cursor-pointer"
           >
             <Eye className="w-5 h-5" />
             Previsualizar
@@ -813,7 +813,7 @@ export default function EditarPostPage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-3 bg-brand-700 text-white rounded-lg hover:bg-brand-800 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-control hover:bg-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Save className="w-5 h-5" />
             {loading ? 'Guardando...' : 'Guardar Nota'}
@@ -824,13 +824,13 @@ export default function EditarPostPage() {
       {/* Modal de Previsualización */}
       {mostrarPreview && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-control max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             {/* Header del Modal */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Previsualización del Artículo</h2>
+            <div className="sticky top-0 bg-surface border-b border-line p-6 flex items-center justify-between">
+              <h2 className="text-title font-semibold text-ink">Previsualización del Artículo</h2>
               <button
                 onClick={() => setMostrarPreview(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                className="text-ink-2 hover:text-ink-2 text-title font-semibold"
               >
                 ×
               </button>
@@ -843,42 +843,42 @@ export default function EditarPostPage() {
                 <img
                   src={formData.imagenHero}
                   alt={formData.imagenAlt || formData.titulo}
-                  className="w-full h-64 object-cover rounded-lg mb-6"
+                  className="w-full h-64 object-cover rounded-control mb-6"
                 />
               )}
 
               {/* Categoría y Fecha */}
-              <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                <span className="px-3 py-1 bg-brand-100 text-brand-700 rounded-full">
+              <div className="flex items-center gap-4 text-body-sm text-ink-2 mb-4">
+                <span className="px-3 py-1 bg-primary-soft text-primary rounded-full">
                   {formData.categoria}
                 </span>
                 <span>{formData.lectura}</span>
               </div>
 
               {/* Título */}
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              <h1 className="text-display font-semibold text-ink mb-4">
                 {formData.titulo || 'Sin título'}
               </h1>
 
               {/* Descripción */}
               {formData.descripcion ? (
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                <p className="text-title text-ink-2 mb-8 leading-relaxed">
                   {formData.descripcion}
                 </p>
               ) : (
-                <p className="text-xl text-gray-400 italic mb-8 leading-relaxed">
+                <p className="text-title text-ink-3 italic mb-8 leading-relaxed">
                   [Agrega una descripción para que aparezca aquí]
                 </p>
               )}
 
               {/* Autor */}
               {formData.autor && (
-                <p className="text-sm text-gray-500 mb-8">
+                <p className="text-body-sm text-ink-2 mb-8">
                   Por {formData.autor}
                 </p>
               )}
 
-              <hr className="my-8 border-gray-200" />
+              <hr className="my-8 border-line" />
 
               {/* Contenido del Artículo */}
               <div className="prose prose-lg max-w-none">
@@ -886,18 +886,18 @@ export default function EditarPostPage() {
                   sections.map((section, index) => {
                     if (section.type === 'h2') {
                       return (
-                        <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4 first:mt-0">
+                        <h2 key={index} className="text-title font-semibold text-ink mt-8 mb-4 first:mt-0">
                           {sectionEditorText(section) || (
-                            <span className="text-gray-400 italic">[Subtítulo vacío]</span>
+                            <span className="text-ink-3 italic">[Subtítulo vacío]</span>
                           )}
                         </h2>
                       )
                     }
                     if (section.type === 'p') {
                       return (
-                        <p key={index} className="text-gray-700 mb-4 leading-relaxed">
+                        <p key={index} className="text-ink-2 mb-4 leading-relaxed">
                           {sectionEditorText(section) || (
-                            <span className="text-gray-400 italic">[Párrafo vacío]</span>
+                            <span className="text-ink-3 italic">[Párrafo vacío]</span>
                           )}
                         </p>
                       )
@@ -907,19 +907,19 @@ export default function EditarPostPage() {
                         <ul key={index} className="list-disc list-inside mb-4 space-y-2">
                           {section.items && section.items.length > 0 ? (
                             section.items.map((item, i) => (
-                              <li key={i} className="text-gray-700">{item || <span className="text-gray-400 italic">[Item vacío]</span>}</li>
+                              <li key={i} className="text-ink-2">{item || <span className="text-ink-3 italic">[Item vacío]</span>}</li>
                             ))
                           ) : (
-                            <li className="text-gray-400 italic">[Lista vacía]</li>
+                            <li className="text-ink-3 italic">[Lista vacía]</li>
                           )}
                         </ul>
                       )
                     }
                     if (section.type === 'quote') {
                       return (
-                        <blockquote key={index} className="border-l-4 border-brand-700 pl-4 italic text-gray-700 mb-4 my-6">
+                        <blockquote key={index} className="border-l-4 border-primary-line pl-4 italic text-ink-2 mb-4 my-6">
                           {sectionEditorText(section) || (
-                            <span className="text-gray-400">[Cita vacía]</span>
+                            <span className="text-ink-3">[Cita vacía]</span>
                           )}
                         </blockquote>
                       )
@@ -927,7 +927,7 @@ export default function EditarPostPage() {
                     return null
                   })
                 ) : (
-                  <p className="text-gray-400 italic text-center py-8">
+                  <p className="text-ink-3 italic text-center py-8">
                     [No hay contenido agregado. Usa el editor para agregar secciones.]
                   </p>
                 )}
@@ -935,13 +935,13 @@ export default function EditarPostPage() {
 
               {/* Tags */}
               {formData.tags.length > 0 && (
-                <div className="mt-8 pt-8 border-t border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Etiquetas:</h3>
+                <div className="mt-8 pt-8 border-t border-line">
+                  <h3 className="text-body-sm font-semibold text-ink-2 mb-3">Etiquetas:</h3>
                   <div className="flex flex-wrap gap-2">
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                        className="px-3 py-1 bg-surface-3 text-ink-2 rounded-full text-body-sm"
                       >
                         {tag}
                       </span>
@@ -952,10 +952,10 @@ export default function EditarPostPage() {
             </div>
 
             {/* Footer del Modal */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 flex justify-end gap-4">
+            <div className="sticky bottom-0 bg-surface-2 border-t border-line p-6 flex justify-end gap-4">
               <button
                 onClick={() => setMostrarPreview(false)}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-white transition cursor-pointer"
+                className="px-6 py-3 border border-line-strong text-ink-2 rounded-control hover:bg-surface transition cursor-pointer"
               >
                 Cerrar
               </button>

@@ -1,16 +1,35 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { redirect, notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { getObjetoSocialTexto } from '@/lib/constants'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { redirect, notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { FileText, Building2, DollarSign, Users, User, CheckCircle, Calendar, Tag, Briefcase, MapPin } from 'lucide-react'
-import CollapsibleCard from '@/components/admin/CollapsibleCard'
+import {
+  ArrowLeft,
+  Briefcase,
+  Building2,
+  Calendar,
+  FileText,
+  Mail,
+  MapPin,
+  Phone,
+  Tag,
+  User,
+  Users,
+} from 'lucide-react'
+
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { getObjetoSocialTexto } from '@/lib/constants'
+import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+
+import { Card, CardBody } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { DataList, DataItem } from '@/components/ui/data-list'
+import { SectionHeader } from '@/components/ui/page-header'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { TabNav, type Tab } from '@/components/ui/tab-nav'
+
 import EditarCBU from '@/components/admin/EditarCBU'
 import SolicitarCBUButton from '@/components/admin/SolicitarCBUButton'
 import EstadoManager from '@/components/admin/EstadoManager'
@@ -31,76 +50,70 @@ import CuentaCapital from '@/components/admin/CuentaCapital'
 import ValidacionTramite from '@/components/admin/ValidacionTramite'
 import ReportingPagos from '@/components/admin/ReportingPagos'
 import EliminarTramite from '@/components/admin/EliminarTramite'
-import { EditDenominaciones, EditObjetoSocial, EditDomicilio, EditInfoGeneral, EditSocios, EditAdministradores } from '@/components/admin/EditableSections'
+import {
+  EditDenominaciones,
+  EditObjetoSocial,
+  EditDomicilio,
+  EditInfoGeneral,
+  EditSocios,
+  EditAdministradores,
+} from '@/components/admin/EditableSections'
 
 interface PageProps {
-  params: Promise<{
-    id: string
-  }>
+  params: Promise<{ id: string }>
+  searchParams?: Promise<{ tab?: string }>
 }
 
-async function AdminTramiteDetallePage({ params }: PageProps) {
-  const session = await getServerSession(authOptions)
+const TABS = ['gestion', 'pagos', 'documentos', 'comunicacion', 'datos', 'cierre'] as const
+type TabId = (typeof TABS)[number]
 
-  if (!session?.user?.id || session.user.rol !== 'ADMIN') {
-    redirect('/dashboard')
-  }
+async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id || session.user.rol !== 'ADMIN') redirect('/dashboard')
 
   const { id } = await params
+  const tabParam = (await searchParams)?.tab
+  const tab: TabId = TABS.includes(tabParam as TabId) ? (tabParam as TabId) : 'gestion'
 
   const tramite = await prisma.tramite.findUnique({
     where: { id },
     include: {
       user: true,
       documentos: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              rol: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'desc' }
-      },
-      pagos: {
-        orderBy: { createdAt: 'desc' }
-      },
-      notificaciones: {
+        include: { user: { select: { id: true, rol: true } } },
         orderBy: { createdAt: 'desc' },
-        take: 5
       },
-      enlacesPago: {
-        orderBy: { createdAt: 'desc' }
-      },
+      pagos: { orderBy: { createdAt: 'desc' } },
+      notificaciones: { orderBy: { createdAt: 'desc' }, take: 5 },
+      enlacesPago: { orderBy: { createdAt: 'desc' } },
       mensajes: {
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true
-            }
-          }
-        },
-        orderBy: { createdAt: 'asc' }
+        include: { user: { select: { name: true, email: true } } },
+        orderBy: { createdAt: 'asc' },
       },
-      emails: {
-        orderBy: { createdAt: 'desc' }
-      }
-    }
+      emails: { orderBy: { createdAt: 'desc' } },
+    },
   })
 
-  if (!tramite) {
-    notFound()
-  }
+  if (!tramite) notFound()
 
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []
+  const datosUsuario = (tramite.datosUsuario as any) || {}
 
-  // El teléfono es obligatorio en el formulario del trámite y se guarda en datosUsuario,
+  // El teléfono es obligatorio en el formulario y se guarda en datosUsuario,
   // pero es opcional en el registro, así que user.phone puede estar vacío.
-  const datosUsuarioTramite = (tramite.datosUsuario as any) || {}
-  const telefonoCliente = tramite.user.phone || datosUsuarioTramite.telefono || ''
+  const telefono = tramite.user.phone || datosUsuario.telefono || ''
+
+  const nombre = tramite.denominacionAprobada || tramite.denominacionSocial1
+  const estado = getEstado(tramite, 'admin')
+  const progreso = calcularProgreso(tramite)
+  const basePath = `/dashboard/admin/tramites/${tramite.id}`
+
+  const docsPendientes = tramite.documentos.filter((d) => d.estado === 'PENDIENTE').length
+  const pagosPendientes = tramite.pagos.filter((p) => p.estado === 'PENDIENTE').length
+  const mensajesSinLeer = tramite.mensajes.filter(
+    (m: any) => !m.leido && m.user?.email === tramite.user.email,
+  ).length
 
   const editProps = {
     tramiteId: tramite.id,
@@ -113,663 +126,545 @@ async function AdminTramiteDetallePage({ params }: PageProps) {
       capitalSocial: tramite.capitalSocial,
       socios,
       administradores,
-      datosUsuario: (tramite.datosUsuario as any) || {},
-    }
+      datosUsuario,
+    },
   }
+
+  const tabs: Tab[] = [
+    { id: 'gestion', label: 'Gestión' },
+    { id: 'pagos', label: 'Pagos', badge: pagosPendientes },
+    { id: 'documentos', label: 'Documentos', badge: docsPendientes },
+    { id: 'comunicacion', label: 'Comunicación', badge: mensajesSinLeer },
+    { id: 'datos', label: 'Datos' },
+    { id: 'cierre', label: 'Cierre' },
+  ]
+
+  const comprobantes = tramite.documentos.filter(
+    (doc) =>
+      doc.tipo === 'COMPROBANTE_DEPOSITO' ||
+      doc.nombre.toLowerCase().includes('comprobante') ||
+      doc.descripcion?.toLowerCase().includes('comprobante'),
+  )
+
+  const paraFirmar = tramite.documentos
+    .filter((doc) =>
+      ['DOCUMENTO_PARA_FIRMAR', 'ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR'].includes(
+        doc.tipo ?? '',
+      ),
+    )
+    .map((doc) => ({
+      id: doc.id,
+      nombre: doc.nombre,
+      descripcion: doc.descripcion,
+      url: doc.url,
+      estado: doc.estado,
+      fechaSubida: doc.fechaSubida,
+    }))
 
   return (
     <div className="space-y-6">
-      {/* Banner de Sociedad Inscripta */}
-      {tramite.sociedadInscripta && (
-        <div className="bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-4 rounded-lg shadow-lg">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-full">
-              <CheckCircle className="h-8 w-8" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold">🎉 Sociedad Inscripta</h3>
-              <p className="text-green-100">
-                {tramite.denominacionAprobada || tramite.denominacionSocial1} S.A.S.
-                {tramite.cuit && ` • CUIT: ${tramite.cuit}`}
-                {tramite.matricula && ` • Matrícula: ${tramite.matricula}`}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin/tramites">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+      {/* ─── Cabecera fija: quién, en qué estado y cuánto lleva ───────── */}
+      <div className="-mx-4 -mt-6 border-b border-line bg-surface px-4 pb-0 pt-4 md:-mx-6 md:-mt-8 md:px-6 md:pt-6">
+        <Link
+          href="/dashboard/admin/tramites"
+          className="inline-flex items-center gap-1.5 rounded-chip text-body-sm text-ink-2 hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          Trámites
         </Link>
-        <div className="flex-1">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-            Administración
-          </p>
-          <h2 className={`text-2xl md:text-3xl font-black ${tramite.sociedadInscripta ? 'text-green-900' : 'text-brand-900'}`}>
-            {tramite.sociedadInscripta ? '✅ Trámite Completado' : 'Gestión de Trámite'}
-          </h2>
-          <p className="text-gray-500 mt-1 font-medium">
-            {tramite.denominacionAprobada || tramite.denominacionSocial1}
-          </p>
-        </div>
-      </div>
 
-      {/* Info del Cliente */}
-      <Card>
-        <CardHeader>
-          <CardTitle variant="section">Información del Cliente</CardTitle>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Nombre</p>
-            <p className="font-semibold text-gray-900">{tramite.user.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Email</p>
-            <p className="font-semibold text-gray-900">{tramite.user.email}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Teléfono</p>
-            <p className="font-semibold text-gray-900">{telefonoCliente || 'No proporcionado'}</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Divisor - Información Detallada */}
-      <div className="border-t-2 border-gray-200 my-8">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-8 mb-1">
-          Formulario
-        </p>
-        <h3 className="text-xl font-black text-brand-900 mb-2">
-          Información Detallada del Formulario
-        </h3>
-        <p className="text-gray-500 mb-6">
-          Todos los datos completados por el cliente en el formulario
-        </p>
-      </div>
-
-      {/* Info General */}
-      <CollapsibleCard
-        title="Información General"
-        icon={<FileText className="h-5 w-5 text-gray-600" />}
-        action={<EditInfoGeneral {...editProps} />}
-      >
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Fecha de Inicio</p>
-            <p className="font-semibold text-gray-900">
-              {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Jurisdicción</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Plan Contratado</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              {tramite.plan}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 mb-1">Capital Social</p>
-            <p className="font-semibold text-gray-900">
-              ${tramite.capitalSocial.toLocaleString('es-AR')}
-            </p>
-          </div>
-          {(() => {
-            const datosUsuario = (tramite.datosUsuario as any) || {}
-            const fechaCierre = datosUsuario.fechaCierre
-            return fechaCierre ? (
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Cierre de Ejercicio</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {fechaCierre}
-                </p>
-              </div>
-            ) : null
-            })()}
-        </div>
-        {/* Indicador de Asesoramiento Contable */}
-        {(() => {
-          const datosUsuario = (tramite.datosUsuario as any) || {}
-          const asesoramientoContable = datosUsuario.asesoramientoContable
-          return asesoramientoContable ? (
-            <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-500 p-2 rounded-full">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-green-900">Interesado en Asesoramiento Contable</p>
-                  <p className="text-sm text-green-700">
-                    El cliente solicitó información sobre servicios contables adicionales - Oportunidad de postventa
-                  </p>
-                </div>
-              </div>
+        <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-display text-ink">{nombre}</h1>
+              <Badge tone={estado.tone} dot>
+                {estado.label}
+              </Badge>
             </div>
-          ) : null
-        })()}
-      </CollapsibleCard>
-
-      {/* Denominaciones Propuestas */}
-      <CollapsibleCard
-        title="Denominaciones Propuestas"
-        description="Opciones de nombre para la sociedad"
-        icon={<Tag className="h-5 w-5 text-gray-600" />}
-        action={<EditDenominaciones {...editProps} />}
-      >
-        <div className="space-y-2">
-          {(() => {
-            const datosUsuario = (tramite.datosUsuario as any) || {}
-            const marcaRegistrada = datosUsuario.marcaRegistrada
-            return marcaRegistrada ? (
-              <div className="mb-3 p-3 bg-blue-50 border-2 border-blue-400 rounded-lg">
-                <p className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  Marca Registrada
-                </p>
-                <p className="text-xs text-blue-800 mt-1">
-                  El cliente indicó que la denominación es una marca registrada de su propiedad
-                </p>
-              </div>
-            ) : null
-          })()}
-          <div className="p-3 border rounded-lg bg-gray-50">
-            <span className="text-xs text-gray-500">Opción 1 (Preferida)</span>
-            <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial1}</p>
-          </div>
-          {tramite.denominacionSocial2 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 2</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial2}</p>
-            </div>
-          )}
-          {tramite.denominacionSocial3 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 3</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial3}</p>
-            </div>
-          )}
-          {tramite.denominacionAprobada && (
-            <div className="p-3 border-2 border-green-500 rounded-lg bg-green-50">
-              <span className="text-xs text-green-700 font-medium flex items-center gap-1">
-                <CheckCircle className="h-4 w-4" />
-                Denominación Aprobada
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-ink-2">
+              <span className="inline-flex items-center gap-2">
+                <User className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                {tramite.user.name}
               </span>
-              <p className="font-bold text-green-900 mt-1">{tramite.denominacionAprobada}</p>
+              <a
+                href={`mailto:${tramite.user.email}`}
+                className="inline-flex items-center gap-2 rounded-chip hover:text-ink"
+              >
+                <Mail className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                {tramite.user.email}
+              </a>
+              {telefono && (
+                <a
+                  href={`tel:${telefono}`}
+                  className="inline-flex items-center gap-2 rounded-chip hover:text-ink"
+                >
+                  <Phone className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                  {telefono}
+                </a>
+              )}
+              <span className="inline-flex items-center gap-2">
+                <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+              </span>
+              <span>Plan {tramite.plan}</span>
             </div>
-          )}
+          </div>
+
+          <div className="w-full shrink-0 lg:w-64">
+            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+              <span className="truncate text-body-sm text-ink-2">
+                {etapaActual(tramite, 'admin')}
+              </span>
+              <span className="text-body-sm font-medium text-ink tnum">{progreso}%</span>
+            </div>
+            <Progress
+              value={progreso}
+              tone={progreso === 100 ? 'success' : 'primary'}
+              label={`Progreso de ${nombre}`}
+            />
+          </div>
         </div>
-      </CollapsibleCard>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Objeto Social */}
-        <CollapsibleCard
-          title="Objeto Social"
-          icon={<Briefcase className="h-5 w-5 text-gray-600" />}
-          action={<EditObjetoSocial {...editProps} />}
-        >
-          {(() => {
-            // Detectar si es objeto pre-aprobado
-            const objetoText = tramite.objetoSocial || ''
-            const esPreAprobado =
-              objetoText === 'PREAPROBADO' ||
-              objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
-              objetoText.includes('1. Construcción de todo tipo de obras')
-
-            return (
-              <>
-                <div className="mb-3">
-                  {esPreAprobado ? (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                      Pre-aprobado
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                      Personalizado
-                    </span>
-                  )}
-                </div>
-                {esPreAprobado ? (
-                  <p className="text-sm text-gray-700">
-                    El cliente eligió el objeto social estándar pre-aprobado.
-                  </p>
-                ) : (
-                  <p className="text-sm text-gray-700 whitespace-pre-line">
-                    {getObjetoSocialTexto(tramite.objetoSocial)}
-                  </p>
-                )}
-              </>
-            )
-          })()}
-        </CollapsibleCard>
-
-        {/* Domicilio Legal */}
-        <CollapsibleCard
-          title="Domicilio Legal"
-          icon={<MapPin className="h-5 w-5 text-gray-600" />}
-          action={<EditDomicilio {...editProps} />}
-        >
-          {(!tramite.domicilioLegal || tramite.domicilioLegal.trim() === '' || tramite.domicilioLegal.trim().toLowerCase() === 'a informar') ? (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-              <p className="text-sm text-amber-900">
-                🏢 El cliente <strong>no dispone de domicilio propio</strong> y solicitó el servicio de <strong>domicilio en Córdoba de QMS</strong> (costo anual a informar).
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-gray-700">
-              {tramite.domicilioLegal}
-            </p>
-          )}
-        </CollapsibleCard>
+        <TabNav tabs={tabs} activo={tab} basePath={basePath} className="mt-4" />
       </div>
 
-      {/* Socios / Accionistas - INFORMACIÓN COMPLETA */}
-      <CollapsibleCard
-        title={`Socios / Accionistas (${socios.length})`}
-        description="Información completa para documentación"
-        icon={<Users className="h-5 w-5 text-gray-600" />}
-        action={<EditSocios {...editProps} />}
-      >
-          <div className="space-y-4">
-            {socios.map((socio: any, index: number) => {
-              const capitalSocial = tramite.capitalSocial || 0
-              
-              // Calcular el aporteCapital correctamente
-              let aporteCapital = 0
-              if (typeof socio.aporteCapital === 'number') {
-                aporteCapital = socio.aporteCapital
-              } else if (typeof socio.aporteCapital === 'string') {
-                const aporteStr = socio.aporteCapital.replace(/\./g, '').replace(',', '.')
-                aporteCapital = parseFloat(aporteStr) || 0
-              } else {
-                aporteCapital = 0
-              }
-              
-              // Calcular porcentaje desde el aporteCapital
-              let porcentaje = capitalSocial > 0 ? ((aporteCapital / capitalSocial) * 100) : 0
-              
-              // Si el porcentaje calculado es > 100 o el aporte es mucho mayor que el capital, hay un error
-              if (porcentaje > 100 || aporteCapital > capitalSocial * 1.1) {
-                // Intentar corregir usando el porcentaje guardado
-                let porcentajeGuardado = 0
-                
-                if (socio.aportePorcentaje) {
-                  porcentajeGuardado = parseFloat(String(socio.aportePorcentaje).replace('%', '').replace(',', '.')) || 0
-                } else if (socio.porcentaje) {
-                  porcentajeGuardado = parseFloat(String(socio.porcentaje).replace('%', '').replace(',', '.')) || 0
-                }
-                
-                // Si el porcentaje guardado es > 100, probablemente está en formato incorrecto (2500 en lugar de 25)
-                if (porcentajeGuardado > 100 && porcentajeGuardado <= 10000) {
-                  porcentajeGuardado = porcentajeGuardado / 100
-                }
-                
-                // Si tenemos un porcentaje válido, recalcular el aporte
-                if (porcentajeGuardado > 0 && porcentajeGuardado <= 100) {
-                  aporteCapital = (capitalSocial * porcentajeGuardado) / 100
-                  porcentaje = porcentajeGuardado
-                } else {
-                  // Si no hay porcentaje válido, intentar calcular desde el aporte pero dividiendo por 100 si es muy grande
-                  if (aporteCapital > capitalSocial) {
-                    const aporteCorregido = aporteCapital / 100
-                    if (aporteCorregido <= capitalSocial) {
-                      aporteCapital = aporteCorregido
-                      porcentaje = capitalSocial > 0 ? ((aporteCapital / capitalSocial) * 100) : 0
-                    }
-                  }
-                }
-              }
-              
-              const porcentajeFormateado = porcentaje.toFixed(2)
-              
-              return (
-              <div key={index} className="border-2 rounded-lg p-5 bg-gradient-to-br from-blue-50 to-white">
-                {/* Header del Socio */}
-                <div className="flex items-start justify-between mb-4 pb-3 border-b">
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-1">
-                      {socio.nombre} {socio.apellido}
-                    </h4>
-                    <p className="text-sm text-gray-600">Socio #{index + 1}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-500 mb-1">Participación</p>
-                    <p className="text-2xl font-bold text-blue-600">{porcentajeFormateado}%</p>
-                    <p className="text-sm text-gray-700">${Math.round(aporteCapital).toLocaleString('es-AR')}</p>
-                  </div>
-                </div>
+      {/* ─── Contenido de la pestaña ──────────────────────────────────── */}
 
-                {/* Datos Completos en Grid */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">DNI</p>
-                    <p className="font-semibold text-gray-900">{socio.dni}</p>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CUIT</p>
-                    <p className="font-semibold text-gray-900">{socio.cuit}</p>
-                  </div>
-                  {socio.email && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
-                      <p className="font-semibold text-gray-900 text-sm break-all">{socio.email}</p>
-                    </div>
-                  )}
-                  {socio.telefono && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Teléfono</p>
-                      <p className="font-semibold text-gray-900">{socio.telefono}</p>
-                    </div>
-                  )}
-                  <div className="bg-white p-3 rounded-lg border md:col-span-2">
-                    <p className="text-xs text-gray-500 mb-1">Domicilio</p>
-                    <p className="font-semibold text-gray-900">
-                      {[
-                        socio.domicilio,
-                        socio.ciudad,
-                        socio.departamento,
-                        socio.provincia
-                      ].filter(Boolean).join(' - ') || socio.domicilio || 'No especificado'}
-                    </p>
-                  </div>
-                  {socio.nacionalidad && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Nacionalidad</p>
-                      <p className="font-semibold text-gray-900">{socio.nacionalidad}</p>
-                    </div>
-                  )}
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Estado Civil</p>
-                    <p className="font-semibold text-gray-900">{socio.estadoCivil}</p>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Profesión</p>
-                    <p className="font-semibold text-gray-900">{socio.profesion}</p>
-                  </div>
-                  {socio.fechaNacimiento && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Fecha de Nacimiento</p>
-                      <p className="font-semibold text-gray-900">{socio.fechaNacimiento}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              )
-            })}
-          </div>
-      </CollapsibleCard>
+      {tab === 'gestion' && (
+        <div className="space-y-6">
+          <ValidacionTramite
+            tramiteId={tramite.id}
+            estadoValidacion={tramite.estadoValidacion}
+            observacionesValidacion={tramite.observacionesValidacion}
+          />
 
-      {/* Administradores - INFORMACIÓN COMPLETA */}
-      <CollapsibleCard
-        title={`Órgano de Administración (${administradores.length})`}
-        description="Información completa para documentación"
-        icon={<User className="h-5 w-5 text-gray-600" />}
-        action={<EditAdministradores {...editProps} />}
-      >
-          <div className="space-y-4">
-            {administradores.map((admin: any, index: number) => (
-              <div key={index} className="border-2 rounded-lg p-5 bg-gradient-to-br from-purple-50 to-white">
-                {/* Header del Administrador */}
-                <div className="flex items-start justify-between mb-4 pb-3 border-b">
-                  <div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-1">
-                      {admin.nombre} {admin.apellido}
-                    </h4>
-                    <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
-                      {admin.cargo}
-                    </span>
-                  </div>
-                </div>
+          <EstadoManager
+            tramiteId={tramite.id}
+            estadoActual={tramite.estadoGeneral}
+            etapas={{
+              formularioCompleto: tramite.formularioCompleto,
+              denominacionReservada: tramite.denominacionReservada,
+              capitalDepositado: tramite.capitalDepositado,
+              tasaPagada: tramite.tasaPagada,
+              documentosRevisados: tramite.documentosRevisados,
+              documentosFirmados: tramite.documentosFirmados,
+              tramiteIngresado: tramite.tramiteIngresado,
+              sociedadInscripta: tramite.sociedadInscripta,
+            }}
+          />
 
-                {/* Datos Completos en Grid */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">DNI</p>
-                    <p className="font-semibold text-gray-900">{admin.dni}</p>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CUIT</p>
-                    <p className="font-semibold text-gray-900">{admin.cuit}</p>
-                  </div>
-                  {admin.email && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
-                      <p className="font-semibold text-gray-900 text-sm break-all">{admin.email}</p>
-                    </div>
-                  )}
-                  {admin.telefono && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Teléfono</p>
-                      <p className="font-semibold text-gray-900">{admin.telefono}</p>
-                    </div>
-                  )}
-                  <div className="bg-white p-3 rounded-lg border md:col-span-2">
-                    <p className="text-xs text-gray-500 mb-1">Domicilio</p>
-                    <p className="font-semibold text-gray-900">
-                      {[
-                        admin.domicilio,
-                        admin.ciudad,
-                        admin.departamento,
-                        admin.provincia
-                      ].filter(Boolean).join(' - ') || admin.domicilio || 'No especificado'}
-                    </p>
-                  </div>
-                  {admin.nacionalidad && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Nacionalidad</p>
-                      <p className="font-semibold text-gray-900">{admin.nacionalidad}</p>
-                    </div>
-                  )}
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Estado Civil</p>
-                    <p className="font-semibold text-gray-900">{admin.estadoCivil}</p>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Profesión</p>
-                    <p className="font-semibold text-gray-900">{admin.profesion}</p>
-                  </div>
-                  {admin.fechaNacimiento && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Fecha de Nacimiento</p>
-                      <p className="font-semibold text-gray-900">{admin.fechaNacimiento}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-      </CollapsibleCard>
+          <DenominacionSelector
+            tramiteId={tramite.id}
+            denominacion1={tramite.denominacionSocial1}
+            denominacion2={tramite.denominacionSocial2}
+            denominacion3={tramite.denominacionSocial3}
+            denominacionAprobada={tramite.denominacionAprobada}
+          />
 
-      {/* CBU Informados (editable: permite cargarlos cuando el cliente los comparte) */}
-      <EditarCBU
-        tramiteId={tramite.id}
-        cbuPrincipal={(tramite.datosUsuario as any)?.cbuPrincipal}
-        cbuSecundario={(tramite.datosUsuario as any)?.cbuSecundario}
-      />
-      {!((tramite.datosUsuario as any)?.cbuPrincipal) && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-          <p className="flex-1 text-sm text-amber-900">El cliente todavía no informó los CBU.</p>
-          <SolicitarCBUButton tramiteId={tramite.id} />
+          <EtapasManager
+            tramiteId={tramite.id}
+            etapas={{
+              formularioCompleto: tramite.formularioCompleto,
+              honorariosPagados: tramite.honorariosPagados,
+              homonimiaAnalizada: tramite.homonimiaAnalizada,
+              ciudadanoDigitalOk: tramite.ciudadanoDigitalOk,
+              denominacionReservada: tramite.denominacionReservada,
+              cuentaBancariaAbierta: tramite.cuentaBancariaAbierta,
+              capitalDepositado: tramite.capitalDepositado,
+              tasaPagada: tramite.tasaPagada,
+              borradorEnviado: tramite.borradorEnviado,
+              borradorAprobadoCliente: tramite.borradorAprobadoCliente,
+              documentosRevisados: tramite.documentosRevisados,
+              documentosFirmados: tramite.documentosFirmados,
+              tramiteIngresado: tramite.tramiteIngresado,
+              sociedadInscripta: tramite.sociedadInscripta,
+              tramiteObservado: tramite.tramiteObservado,
+            }}
+            instruccionesFirma={tramite.instruccionesFirma}
+            observacionesOrganismo={tramite.observacionesOrganismo}
+          />
         </div>
       )}
 
-      {/* Validación Inicial del Formulario */}
-      <ValidacionTramite
-        tramiteId={tramite.id}
-        estadoValidacion={tramite.estadoValidacion}
-        observacionesValidacion={tramite.observacionesValidacion}
-      />
+      {tab === 'pagos' && (
+        <div className="space-y-6">
+          <PagosControl tramiteId={tramite.id} userId={tramite.userId} pagos={tramite.pagos} />
 
-      {/* Gestión de Estado */}
-      <EstadoManager 
-        tramiteId={tramite.id} 
-        estadoActual={tramite.estadoGeneral}
-        etapas={{
-          formularioCompleto: tramite.formularioCompleto,
-          denominacionReservada: tramite.denominacionReservada,
-          capitalDepositado: tramite.capitalDepositado,
-          tasaPagada: tramite.tasaPagada,
-          documentosRevisados: tramite.documentosRevisados,
-          documentosFirmados: tramite.documentosFirmados,
-          tramiteIngresado: tramite.tramiteIngresado,
-          sociedadInscripta: tramite.sociedadInscripta,
-        }}
-      />
+          {tramite.pagos.length > 0 && <ReportingPagos pagos={tramite.pagos} />}
 
-      {/* Grid con herramientas principales */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Examen de Homonimia */}
-        <DenominacionSelector
-          tramiteId={tramite.id}
-          denominacion1={tramite.denominacionSocial1}
-          denominacion2={tramite.denominacionSocial2}
-          denominacion3={tramite.denominacionSocial3}
-          denominacionAprobada={tramite.denominacionAprobada}
-        />
+          <div className="grid gap-6 xl:grid-cols-2">
+            <HonorariosMercadoPago
+              tramiteId={tramite.id}
+              pagos={tramite.pagos}
+              plan={tramite.plan}
+            />
+            <EnlacesPagoExterno tramiteId={tramite.id} enlaces={tramite.enlacesPago} />
+          </div>
 
-        {/* Control de Pagos */}
-        <PagosControl
-          tramiteId={tramite.id}
-          userId={tramite.userId}
-          pagos={tramite.pagos}
-        />
-      </div>
+          <CuentaCapital
+            tramiteId={tramite.id}
+            capitalSocial={tramite.capitalSocial}
+            cuentaInicial={null}
+          />
 
-      {/* Reporting de Pagos */}
-      {tramite.pagos.length > 0 && (
-        <ReportingPagos pagos={tramite.pagos} />
+          <div className="space-y-3">
+            <EditarCBU
+              tramiteId={tramite.id}
+              cbuPrincipal={datosUsuario.cbuPrincipal}
+              cbuSecundario={datosUsuario.cbuSecundario}
+            />
+            {!datosUsuario.cbuPrincipal && (
+              <div className="flex flex-wrap items-center gap-3 rounded-card border border-warning-line bg-warning-soft p-4">
+                <p className="flex-1 text-body-sm text-ink-2">
+                  El cliente todavía no informó los CBU.
+                </p>
+                <SolicitarCBUButton tramiteId={tramite.id} />
+              </div>
+            )}
+          </div>
+
+          <ComprobantesReview
+            tramiteId={tramite.id}
+            comprobantes={comprobantes}
+            enlacesPago={tramite.enlacesPago}
+          />
+        </div>
       )}
 
-      {/* Grid de Sistemas de Pago */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Honorarios - Mercado Pago */}
-        <HonorariosMercadoPago
-          tramiteId={tramite.id}
-          pagos={tramite.pagos}
-          plan={tramite.plan}
-        />
+      {tab === 'documentos' && (
+        <div className="space-y-6">
+          <SubirBorrador
+            tramiteId={tramite.id}
+            borradorEnviado={tramite.borradorEnviado}
+            borradorAprobadoCliente={tramite.borradorAprobadoCliente}
+          />
 
-        {/* Enlaces de Pago Externos (Tasas) */}
-        <EnlacesPagoExterno
-          tramiteId={tramite.id}
-          enlaces={tramite.enlacesPago}
-        />
-      </div>
+          <SubirDocumentosParaCliente
+            tramiteId={tramite.id}
+            userId={tramite.userId}
+            documentosEnviados={paraFirmar}
+          />
 
-      {/* Datos Bancarios para Depósito de Capital */}
-      <CuentaCapital
-        tramiteId={tramite.id}
-        capitalSocial={tramite.capitalSocial}
-        cuentaInicial={null}
-      />
+          <DocumentosReview tramiteId={tramite.id} documentos={tramite.documentos} />
+        </div>
+      )}
 
-      {/* Subir Borrador para que el Cliente lo controle */}
-      <SubirBorrador
-        tramiteId={tramite.id}
-        borradorEnviado={tramite.borradorEnviado}
-        borradorAprobadoCliente={tramite.borradorAprobadoCliente}
-      />
+      {tab === 'comunicacion' && (
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <SectionHeader
+              title="Chat con el cliente"
+              description="Lo ve dentro de su trámite, en tiempo real."
+            />
+            <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
+          </section>
 
-      {/* Subir Documentos para que el Cliente Firme */}
-      <SubirDocumentosParaCliente
-        tramiteId={tramite.id}
-        userId={tramite.userId}
-        documentosEnviados={tramite.documentos
-          .filter(doc =>
-            doc.tipo === 'DOCUMENTO_PARA_FIRMAR' ||
-            doc.tipo === 'ESTATUTO_PARA_FIRMAR' ||
-            doc.tipo === 'ACTA_PARA_FIRMAR'
-          )
-          .map(doc => ({
-            id: doc.id,
-            nombre: doc.nombre,
-            descripcion: doc.descripcion,
-            url: doc.url,
-            estado: doc.estado,
-            fechaSubida: doc.fechaSubida
-          }))
-        }
-      />
+          <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
 
-      {/* Enviar Observación al Cliente */}
-      <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
+          <EmailsTramite emails={tramite.emails} />
+        </div>
+      )}
 
-      {/* Comprobantes de Pago */}
-      <ComprobantesReview
-        tramiteId={tramite.id}
-        comprobantes={tramite.documentos.filter(doc =>
-          doc.tipo === 'COMPROBANTE_DEPOSITO' ||
-          doc.nombre.toLowerCase().includes('comprobante') ||
-          doc.descripcion?.toLowerCase().includes('comprobante')
-        )}
-        enlacesPago={tramite.enlacesPago}
-      />
+      {tab === 'datos' && (
+        <div className="space-y-3">
+          <CollapsibleSection
+            title="Información general"
+            icon={<FileText className="h-4 w-4" />}
+            action={<EditInfoGeneral {...editProps} />}
+            defaultOpen
+            padding="default"
+          >
+            <DataList columns={4}>
+              <DataItem
+                label="Fecha de inicio"
+                value={format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+              />
+              <DataItem
+                label="Jurisdicción"
+                value={tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+                icon={Building2}
+              />
+              <DataItem label="Plan contratado" value={tramite.plan} />
+              <DataItem
+                label="Capital social"
+                value={`$${tramite.capitalSocial.toLocaleString('es-AR')}`}
+              />
+              {datosUsuario.fechaCierre && (
+                <DataItem
+                  label="Cierre de ejercicio"
+                  value={datosUsuario.fechaCierre}
+                  icon={Calendar}
+                />
+              )}
+            </DataList>
 
-      {/* Documentos */}
-      <DocumentosReview tramiteId={tramite.id} documentos={tramite.documentos} />
+            {datosUsuario.asesoramientoContable && (
+              <div className="mt-4 rounded-control border border-success-line bg-success-soft p-3">
+                <p className="text-body-sm font-medium text-ink">
+                  Interesado en asesoramiento contable
+                </p>
+                <p className="mt-0.5 text-body-sm text-ink-2">
+                  El cliente pidió información sobre servicios contables — oportunidad de postventa.
+                </p>
+              </div>
+            )}
+          </CollapsibleSection>
 
-      {/* Chat con el Cliente */}
-      <ChatBox tramiteId={tramite.id} mensajesIniciales={tramite.mensajes} />
+          <CollapsibleSection
+            title="Denominaciones propuestas"
+            icon={<Tag className="h-4 w-4" />}
+            action={<EditDenominaciones {...editProps} />}
+            summary={tramite.denominacionAprobada ? 'Aprobada' : 'Sin aprobar'}
+            padding="default"
+          >
+            <div className="space-y-2">
+              {datosUsuario.marcaRegistrada && (
+                <div className="rounded-control border border-info-line bg-info-soft p-3">
+                  <p className="text-body-sm font-medium text-ink">Marca registrada</p>
+                  <p className="mt-0.5 text-body-sm text-ink-2">
+                    El cliente indicó que la denominación es una marca registrada de su propiedad.
+                  </p>
+                </div>
+              )}
+              {tramite.denominacionAprobada && (
+                <div className="rounded-control border border-success-line bg-success-soft p-3">
+                  <p className="text-label text-success">Denominación aprobada</p>
+                  <p className="mt-0.5 text-body font-medium text-ink">
+                    {tramite.denominacionAprobada}
+                  </p>
+                </div>
+              )}
+              {[
+                tramite.denominacionSocial1,
+                tramite.denominacionSocial2,
+                tramite.denominacionSocial3,
+              ]
+                .filter(Boolean)
+                .map((den, i) => (
+                  <div key={den} className="rounded-control border border-line bg-surface-2 p-3">
+                    <p className="text-label text-ink-2">
+                      Opción {i + 1}
+                      {i === 0 && ' (preferida)'}
+                    </p>
+                    <p className="mt-0.5 text-body text-ink">{den}</p>
+                  </div>
+                ))}
+            </div>
+          </CollapsibleSection>
 
-      {/* Control de Etapas - Gestión del Proceso */}
-      <EtapasManager
-        tramiteId={tramite.id}
-        etapas={{
-          formularioCompleto: tramite.formularioCompleto,
-          honorariosPagados: tramite.honorariosPagados,
-          homonimiaAnalizada: tramite.homonimiaAnalizada,
-          ciudadanoDigitalOk: tramite.ciudadanoDigitalOk,
-          denominacionReservada: tramite.denominacionReservada,
-          cuentaBancariaAbierta: tramite.cuentaBancariaAbierta,
-          capitalDepositado: tramite.capitalDepositado,
-          tasaPagada: tramite.tasaPagada,
-          borradorEnviado: tramite.borradorEnviado,
-          borradorAprobadoCliente: tramite.borradorAprobadoCliente,
-          documentosRevisados: tramite.documentosRevisados,
-          documentosFirmados: tramite.documentosFirmados,
-          tramiteIngresado: tramite.tramiteIngresado,
-          sociedadInscripta: tramite.sociedadInscripta,
-          tramiteObservado: tramite.tramiteObservado,
-        }}
-        instruccionesFirma={tramite.instruccionesFirma}
-        observacionesOrganismo={tramite.observacionesOrganismo}
-      />
+          <div className="grid gap-3 lg:grid-cols-2">
+            <CollapsibleSection
+              title="Objeto social"
+              icon={<Briefcase className="h-4 w-4" />}
+              action={<EditObjetoSocial {...editProps} />}
+              padding="default"
+            >
+              <ObjetoSocial objetoSocial={tramite.objetoSocial} />
+            </CollapsibleSection>
 
-      {/* Historial de emails del trámite (colapsable, después de Control de Etapas) */}
-      <EmailsTramite emails={tramite.emails} />
+            <CollapsibleSection
+              title="Domicilio legal"
+              icon={<MapPin className="h-4 w-4" />}
+              action={<EditDomicilio {...editProps} />}
+              padding="default"
+            >
+              <DomicilioLegal domicilio={tramite.domicilioLegal} />
+            </CollapsibleSection>
+          </div>
 
-      {/* Datos Finales */}
-      <DatosFinalesForm
-        tramiteId={tramite.id}
-        cuitActual={tramite.cuit}
-        matriculaActual={tramite.matricula}
-        numeroResolucionActual={tramite.numeroResolucion}
-        fechaInscripcionActual={tramite.fechaSociedadInscripta
-          ? new Date(tramite.fechaSociedadInscripta).toISOString().split('T')[0]
-          : tramite.fechaInscripcion
-          ? new Date(tramite.fechaInscripcion).toISOString().split('T')[0]
-          : null}
-      />
+          <CollapsibleSection
+            title="Socios y accionistas"
+            icon={<Users className="h-4 w-4" />}
+            action={<EditSocios {...editProps} />}
+            summary={`${socios.length} ${socios.length === 1 ? 'socio' : 'socios'}`}
+            padding="default"
+          >
+            <div className="space-y-3">
+              {socios.map((socio, i) => (
+                <FichaPersona
+                  key={i}
+                  persona={socio}
+                  subtitulo={`Socio ${i + 1}`}
+                  capitalSocial={tramite.capitalSocial}
+                />
+              ))}
+            </div>
+          </CollapsibleSection>
 
-      {/* Zona de Peligro - Eliminar Trámite */}
-      <EliminarTramite
-        tramiteId={tramite.id}
-        denominacion={tramite.denominacionAprobada || tramite.denominacionSocial1}
-      />
+          <CollapsibleSection
+            title="Órgano de administración"
+            icon={<User className="h-4 w-4" />}
+            action={<EditAdministradores {...editProps} />}
+            summary={`${administradores.length} ${administradores.length === 1 ? 'persona' : 'personas'}`}
+            padding="default"
+          >
+            <div className="space-y-3">
+              {administradores.map((admin, i) => (
+                <FichaPersona key={i} persona={admin} subtitulo={admin.cargo} />
+              ))}
+            </div>
+          </CollapsibleSection>
+        </div>
+      )}
+
+      {tab === 'cierre' && (
+        <div className="space-y-6">
+          <DatosFinalesForm
+            tramiteId={tramite.id}
+            cuitActual={tramite.cuit}
+            matriculaActual={tramite.matricula}
+            numeroResolucionActual={tramite.numeroResolucion}
+            fechaInscripcionActual={
+              tramite.fechaSociedadInscripta
+                ? new Date(tramite.fechaSociedadInscripta).toISOString().split('T')[0]
+                : tramite.fechaInscripcion
+                  ? new Date(tramite.fechaInscripcion).toISOString().split('T')[0]
+                  : null
+            }
+          />
+
+          <EliminarTramite tramiteId={tramite.id} denominacion={nombre} />
+        </div>
+      )}
     </div>
   )
 }
 
-export default AdminTramiteDetallePage
+/* ─────────────────────────── Subcomponentes ─────────────────────────── */
 
+function ObjetoSocial({ objetoSocial }: { objetoSocial: string | null }) {
+  const texto = objetoSocial || ''
+  const preAprobado =
+    texto === 'PREAPROBADO' ||
+    texto.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
+    texto.includes('1. Construcción de todo tipo de obras')
+
+  return (
+    <div className="space-y-2">
+      <Badge tone={preAprobado ? 'success' : 'info'}>
+        {preAprobado ? 'Pre-aprobado' : 'Personalizado'}
+      </Badge>
+      <p className="whitespace-pre-line text-body-sm text-ink-2">
+        {preAprobado
+          ? 'El cliente eligió el objeto social estándar pre-aprobado.'
+          : getObjetoSocialTexto(objetoSocial)}
+      </p>
+    </div>
+  )
+}
+
+function DomicilioLegal({ domicilio }: { domicilio: string | null }) {
+  const sinDomicilio =
+    !domicilio || domicilio.trim() === '' || domicilio.trim().toLowerCase() === 'a informar'
+
+  if (sinDomicilio) {
+    return (
+      <div className="rounded-control border border-warning-line bg-warning-soft p-3">
+        <p className="text-body-sm text-ink-2">
+          El cliente <span className="font-medium text-ink">no dispone de domicilio propio</span> y
+          solicitó el servicio de domicilio en Córdoba de QMS (costo anual a informar).
+        </p>
+      </div>
+    )
+  }
+
+  return <p className="text-body-sm text-ink-2">{domicilio}</p>
+}
+
+function FichaPersona({
+  persona,
+  subtitulo,
+  capitalSocial,
+}: {
+  persona: any
+  subtitulo?: string
+  capitalSocial?: number
+}) {
+  const domicilio =
+    [persona.domicilio, persona.ciudad, persona.departamento, persona.provincia]
+      .filter(Boolean)
+      .join(' · ') ||
+    persona.domicilio ||
+    'No especificado'
+
+  const conAporte = typeof capitalSocial === 'number'
+  const { aporte, porcentaje } = conAporte
+    ? normalizarAporte(persona, capitalSocial)
+    : { aporte: 0, porcentaje: 0 }
+
+  return (
+    <Card className="bg-surface-2">
+      <CardBody padding="compact">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line pb-3">
+          <div className="min-w-0">
+            <p className="text-heading text-ink">
+              {persona.nombre} {persona.apellido}
+            </p>
+            {subtitulo && <p className="text-body-sm text-ink-2">{subtitulo}</p>}
+          </div>
+          {conAporte && (
+            <div className="text-right">
+              <p className="text-label text-ink-2">Participación</p>
+              <p className="text-body font-medium text-ink tnum">{porcentaje.toFixed(2)}%</p>
+              <p className="text-body-sm text-ink-2 tnum">
+                ${Math.round(aporte).toLocaleString('es-AR')}
+              </p>
+            </div>
+          )}
+        </div>
+
+        <DataList columns={3} className="mt-3">
+          <DataItem label="DNI" value={persona.dni} mono />
+          <DataItem label="CUIT" value={persona.cuit} mono />
+          {persona.email && <DataItem label="Email" value={persona.email} />}
+          {persona.telefono && <DataItem label="Teléfono" value={persona.telefono} />}
+          {persona.nacionalidad && (
+            <DataItem label="Nacionalidad" value={persona.nacionalidad} />
+          )}
+          <DataItem label="Estado civil" value={persona.estadoCivil} />
+          <DataItem label="Profesión" value={persona.profesion} />
+          {persona.fechaNacimiento && (
+            <DataItem label="Fecha de nacimiento" value={persona.fechaNacimiento} />
+          )}
+          <DataItem label="Domicilio" value={domicilio} className="sm:col-span-2" />
+        </DataList>
+      </CardBody>
+    </Card>
+  )
+}
+
+/**
+ * Los aportes vienen del formulario en formatos mezclados (número, string con
+ * puntos o comas, porcentaje guardado ×100). Esto los normaliza.
+ */
+function normalizarAporte(socio: any, capitalSocial: number) {
+  let aporte =
+    typeof socio.aporteCapital === 'number'
+      ? socio.aporteCapital
+      : parseFloat(String(socio.aporteCapital ?? '').replace(/\./g, '').replace(',', '.')) || 0
+
+  let porcentaje = capitalSocial > 0 ? (aporte / capitalSocial) * 100 : 0
+
+  if (porcentaje > 100 || aporte > capitalSocial * 1.1) {
+    let guardado =
+      parseFloat(
+        String(socio.aportePorcentaje ?? socio.porcentaje ?? '')
+          .replace('%', '')
+          .replace(',', '.'),
+      ) || 0
+
+    if (guardado > 100 && guardado <= 10_000) guardado /= 100
+
+    if (guardado > 0 && guardado <= 100) {
+      aporte = (capitalSocial * guardado) / 100
+      porcentaje = guardado
+    } else if (aporte > capitalSocial && aporte / 100 <= capitalSocial) {
+      aporte /= 100
+      porcentaje = capitalSocial > 0 ? (aporte / capitalSocial) * 100 : 0
+    }
+  }
+
+  return { aporte, porcentaje }
+}
+
+export default AdminTramiteDetallePage

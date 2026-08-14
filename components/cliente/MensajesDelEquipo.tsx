@@ -26,37 +26,37 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
   const getIconoPorTipo = (tipo: string) => {
     switch (tipo) {
       case 'ACCION_REQUERIDA':
-        return <AlertCircle className="h-5 w-5 text-orange-600" />
+        return <AlertCircle className="h-5 w-5 text-warning" />
       case 'EXITO':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
+        return <CheckCircle className="h-5 w-5 text-success" />
       case 'ALERTA':
-        return <AlertCircle className="h-5 w-5 text-brand-600" />
+        return <AlertCircle className="h-5 w-5 text-primary" />
       default:
-        return <Info className="h-5 w-5 text-blue-600" />
+        return <Info className="h-5 w-5 text-info" />
     }
   }
 
   const getColorPorTipo = (tipo: string) => {
     switch (tipo) {
       case 'ACCION_REQUERIDA':
-        return 'border-orange-200 bg-orange-50'
+        return 'border-warning-line bg-warning-soft'
       case 'EXITO':
-        return 'border-green-200 bg-green-50'
+        return 'border-success-line bg-success-soft'
       case 'ALERTA':
-        return 'border-brand-200 bg-brand-50'
+        return 'border-primary-line bg-primary-soft'
       default:
-        return 'border-blue-200 bg-blue-50'
+        return 'border-info-line bg-info-soft'
     }
   }
 
   return (
-    <Card className="border-2 border-blue-300 bg-blue-50">
+    <Card className="border-2 border-info-line bg-info-soft">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-blue-900">
+        <CardTitle className="flex items-center gap-2 text-info">
           <MessageCircle className="h-6 w-6" />
           💬 Mensajes del Equipo
         </CardTitle>
-        <CardDescription className="text-blue-700">
+        <CardDescription className="text-info">
           Comunicaciones importantes sobre tu trámite
         </CardDescription>
       </CardHeader>
@@ -70,21 +70,21 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
           return (
             <div
               key={notif.id}
-              className={`p-4 border-2 rounded-lg ${getColorPorTipo(notif.tipo)}`}
+              className={`p-4 border-2 rounded-control ${getColorPorTipo(notif.tipo)}`}
             >
               <div className="flex items-start gap-3 mb-2">
                 {getIconoPorTipo(notif.tipo)}
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-900 mb-1">
+                  <h4 className="font-semibold text-ink mb-1">
                     {notif.titulo}
                   </h4>
                   {esDepositoCapital ? (
-                    <p className="text-sm text-gray-700">
+                    <p className="text-body-sm text-ink-2">
                       Debés realizar el depósito del 25% del capital social y subir el
                       comprobante.{' '}
                       <a 
                         href="#deposito-capital" 
-                        className="text-brand-700 font-semibold underline cursor-pointer hover:text-brand-800"
+                        className="text-primary font-semibold underline cursor-pointer hover:text-primary"
                         onClick={(e) => {
                           e.preventDefault()
                           const target = document.querySelector('#deposito-capital')
@@ -98,11 +98,11 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
                       .
                     </p>
                   ) : (
-                    <p className="text-sm text-gray-700 whitespace-pre-line">
+                    <p className="text-body-sm text-ink-2 whitespace-pre-line">
                       {notif.mensaje}
                     </p>
                   )}
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-label text-ink-2 mt-2">
                     {format(new Date(notif.createdAt), "d 'de' MMMM, yyyy 'a las' HH:mm", { locale: es })}
                   </p>
                 </div>
@@ -112,7 +112,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
         })}
 
         {notificaciones.length > 5 && (
-          <p className="text-sm text-center text-gray-600">
+          <p className="text-body-sm text-center text-ink-2">
             Mostrando los 5 mensajes más recientes
           </p>
         )}

@@ -59,61 +59,58 @@ async function SociedadesPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-          Registro
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Sociedades <span className="text-brand-700">Constituidas</span>
+        <h1 className="text-display text-ink">
+          Sociedades Constituidas
         </h1>
-        <p className="text-gray-500 mt-2 text-lg">
+        <p className="mt-1 text-body text-ink-2">
           Listado completo de todas las sociedades inscriptas
         </p>
       </div>
 
       {/* Estadísticas */}
       <div className="grid md:grid-cols-3 gap-6">
-        <Card className="hover:shadow-lg hover:border-gray-300">
+        <Card className="hover:shadow-raise hover:border-line-strong">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Sociedades</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Total Sociedades</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-success-soft flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-success" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-gray-900">{sociedades.length}</p>
-            <p className="text-xs text-gray-500 mt-1">Inscriptas exitosamente</p>
+            <p className="text-display text-ink">{sociedades.length}</p>
+            <p className="text-label text-ink-2 mt-1">Inscriptas exitosamente</p>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg hover:border-blue-200">
+        <Card className="hover:shadow-raise hover:border-info-line">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Este Mes</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Este Mes</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-info-soft flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-info" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-blue-600">{esteMes}</p>
-            <p className="text-xs text-gray-500 mt-1">Nuevas este mes</p>
+            <p className="text-display font-semibold text-info">{esteMes}</p>
+            <p className="text-label text-ink-2 mt-1">Nuevas este mes</p>
           </CardContent>
         </Card>
-        <Card className="hover:shadow-lg hover:border-purple-200">
+        <Card className="hover:shadow-raise hover:border-info-line">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Este Año</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-purple-100 flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-purple-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Este Año</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-info-soft flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-info" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-purple-600">{esteAño}</p>
-            <p className="text-xs text-gray-500 mt-1">Total {new Date().getFullYear()}</p>
+            <p className="text-display font-semibold text-info">{esteAño}</p>
+            <p className="text-label text-ink-2 mt-1">Total {new Date().getFullYear()}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Lista de Sociedades */}
-      <Card className="shadow-lg">
-        <CardHeader className="border-b border-gray-100">
-          <CardTitle className="text-xl font-bold text-gray-900">Listado de Sociedades</CardTitle>
+      <Card className="shadow-raise">
+        <CardHeader className="border-b border-line">
+          <CardTitle className="text-title font-semibold text-ink">Listado de Sociedades</CardTitle>
           <CardDescription>
             Todas las sociedades que han sido constituidas exitosamente
           </CardDescription>
@@ -121,11 +118,11 @@ async function SociedadesPage() {
         <CardContent className="pt-6">
           {sociedades.length === 0 ? (
             <div className="text-center py-16">
-              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
-                <Building2 className="h-10 w-10 text-gray-400" />
+              <div className="h-20 w-20 rounded-card bg-surface-3 flex items-center justify-center mx-auto mb-6">
+                <Building2 className="h-10 w-10 text-ink-3" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No hay sociedades aún</h3>
-              <p className="text-gray-500">Las sociedades constituidas aparecerán aquí</p>
+              <h3 className="text-title font-semibold text-ink mb-2">No hay sociedades aún</h3>
+              <p className="text-ink-2">Las sociedades constituidas aparecerán aquí</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -135,34 +132,34 @@ async function SociedadesPage() {
                   href={`/dashboard/admin/sociedades/${sociedad.id}`}
                   className="block group"
                 >
-                  <div className="p-6 border-2 border-gray-200 rounded-2xl hover:border-green-300 hover:shadow-lg transition-all duration-200">
+                  <div className="p-6 border-2 border-line rounded-card hover:border-success-line hover:shadow-raise transition-all duration-200">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
-                            <h3 className="text-xl font-bold text-gray-900">
+                            <h3 className="text-title font-semibold text-ink">
                               {sociedad.denominacionAprobada || sociedad.denominacionSocial1}
                             </h3>
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                            <span className="px-2 py-1 bg-success-soft text-success text-label font-semibold rounded-full">
                               ✓ Inscripta
                             </span>
                           </div>
                           
                           <div className="grid md:grid-cols-4 gap-4 mt-4">
                             <div>
-                              <p className="text-xs text-gray-500 mb-1">CUIT</p>
-                              <p className="font-semibold text-gray-900">{sociedad.cuit}</p>
+                              <p className="text-label text-ink-2 mb-1">CUIT</p>
+                              <p className="font-semibold text-ink">{sociedad.cuit}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500 mb-1">Matrícula</p>
-                              <p className="font-semibold text-gray-900">{sociedad.matricula}</p>
+                              <p className="text-label text-ink-2 mb-1">Matrícula</p>
+                              <p className="font-semibold text-ink">{sociedad.matricula}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500 mb-1">Resolución</p>
-                              <p className="font-semibold text-gray-900">{sociedad.numeroResolucion}</p>
+                              <p className="text-label text-ink-2 mb-1">Resolución</p>
+                              <p className="font-semibold text-ink">{sociedad.numeroResolucion}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-gray-500 mb-1">Fecha de Inscripción</p>
-                              <p className="font-semibold text-gray-900">
+                              <p className="text-label text-ink-2 mb-1">Fecha de Inscripción</p>
+                              <p className="font-semibold text-ink">
                                 {sociedad.fechaSociedadInscripta || sociedad.fechaInscripcion
                                   ? format(new Date(sociedad.fechaSociedadInscripta || sociedad.fechaInscripcion!), "d 'de' MMMM, yyyy", { locale: es })
                                   : 'N/A'}
@@ -170,13 +167,13 @@ async function SociedadesPage() {
                             </div>
                           </div>
 
-                          <div className="mt-4 pt-4 border-t border-gray-200">
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <div className="mt-4 pt-4 border-t border-line">
+                            <div className="flex items-center gap-4 text-body-sm text-ink-2">
                               <span>
                                 <strong>Cliente:</strong> {sociedad.user.name}
                               </span>
                               {sociedad.user.partner && (
-                                <span className="px-2 py-1 bg-brand-100 text-brand-700 text-xs font-semibold rounded-full">
+                                <span className="px-2 py-1 bg-primary-soft text-primary text-label font-semibold rounded-full">
                                   Referido por {sociedad.user.partner.nombre}
                                 </span>
                               )}

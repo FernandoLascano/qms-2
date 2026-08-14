@@ -208,7 +208,7 @@ export default function ConfiguracionAdminPage() {
   if (loadingData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-brand-700" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -224,28 +224,25 @@ export default function ConfiguracionAdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-          Sistema
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          Configuración del <span className="text-brand-700">Sistema</span>
+        <h1 className="text-display text-ink">
+          Configuración del Sistema
         </h1>
-        <p className="text-gray-500 mt-2 text-lg">
+        <p className="mt-1 text-body text-ink-2">
           Administrá las configuraciones globales de la plataforma
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+      <div className="bg-surface rounded-card shadow-raise border border-line p-2">
         <nav className="flex gap-2 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all whitespace-nowrap font-medium ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-control transition-all whitespace-nowrap font-medium ${
                 activeTab === tab.id
-                  ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'bg-primary text-on-primary shadow-raise'
+                  : 'text-ink-2 hover:text-ink hover:bg-surface-3'
               }`}
             >
               <tab.icon className="h-4 w-4" />
@@ -257,10 +254,10 @@ export default function ConfiguracionAdminPage() {
 
       {/* Notificaciones Tab */}
       {activeTab === 'notificaciones' && (
-        <Card className="shadow-lg rounded-2xl">
+        <Card className="shadow-raise rounded-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5 text-brand-700" />
+              <Bell className="h-5 w-5 text-primary" />
               Configuración de Notificaciones
             </CardTitle>
             <CardDescription>
@@ -271,7 +268,7 @@ export default function ConfiguracionAdminPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <Label>Notificaciones automáticas</Label>
-                <p className="text-sm text-gray-500">
+                <p className="text-body-sm text-ink-2">
                   Enviar notificaciones automáticas a clientes
                 </p>
               </div>
@@ -293,7 +290,7 @@ export default function ConfiguracionAdminPage() {
                 min={1}
                 max={30}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Días después del envío antes de enviar recordatorio de denominación
               </p>
             </div>
@@ -308,7 +305,7 @@ export default function ConfiguracionAdminPage() {
                 min={1}
                 max={60}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Días sin actividad antes de marcar un trámite como estancado
               </p>
             </div>
@@ -318,10 +315,10 @@ export default function ConfiguracionAdminPage() {
 
       {/* Email Tab */}
       {activeTab === 'email' && (
-        <Card className="shadow-lg rounded-2xl">
+        <Card className="shadow-raise rounded-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-brand-700" />
+              <Mail className="h-5 w-5 text-primary" />
               Configuración de Email
             </CardTitle>
             <CardDescription>
@@ -338,7 +335,7 @@ export default function ConfiguracionAdminPage() {
                 onChange={(e) => setConfig({ ...config, emailRemitente: e.target.value })}
                 placeholder="noreply@quieromisas.com"
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Dirección de email que aparecerá como remitente
               </p>
             </div>
@@ -352,19 +349,19 @@ export default function ConfiguracionAdminPage() {
                 onChange={(e) => setConfig({ ...config, emailNombreRemitente: e.target.value })}
                 placeholder="QuieroMiSAS"
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Nombre que aparecerá en los correos enviados
               </p>
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-4 space-y-4">
+            <div className="rounded-control border border-line bg-surface-2/80 p-4 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                    <Forward className="h-4 w-4 text-brand-700 shrink-0" />
+                  <h3 className="text-body-sm font-semibold text-ink flex items-center gap-2">
+                    <Forward className="h-4 w-4 text-primary shrink-0" />
                     Reenvío de correos entrantes (SES)
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-body-sm text-ink-2">
                     Si está activo, los mensajes que llegan a las direcciones configuradas en AWS (p. ej. contacto@) pueden reenviarse a una copia
                     para revisión. Desactivalo para no reenviar automáticamente.
                   </p>
@@ -389,16 +386,16 @@ export default function ConfiguracionAdminPage() {
                     }
                     placeholder="tu@empresa.com"
                   />
-                  <p className="text-sm text-gray-500">
+                  <p className="text-body-sm text-ink-2">
                     Usado por el webhook de inbound cuando el reenvío está habilitado.
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-900">
+            <div className="bg-info-soft border border-info-line rounded-control p-4 flex gap-3">
+              <AlertCircle className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
+              <div className="text-body-sm text-info">
                 <p className="font-semibold mb-1">Configuración de SMTP</p>
                 <p>Las credenciales de SMTP se configuran en las variables de entorno (.env)</p>
               </div>
@@ -406,7 +403,7 @@ export default function ConfiguracionAdminPage() {
 
             {/* Sección de prueba de email */}
             <div className="border-t pt-6 mt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h3 className="text-body-sm font-semibold text-ink mb-4 flex items-center gap-2">
                 <Send className="h-4 w-4" />
                 Probar Envío de Email
               </h3>
@@ -429,13 +426,13 @@ export default function ConfiguracionAdminPage() {
                     )}
                   </Button>
                   {smtpStatus === 'success' && (
-                    <span className="flex items-center gap-1 text-green-600 text-sm">
+                    <span className="flex items-center gap-1 text-success text-body-sm">
                       <CheckCircle2 className="h-4 w-4" />
                       Conexión exitosa
                     </span>
                   )}
                   {smtpStatus === 'error' && (
-                    <span className="flex items-center gap-1 text-brand-600 text-sm">
+                    <span className="flex items-center gap-1 text-primary text-body-sm">
                       <XCircle className="h-4 w-4" />
                       Error de conexión
                     </span>
@@ -462,7 +459,7 @@ export default function ConfiguracionAdminPage() {
                       id="testEmailType"
                       value={testEmailType}
                       onChange={(e) => setTestEmailType(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white text-gray-900"
+                      className="w-full px-3 py-2 border border-line-strong rounded-control focus:outline-none focus:ring-2 focus:ring-ring bg-surface text-ink"
                     >
                       <option value="welcome">Bienvenida (Registro)</option>
                       <option value="nuevoTramite">Nuevo Trámite Iniciado</option>
@@ -475,7 +472,7 @@ export default function ConfiguracionAdminPage() {
                 </div>
                 <Button
                   onClick={sendTestEmail}
-                  className="bg-brand-700 hover:bg-brand-800"
+                  className="bg-primary hover:bg-primary-hover"
                   disabled={testingEmail || !testEmail}
                 >
                   {testingEmail ? (
@@ -498,10 +495,10 @@ export default function ConfiguracionAdminPage() {
 
       {/* Sistema Tab */}
       {activeTab === 'sistema' && (
-        <Card className="shadow-lg rounded-2xl">
+        <Card className="shadow-raise rounded-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-brand-700" />
+              <Clock className="h-5 w-5 text-primary" />
               Configuración del Sistema
             </CardTitle>
             <CardDescription>
@@ -519,7 +516,7 @@ export default function ConfiguracionAdminPage() {
                 min={1}
                 max={90}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Días que dura la reserva de una denominación social
               </p>
             </div>
@@ -534,7 +531,7 @@ export default function ConfiguracionAdminPage() {
                 min={1}
                 max={168}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-ink-2">
                 Tiempo máximo de respuesta a consultas de clientes (en horas)
               </p>
             </div>
@@ -544,10 +541,10 @@ export default function ConfiguracionAdminPage() {
 
       {/* Pagos Tab */}
       {activeTab === 'pagos' && (
-        <Card className="shadow-lg rounded-2xl">
+        <Card className="shadow-raise rounded-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-brand-700" />
+              <DollarSign className="h-5 w-5 text-primary" />
               Configuración de Pagos
             </CardTitle>
             <CardDescription>
@@ -558,7 +555,7 @@ export default function ConfiguracionAdminPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <Label>Mercado Pago habilitado</Label>
-                <p className="text-sm text-gray-500">
+                <p className="text-body-sm text-ink-2">
                   Permitir pagos a través de Mercado Pago
                 </p>
               </div>
@@ -571,12 +568,12 @@ export default function ConfiguracionAdminPage() {
             </div>
 
             <div className="border-t pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Precios de Planes</h3>
+              <h3 className="text-body-sm font-semibold text-ink mb-4">Precios de Planes</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="precioPlanBasico">Plan Básico</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">$</span>
+                    <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
                       id="precioPlanBasico"
                       type="number"
@@ -587,7 +584,7 @@ export default function ConfiguracionAdminPage() {
                       step={1000}
                     />
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-body-sm text-ink-2">
                     Precio del plan Básico (mostrado en landing page y formulario)
                   </p>
                 </div>
@@ -595,7 +592,7 @@ export default function ConfiguracionAdminPage() {
                 <div className="space-y-2">
                   <Label htmlFor="precioPlanEmprendedor">Plan Emprendedor</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">$</span>
+                    <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
                       id="precioPlanEmprendedor"
                       type="number"
@@ -606,7 +603,7 @@ export default function ConfiguracionAdminPage() {
                       step={1000}
                     />
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-body-sm text-ink-2">
                     Precio del plan Emprendedor (mostrado en landing page y formulario)
                   </p>
                 </div>
@@ -614,7 +611,7 @@ export default function ConfiguracionAdminPage() {
                 <div className="space-y-2">
                   <Label htmlFor="precioPlanPremium">Plan Premium</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-3 text-gray-500">$</span>
+                    <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
                       id="precioPlanPremium"
                       type="number"
@@ -625,7 +622,7 @@ export default function ConfiguracionAdminPage() {
                       step={1000}
                     />
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-body-sm text-ink-2">
                     Precio del plan Premium (mostrado en landing page y formulario)
                   </p>
                 </div>
@@ -643,9 +640,9 @@ export default function ConfiguracionAdminPage() {
                       max={100}
                       step={0.5}
                     />
-                    <span className="absolute right-3 top-3 text-gray-500">%</span>
+                    <span className="absolute right-3 top-3 text-ink-2">%</span>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-body-sm text-ink-2">
                     Porcentaje de descuento aplicado sobre el precio del plan cuando el cliente paga por transferencia
                     (usado al generar el link de pago de honorarios)
                   </p>
@@ -654,11 +651,11 @@ export default function ConfiguracionAdminPage() {
             </div>
 
             <div className="border-t pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">SMVM y Capital Social</h3>
+              <h3 className="text-body-sm font-semibold text-ink mb-4">SMVM y Capital Social</h3>
               <div className="space-y-2">
                 <Label htmlFor="smvm">Salario Mínimo, Vital y Móvil (SMVM)</Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-3 text-gray-500">$</span>
+                  <span className="absolute left-3 top-3 text-ink-2">$</span>
                   <Input
                     id="smvm"
                     type="number"
@@ -669,15 +666,15 @@ export default function ConfiguracionAdminPage() {
                     step={1000}
                   />
                 </div>
-                <p className="text-sm text-gray-500">
+                <p className="text-body-sm text-ink-2">
                   Valor actual del SMVM. El capital social mínimo es 2 SMVM = ${(config.smvm * 2).toLocaleString('es-AR')}
                 </p>
               </div>
             </div>
 
             <div className="border-t pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Comisiones (esquema de distribución)</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="text-body-sm font-semibold text-ink mb-1">Comisiones (esquema de distribución)</h3>
+              <p className="text-body-sm text-ink-2 mb-4">
                 Porcentajes usados por el módulo <strong>Liquidación de Comisiones</strong>. Los cuatro del esquema base
                 deben sumar 100%.
               </p>
@@ -702,7 +699,7 @@ export default function ConfiguracionAdminPage() {
                         max={100}
                         step={0.5}
                       />
-                      <span className="absolute right-3 top-3 text-gray-500">%</span>
+                      <span className="absolute right-3 top-3 text-ink-2">%</span>
                     </div>
                   </div>
                 ))}
@@ -711,7 +708,7 @@ export default function ConfiguracionAdminPage() {
                 const suma = config.comisionMwPct + config.comisionOperadorPct + config.comisionFondoFernandoPct + config.comisionFondoJustinianoPct
                 const ok = Math.abs(suma - 100) < 0.001
                 return (
-                  <p className={`text-sm mt-3 ${ok ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`text-body-sm mt-3 ${ok ? 'text-success' : 'text-danger'}`}>
                     Suma del esquema base (MW + Operador + Fondos): {suma}% {ok ? '✓' : '— debe ser 100%'}
                   </p>
                 )
@@ -719,14 +716,14 @@ export default function ConfiguracionAdminPage() {
             </div>
 
             <div className="border-t pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Domicilio en Sede</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="text-body-sm font-semibold text-ink mb-1">Domicilio en Sede</h3>
+              <p className="text-body-sm text-ink-2 mb-4">
                 Servicio de domicilio legal en la oficina. Usado por el módulo <strong>Domicilios en Sede</strong>.
               </p>
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Direcciones de la sede</Label>
-                  <p className="text-sm text-gray-500">Al activar el servicio elegís cuál de estas se usa como domicilio legal del trámite.</p>
+                  <p className="text-body-sm text-ink-2">Al activar el servicio elegís cuál de estas se usa como domicilio legal del trámite.</p>
                   <div className="space-y-2">
                     {config.domicilioSedeDirecciones.map((dir, idx) => (
                       <div key={idx} className="flex gap-2">
@@ -743,7 +740,7 @@ export default function ConfiguracionAdminPage() {
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="text-gray-600 hover:text-red-600 shrink-0"
+                          className="text-ink-2 hover:text-danger shrink-0"
                           onClick={() => setConfig({ ...config, domicilioSedeDirecciones: config.domicilioSedeDirecciones.filter((_, i) => i !== idx) })}
                         >
                           ✕
@@ -764,7 +761,7 @@ export default function ConfiguracionAdminPage() {
                   <div className="space-y-2">
                     <Label htmlFor="domicilioSedePrecioAnual">Precio anual</Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-3 text-gray-500">$</span>
+                      <span className="absolute left-3 top-3 text-ink-2">$</span>
                       <Input
                         id="domicilioSedePrecioAnual"
                         type="number"
@@ -791,9 +788,9 @@ export default function ConfiguracionAdminPage() {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex gap-3">
-              <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-blue-900">
+            <div className="bg-info-soft border border-info-line rounded-control p-4 flex gap-3">
+              <AlertCircle className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
+              <div className="text-body-sm text-info">
                 <p className="font-semibold mb-1">Credenciales de Mercado Pago</p>
                 <p>Las claves de API se configuran en las variables de entorno (.env)</p>
               </div>
@@ -804,10 +801,10 @@ export default function ConfiguracionAdminPage() {
 
       {/* General Tab */}
       {activeTab === 'general' && (
-        <Card className="shadow-lg rounded-2xl">
+        <Card className="shadow-raise rounded-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5 text-brand-700" />
+              <Settings className="h-5 w-5 text-primary" />
               Configuración General
             </CardTitle>
             <CardDescription>
@@ -817,8 +814,8 @@ export default function ConfiguracionAdminPage() {
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
-                <Label className="text-base">Modo mantenimiento</Label>
-                <p className="text-sm text-gray-500">
+                <Label className="text-body">Modo mantenimiento</Label>
+                <p className="text-body-sm text-ink-2">
                   Activar modo mantenimiento (solo admins pueden acceder)
                 </p>
               </div>
@@ -831,9 +828,9 @@ export default function ConfiguracionAdminPage() {
             </div>
 
             {config.mantenimientoMode && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 flex gap-3">
-                <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-orange-900">
+              <div className="bg-warning-soft border border-warning-line rounded-control p-4 flex gap-3">
+                <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
+                <div className="text-body-sm text-warning">
                   <p className="font-semibold mb-1">Modo mantenimiento activo</p>
                   <p>Los usuarios no podrán acceder a la plataforma mientras esté activado</p>
                 </div>
@@ -841,21 +838,21 @@ export default function ConfiguracionAdminPage() {
             )}
 
             <div className="border-t pt-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="text-body-sm font-semibold text-ink mb-3 flex items-center gap-2">
                 <Database className="h-4 w-4" />
                 Información del Sistema
               </h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-body-sm">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Versión:</span>
+                  <span className="text-ink-2">Versión:</span>
                   <span className="font-semibold">1.0.0</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Entorno:</span>
+                  <span className="text-ink-2">Entorno:</span>
                   <span className="font-semibold">{process.env.NODE_ENV}</span>
                 </div>
                 <div className="flex justify-between py-2">
-                  <span className="text-gray-600">Base de datos:</span>
+                  <span className="text-ink-2">Base de datos:</span>
                   <span className="font-semibold">PostgreSQL</span>
                 </div>
               </div>
@@ -868,7 +865,7 @@ export default function ConfiguracionAdminPage() {
       <div className="flex justify-end">
         <Button
           onClick={handleSave}
-          className="bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200 px-6 font-semibold"
+          className="bg-primary hover:bg-primary-hover rounded-control shadow-raise px-6 font-semibold"
           disabled={loading}
         >
           {loading ? (

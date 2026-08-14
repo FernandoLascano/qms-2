@@ -92,7 +92,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
   ]
 
   return (
-    <div className="border-green-200 bg-green-50 rounded-lg">
+    <div className="border-success-line bg-success-soft rounded-control">
       <CollapsibleCard
         title="Control de Pagos"
         description="Registra y controla los pagos del cliente"
@@ -102,27 +102,27 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         {/* Pagos Registrados */}
         {pagos.length > 0 && (
           <div className="space-y-2 mb-4">
-            <h4 className="font-medium text-sm text-gray-700">Pagos Registrados</h4>
+            <h4 className="font-medium text-body-sm text-ink-2">Pagos Registrados</h4>
             {pagos.map((pago) => (
-              <div key={pago.id} className="flex items-center justify-between p-3 bg-white border rounded-lg">
+              <div key={pago.id} className="flex items-center justify-between p-3 bg-surface border rounded-control">
                 <div className="flex items-center gap-3">
                   {pago.estado === 'APROBADO' ? (
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="h-5 w-5 text-success" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-orange-600" />
+                    <XCircle className="h-5 w-5 text-warning" />
                   )}
                   <div>
-                    <p className="font-medium text-sm text-gray-900">
+                    <p className="font-medium text-body-sm text-ink">
                       {getConceptoTexto(pago.concepto)}
                     </p>
                     {pago.fechaPago && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-label text-ink-2">
                         {new Date(pago.fechaPago).toLocaleDateString('es-AR')}
                       </p>
                     )}
                   </div>
                 </div>
-                <p className="font-bold text-green-900">
+                <p className="font-semibold text-success">
                   ${pago.monto.toLocaleString('es-AR')}
                 </p>
               </div>
@@ -132,7 +132,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
 
         {/* Registrar Nuevo Pago */}
         <div className="border-t pt-4">
-          <h4 className="font-medium text-sm text-gray-700 mb-3">Registrar Nuevo Pago</h4>
+          <h4 className="font-medium text-body-sm text-ink-2 mb-3">Registrar Nuevo Pago</h4>
           <div className="space-y-3">
             <div>
               <Label htmlFor="concepto">Concepto</Label>
@@ -140,7 +140,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
                 id="concepto"
                 value={nuevoPago.concepto}
                 onChange={(e) => setNuevoPago(prev => ({ ...prev, concepto: e.target.value }))}
-                className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
                 disabled={registrando}
               >
                 {conceptosDisponibles.map(opt => (
@@ -162,7 +162,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
             <Button
               onClick={handleRegistrarPago}
               disabled={registrando || !nuevoPago.monto}
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-success-solid hover:bg-success-solid"
             >
               {registrando ? 'Registrando...' : 'Registrar Pago'}
             </Button>
@@ -170,8 +170,8 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         </div>
 
         {/* Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-900">
+        <div className="bg-info-soft border border-info-line rounded-control p-3">
+          <p className="text-label text-info">
             💡 <strong>Tip:</strong> Registra cada pago que realice el cliente para llevar un control completo del trámite.
           </p>
         </div>

@@ -71,65 +71,65 @@ async function SociedadDetallePage({ params }: PageProps) {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-brand-700" />
+            <h1 className="text-display font-semibold text-ink flex items-center gap-3">
+              <Building2 className="h-8 w-8 text-primary" />
               {tramite.denominacionAprobada || tramite.denominacionSocial1}
             </h1>
-            <p className="text-gray-600 mt-1">Sociedad Constituida</p>
+            <p className="text-ink-2 mt-1">Sociedad Constituida</p>
           </div>
         </div>
       </div>
 
       {/* Información Principal de la Sociedad */}
-      <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
+      <Card className="border-2 border-success-line bg-success-soft shadow-raise">
         <CardHeader>
-          <CardTitle className="text-green-900 flex items-center gap-2 text-2xl">
+          <CardTitle className="text-success flex items-center gap-2 text-title">
             <CheckCircle className="h-8 w-8" />
             Datos Oficiales de la Sociedad
           </CardTitle>
-          <CardDescription className="text-green-700 text-base">
+          <CardDescription className="text-success text-body">
             Información registrada en el organismo de control
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-              <p className="text-sm text-green-700 mb-1 font-medium">Denominación Social</p>
-              <p className="text-lg font-bold text-green-900">{tramite.denominacionAprobada || tramite.denominacionSocial1}</p>
+            <div className="bg-surface p-4 rounded-control border-2 border-success-line shadow-raise">
+              <p className="text-body-sm text-success mb-1 font-medium">Denominación Social</p>
+              <p className="text-heading font-semibold text-success">{tramite.denominacionAprobada || tramite.denominacionSocial1}</p>
             </div>
-            <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-              <p className="text-sm text-green-700 mb-1 font-medium">CUIT</p>
-              <p className="text-2xl font-bold text-green-900">{tramite.cuit}</p>
+            <div className="bg-surface p-4 rounded-control border-2 border-success-line shadow-raise">
+              <p className="text-body-sm text-success mb-1 font-medium">CUIT</p>
+              <p className="text-title font-semibold text-success">{tramite.cuit}</p>
             </div>
-            <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-              <p className="text-sm text-green-700 mb-1 font-medium">Matrícula</p>
-              <p className="text-2xl font-bold text-green-900">{tramite.matricula}</p>
+            <div className="bg-surface p-4 rounded-control border-2 border-success-line shadow-raise">
+              <p className="text-body-sm text-success mb-1 font-medium">Matrícula</p>
+              <p className="text-title font-semibold text-success">{tramite.matricula}</p>
             </div>
-            <div className="bg-white p-4 rounded-lg border-2 border-green-200 shadow-sm">
-              <p className="text-sm text-green-700 mb-1 font-medium">Resolución</p>
-              <p className="text-2xl font-bold text-green-900">{tramite.numeroResolucion}</p>
+            <div className="bg-surface p-4 rounded-control border-2 border-success-line shadow-raise">
+              <p className="text-body-sm text-success mb-1 font-medium">Resolución</p>
+              <p className="text-title font-semibold text-success">{tramite.numeroResolucion}</p>
             </div>
           </div>
 
           {/* Resolución de Inscripción - Documento destacado */}
           {tramite.documentos.length > 0 && (
-            <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-400 rounded-lg p-6 shadow-md">
+            <div className="bg-success-soft border-2 border-success-line rounded-control p-6 shadow-raise">
               <div className="flex items-start gap-4">
-                <div className="bg-green-600 p-3 rounded-lg shadow-lg">
-                  <FileText className="h-8 w-8 text-white" />
+                <div className="bg-success-solid p-3 rounded-control shadow-raise">
+                  <FileText className="h-8 w-8 text-on-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-green-900 mb-2">
+                  <h3 className="text-title font-semibold text-success mb-2">
                     📄 Resolución de Inscripción
                   </h3>
-                  <p className="text-green-800 mb-4">
+                  <p className="text-success mb-4">
                     Documento oficial de inscripción de la sociedad
                   </p>
                   <a
                     href={`/api/documentos/${tramite.documentos[0].id}/view?download=1`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors"
+                    className="inline-flex items-center gap-2 bg-success-solid hover:bg-success-solid text-on-primary font-semibold px-6 py-3 rounded-control shadow-raise transition-colors"
                   >
                     <Download className="h-5 w-5" />
                     Descargar Resolución de Inscripción
@@ -139,36 +139,36 @@ async function SociedadDetallePage({ params }: PageProps) {
             </div>
           )}
 
-          <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-green-200">
+          <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-success-line">
             <div>
-              <p className="text-sm text-green-700 mb-1">Fecha de Inscripción</p>
-              <p className="font-semibold text-green-900">
+              <p className="text-body-sm text-success mb-1">Fecha de Inscripción</p>
+              <p className="font-semibold text-success">
                 {tramite.fechaSociedadInscripta || tramite.fechaInscripcion
                   ? format(new Date(tramite.fechaSociedadInscripta || tramite.fechaInscripcion!), "d 'de' MMMM, yyyy", { locale: es })
                   : 'N/A'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-green-700 mb-1">Jurisdicción</p>
-              <p className="font-semibold text-green-900">
+              <p className="text-body-sm text-success mb-1">Jurisdicción</p>
+              <p className="font-semibold text-success">
                 {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-green-700 mb-1">Cliente</p>
-              <p className="font-semibold text-green-900">{tramite.user.name}</p>
-              <p className="text-xs text-green-600">{tramite.user.email}</p>
+              <p className="text-body-sm text-success mb-1">Cliente</p>
+              <p className="font-semibold text-success">{tramite.user.name}</p>
+              <p className="text-label text-success">{tramite.user.email}</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Divisor */}
-      <div className="border-t-2 border-gray-200 my-8">
-        <h3 className="text-xl font-bold text-brand-900 mt-8 mb-4">
+      <div className="border-t-2 border-line my-8">
+        <h3 className="text-title font-semibold text-primary mt-8 mb-4">
           📋 Información Completa del Trámite
         </h3>
-        <p className="text-gray-600 mb-6">
+        <p className="text-ink-2 mb-6">
           Todos los datos del trámite de constitución
         </p>
       </div>
@@ -180,28 +180,28 @@ async function SociedadDetallePage({ params }: PageProps) {
       >
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
-            <p className="text-sm text-gray-500 mb-1">Fecha de Inicio</p>
-            <p className="font-semibold text-gray-900">
+            <p className="text-body-sm text-ink-2 mb-1">Fecha de Inicio</p>
+            <p className="font-semibold text-ink">
               {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Jurisdicción</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
+            <p className="text-body-sm text-ink-2 mb-1">Jurisdicción</p>
+            <p className="font-semibold text-ink flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Plan Contratado</p>
-            <p className="font-semibold text-gray-900 flex items-center gap-2">
+            <p className="text-body-sm text-ink-2 mb-1">Plan Contratado</p>
+            <p className="font-semibold text-ink flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               {tramite.plan}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500 mb-1">Capital Social</p>
-            <p className="font-semibold text-gray-900">
+            <p className="text-body-sm text-ink-2 mb-1">Capital Social</p>
+            <p className="font-semibold text-ink">
               ${tramite.capitalSocial.toLocaleString('es-AR')}
             </p>
           </div>
@@ -210,8 +210,8 @@ async function SociedadDetallePage({ params }: PageProps) {
             const fechaCierre = datosUsuario.fechaCierre
             return fechaCierre ? (
               <div>
-                <p className="text-sm text-gray-500 mb-1">Cierre de Ejercicio</p>
-                <p className="font-semibold text-gray-900 flex items-center gap-2">
+                <p className="text-body-sm text-ink-2 mb-1">Cierre de Ejercicio</p>
+                <p className="font-semibold text-ink flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   {fechaCierre}
                 </p>
@@ -228,29 +228,29 @@ async function SociedadDetallePage({ params }: PageProps) {
         icon={<Tag className="h-5 w-5" />}
       >
         <div className="space-y-2">
-          <div className="p-3 border rounded-lg bg-gray-50">
-            <span className="text-xs text-gray-500">Opción 1 (Preferida)</span>
-            <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial1}</p>
+          <div className="p-3 border rounded-control bg-surface-2">
+            <span className="text-label text-ink-2">Opción 1 (Preferida)</span>
+            <p className="font-medium text-ink mt-1">{tramite.denominacionSocial1}</p>
           </div>
           {tramite.denominacionSocial2 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 2</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial2}</p>
+            <div className="p-3 border rounded-control">
+              <span className="text-label text-ink-2">Opción 2</span>
+              <p className="font-medium text-ink mt-1">{tramite.denominacionSocial2}</p>
             </div>
           )}
           {tramite.denominacionSocial3 && (
-            <div className="p-3 border rounded-lg">
-              <span className="text-xs text-gray-500">Opción 3</span>
-              <p className="font-medium text-gray-900 mt-1">{tramite.denominacionSocial3}</p>
+            <div className="p-3 border rounded-control">
+              <span className="text-label text-ink-2">Opción 3</span>
+              <p className="font-medium text-ink mt-1">{tramite.denominacionSocial3}</p>
             </div>
           )}
           {tramite.denominacionAprobada && (
-            <div className="p-3 border-2 border-green-500 rounded-lg bg-green-50">
-              <span className="text-xs text-green-700 font-medium flex items-center gap-1">
+            <div className="p-3 border-2 border-success-line rounded-control bg-success-soft">
+              <span className="text-label text-success font-medium flex items-center gap-1">
                 <CheckCircle className="h-4 w-4" />
                 Denominación Aprobada
               </span>
-              <p className="font-bold text-green-900 mt-1">{tramite.denominacionAprobada}</p>
+              <p className="font-semibold text-success mt-1">{tramite.denominacionAprobada}</p>
             </div>
           )}
         </div>
@@ -269,17 +269,17 @@ async function SociedadDetallePage({ params }: PageProps) {
                 objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades:') &&
                 objetoText.includes('1) Construcción de todo tipo de obras')
               return esPreAprobado ? (
-                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                <span className="px-2 py-1 bg-success-soft text-success text-label font-medium rounded-full">
                   Pre-aprobado
                 </span>
               ) : (
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                <span className="px-2 py-1 bg-info-soft text-info text-label font-medium rounded-full">
                   Personalizado
                 </span>
               )
             })()}
           </div>
-          <p className="text-sm text-gray-700 whitespace-pre-line">
+          <p className="text-body-sm text-ink-2 whitespace-pre-line">
             {tramite.objetoSocial}
           </p>
         </CollapsibleCard>
@@ -289,7 +289,7 @@ async function SociedadDetallePage({ params }: PageProps) {
           title="Domicilio Legal"
           icon={<MapPin className="h-5 w-5" />}
         >
-          <p className="text-sm text-gray-700">
+          <p className="text-body-sm text-ink-2">
             {tramite.domicilioLegal}
           </p>
         </CollapsibleCard>
@@ -330,44 +330,44 @@ async function SociedadDetallePage({ params }: PageProps) {
             const porcentajeFormateado = porcentaje.toFixed(2)
             
             return (
-              <div key={index} className="border-2 rounded-lg p-5 bg-gradient-to-br from-blue-50 to-white">
+              <div key={index} className="border-2 rounded-control p-card bg-surface-2">
                 <div className="flex items-start justify-between mb-4 pb-3 border-b">
                   <div>
-                    <h4 className="text-lg font-bold text-gray-900 mb-1">
+                    <h4 className="text-heading font-semibold text-ink mb-1">
                       {socio.nombre} {socio.apellido}
                     </h4>
-                    <p className="text-sm text-gray-600">Socio #{index + 1}</p>
+                    <p className="text-body-sm text-ink-2">Socio #{index + 1}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500 mb-1">Participación</p>
-                    <p className="text-2xl font-bold text-blue-600">{porcentajeFormateado}%</p>
-                    <p className="text-sm text-gray-700">${Math.round(aporteCapital).toLocaleString('es-AR')}</p>
+                    <p className="text-label text-ink-2 mb-1">Participación</p>
+                    <p className="text-title font-semibold text-info">{porcentajeFormateado}%</p>
+                    <p className="text-body-sm text-ink-2">${Math.round(aporteCapital).toLocaleString('es-AR')}</p>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">DNI</p>
-                    <p className="font-semibold text-gray-900">{socio.dni}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">DNI</p>
+                    <p className="font-semibold text-ink">{socio.dni}</p>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CUIT</p>
-                    <p className="font-semibold text-gray-900">{socio.cuit}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">CUIT</p>
+                    <p className="font-semibold text-ink">{socio.cuit}</p>
                   </div>
                   {socio.email && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Email</p>
-                      <p className="font-semibold text-gray-900 text-sm break-all">{socio.email}</p>
+                    <div className="bg-surface p-3 rounded-control border">
+                      <p className="text-label text-ink-2 mb-1">Email</p>
+                      <p className="font-semibold text-ink text-body-sm break-all">{socio.email}</p>
                     </div>
                   )}
                   {socio.telefono && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Teléfono</p>
-                      <p className="font-semibold text-gray-900">{socio.telefono}</p>
+                    <div className="bg-surface p-3 rounded-control border">
+                      <p className="text-label text-ink-2 mb-1">Teléfono</p>
+                      <p className="font-semibold text-ink">{socio.telefono}</p>
                     </div>
                   )}
-                  <div className="bg-white p-3 rounded-lg border md:col-span-2">
-                    <p className="text-xs text-gray-500 mb-1">Domicilio</p>
-                    <p className="font-semibold text-gray-900">
+                  <div className="bg-surface p-3 rounded-control border md:col-span-2">
+                    <p className="text-label text-ink-2 mb-1">Domicilio</p>
+                    <p className="font-semibold text-ink">
                       {[
                         socio.domicilio,
                         socio.ciudad,
@@ -377,23 +377,23 @@ async function SociedadDetallePage({ params }: PageProps) {
                     </p>
                   </div>
                   {socio.nacionalidad && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Nacionalidad</p>
-                      <p className="font-semibold text-gray-900">{socio.nacionalidad}</p>
+                    <div className="bg-surface p-3 rounded-control border">
+                      <p className="text-label text-ink-2 mb-1">Nacionalidad</p>
+                      <p className="font-semibold text-ink">{socio.nacionalidad}</p>
                     </div>
                   )}
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Estado Civil</p>
-                    <p className="font-semibold text-gray-900">{socio.estadoCivil}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Estado Civil</p>
+                    <p className="font-semibold text-ink">{socio.estadoCivil}</p>
                   </div>
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Profesión</p>
-                    <p className="font-semibold text-gray-900">{socio.profesion}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Profesión</p>
+                    <p className="font-semibold text-ink">{socio.profesion}</p>
                   </div>
                   {socio.fechaNacimiento && (
-                    <div className="bg-white p-3 rounded-lg border">
-                      <p className="text-xs text-gray-500 mb-1">Fecha de Nacimiento</p>
-                      <p className="font-semibold text-gray-900">{socio.fechaNacimiento}</p>
+                    <div className="bg-surface p-3 rounded-control border">
+                      <p className="text-label text-ink-2 mb-1">Fecha de Nacimiento</p>
+                      <p className="font-semibold text-ink">{socio.fechaNacimiento}</p>
                     </div>
                   )}
                 </div>
@@ -411,41 +411,41 @@ async function SociedadDetallePage({ params }: PageProps) {
       >
         <div className="space-y-4">
           {administradores.map((admin: any, index: number) => (
-            <div key={index} className="border-2 rounded-lg p-5 bg-gradient-to-br from-purple-50 to-white">
+            <div key={index} className="border-2 rounded-control p-card bg-surface-2">
               <div className="flex items-start justify-between mb-4 pb-3 border-b">
                 <div>
-                  <h4 className="text-lg font-bold text-gray-900 mb-1">
+                  <h4 className="text-heading font-semibold text-ink mb-1">
                     {admin.nombre} {admin.apellido}
                   </h4>
-                  <span className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+                  <span className="inline-flex items-center px-3 py-1 bg-info-soft text-info text-body-sm font-medium rounded-full">
                     {admin.cargo}
                   </span>
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-white p-3 rounded-lg border">
-                  <p className="text-xs text-gray-500 mb-1">DNI</p>
-                  <p className="font-semibold text-gray-900">{admin.dni}</p>
+                <div className="bg-surface p-3 rounded-control border">
+                  <p className="text-label text-ink-2 mb-1">DNI</p>
+                  <p className="font-semibold text-ink">{admin.dni}</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg border">
-                  <p className="text-xs text-gray-500 mb-1">CUIT</p>
-                  <p className="font-semibold text-gray-900">{admin.cuit}</p>
+                <div className="bg-surface p-3 rounded-control border">
+                  <p className="text-label text-ink-2 mb-1">CUIT</p>
+                  <p className="font-semibold text-ink">{admin.cuit}</p>
                 </div>
                 {admin.email && (
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Email</p>
-                    <p className="font-semibold text-gray-900 text-sm break-all">{admin.email}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Email</p>
+                    <p className="font-semibold text-ink text-body-sm break-all">{admin.email}</p>
                   </div>
                 )}
                 {admin.telefono && (
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Teléfono</p>
-                    <p className="font-semibold text-gray-900">{admin.telefono}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Teléfono</p>
+                    <p className="font-semibold text-ink">{admin.telefono}</p>
                   </div>
                 )}
-                <div className="bg-white p-3 rounded-lg border md:col-span-2">
-                  <p className="text-xs text-gray-500 mb-1">Domicilio</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-surface p-3 rounded-control border md:col-span-2">
+                  <p className="text-label text-ink-2 mb-1">Domicilio</p>
+                  <p className="font-semibold text-ink">
                     {[
                       admin.domicilio,
                       admin.ciudad,
@@ -455,23 +455,23 @@ async function SociedadDetallePage({ params }: PageProps) {
                   </p>
                 </div>
                 {admin.nacionalidad && (
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Nacionalidad</p>
-                    <p className="font-semibold text-gray-900">{admin.nacionalidad}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Nacionalidad</p>
+                    <p className="font-semibold text-ink">{admin.nacionalidad}</p>
                   </div>
                 )}
-                <div className="bg-white p-3 rounded-lg border">
-                  <p className="text-xs text-gray-500 mb-1">Estado Civil</p>
-                  <p className="font-semibold text-gray-900">{admin.estadoCivil}</p>
+                <div className="bg-surface p-3 rounded-control border">
+                  <p className="text-label text-ink-2 mb-1">Estado Civil</p>
+                  <p className="font-semibold text-ink">{admin.estadoCivil}</p>
                 </div>
-                <div className="bg-white p-3 rounded-lg border">
-                  <p className="text-xs text-gray-500 mb-1">Profesión</p>
-                  <p className="font-semibold text-gray-900">{admin.profesion}</p>
+                <div className="bg-surface p-3 rounded-control border">
+                  <p className="text-label text-ink-2 mb-1">Profesión</p>
+                  <p className="font-semibold text-ink">{admin.profesion}</p>
                 </div>
                 {admin.fechaNacimiento && (
-                  <div className="bg-white p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">Fecha de Nacimiento</p>
-                    <p className="font-semibold text-gray-900">{admin.fechaNacimiento}</p>
+                  <div className="bg-surface p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">Fecha de Nacimiento</p>
+                    <p className="font-semibold text-ink">{admin.fechaNacimiento}</p>
                   </div>
                 )}
               </div>
@@ -494,17 +494,17 @@ async function SociedadDetallePage({ params }: PageProps) {
             >
               <div className="grid md:grid-cols-2 gap-4">
                 {cbuPrincipal && (
-                  <div className="bg-gray-50 p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CBU Principal</p>
-                    <p className="font-semibold text-gray-900">{cbuPrincipal}</p>
-                    <p className="text-xs text-gray-600 mt-1">Administrador Titular</p>
+                  <div className="bg-surface-2 p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">CBU Principal</p>
+                    <p className="font-semibold text-ink">{cbuPrincipal}</p>
+                    <p className="text-label text-ink-2 mt-1">Administrador Titular</p>
                   </div>
                 )}
                 {cbuSecundario && (
-                  <div className="bg-gray-50 p-3 rounded-lg border">
-                    <p className="text-xs text-gray-500 mb-1">CBU Secundario</p>
-                    <p className="font-semibold text-gray-900">{cbuSecundario}</p>
-                    <p className="text-xs text-gray-600 mt-1">Administrador Suplente</p>
+                  <div className="bg-surface-2 p-3 rounded-control border">
+                    <p className="text-label text-ink-2 mb-1">CBU Secundario</p>
+                    <p className="font-semibold text-ink">{cbuSecundario}</p>
+                    <p className="text-label text-ink-2 mt-1">Administrador Suplente</p>
                   </div>
                 )}
               </div>

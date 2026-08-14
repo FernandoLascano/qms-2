@@ -121,7 +121,7 @@ export function Sidebar() {
                       aria-current={activo ? 'page' : undefined}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'flex h-10 items-center gap-2.5 rounded-control px-2.5 text-body-sm transition-colors duration-150',
+                        'flex h-10 items-center gap-2.5 rounded-control px-3 text-body-sm transition-colors duration-150',
                         activo
                           ? 'bg-primary-soft font-medium text-primary'
                           : 'text-ink-2 hover:bg-surface-3 hover:text-ink',
@@ -148,7 +148,7 @@ export function Sidebar() {
           <Link
             href="/dashboard/tramites"
             onClick={() => setMobileOpen(false)}
-            className="mb-1 flex h-10 items-center gap-2.5 rounded-control px-2.5 text-body-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
+            className="mb-1 flex h-10 items-center gap-2.5 rounded-control px-3 text-body-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
           >
             <ExternalLink className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
             Ver como cliente
@@ -157,7 +157,7 @@ export function Sidebar() {
           <Link
             href="/tramite/nuevo"
             onClick={() => setMobileOpen(false)}
-            className="mb-1 flex h-10 items-center gap-2.5 rounded-control bg-primary px-2.5 text-body-sm font-medium text-on-primary transition-colors hover:bg-primary-hover"
+            className="mb-1 flex h-10 items-center gap-2.5 rounded-control bg-primary px-3 text-body-sm font-medium text-on-primary transition-colors hover:bg-primary-hover"
           >
             <Plus className="h-4 w-4 shrink-0" aria-hidden />
             Nuevo trámite
@@ -170,7 +170,7 @@ export function Sidebar() {
             setMobileOpen(false)
             signOut({ callbackUrl: '/' })
           }}
-          className="flex h-10 w-full items-center gap-2.5 rounded-control px-2.5 text-body-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
+          className="flex h-10 w-full items-center gap-2.5 rounded-control px-3 text-body-sm text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
         >
           <LogOut className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
           Cerrar sesión

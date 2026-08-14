@@ -16,8 +16,8 @@ export function EstadosTramitesChart({ enCurso, completados, cancelados }: Estad
   ]
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-4">🎯 Estado de Trámites</h3>
+    <div className="bg-surface rounded-control shadow-raise p-6">
+      <h3 className="text-heading font-semibold text-ink mb-4">🎯 Estado de Trámites</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie

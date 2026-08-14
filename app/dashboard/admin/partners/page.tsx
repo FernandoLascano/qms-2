@@ -42,26 +42,26 @@ export default function AdminPartnersPage() {
   }, [])
 
   if (loading) {
-    return <div className="py-10 text-sm text-gray-500">Cargando partners...</div>
+    return <div className="py-10 text-body-sm text-ink-2">Cargando partners...</div>
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Partners</h1>
-          <p className="text-gray-500">Gestioná referidos, links y conversiones.</p>
+          <h1 className="text-title font-semibold text-ink">Partners</h1>
+          <p className="text-ink-2">Gestioná referidos, links y conversiones.</p>
         </div>
         <Link
           href="/dashboard/admin/partners/nuevo"
-          className="rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800"
+          className="rounded-control bg-primary px-4 py-2 text-body-sm font-semibold text-on-primary hover:bg-primary-hover"
         >
           Nuevo partner
         </Link>
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-control border border-danger-line bg-danger-soft px-4 py-3 text-body-sm text-danger">
           {error}
         </div>
       )}
@@ -71,12 +71,12 @@ export default function AdminPartnersPage() {
           <Link
             key={partner.id}
             href={`/dashboard/admin/partners/${partner.id}`}
-            className="rounded-2xl border border-gray-200 bg-white p-5 hover:border-brand-300"
+            className="rounded-card border border-line bg-surface p-card hover:border-primary-line"
           >
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 {partner.logoUrl ? (
-                  <div className="flex h-12 w-24 items-center justify-center rounded-lg border border-gray-200 bg-white p-1">
+                  <div className="flex h-12 w-24 items-center justify-center rounded-control border border-line bg-surface p-1">
                     <img
                       src={partner.logoUrl}
                       alt={partner.nombre}
@@ -84,36 +84,36 @@ export default function AdminPartnersPage() {
                     />
                   </div>
                 ) : (
-                  <div className="flex h-12 w-24 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-[10px] font-medium text-gray-400">
+                  <div className="flex h-12 w-24 items-center justify-center rounded-control border border-line bg-surface-2 text-[10px] font-medium text-ink-3">
                     SIN LOGO
                   </div>
                 )}
                 <div>
-                  <h2 className="font-bold text-gray-900">{partner.nombre}</h2>
-                  <p className="text-xs text-gray-500">/partners/{partner.slug}</p>
+                  <h2 className="font-semibold text-ink">{partner.nombre}</h2>
+                  <p className="text-label text-ink-2">/partners/{partner.slug}</p>
                 </div>
               </div>
-              <span className={`rounded-full px-2 py-1 text-xs font-semibold ${partner.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+              <span className={`rounded-full px-2 py-1 text-label font-semibold ${partner.activo ? 'bg-success-soft text-success' : 'bg-surface-3 text-ink-2'}`}>
                 {partner.activo ? 'Activo' : 'Inactivo'}
               </span>
             </div>
 
-            <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
-              <div className="rounded-lg bg-gray-50 p-2">
-                <div className="font-bold text-gray-900">{partner._count.clicks}</div>
-                <div className="text-gray-500">Clicks</div>
+            <div className="mt-4 grid grid-cols-4 gap-2 text-center text-label">
+              <div className="rounded-control bg-surface-2 p-2">
+                <div className="font-semibold text-ink">{partner._count.clicks}</div>
+                <div className="text-ink-2">Clicks</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
-                <div className="font-bold text-gray-900">{partner._count.users}</div>
-                <div className="text-gray-500">Referidos</div>
+              <div className="rounded-control bg-surface-2 p-2">
+                <div className="font-semibold text-ink">{partner._count.users}</div>
+                <div className="text-ink-2">Referidos</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
-                <div className="font-bold text-gray-900">{partner._count.conversions}</div>
-                <div className="text-gray-500">Conv.</div>
+              <div className="rounded-control bg-surface-2 p-2">
+                <div className="font-semibold text-ink">{partner._count.conversions}</div>
+                <div className="text-ink-2">Conv.</div>
               </div>
-              <div className="rounded-lg bg-gray-50 p-2">
-                <div className="font-bold text-gray-900">{partner.conversionRate.toFixed(1)}%</div>
-                <div className="text-gray-500">Tasa</div>
+              <div className="rounded-control bg-surface-2 p-2">
+                <div className="font-semibold text-ink">{partner.conversionRate.toFixed(1)}%</div>
+                <div className="text-ink-2">Tasa</div>
               </div>
             </div>
           </Link>
