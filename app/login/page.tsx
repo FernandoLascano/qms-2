@@ -10,7 +10,7 @@ import { CheckCircle, Mail, Lock, ArrowLeft, LogIn, Loader2 } from 'lucide-react
 import { trackEvent } from '@/lib/analytics'
 const GoogleSignInButton = dynamic(
   () => import('@/components/auth/google-sign-in-button').then((m) => m.GoogleSignInButton),
-  { ssr: false, loading: () => <div className="h-12 w-full rounded-xl bg-gray-100/90 animate-pulse" aria-hidden /> }
+  { ssr: false, loading: () => <div className="h-12 w-full rounded-control bg-surface-3/90 animate-pulse" aria-hidden /> }
 )
 const AuthDivider = dynamic(
   () => import('@/components/auth/google-sign-in-button').then((m) => m.AuthDivider),
@@ -101,14 +101,14 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {isFromVerification && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl text-sm font-medium flex items-center gap-3"
+          className="bg-success-soft border border-success-line text-success p-4 rounded-control text-body-sm font-medium flex items-center gap-3"
         >
-          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-success-soft rounded-control flex items-center justify-center flex-shrink-0">
             <CheckCircle className="h-4 w-4" />
           </div>
           <span>Email verificado. Ya podés iniciar sesión.</span>
@@ -119,9 +119,9 @@ function LoginForm() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl text-sm font-medium flex items-center gap-3"
+          className="bg-success-soft border border-success-line text-success p-4 rounded-control text-body-sm font-medium flex items-center gap-3"
         >
-          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-success-soft rounded-control flex items-center justify-center flex-shrink-0">
             <CheckCircle className="h-4 w-4" />
           </div>
           <span>
@@ -136,7 +136,7 @@ function LoginForm() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-brand-50 border border-brand-200 text-brand-700 p-4 rounded-xl text-sm font-medium"
+          className="bg-primary-soft border border-primary-line text-primary p-4 rounded-control text-body-sm font-medium"
         >
           {error}
         </motion.div>
@@ -146,12 +146,12 @@ function LoginForm() {
       <AuthDivider />
 
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-semibold text-gray-700">
+        <label htmlFor="email" className="text-body-sm font-semibold text-ink-2">
           Email
         </label>
         <div className="relative">
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-            <Mail className="w-5 h-5 text-gray-400" />
+            <Mail className="w-5 h-5 text-ink-3" />
           </div>
           <input
             id="email"
@@ -161,18 +161,18 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={loading}
-            className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-semibold text-gray-700">
+        <label htmlFor="password" className="text-body-sm font-semibold text-ink-2">
           Contraseña
         </label>
         <div className="relative">
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-            <Lock className="w-5 h-5 text-gray-400" />
+            <Lock className="w-5 h-5 text-ink-3" />
           </div>
           <input
             id="password"
@@ -182,7 +182,7 @@ function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={loading}
-            className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           />
         </div>
       </div>
@@ -190,7 +190,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full h-12 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-body rounded-control shadow-raise hover:shadow-pop transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {loading ? (
           <>
@@ -205,10 +205,10 @@ function LoginForm() {
         )}
       </button>
 
-      <div className="text-center pt-5 border-t border-gray-100">
-        <p className="text-sm text-gray-500">
+      <div className="text-center pt-5 border-t border-line">
+        <p className="text-body-sm text-ink-2">
           ¿No tenés cuenta?{' '}
-          <Link href="/registro" className="text-brand-700 hover:text-brand-800 font-semibold transition">
+          <Link href="/registro" className="text-primary hover:text-primary font-semibold transition">
             Registrate aquí
           </Link>
         </p>
@@ -235,13 +235,13 @@ export default function LoginPage() {
               className="h-16 w-auto mx-auto"
             />
           </Link>
-          <span className="block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
+          <span className="block text-primary font-semibold text-body-sm mb-4">
             Acceso
           </span>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
-            Bienvenido de <span className="text-brand-700">vuelta</span>
+          <h1 className="text-display md:text-display font-semibold text-ink mb-2">
+            Bienvenido de <span className="text-primary">vuelta</span>
           </h1>
-          <p className="text-gray-500">
+          <p className="text-ink-2">
             Ingresá a tu cuenta de QuieroMiSAS
           </p>
         </motion.div>
@@ -251,12 +251,12 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-2xl border border-gray-200 shadow-xl p-8"
+          className="bg-surface rounded-card border border-line shadow-pop p-8"
         >
           <Suspense fallback={
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-700 mx-auto"></div>
-              <p className="text-gray-500 mt-3 text-sm">Cargando...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-line mx-auto"></div>
+              <p className="text-ink-2 mt-3 text-body-sm">Cargando...</p>
             </div>
           }>
             <LoginForm />
@@ -272,7 +272,7 @@ export default function LoginPage() {
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 transition font-medium"
+            className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-primary transition font-medium"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al inicio
