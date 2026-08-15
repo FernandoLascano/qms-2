@@ -88,7 +88,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
   )
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title={nombre}
         breadcrumbs={[

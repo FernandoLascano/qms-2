@@ -27,7 +27,7 @@ async function TramitesPage() {
   const inscriptas = tramites.length - enCurso
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title="Mis trámites"
         description={

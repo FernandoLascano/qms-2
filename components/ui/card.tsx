@@ -42,10 +42,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-card border",
+        // El anillo interior de --shadow-card es lo que le da material:
+        // con sólo el borde de 1px la superficie se leía plana.
+        "rounded-card border shadow-card",
         TONE[tone],
         interactive &&
-          "transition-[box-shadow,border-color] duration-150 hover:border-line-strong hover:shadow-raise",
+          "transition-[box-shadow,border-color,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift",
         className,
       )}
       {...props}

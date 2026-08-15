@@ -115,7 +115,7 @@ export default function NotificacionesPage() {
   const conFiltro = tipoFiltro !== 'TODOS' || leidaFiltro !== 'todas'
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title="Notificaciones"
         description={

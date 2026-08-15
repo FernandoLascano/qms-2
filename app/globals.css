@@ -124,6 +124,22 @@
   --ink-3:         var(--n-500);
   --ink-invert:    var(--n-0);
 
+  /* ---- Chrome oscuro -----------------------------------------------------
+     El sidebar. Es lo que hace que esto parezca un producto y no una
+     plantilla. Lleva un matiz del tono de marca (no es gris puro), así que
+     rebrandear también cambia el chrome.
+     Contrastes sobre --chrome: ink 16,2 · ink-2 8,3 · ink-3 4,9 ·
+     acento 5,8 — todos AA.                                                */
+  --chrome:        oklch(0.205 0.012 var(--brand-h));
+  --chrome-2:      oklch(0.255 0.014 var(--brand-h));  /* hover            */
+  --chrome-3:      oklch(0.305 0.016 var(--brand-h));  /* activo           */
+  --chrome-line:   oklch(0.315 0.014 var(--brand-h));
+  --chrome-ink:    oklch(0.965 0.004 var(--brand-h));
+  --chrome-ink-2:  oklch(0.760 0.008 var(--brand-h));
+  --chrome-ink-3:  oklch(0.620 0.010 var(--brand-h));
+  /* Acento sobre oscuro: el 700 no contrasta, hay que subir a 400. */
+  --chrome-accent: var(--brand-400);
+
   /* Marca / acción primaria */
   --primary:        var(--brand-700);
   --primary-hover:  var(--brand-800);
@@ -167,6 +183,19 @@
                   0 2px 6px -2px oklch(0.170 0.006 265 / 0.06);
   --shadow-modal: 0 20px 48px -12px oklch(0.170 0.006 265 / 0.20),
                   0 4px 12px -4px oklch(0.170 0.006 265 / 0.08);
+
+  /* Elevación con anillo interior: el borde de 1px solo se veía plano.
+     El highlight superior da la sensación de material. */
+  --shadow-card:  0 1px 2px oklch(0.170 0.006 265 / 0.04),
+                  0 4px 16px -6px oklch(0.170 0.006 265 / 0.08),
+                  inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+  --shadow-lift:  0 2px 4px oklch(0.170 0.006 265 / 0.05),
+                  0 12px 28px -8px oklch(0.170 0.006 265 / 0.14),
+                  inset 0 1px 0 0 oklch(1 0 0 / 0.7);
+
+  /* ---- Movimiento --------------------------------------------------------
+     Una sola curva para todo el módulo: salida suave, sin rebote.         */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ============================================================================
@@ -243,6 +272,16 @@
   --color-info-line:     var(--info-line);
   --color-info-solid:    var(--info-solid);
 
+  /* --- Chrome oscuro --- */
+  --color-chrome:        var(--chrome);
+  --color-chrome-2:      var(--chrome-2);
+  --color-chrome-3:      var(--chrome-3);
+  --color-chrome-line:   var(--chrome-line);
+  --color-chrome-ink:    var(--chrome-ink);
+  --color-chrome-ink-2:  var(--chrome-ink-2);
+  --color-chrome-ink-3:  var(--chrome-ink-3);
+  --color-chrome-accent: var(--chrome-accent);
+
   /* --- Tipografía --------------------------------------------------------
      Escala de 7 pasos con interlineado y peso incluidos.
      Pesos permitidos en todo el módulo: 400 · 500 · 600.                  */
@@ -250,16 +289,27 @@
                "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                "Liberation Mono", monospace;
+  /* Sólo para títulos. Para cambiar la fuente de display se toca este
+     renglón y el import de app/layout.tsx: nada más. */
+  --font-display: var(--font-display-face), var(--font-inter), ui-sans-serif,
+                  system-ui, sans-serif;
 
-  --text-display: 1.75rem;                    /* 28 · título de página     */
-  --text-display--line-height: 2.125rem;
+  /* El salto entre título (36) y cuerpo (15) es lo que da presencia.
+     Antes era 28 contra 15: demasiado tímido. */
+  --text-hero: 2.5rem;                        /* 40 · portada del inicio   */
+  --text-hero--line-height: 2.75rem;
+  --text-hero--font-weight: 600;
+  --text-hero--letter-spacing: -0.035em;
+
+  --text-display: 2.25rem;                    /* 36 · título de página     */
+  --text-display--line-height: 2.5rem;
   --text-display--font-weight: 600;
-  --text-display--letter-spacing: -0.02em;
+  --text-display--letter-spacing: -0.03em;
 
-  --text-title: 1.25rem;                      /* 20 · título de sección    */
+  --text-title: 1.375rem;                     /* 22 · título de sección    */
   --text-title--line-height: 1.75rem;
   --text-title--font-weight: 600;
-  --text-title--letter-spacing: -0.01em;
+  --text-title--letter-spacing: -0.02em;
 
   --text-heading: 1rem;                       /* 16 · título de card       */
   --text-heading--line-height: 1.5rem;
@@ -292,6 +342,11 @@
   --shadow-raise: var(--shadow-raise);
   --shadow-pop:   var(--shadow-pop);
   --shadow-modal: var(--shadow-modal);
+  --shadow-card:  var(--shadow-card);
+  --shadow-lift:  var(--shadow-lift);
+
+  /* --- Movimiento --- */
+  --ease-out-soft: var(--ease);
 
   /* --- Espaciado con nombre (densidad mixta) ---
      Cliente = card / Admin = card-sm                                      */
@@ -328,6 +383,58 @@ button {
   font-feature-settings: "tnum";
 }
 
+/* Títulos con la fuente de display. */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* ============================================================================
+   FIRMA VISUAL
+   ============================================================================ */
+
+/* Resplandor de marca detrás del bloque protagonista. Es lo que hace que la
+   tarjeta principal se lea como un objeto diseñado y no como una caja gris.
+   Se apoya en --brand-h, así que rebrandea junto con todo lo demás.        */
+.brand-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.brand-glow::before {
+  content: "";
+  position: absolute;
+  inset: -60% 40% 40% -20%;
+  z-index: -1;
+  background: radial-gradient(
+    60% 60% at 30% 30%,
+    oklch(0.598 var(--brand-c) var(--brand-h) / 0.18),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Textura sutil para el chrome oscuro: sin esto el negro se ve muerto. */
+.chrome-texture {
+  background-image: radial-gradient(
+    120% 80% at 0% 0%,
+    oklch(0.598 var(--brand-c) var(--brand-h) / 0.10),
+    transparent 60%
+  );
+}
+
+/* Barra de acento del ítem activo en el sidebar. */
+.nav-active-bar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  width: 3px;
+  height: 1.25rem;
+  border-radius: 0 3px 3px 0;
+  background: var(--chrome-accent);
+}
+
 /* ============================================================================
    ANIMACIONES
    ============================================================================ */
@@ -352,6 +459,34 @@ button {
   50%      { opacity: 0.55; }
 }
 .animate-skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; }
+
+/* Entrada escalonada del contenido. Con `.stagger` en el contenedor, cada
+   hijo directo entra un poco después que el anterior: la pantalla se arma
+   en vez de aparecer de golpe.                                            */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+
+.stagger > * {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(n + 6) { animation-delay: 300ms; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

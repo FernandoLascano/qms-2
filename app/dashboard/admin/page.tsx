@@ -147,7 +147,7 @@ async function AdminDashboardPage() {
   const totalPendiente = bandeja.reduce((acc, t) => acc + t.cantidad, 0)
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title="Hoy"
         description={

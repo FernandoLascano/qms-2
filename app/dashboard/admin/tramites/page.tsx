@@ -22,7 +22,7 @@ async function AdminTramitesPage() {
   })
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title="Trámites"
         description={`${tramites.length} ${tramites.length === 1 ? 'trámite' : 'trámites'} con formulario enviado`}

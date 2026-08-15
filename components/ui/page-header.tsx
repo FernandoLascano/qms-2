@@ -83,11 +83,11 @@ export function PageHeader({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-display text-ink text-balance">{title}</h1>
+            <h1 className="font-display text-display text-ink text-balance">{title}</h1>
             {badge}
           </div>
           {description && (
-            <p className="mt-1 text-body text-ink-2 text-pretty">{description}</p>
+            <p className="mt-1.5 text-body text-ink-2 text-pretty">{description}</p>
           )}
         </div>
 
@@ -121,7 +121,7 @@ export function SectionHeader({
       )}
     >
       <div className="min-w-0">
-        <Tag className="text-title text-ink">{title}</Tag>
+        <Tag className="font-display text-title text-ink">{title}</Tag>
         {description && <p className="mt-0.5 text-body-sm text-ink-2">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

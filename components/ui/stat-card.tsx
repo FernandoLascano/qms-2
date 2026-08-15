@@ -10,6 +10,9 @@ import { cn } from "@/lib/utils"
  * Regla: el color aparece SÓLO cuando el valor exige una acción. Antes cada
  * KPI tenía su color decorativo (gris, azul, verde, naranja) y por eso ninguno
  * destacaba; el número accionable pesaba lo mismo que el informativo.
+ *
+ * El número va en la fuente de display y a 36px: es el dato, tiene que
+ * dominar la tarjeta.
  */
 
 interface StatCardProps {
@@ -37,33 +40,46 @@ export function StatCard({
       <div className="flex items-start justify-between gap-3">
         <span className="text-body-sm text-ink-2">{label}</span>
         {Icon && (
-          <Icon
-            className={cn("h-4 w-4 shrink-0", alert ? "text-warning" : "text-ink-3")}
+          <span
+            className={cn(
+              'flex h-7 w-7 shrink-0 items-center justify-center rounded-chip',
+              alert ? 'bg-warning-solid/12 text-warning' : 'bg-surface-3 text-ink-3',
+            )}
             aria-hidden
-          />
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </span>
         )}
       </div>
+
       <div
         className={cn(
-          "mt-2 text-metric tnum",
-          alert ? "text-warning" : "text-ink",
+          'mt-3 font-display text-display tnum',
+          alert ? 'text-warning' : 'text-ink',
         )}
       >
         {value}
       </div>
+
       {hint && (
         <div className="mt-1 flex items-center gap-1 text-label text-ink-2">
           {hint}
-          {href && <ArrowRight className="h-3 w-3" aria-hidden />}
+          {href && (
+            <ArrowRight
+              className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
+              aria-hidden
+            />
+          )}
         </div>
       )}
     </>
   )
 
   const classes = cn(
-    "block rounded-card border p-card-sm transition-[border-color,box-shadow] duration-150",
-    alert ? "border-warning-line bg-warning-soft" : "border-line bg-surface",
-    href && "hover:border-line-strong hover:shadow-raise",
+    'group relative block overflow-hidden rounded-card border p-card-sm shadow-card',
+    'transition-[border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+    alert ? 'border-warning-line bg-warning-soft' : 'border-line bg-surface',
+    href && 'hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift',
     className,
   )
 

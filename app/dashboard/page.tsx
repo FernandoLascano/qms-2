@@ -105,7 +105,7 @@ async function DashboardPage() {
   const proxima = accionPrincipal(acciones)
 
   return (
-    <div className="space-y-section">
+    <div className="stagger space-y-section">
       <PageHeader
         title={`Hola, ${primerNombre}`}
         description={
@@ -333,29 +333,38 @@ function ProximoPaso({
   return (
     <Card
       tone={esCliente ? 'warning' : esCompletado ? 'success' : 'default'}
-      className={cn(!esCliente && !esCompletado && 'bg-surface')}
+      className={cn('brand-glow', !esCliente && !esCompletado && 'bg-surface')}
     >
-      <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      <CardBody className="flex flex-col gap-5 p-card sm:flex-row sm:items-start sm:p-7">
         <span
           className={cn(
-            'flex h-11 w-11 shrink-0 items-center justify-center rounded-card',
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded-card ring-1',
             esCliente
-              ? 'bg-warning-solid/12 text-warning'
+              ? 'bg-warning-solid/12 text-warning ring-warning-line'
               : esCompletado
-                ? 'bg-success-solid/12 text-success'
-                : 'bg-surface-3 text-ink-2',
+                ? 'bg-success-solid/12 text-success ring-success-line'
+                : 'bg-primary-soft text-primary ring-primary-line',
           )}
           aria-hidden
         >
-          <Icono className="h-5 w-5" />
+          <Icono className="h-5.5 w-5.5" />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p className="text-label uppercase tracking-wide text-ink-2">
+          <p
+            className={cn(
+              'text-label uppercase tracking-[0.1em]',
+              esCliente ? 'text-warning' : esCompletado ? 'text-success' : 'text-primary',
+            )}
+          >
             {esCliente ? 'Te toca a vos' : esCompletado ? 'Listo' : 'En curso'}
           </p>
-          <h2 className="mt-0.5 text-title text-ink text-balance">{accion.titulo}</h2>
-          <p className="mt-1 text-body text-ink-2 text-pretty">{accion.descripcion}</p>
+          <h2 className="mt-1 font-display text-hero text-ink text-balance">
+            {accion.titulo}
+          </h2>
+          <p className="mt-2 max-w-prose text-body text-ink-2 text-pretty">
+            {accion.descripcion}
+          </p>
 
           {otrosPendientes > 0 && (
             <p className="mt-2 text-body-sm text-ink-2">

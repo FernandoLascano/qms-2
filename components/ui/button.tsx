@@ -46,22 +46,29 @@ const ALIAS: Record<string, Exclude<Variant, 'default' | 'outline' | 'destructiv
 
 const base =
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-control " +
-  "font-medium transition-[background-color,border-color,color,box-shadow] duration-150 " +
+  "font-medium transition-[background-color,border-color,color,box-shadow,transform] duration-150 " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring " +
   "active:translate-y-px " +
   "disabled:pointer-events-none disabled:opacity-50 disabled:active:translate-y-0"
 
+/**
+ * El `inset` blanco de arriba es lo que le da volumen al botón sólido: sin él
+ * se ve como un rectángulo de color plano.
+ */
 const variants: Record<string, string> = {
   primary:
-    "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active",
+    "bg-primary text-on-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.16)] " +
+    "hover:bg-brand-600 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2),0_3px_10px_-2px_rgba(0,0,0,0.24)] " +
+    "active:bg-primary-hover",
   secondary:
-    "border border-line-strong bg-surface text-ink hover:bg-surface-3 hover:border-line-strong",
+    "border border-line-strong bg-surface text-ink shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_1px_2px_rgba(0,0,0,0.04)] " +
+    "hover:bg-surface-2 hover:border-n-400",
   ghost:
     "text-ink-2 hover:bg-surface-3 hover:text-ink",
   danger:
-    "border border-danger-line bg-surface text-danger hover:bg-danger-soft",
+    "border border-danger-line bg-surface text-danger hover:bg-danger-soft hover:border-danger-solid",
   'danger-solid':
-    "bg-danger-solid text-on-primary hover:bg-danger",
+    "bg-danger-solid text-on-primary shadow-[inset_0_1px_0_0_rgba(255,255,255,0.16)] hover:bg-danger",
   link:
     "text-primary underline-offset-4 hover:underline px-0 h-auto",
 }
