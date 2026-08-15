@@ -23,7 +23,7 @@ const DOCS_LEGAJO: { tipo: string; label: string }[] = [
 function Dato({ label, valor }: { label: string; valor: string | null | undefined }) {
   return (
     <div>
-      <p className="text-label uppercase tracking-wide text-ink-2">{label}</p>
+      <p className="text-label text-ink-2">{label}</p>
       <p className="text-body-sm font-medium text-ink break-words">{valor || '—'}</p>
     </div>
   )
@@ -228,12 +228,12 @@ export default async function MiSociedadPage() {
                   <Dato label="Integración" valor={`${soc.porcentajeIntegracion}%`} />
                 </div>
                 <div>
-                  <p className="text-label uppercase tracking-wide text-ink-2 mb-1">Objeto social</p>
+                  <p className="text-label text-ink-2 mb-1">Objeto social</p>
                   <p className="text-body-sm text-ink whitespace-pre-line leading-relaxed">{objetoSocialParaMostrar(soc.objetoSocial)}</p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-5">
                   <div>
-                    <p className="text-label uppercase tracking-wide text-ink-2 mb-2">Socios ({socios.length})</p>
+                    <p className="text-label text-ink-2 mb-2">Socios ({socios.length})</p>
                     <div className="space-y-2">
                       {socios.map((s: any, i: number) => (
                         <Persona key={i} p={s} tipo="socio" />
@@ -241,7 +241,7 @@ export default async function MiSociedadPage() {
                     </div>
                   </div>
                   <div>
-                    <p className="text-label uppercase tracking-wide text-ink-2 mb-2">Administradores ({administradores.length})</p>
+                    <p className="text-label text-ink-2 mb-2">Administradores ({administradores.length})</p>
                     <div className="space-y-2">
                       {administradores.map((a: any, i: number) => (
                         <Persona key={i} p={a} tipo="admin" />

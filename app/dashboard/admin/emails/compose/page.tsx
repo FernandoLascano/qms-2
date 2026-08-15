@@ -405,7 +405,7 @@ export default function ComposeEmailPage() {
 
       {/* Header */}
       <div>
-        <span className="text-body-sm font-semibold text-primary uppercase tracking-wider">Nuevo Email</span>
+        <span className="text-body-sm font-semibold text-primary">Nuevo Email</span>
         <h1 className="text-title font-semibold text-ink mt-1">Redactar email</h1>
       </div>
 
@@ -477,7 +477,7 @@ export default function ComposeEmailPage() {
               {showRecipients && filteredTramites.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-surface border border-line rounded-control shadow-raise max-h-56 overflow-y-auto">
                   <div className="px-3 py-2 border-b border-line">
-                    <p className="text-label font-semibold text-ink-3 uppercase tracking-wider">Clientes de trámites</p>
+                    <p className="text-label font-semibold text-ink-3">Clientes de trámites</p>
                   </div>
                   {filteredTramites.slice(0, 10).map(t => (
                     <button

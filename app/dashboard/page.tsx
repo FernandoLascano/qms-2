@@ -107,7 +107,6 @@ async function DashboardPage() {
   return (
     <div className="stagger space-y-section">
       <PageHeader
-        overline="Tu panel"
         title="Hola,"
         destacado={primerNombre}
         description={

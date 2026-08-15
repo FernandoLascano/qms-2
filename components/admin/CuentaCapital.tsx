@@ -236,7 +236,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
           <div className="mt-8 pt-6 border-t border-line">
             <div className="flex items-center gap-2 mb-4">
               <History className="h-4 w-4 text-ink-2" />
-              <h4 className="text-label font-semibold text-ink-2 uppercase tracking-widest">Historial de Envío</h4>
+              <h4 className="text-label font-semibold text-ink-2">Historial de Envío</h4>
             </div>
             <div className="space-y-3">
               {historialEnvios.map((envio, idx) => (

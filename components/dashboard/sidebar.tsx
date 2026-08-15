@@ -118,7 +118,7 @@ export function Sidebar() {
         {grupos.map((grupo, gi) => (
           <div key={grupo.title ?? `grupo-${gi}`} className={gi > 0 ? 'mt-6' : undefined}>
             {grupo.title && (
-              <p className="overline px-3 pb-2 text-ink-3">{grupo.title}</p>
+              <p className="px-3 pb-2 text-label font-semibold text-ink-3">{grupo.title}</p>
             )}
             <ul className="space-y-1">
               {grupo.items.map((item) => {

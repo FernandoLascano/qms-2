@@ -392,7 +392,7 @@ export default function EmailDetailPage() {
         {email.replies.length > 0 && (
           <div className="border-t border-line">
             <div className="px-6 py-3 bg-surface-2">
-              <p className="text-label font-semibold text-ink-2 uppercase tracking-wider">
+              <p className="text-label font-semibold text-ink-2">
                 Respuestas ({email.replies.length})
               </p>
             </div>

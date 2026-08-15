@@ -119,7 +119,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Enlaces en Proceso (Esperando Validación) */}
         {enlacesEnProceso.length > 0 && (
           <div className="space-y-4 mb-6">
-            <h4 className="font-semibold text-body-sm text-info uppercase tracking-wider">Esperando Validación</h4>
+            <h4 className="font-semibold text-body-sm text-info">Esperando Validación</h4>
             {enlacesEnProceso.map((enlace) => (
               <div
                 key={enlace.id}
@@ -152,7 +152,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Enlaces Pendientes */}
         {enlacesPendientes.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-semibold text-body-sm text-success uppercase tracking-wider">Pagos Pendientes</h4>
+            <h4 className="font-semibold text-body-sm text-success">Pagos Pendientes</h4>
             {enlacesPendientes.map((enlace) => (
               <div
                 key={enlace.id}

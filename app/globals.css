@@ -433,14 +433,14 @@ button {
   background-attachment: fixed;
 }
 
-/* Overline de sección: la firma tipográfica del sitio. */
+/* Etiqueta de grupo. En la portada va en mayúsculas porque es un titular
+   de sección; acá, repetida en cada grupo del menú, resultaba gritada. */
 .overline {
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--primary);
+  letter-spacing: 0;
+  color: var(--ink-3);
 }
 
 /* ============================================================================

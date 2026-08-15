@@ -103,7 +103,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
         {/* Pagos en Proceso (Esperando Validación) */}
         {pagosEnProceso.length > 0 && (
           <div className="space-y-4 mb-6">
-            <h4 className="font-semibold text-body-sm text-info uppercase tracking-wider">Esperando Validación</h4>
+            <h4 className="font-semibold text-body-sm text-info">Esperando Validación</h4>
             {pagosEnProceso.map((pago) => (
               <div
                 key={pago.id}
@@ -136,7 +136,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
         {/* Pagos Pendientes */}
         {pagosPendientes.length > 0 && (
           <div className="space-y-4">
-            <h4 className="font-semibold text-body-sm text-success uppercase tracking-wider">Pagos Pendientes</h4>
+            <h4 className="font-semibold text-body-sm text-success">Pagos Pendientes</h4>
             {pagosPendientes.map((pago) => (
               <div
                 key={pago.id}

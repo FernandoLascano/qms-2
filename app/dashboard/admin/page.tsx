@@ -149,7 +149,6 @@ async function AdminDashboardPage() {
   return (
     <div className="stagger space-y-section">
       <PageHeader
-        overline="Panel de control"
         title="Lo de"
         destacado="hoy"
         description={

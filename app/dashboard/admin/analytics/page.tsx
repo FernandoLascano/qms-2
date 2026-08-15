@@ -453,11 +453,11 @@ export default function AnalyticsPage() {
           <table className="w-full">
             <thead className="bg-surface-2">
               <tr>
-                <th className="px-4 py-3 text-left text-label font-medium text-ink-2 uppercase">Cliente</th>
-                <th className="px-4 py-3 text-left text-label font-medium text-ink-2 uppercase">Denominación</th>
-                <th className="px-4 py-3 text-left text-label font-medium text-ink-2 uppercase">Estado</th>
-                <th className="px-4 py-3 text-left text-label font-medium text-ink-2 uppercase">Jurisdicción</th>
-                <th className="px-4 py-3 text-left text-label font-medium text-ink-2 uppercase">Fecha</th>
+                <th className="px-4 py-3 text-left text-label font-medium text-ink-2">Cliente</th>
+                <th className="px-4 py-3 text-left text-label font-medium text-ink-2">Denominación</th>
+                <th className="px-4 py-3 text-left text-label font-medium text-ink-2">Estado</th>
+                <th className="px-4 py-3 text-left text-label font-medium text-ink-2">Jurisdicción</th>
+                <th className="px-4 py-3 text-left text-label font-medium text-ink-2">Fecha</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">

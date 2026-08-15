@@ -153,7 +153,7 @@ export default function JurisdiccionesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <span className="text-body-sm font-semibold text-primary uppercase tracking-wider">Configuración</span>
+          <span className="text-body-sm font-semibold text-primary">Configuración</span>
           <h1 className="text-title font-semibold text-ink mt-1">Jurisdicciones y Gastos</h1>
           <p className="text-ink-2 mt-1">Administrá las jurisdicciones disponibles y sus costos de inscripción</p>
         </div>

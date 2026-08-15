@@ -149,7 +149,7 @@ export default function EmailsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="text-body-sm font-semibold text-primary uppercase tracking-wider">Correo Electrónico</span>
+          <span className="text-body-sm font-semibold text-primary">Correo Electrónico</span>
           <h1 className="text-title font-semibold text-ink mt-1">Bandeja de Email</h1>
         </div>
         <div className="flex flex-wrap gap-3">

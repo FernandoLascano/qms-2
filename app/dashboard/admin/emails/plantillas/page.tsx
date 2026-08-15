@@ -90,7 +90,7 @@ export default function EmailPlantillasPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="text-body-sm font-semibold text-primary uppercase tracking-wider">Correo</span>
+          <span className="text-body-sm font-semibold text-primary">Correo</span>
           <h1 className="text-title font-semibold text-ink mt-1">Plantillas de correo</h1>
           <p className="text-ink-2 text-body-sm mt-1">
             Editá el HTML y el asunto; usalas al redactar desde la bandeja. Podés usar variables tipo{' '}
@@ -134,7 +134,7 @@ export default function EmailPlantillasPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-body-sm">
               <thead>
-                <tr className="border-b border-line bg-surface-2 text-left text-label font-semibold text-ink-2 uppercase tracking-wider">
+                <tr className="border-b border-line bg-surface-2 text-left text-label font-semibold text-ink-2">
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Clave</th>
                   <th className="px-4 py-3">Categoría</th>

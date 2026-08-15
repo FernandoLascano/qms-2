@@ -78,7 +78,7 @@ export default function ConsultasChatPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="text-body-sm font-semibold text-primary uppercase tracking-wider">Analytics</span>
+          <span className="text-body-sm font-semibold text-primary">Analytics</span>
           <h1 className="text-title font-semibold text-ink mt-1">Consultas del Asistente</h1>
           <p className="text-ink-2 mt-1">Preguntas que hacen los visitantes en el chat del sitio</p>
         </div>
@@ -214,7 +214,7 @@ export default function ConsultasChatPage() {
                     </p>
                     {selected?.id === c.id ? (
                       <div className="mt-3 p-3 bg-surface-2 rounded-control border border-line">
-                        <p className="text-label font-semibold text-ink-2 uppercase tracking-wider mb-2">Respuesta del asistente:</p>
+                        <p className="text-label font-semibold text-ink-2 mb-2">Respuesta del asistente:</p>
                         <p className="text-body-sm text-ink-2 leading-relaxed whitespace-pre-line">{c.respuesta}</p>
                       </div>
                     ) : (

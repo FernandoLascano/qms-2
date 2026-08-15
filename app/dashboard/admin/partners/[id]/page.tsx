@@ -162,7 +162,7 @@ export default function PartnerDetailPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <span className="inline-block text-label font-semibold uppercase tracking-[0.16em] text-primary">
+          <span className="inline-block text-label font-semibold text-primary">
             Partner
           </span>
           <h1 className="mt-1 text-display font-semibold text-ink">{partner.nombre}</h1>
@@ -200,7 +200,7 @@ export default function PartnerDetailPage() {
             { label: 'Comision est.', value: moneyArs(stats.totalComisionEstimada) },
           ].map((item) => (
             <div key={item.label} className="rounded-card border border-line bg-surface px-4 py-3">
-              <p className="text-label font-semibold uppercase tracking-wide text-ink-2">{item.label}</p>
+              <p className="text-label font-semibold text-ink-2">{item.label}</p>
               <p className="mt-1 text-title font-semibold text-ink">{item.value}</p>
             </div>
           ))}
