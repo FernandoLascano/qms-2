@@ -15,6 +15,7 @@ import {
   Handshake,
   IdCard,
   Landmark,
+  MessageCircle,
   Plus,
   Search,
   Upload,
@@ -27,8 +28,8 @@ import { PageHeader, SectionHeader } from '@/components/ui/page-header'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { LabeledProgress } from '@/components/ui/progress'
 import { EmptyState } from '@/components/ui/states'
+import { AnilloProgreso } from '@/components/ui/charts'
 import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/tramites/estado'
 import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
 import { cn } from '@/lib/utils'
@@ -160,158 +161,189 @@ async function DashboardPage() {
         />
       )}
 
-      {/* ─── Trámites en curso ────────────────────────────────────────── */}
-      {activos.length > 0 && (
-        <section className="space-y-4">
-          <SectionHeader
-            title={activos.length === 1 ? 'Tu trámite' : 'Tus trámites en curso'}
-            description={
-              tramites.length > activos.length
-                ? `${activos.length} en curso · ${sociedades.length} ${sociedades.length === 1 ? 'inscripta' : 'inscriptas'}`
-                : undefined
-            }
-            actions={
-              tramites.length > 1 ? (
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/dashboard/tramites">
-                    Ver todos
-                    <ArrowRight className="h-4 w-4" aria-hidden />
-                  </Link>
-                </Button>
-              ) : undefined
-            }
-          />
+      {/* ─── Composición de dos ejes ─────────────────────────────────── */}
+      {tramites.length > 0 && (
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+          {/* Columna principal */}
+          <div className="space-y-section">
+            {activos.length > 0 && (
+              <section className="space-y-4">
+                <SectionHeader
+                  title={activos.length === 1 ? 'Tu trámite' : 'Tus trámites en curso'}
+                  as="h2"
+                  actions={
+                    tramites.length > 1 ? (
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href="/dashboard/tramites">
+                          Ver todos
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
 
-          <div className="space-y-3">
-            {activos.slice(0, 3).map((tramite) => {
-              const estado = getEstado(tramite, 'cliente')
-              const progreso = calcularProgreso(tramite)
-              const href = tramite.formularioCompleto
-                ? `/dashboard/tramites/${tramite.id}`
-                : `/tramite/nuevo?tramiteId=${tramite.id}`
+                <div className="space-y-3">
+                  {activos.slice(0, 3).map((tramite) => {
+                    const estado = getEstado(tramite, 'cliente')
+                    const href = tramite.formularioCompleto
+                      ? `/dashboard/tramites/${tramite.id}`
+                      : `/tramite/nuevo?tramiteId=${tramite.id}`
 
-              return (
-                <Link key={tramite.id} href={href} className="block rounded-card">
-                  <Card interactive>
-                    <CardBody className="space-y-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="truncate text-heading text-ink">
-                            {tramite.denominacionAprobada || tramite.denominacionSocial1}
-                          </h3>
-                          <p className="mt-0.5 text-body-sm text-ink-2">
-                            {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
-                            <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
-                            Plan {tramite.plan}
-                          </p>
+                    return (
+                      <Link key={tramite.id} href={href} className="block rounded-card">
+                        <Card interactive>
+                          <CardBody className="flex items-center gap-5">
+                            <AnilloProgreso
+                              valor={calcularProgreso(tramite)}
+                              tamano={84}
+                              grosor={8}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <h3 className="truncate text-title text-ink">
+                                  {tramite.denominacionAprobada || tramite.denominacionSocial1}
+                                </h3>
+                                <Badge tone={estado.tone} dot>
+                                  {estado.label}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-body-sm text-ink-2">
+                                {tramite.jurisdiccion === 'CORDOBA'
+                                  ? 'Córdoba (IPJ)'
+                                  : 'CABA (IGJ)'}
+                                <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                                Plan {tramite.plan}
+                              </p>
+                              <p className="mt-2 flex items-center gap-2 text-body text-ink">
+                                <Clock className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                                {etapaActual(tramite, 'cliente')}
+                              </p>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {sociedades.length > 0 && (
+              <section className="space-y-4">
+                <SectionHeader
+                  title={sociedades.length === 1 ? 'Tu sociedad' : 'Tus sociedades'}
+                  as="h2"
+                  description="Ya inscriptas y operativas."
+                />
+                <div className="space-y-3">
+                  {sociedades.slice(0, 3).map((soc) => (
+                    <Card key={soc.id} tone="success">
+                      <CardBody className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-success-solid text-on-primary">
+                            <Building2 className="h-5 w-5" aria-hidden />
+                          </span>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-heading text-ink">
+                              {soc.denominacionAprobada || soc.denominacionSocial1}
+                            </h3>
+                            <p className="text-body-sm text-ink-2 tnum">
+                              {soc.cuit ? `CUIT ${soc.cuit}` : 'CUIT pendiente'}
+                              {soc.matricula && (
+                                <>
+                                  <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                                  Matrícula {soc.matricula}
+                                </>
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <Badge tone={estado.tone} dot>
-                          {estado.label}
-                        </Badge>
-                      </div>
-
-                      <LabeledProgress
-                        value={progreso}
-                        caption={etapaActual(tramite, 'cliente')}
-                      />
-                    </CardBody>
-                  </Card>
-                </Link>
-              )
-            })}
+                        <Button asChild variant="secondary" size="sm">
+                          <Link href="/dashboard/mi-sociedad">
+                            Ver legajo
+                            <ArrowRight className="h-4 w-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-        </section>
-      )}
 
-      {/* ─── Sociedades inscriptas ────────────────────────────────────── */}
-      {sociedades.length > 0 && (
-        <section className="space-y-4">
-          <SectionHeader
-            title={sociedades.length === 1 ? 'Tu sociedad' : 'Tus sociedades'}
-            description="Ya inscriptas y operativas."
-          />
-          <div className="space-y-3">
-            {sociedades.slice(0, 3).map((soc) => (
-              <Card key={soc.id} tone="success">
-                <CardBody className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex min-w-0 items-start gap-3">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-success-solid/12 text-success">
-                      <Building2 className="h-4.5 w-4.5" aria-hidden />
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="truncate text-heading text-ink">
-                        {soc.denominacionAprobada || soc.denominacionSocial1}
-                      </h3>
-                      <p className="text-body-sm text-ink-2 tnum">
-                        {soc.cuit ? `CUIT ${soc.cuit}` : 'CUIT pendiente'}
-                        {soc.matricula && (
-                          <>
-                            <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
-                            Matrícula {soc.matricula}
-                          </>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <Button asChild variant="secondary" size="sm">
-                    <Link href="/dashboard/mi-sociedad">
-                      Ver legajo
-                      <ArrowRight className="h-4 w-4" aria-hidden />
-                    </Link>
-                  </Button>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
+          {/* Columna lateral: accesos y ayuda */}
+          <aside className="space-y-4">
+            <SectionHeader title="Accesos" as="h2" />
+            <Card className="overflow-hidden">
+              <ul className="divide-y divide-line">
+                <Acceso
+                  href="/dashboard/mi-sociedad"
+                  acento="a2"
+                  icon={Building2}
+                  titulo="Mi sociedad"
+                  detalle="Datos y documentos"
+                />
+                <Acceso
+                  href="/dashboard/libros-digitales"
+                  acento="a3"
+                  icon={BookOpen}
+                  titulo="Libros digitales"
+                  detalle="Cómo llevarlos"
+                />
+                <Acceso
+                  href="/dashboard/documentos"
+                  acento="a4"
+                  icon={Upload}
+                  titulo="Documentos"
+                  detalle="Subir y consultar"
+                />
+                <Acceso
+                  href="/dashboard/notificaciones"
+                  acento="a5"
+                  icon={Bell}
+                  titulo="Notificaciones"
+                  detalle={
+                    notificacionesNoLeidas > 0
+                      ? `${notificacionesNoLeidas} sin leer`
+                      : 'Al día'
+                  }
+                  destacado={notificacionesNoLeidas > 0}
+                />
+                <Acceso
+                  href="/dashboard/servicios"
+                  acento="a6"
+                  icon={Handshake}
+                  titulo="Servicios"
+                  detalle="Para tu empresa"
+                />
+              </ul>
+            </Card>
 
-      {/* ─── Accesos: fila compacta, no seis tarjetas de colores ──────── */}
-      <section className="space-y-4">
-        <SectionHeader title="Accesos" as="h2" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Acceso
-            href="/dashboard/mi-sociedad"
-            acento="a2"
-            icon={Building2}
-            titulo="Mi sociedad"
-            detalle="Datos y documentos"
-          />
-          <Acceso
-            href="/dashboard/libros-digitales"
-            acento="a3"
-            icon={BookOpen}
-            titulo="Libros digitales"
-            detalle="Cómo llevarlos"
-          />
-          <Acceso
-            href="/dashboard/documentos"
-            acento="a4"
-            icon={Upload}
-            titulo="Documentos"
-            detalle="Subir y consultar"
-          />
-          <Acceso
-            href="/dashboard/notificaciones"
-            acento="a5"
-            icon={Bell}
-            titulo="Notificaciones"
-            detalle={
-              notificacionesNoLeidas > 0
-                ? `${notificacionesNoLeidas} sin leer`
-                : 'Al día'
-            }
-            destacado={notificacionesNoLeidas > 0}
-          />
-          <Acceso
-            href="/dashboard/servicios"
-            acento="a6"
-            icon={Handshake}
-            titulo="Servicios"
-            detalle="Para tu empresa"
-          />
+            {/* Contacto: cierra la columna y evita el vacío de media pantalla */}
+            <Card tone="primary">
+              <CardBody className="space-y-3">
+                <h3 className="text-heading text-ink">¿Necesitás una mano?</h3>
+                <p className="text-body-sm text-ink-2 text-pretty">
+                  Escribinos por WhatsApp y te respondemos en el día. También podés dejar tu
+                  consulta en el chat del trámite.
+                </p>
+                <Button asChild variant="secondary" size="sm" className="w-full">
+                  <a
+                    href="https://wa.me/5493512136212"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4" aria-hidden />
+                    Hablar por WhatsApp
+                  </a>
+                </Button>
+              </CardBody>
+            </Card>
+          </aside>
         </div>
-      </section>
+      )}
     </div>
   )
 }
@@ -474,12 +506,12 @@ function ProximoPaso({
  * misma escalera de luminosidad que la marca.
  */
 const ACENTOS = {
-  a1: 'bg-a1-soft text-a1',
-  a2: 'bg-a2-soft text-a2',
-  a3: 'bg-a3-soft text-a3',
-  a4: 'bg-a4-soft text-a4',
-  a5: 'bg-a5-soft text-a5',
-  a6: 'bg-a6-soft text-a6',
+  a1: 'bg-a1-soft text-a1 ring-a1-line',
+  a2: 'bg-a2-soft text-a2 ring-a2-line',
+  a3: 'bg-a3-soft text-a3 ring-a3-line',
+  a4: 'bg-a4-soft text-a4 ring-a4-line',
+  a5: 'bg-a5-soft text-a5 ring-a5-line',
+  a6: 'bg-a6-soft text-a6 ring-a6-line',
 } as const
 
 function Acceso({
@@ -498,38 +530,36 @@ function Acceso({
   destacado?: boolean
 }) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        'group flex items-center gap-3.5 rounded-card border border-line bg-surface p-card-sm shadow-card',
-        'transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
-        'hover:-translate-y-1 hover:border-primary-line hover:shadow-lift',
-      )}
-    >
-      <span
-        className={cn(
-          'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110',
-          ACENTOS[acento],
-        )}
+    <li>
+      <Link
+        href={href}
+        className="group flex items-center gap-3.5 px-card-sm py-3 transition-colors hover:bg-surface-2"
       >
-        <Icon className="h-5 w-5" aria-hidden />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-body font-semibold text-ink">{titulo}</span>
         <span
           className={cn(
-            'block truncate text-body-sm',
-            destacado ? 'font-semibold text-warning' : 'text-ink-2',
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 transition-transform duration-200 group-hover:scale-110',
+            ACENTOS[acento],
           )}
         >
-          {detalle}
+          <Icon className="h-4.5 w-4.5" aria-hidden />
         </span>
-      </span>
-      <ArrowRight
-        className="h-4 w-4 shrink-0 text-ink-3 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
-        aria-hidden
-      />
-    </Link>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-body font-semibold text-ink">{titulo}</span>
+          <span
+            className={cn(
+              'block truncate text-body-sm',
+              destacado ? 'font-semibold text-warning' : 'text-ink-2',
+            )}
+          >
+            {detalle}
+          </span>
+        </span>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-ink-3 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
+          aria-hidden
+        />
+      </Link>
+    </li>
   )
 }
 

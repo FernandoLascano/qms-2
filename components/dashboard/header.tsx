@@ -2,8 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronRight, Plus } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 import { itemPorRuta } from '@/lib/dashboard/navigation'
 
@@ -38,15 +37,6 @@ export function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-          {!isAdmin && (
-            <Link
-              href="/tramite/nuevo"
-              className="hidden h-10 items-center gap-2 rounded-control bg-primary px-5 text-body-sm font-semibold text-on-primary shadow-raise transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop lg:inline-flex"
-            >
-              <Plus className="h-4 w-4" aria-hidden />
-              Nuevo trámite
-            </Link>
-          )}
 
           <NotificationBell />
         </div>

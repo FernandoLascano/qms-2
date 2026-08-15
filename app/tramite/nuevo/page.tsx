@@ -815,8 +815,11 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Form Content */}
-        <Card className="shadow-raise border-2 border-line rounded-card">
-          <CardContent className="p-4 sm:p-6 md:p-8">
+        {/* La tarjeta del formulario va más angosta que el stepper: un campo de
+            "Nombre" de 450px de ancho es incómodo de leer y de completar. A
+            768px el recorrido del ojo entre etiqueta y campo es corto. */}
+        <Card className="mx-auto w-full max-w-3xl">
+          <CardContent className="p-card sm:p-8">
             {/* Paso 1: Datos */}
             {pasoActual === 1 && (
               <div className="space-y-6">
