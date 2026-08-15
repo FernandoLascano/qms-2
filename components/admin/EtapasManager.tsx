@@ -201,7 +201,7 @@ export default function EtapasManager({
         </div>
 
         {/* Resultado observado (fuera del progreso lineal) */}
-        <div className="mt-6 border-t pt-6">
+        <div className="mt-6 border-t border-line pt-6">
           <button
             onClick={() => handleToggleEtapa('tramiteObservado', etapas.tramiteObservado)}
             disabled={actualizando === 'tramiteObservado'}
@@ -224,7 +224,7 @@ export default function EtapasManager({
         </div>
 
         {/* Textos editables del flujo */}
-        <div className="mt-6 space-y-4 border-t pt-6">
+        <div className="mt-6 space-y-4 border-t border-line pt-6">
           <div>
             <label htmlFor="instruccionesFirma" className="block text-body-sm font-medium text-ink mb-1">
               Instrucciones de firma (las ve el cliente)

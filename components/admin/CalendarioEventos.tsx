@@ -213,7 +213,7 @@ export default function CalendarioEventos() {
                   <textarea
                     value={nuevoEvento.descripcion}
                     onChange={(e) => setNuevoEvento(prev => ({ ...prev, descripcion: e.target.value }))}
-                    className="w-full min-h-[100px] px-3 py-2 border rounded-chip"
+                    className="w-full min-h-[100px] px-3 py-2 border border-line rounded-chip"
                     placeholder="Detalles del evento..."
                   />
                 </div>

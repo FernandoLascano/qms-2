@@ -685,7 +685,7 @@ export default function NuevoTramitePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -762,7 +762,7 @@ export default function NuevoTramitePage() {
                     {/* Icon Container - Fixed position */}
                     <div className="relative mb-3 md:mb-4 h-12 md:h-14 flex items-center justify-center">
                       <div
-                        className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+                        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                           isCompleted
                             ? 'bg-success-solid text-on-primary'
                             : isActive
@@ -771,19 +771,11 @@ export default function NuevoTramitePage() {
                         }`}
                       >
                         {isCompleted ? (
-                          <Check className="h-4 w-4 md:h-6 md:w-6" />
+                          <Check className="h-4 w-4 md:h-5 md:w-5" />
                         ) : (
-                          <Icon className={`h-4 w-4 md:h-6 md:w-6 ${isActive ? 'text-on-primary' : 'text-ink-3'}`} />
+                          <Icon className={`h-4 w-4 md:h-5 md:w-5 ${isActive ? 'text-on-primary' : 'text-ink-3'}`} />
                         )}
                       </div>
-                      {/* Step Number Badge */}
-                      {!isCompleted && (
-                        <div className={`absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[10px] md:text-label font-semibold ${
-                          isActive ? 'bg-primary text-on-primary' : 'bg-n-300 text-ink-2'
-                        }`}>
-                          {paso.id}
-                        </div>
-                      )}
                     </div>
                     
                     {/* Labels - Fixed height for alignment */}
@@ -915,7 +907,7 @@ export default function NuevoTramitePage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
+                <div className="border-t border-line pt-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-heading text-primary">Selecciona tu Plan</h3>
                     <Link href="/#planes" target="_blank">
@@ -958,7 +950,7 @@ export default function NuevoTramitePage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
+                <div className="border-t border-line pt-6">
                   <h3 className="font-semibold text-heading text-ink mb-4">Jurisdicción *</h3>
                   <JurisdiccionSelector
                     value={formData.jurisdiccion}
@@ -1116,7 +1108,7 @@ export default function NuevoTramitePage() {
                     )}
                   </div>
                 </div>
-                <div className="border-t pt-6">
+                <div className="border-t border-line pt-6">
                   <h3 className="font-semibold text-heading text-ink mb-2">Domicilio Social</h3>
                   <div className="bg-primary-soft border border-primary-line rounded-control p-3 mb-4">
                     <p className="text-body-sm text-primary">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
@@ -1235,7 +1227,7 @@ export default function NuevoTramitePage() {
                     )}
                   </div>
                 </div>
-                <div className="border-t pt-6">
+                <div className="border-t border-line pt-6">
                   <h3 className="font-semibold text-heading text-ink mb-2">Depósito del Capital (CBU)</h3>
                   <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-primary mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
@@ -1249,7 +1241,7 @@ export default function NuevoTramitePage() {
                   </div>
 
                   <div className="mb-4">
-                    <label className="flex items-start gap-3 p-4 border rounded-control cursor-pointer hover:bg-surface-2">
+                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
                       <input
                         type="checkbox"
                         checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
@@ -2136,8 +2128,8 @@ export default function NuevoTramitePage() {
                     </p>
                   </div>
 
-                  <div className="border-t pt-6">
-                    <label className="flex items-start gap-3 p-4 border rounded-control cursor-pointer hover:bg-surface-2">
+                  <div className="border-t border-line pt-6">
+                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
                       <input
                         type="checkbox"
                         name="asesoramientoContable"

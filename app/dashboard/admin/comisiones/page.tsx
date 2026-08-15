@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Coins, RefreshCw, Plus, Trash2, CheckCircle2, Clock, Download } from 'lucide-react'
+import { RefreshCw, Plus, Trash2, CheckCircle2, Clock, Download, Search } from 'lucide-react'
 import {
   calcularReparto,
   totalizar,
@@ -52,9 +52,24 @@ export default function ComisionesPage() {
   const [tab, setTab] = useState<'movimientos' | 'liquidacion' | 'fondo'>('movimientos')
 
   const [movimientos, setMovimientos] = useState<Movimiento[]>([])
+  const [busqueda, setBusqueda] = useState('')
+  const [mostrarAlta, setMostrarAlta] = useState(false)
   const [liquidaciones, setLiquidaciones] = useState<Liquidacion[]>([])
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [porcentajes, setPorcentajes] = useState<Porcentajes>(PORCENTAJES_DEFAULT)
+
+  const movimientosFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return movimientos
+    return movimientos.filter(
+      (m) => m.cliente.toLowerCase().includes(q) || m.asunto.toLowerCase().includes(q),
+    )
+  }, [movimientos, busqueda])
+
+  const totalesFiltrados = useMemo(
+    () => totalizar(movimientosFiltrados, porcentajes),
+    [movimientosFiltrados, porcentajes],
+  )
 
   const hoy = new Date()
   const periodoActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`
@@ -296,75 +311,179 @@ export default function ComisionesPage() {
 
       {/* ===================== MOVIMIENTOS ===================== */}
       {tab === 'movimientos' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader><CardTitle variant="section">Agregar movimiento manual</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
-                <div><Label>Fecha</Label><Input type="date" value={nuevo.fecha} onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })} /></div>
-                <div className="md:col-span-2"><Label>Cliente</Label><Input value={nuevo.cliente} onChange={(e) => setNuevo({ ...nuevo, cliente: e.target.value })} placeholder="Nombre del cliente" /></div>
-                <div><Label>Asunto</Label><Input value={nuevo.asunto} onChange={(e) => setNuevo({ ...nuevo, asunto: e.target.value })} placeholder="Mensualización, etc." /></div>
-                <div><Label>Honorario (sin gastos)</Label><Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" /></div>
-                <div>
-                  <Label>Originador</Label>
-                  <Select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })}>
-                    {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
-                  </Select>
-                </div>
-              </div>
-              <div className="mt-3">
-                <Button onClick={agregarMovimiento} disabled={saving} className="gap-2"><Plus className="h-4 w-4" /> Agregar</Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          {/* Barra de herramientas: buscar y cargar a mano */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative lg:w-80">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por cliente o asunto"
+                aria-label="Buscar movimientos"
+                className="pl-9"
+              />
+            </div>
+            <Button variant="secondary" onClick={() => setMostrarAlta((v) => !v)}>
+              <Plus className="h-4 w-4" aria-hidden />
+              {mostrarAlta ? 'Cerrar' : 'Cargar movimiento a mano'}
+            </Button>
+          </div>
 
-          <Card>
-            <CardHeader><CardTitle variant="section">Movimientos ({movimientos.length})</CardTitle></CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full text-body-sm text-ink">
-                <thead>
-                  <tr className="text-left text-ink-2 border-b">
-                    <th className="py-2 pr-3">Fecha</th><th className="pr-3">Cliente</th><th className="pr-3">Asunto</th>
-                    <th className="pr-3">Origen</th><th className="pr-3 text-right">Honorario</th><th className="pr-3">Originador</th>
-                    <th className="pr-3 text-right">Com. orig.</th><th className="pr-3 text-right">MW</th><th className="pr-3 text-right">Operador</th>
-                    <th className="pr-3 text-right">Fondo F</th><th className="pr-3 text-right">Fondo J</th><th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movimientos.length === 0 && (
-                    <tr><td colSpan={12} className="py-6 text-center text-ink-2">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
-                  )}
-                  {movimientos.map((m) => {
-                    const r = calcularReparto(m.monto, m.originador, porcentajes)
-                    return (
-                      <tr key={m.id} className="border-b last:border-0 hover:bg-surface-2">
-                        <td className="py-2 pr-3 whitespace-nowrap">{fmtFecha(m.fecha)}</td>
-                        <td className="pr-3">{m.cliente}</td>
-                        <td className="pr-3">{m.asunto}</td>
-                        <td className="pr-3">
-                          <span className={`text-label px-2 py-0.5 rounded-full ${m.origen === 'PAGO' ? 'bg-info-soft text-info' : 'bg-surface-3 text-ink-2'}`}>{m.origen === 'PAGO' ? 'Sistema' : 'Manual'}</span>
-                        </td>
-                        <td className="pr-3 text-right font-medium whitespace-nowrap">{fmt(m.monto)}</td>
-                        <td className="pr-3">
-                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-chip border border-line-strong bg-surface px-2 text-label text-ink">
-                            {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
-                          </select>
-                        </td>
-                        <td className="pr-3 text-right whitespace-nowrap">{r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}</td>
-                        <td className="pr-3 text-right whitespace-nowrap">{fmt(r.mw)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap">{fmt(r.operadorFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-ink-2">{fmt(r.fondoFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-ink-2">{fmt(r.fondoJustiniano)}</td>
-                        <td className="text-right">
-                          <button onClick={() => eliminarMovimiento(m.id)} className="text-ink-2 hover:text-danger p-1" title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}><Trash2 className="h-4 w-4" /></button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+          {mostrarAlta && (
+            <Card>
+              <CardContent className="p-card">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-6 md:items-end">
+                  <div>
+                    <Label htmlFor="mov-fecha">Fecha</Label>
+                    <Input id="mov-fecha" type="date" value={nuevo.fecha} onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="mov-cliente">Cliente</Label>
+                    <Input id="mov-cliente" value={nuevo.cliente} onChange={(e) => setNuevo({ ...nuevo, cliente: e.target.value })} placeholder="Nombre del cliente" />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-asunto">Asunto</Label>
+                    <Input id="mov-asunto" value={nuevo.asunto} onChange={(e) => setNuevo({ ...nuevo, asunto: e.target.value })} placeholder="Mensualización, etc." />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-monto">Honorario</Label>
+                    <Input id="mov-monto" type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-orig">Originador</Label>
+                    <Select id="mov-orig" value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })}>
+                      {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
+                    </Select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button onClick={agregarMovimiento} loading={saving}>
+                    <Plus className="h-4 w-4" aria-hidden />
+                    Agregar movimiento
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Libro de movimientos */}
+          {movimientosFiltrados.length === 0 ? (
+            <Card>
+              <div className="px-6 py-12 text-center">
+                <h3 className="text-heading text-ink">
+                  {busqueda ? 'Sin resultados' : 'Todavía no hay movimientos'}
+                </h3>
+                <p className="mx-auto mt-1 max-w-md text-body-sm text-ink-2">
+                  {busqueda
+                    ? `No encontramos nada que coincida con «${busqueda}».`
+                    : 'Sincronizá los honorarios cobrados o cargá uno a mano.'}
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <Card className="overflow-hidden">
+              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-card-sm py-3">
+                <h3 className="text-heading text-ink">
+                  Movimientos <span className="text-ink-2 tnum">({movimientosFiltrados.length})</span>
+                </h3>
+                <span className="text-body-sm text-ink-2">
+                  Suma <span className="font-semibold text-ink tnum">{fmt(totalesFiltrados.ingresoBruto)}</span>
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-body-sm">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-2 text-left text-label text-ink-2">
+                      <th className="px-card-sm py-2.5 font-semibold">Fecha</th>
+                      <th className="py-2.5 pr-3 font-semibold">Cliente</th>
+                      <th className="py-2.5 pr-3 font-semibold">Asunto</th>
+                      <th className="py-2.5 pr-3 font-semibold">Originador</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Honorario</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Com. orig.</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">MW</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Operador</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Fondo F</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Fondo J</th>
+                      <th className="px-card-sm py-2.5" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {movimientosFiltrados.map((m) => {
+                      const r = calcularReparto(m.monto, m.originador, porcentajes)
+                      return (
+                        <tr key={m.id} className="group transition-colors hover:bg-surface-2">
+                          <td className="whitespace-nowrap px-card-sm py-2.5 text-ink-2 tnum">
+                            {fmtFecha(m.fecha)}
+                          </td>
+                          <td className="py-2.5 pr-3 font-medium text-ink">
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                  m.origen === 'PAGO' ? 'bg-success-solid' : 'bg-n-400'
+                                }`}
+                                title={m.origen === 'PAGO' ? 'Del sistema' : 'Cargado a mano'}
+                              />
+                              {m.cliente}
+                            </span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-ink-2">{m.asunto}</td>
+                          <td className="py-2.5 pr-3">
+                            <Select
+                              value={m.originador}
+                              onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)}
+                              className="h-8 w-auto min-w-36 text-label"
+                            >
+                              {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
+                            </Select>
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right font-semibold text-ink tnum">
+                            {fmt(m.monto)}
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">
+                            {r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink tnum">{fmt(r.mw)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink tnum">{fmt(r.operadorFernando)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">{fmt(r.fondoFernando)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">{fmt(r.fondoJustiniano)}</td>
+                          <td className="px-card-sm py-2.5 text-right">
+                            <button
+                              onClick={() => eliminarMovimiento(m.id)}
+                              aria-label={`Eliminar movimiento de ${m.cliente}`}
+                              className="rounded-control p-1.5 text-ink-3 opacity-0 transition hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                              title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-line bg-surface-2 font-semibold text-ink">
+                      <td className="px-card-sm py-3" colSpan={4}>Totales</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.ingresoBruto)}</td>
+                      <td className="py-3 pr-3 text-right tnum">
+                        {fmt(totalesFiltrados.comisionFernando + totalesFiltrados.comisionJustiniano + totalesFiltrados.comisionMw)}
+                      </td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.mwBase)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.operadorFernando)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.fondoFernando)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.fondoJustiniano)}</td>
+                      <td className="px-card-sm py-3" />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </Card>
+          )}
         </div>
       )}
 
@@ -409,7 +528,7 @@ export default function ComisionesPage() {
                     </div>
                   )
                 })}
-                <div className="flex justify-between border-t pt-3 text-body-sm">
+                <div className="flex justify-between border-t border-line pt-3 text-body-sm">
                   <span className="font-semibold text-ink">Subtotal a pagar</span>
                   <span className="font-semibold text-ink">{fmt(totales.subtotalPagable)}</span>
                 </div>
@@ -445,7 +564,7 @@ export default function ComisionesPage() {
                   <CardContent className="space-y-1 text-body-sm">
                     <div className="flex justify-between"><span className="text-ink-2">Acumulado histórico</span><span className="text-ink">{fmt(acum)}</span></div>
                     <div className="flex justify-between"><span className="text-ink-2">Distribuido</span><span className="text-ink">− {fmt(distrib)}</span></div>
-                    <div className="flex justify-between border-t pt-1 font-semibold"><span className="text-ink">Saldo disponible</span><span className="text-success">{fmt(acum - distrib)}</span></div>
+                    <div className="flex justify-between border-t border-line pt-1 font-semibold"><span className="text-ink">Saldo disponible</span><span className="text-success">{fmt(acum - distrib)}</span></div>
                   </CardContent>
                 </Card>
               )
@@ -475,11 +594,11 @@ export default function ComisionesPage() {
             <CardHeader><CardTitle variant="section">Distribuciones registradas</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
               <table className="w-full text-body-sm text-ink">
-                <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
+                <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
                 <tbody>
                   {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-ink-2">Sin distribuciones registradas.</td></tr>}
                   {distribuciones.map((d) => (
-                    <tr key={d.id} className="border-b last:border-0">
+                    <tr key={d.id} className="border-b border-line last:border-0">
                       <td className="py-2 pr-3">{fmtFecha(d.fecha)}</td>
                       <td className="pr-3">{BENEFICIARIO_LABEL[d.beneficiario]}</td>
                       <td className="pr-3 text-right">{fmt(d.monto)}</td>

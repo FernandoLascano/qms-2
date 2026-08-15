@@ -277,9 +277,9 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
         )}
 
         {/* Generar Nuevo Link */}
-        <div className="border-t pt-4">
+        <div className="border-t border-line pt-4">
           <h4 className="font-medium text-body-sm text-ink-2 mb-3">Generar Link de Pago de Honorarios</h4>
-          <div className="space-y-4 bg-surface p-4 rounded-control border">
+          <div className="space-y-4 bg-surface p-4 rounded-control border border-line">
             {/* Selector de Plan */}
             <div>
               <Label htmlFor="planHonorarios">Plan *</Label>
@@ -333,7 +333,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
             </div>
 
             {/* Datos Bancarios */}
-            <div className="border-t pt-4">
+            <div className="border-t border-line pt-4">
               <h5 className="font-medium text-body-sm text-ink-2 mb-3">Datos Bancarios para Transferencia</h5>
               <div className="space-y-3">
                 {/* Selector de cuenta pre-configurada */}

@@ -141,7 +141,7 @@ function TortaCapital({ socios }: { socios: any[] }) {
           </div>
         ))}
         {capitalTotal > 0 && (
-          <div className="flex items-center justify-between border-t pt-2 text-body-sm font-semibold text-ink">
+          <div className="flex items-center justify-between border-t border-line pt-2 text-body-sm font-semibold text-ink">
             <span>Capital total</span>
             <span className="tabular-nums">${capitalTotal.toLocaleString('es-AR')}</span>
           </div>

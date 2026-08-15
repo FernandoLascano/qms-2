@@ -230,34 +230,37 @@ export default function ConfiguracionAdminPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-display text-ink">
-          Configuración del Sistema
-        </h1>
-        <p className="mt-1 text-body text-ink-2">
-          Administrá las configuraciones globales de la plataforma
-        </p>
-      </div>
+      <PageHeader
+        title="Configuración del"
+        destacado="sistema"
+        description="Parámetros globales de la plataforma: notificaciones, correo, pagos y precios."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Configuración' }]}
+      />
 
-      {/* Tabs */}
-      <div className="bg-surface rounded-card shadow-raise border border-line p-2">
-        <nav className="flex gap-2 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-control transition-all whitespace-nowrap font-medium ${
-                activeTab === tab.id
-                  ? 'bg-primary text-on-primary shadow-raise'
-                  : 'text-ink-2 hover:text-ink hover:bg-surface-3'
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <nav aria-label="Secciones de configuración" className="-mx-1 overflow-x-auto">
+        <ul className="flex min-w-max items-center gap-1 border-b border-line px-1">
+          {tabs.map((tab) => {
+            const activa = activeTab === tab.id
+            return (
+              <li key={tab.id}>
+                <button
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-current={activa ? 'page' : undefined}
+                  className={`relative flex h-11 items-center gap-2 rounded-t-control px-3 text-body-sm transition-colors ${
+                    activa ? 'font-medium text-primary' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
+                  }`}
+                >
+                  <tab.icon className={`h-4 w-4 ${activa ? 'text-primary' : 'text-ink-3'}`} aria-hidden />
+                  {tab.label}
+                  {activa && (
+                    <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" aria-hidden />
+                  )}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
 
       {/* Notificaciones Tab */}
       {activeTab === 'notificaciones' && (
@@ -265,7 +268,7 @@ export default function ConfiguracionAdminPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5 text-primary" />
-              Configuración de Notificaciones
+              Notificaciones
             </CardTitle>
             <CardDescription>
               Configurá las alertas y recordatorios automáticos del sistema
@@ -307,6 +310,7 @@ export default function ConfiguracionAdminPage() {
               <Input
                 id="diasAlertaEstancamiento"
                 type="number"
+                className="max-w-40"
                 value={config.diasAlertaEstancamiento}
                 onChange={(e) => setConfig({ ...config, diasAlertaEstancamiento: parseInt(e.target.value) })}
                 min={1}
@@ -326,7 +330,7 @@ export default function ConfiguracionAdminPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-primary" />
-              Configuración de Email
+              Correo
             </CardTitle>
             <CardDescription>
               Configurá los parámetros de envío de correos electrónicos
@@ -409,7 +413,7 @@ export default function ConfiguracionAdminPage() {
             </div>
 
             {/* Sección de prueba de email */}
-            <div className="border-t pt-6 mt-6">
+            <div className="border-t border-line pt-6 mt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-4 flex items-center gap-2">
                 <Send className="h-4 w-4" />
                 Probar Envío de Email
@@ -518,6 +522,7 @@ export default function ConfiguracionAdminPage() {
               <Input
                 id="diasVencimientoReserva"
                 type="number"
+                className="max-w-40"
                 value={config.diasVencimientoReserva}
                 onChange={(e) => setConfig({ ...config, diasVencimientoReserva: parseInt(e.target.value) })}
                 min={1}
@@ -533,6 +538,7 @@ export default function ConfiguracionAdminPage() {
               <Input
                 id="horasLimiteRespuesta"
                 type="number"
+                className="max-w-40"
                 value={config.horasLimiteRespuesta}
                 onChange={(e) => setConfig({ ...config, horasLimiteRespuesta: parseInt(e.target.value) })}
                 min={1}
@@ -552,7 +558,7 @@ export default function ConfiguracionAdminPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
-              Configuración de Pagos
+              Pagos
             </CardTitle>
             <CardDescription>
               Configurá los parámetros de pago y precios
@@ -574,7 +580,7 @@ export default function ConfiguracionAdminPage() {
               />
             </div>
 
-            <div className="border-t pt-6">
+            <div className="border-t border-line pt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-4">Precios de Planes</h3>
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -585,8 +591,7 @@ export default function ConfiguracionAdminPage() {
                       id="precioPlanBasico"
                       type="number"
                       value={config.precioPlanBasico}
-                      onChange={(e) => setConfig({ ...config, precioPlanBasico: parseFloat(e.target.value) })}
-                      className="pl-7"
+                      onChange={(e) => setConfig({ ...config, precioPlanBasico: parseFloat(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -604,8 +609,7 @@ export default function ConfiguracionAdminPage() {
                       id="precioPlanEmprendedor"
                       type="number"
                       value={config.precioPlanEmprendedor}
-                      onChange={(e) => setConfig({ ...config, precioPlanEmprendedor: parseFloat(e.target.value) })}
-                      className="pl-7"
+                      onChange={(e) => setConfig({ ...config, precioPlanEmprendedor: parseFloat(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -623,8 +627,7 @@ export default function ConfiguracionAdminPage() {
                       id="precioPlanPremium"
                       type="number"
                       value={config.precioPlanPremium}
-                      onChange={(e) => setConfig({ ...config, precioPlanPremium: parseFloat(e.target.value) })}
-                      className="pl-7"
+                      onChange={(e) => setConfig({ ...config, precioPlanPremium: parseFloat(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -641,8 +644,7 @@ export default function ConfiguracionAdminPage() {
                       id="descuentoTransferencia"
                       type="number"
                       value={config.descuentoTransferencia}
-                      onChange={(e) => setConfig({ ...config, descuentoTransferencia: parseFloat(e.target.value) })}
-                      className="pr-8"
+                      onChange={(e) => setConfig({ ...config, descuentoTransferencia: parseFloat(e.target.value) })} className="pr-8"
                       min={0}
                       max={100}
                       step={0.5}
@@ -657,7 +659,7 @@ export default function ConfiguracionAdminPage() {
               </div>
             </div>
 
-            <div className="border-t pt-6">
+            <div className="border-t border-line pt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-4">SMVM y Capital Social</h3>
               <div className="space-y-2">
                 <Label htmlFor="smvm">Salario Mínimo, Vital y Móvil (SMVM)</Label>
@@ -667,8 +669,7 @@ export default function ConfiguracionAdminPage() {
                     id="smvm"
                     type="number"
                     value={config.smvm}
-                    onChange={(e) => setConfig({ ...config, smvm: parseFloat(e.target.value) })}
-                    className="pl-7"
+                    onChange={(e) => setConfig({ ...config, smvm: parseFloat(e.target.value) })} className="max-w-40 pl-7"
                     min={0}
                     step={1000}
                   />
@@ -679,7 +680,7 @@ export default function ConfiguracionAdminPage() {
               </div>
             </div>
 
-            <div className="border-t pt-6">
+            <div className="border-t border-line pt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-1">Comisiones (esquema de distribución)</h3>
               <p className="text-body-sm text-ink-2 mb-4">
                 Porcentajes usados por el módulo <strong>Liquidación de Comisiones</strong>. Los cuatro del esquema base
@@ -722,7 +723,7 @@ export default function ConfiguracionAdminPage() {
               })()}
             </div>
 
-            <div className="border-t pt-6">
+            <div className="border-t border-line pt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-1">Domicilio en Sede</h3>
               <p className="text-body-sm text-ink-2 mb-4">
                 Servicio de domicilio legal en la oficina. Usado por el módulo <strong>Domicilios en Sede</strong>.
@@ -774,8 +775,7 @@ export default function ConfiguracionAdminPage() {
                         id="domicilioSedePrecioAnual"
                         type="number"
                         value={config.domicilioSedePrecioAnual}
-                        onChange={(e) => setConfig({ ...config, domicilioSedePrecioAnual: parseFloat(e.target.value) })}
-                        className="pl-7"
+                        onChange={(e) => setConfig({ ...config, domicilioSedePrecioAnual: parseFloat(e.target.value) })} className="max-w-40 pl-7"
                         min={0}
                         step={1000}
                       />
@@ -786,6 +786,7 @@ export default function ConfiguracionAdminPage() {
                     <Input
                       id="domicilioSedeDiasAlerta"
                       type="number"
+                      className="max-w-40"
                       value={config.domicilioSedeDiasAlerta}
                       onChange={(e) => setConfig({ ...config, domicilioSedeDiasAlerta: parseInt(e.target.value) })}
                       min={0}
@@ -813,7 +814,7 @@ export default function ConfiguracionAdminPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5 text-primary" />
-              Configuración General
+              General
             </CardTitle>
             <CardDescription>
               Configuraciones generales de la plataforma
@@ -845,17 +846,17 @@ export default function ConfiguracionAdminPage() {
               </div>
             )}
 
-            <div className="border-t pt-6">
+            <div className="border-t border-line pt-6">
               <h3 className="text-body-sm font-semibold text-ink mb-3 flex items-center gap-2">
                 <Database className="h-4 w-4" />
                 Información del Sistema
               </h3>
               <div className="space-y-2 text-body-sm">
-                <div className="flex justify-between py-2 border-b">
+                <div className="flex justify-between py-2 border-b border-line">
                   <span className="text-ink-2">Versión:</span>
                   <span className="font-semibold">1.0.0</span>
                 </div>
-                <div className="flex justify-between py-2 border-b">
+                <div className="flex justify-between py-2 border-b border-line">
                   <span className="text-ink-2">Entorno:</span>
                   <span className="font-semibold">{process.env.NODE_ENV}</span>
                 </div>
@@ -872,8 +873,7 @@ export default function ConfiguracionAdminPage() {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button
-          onClick={handleSave}
-          className="bg-primary hover:bg-primary-hover rounded-control shadow-raise px-6 font-semibold"
+          onClick={handleSave} className="bg-primary hover:bg-primary-hover rounded-control shadow-raise px-6 font-semibold"
           disabled={loading}
         >
           {loading ? (

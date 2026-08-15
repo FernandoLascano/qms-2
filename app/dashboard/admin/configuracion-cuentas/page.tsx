@@ -122,10 +122,10 @@ export default function ConfiguracionCuentasPage() {
         breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Cuentas bancarias' }]}
       />
 
-      {/* Agregar Nueva Cuenta */}
+      {/* Agregar una cuenta */}
       <Card>
         <CardHeader>
-          <CardTitle>Agregar Nueva Cuenta</CardTitle>
+          <CardTitle>Agregar una cuenta</CardTitle>
           <CardDescription>
             Las cuentas agregadas estarán disponibles en el dropdown al generar links de pago
           </CardDescription>
@@ -133,7 +133,7 @@ export default function ConfiguracionCuentasPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="nombre">Nombre de la Cuenta *</Label>
+              <Label htmlFor="nombre">Nombre de la cuenta *</Label>
               <Input
                 id="nombre"
                 value={nuevaCuenta.nombre}
@@ -170,7 +170,7 @@ export default function ConfiguracionCuentasPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="titular">Titular de la Cuenta *</Label>
+              <Label htmlFor="titular">Titular de la cuenta *</Label>
               <Input
                 id="titular"
                 value={nuevaCuenta.titular}
@@ -179,9 +179,11 @@ export default function ConfiguracionCuentasPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <Button onClick={agregarCuenta} className="gap-2">
+              <Button
+              variant="secondary"
+              onClick={agregarCuenta} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Agregar Cuenta
+                Agregar cuenta
               </Button>
             </div>
           </div>
@@ -191,7 +193,7 @@ export default function ConfiguracionCuentasPage() {
       {/* Lista de Cuentas */}
       <Card>
         <CardHeader>
-          <CardTitle>Cuentas Pre-configuradas ({cuentas.length})</CardTitle>
+          <CardTitle>Cuentas configuradas ({cuentas.length})</CardTitle>
           <CardDescription>
             Estas cuentas estarán disponibles al generar links de pago de honorarios
           </CardDescription>
@@ -206,7 +208,7 @@ export default function ConfiguracionCuentasPage() {
               {cuentas.map((cuenta) => (
                 <div
                   key={cuenta.id}
-                  className="border rounded-control p-4 bg-surface-2 hover:bg-surface-3 transition"
+                  className="border border-line rounded-control p-4 bg-surface-2 hover:bg-surface-3 transition"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,7 +222,7 @@ export default function ConfiguracionCuentasPage() {
                       </div>
                       <div>
                         <p className="text-body-sm text-ink-2">CBU</p>
-                        <p className="font-semibold text-ink font-mono">{cuenta.cbu}</p>
+                        <p className="font-mono text-body font-semibold text-ink tnum">{cuenta.cbu}</p>
                       </div>
                       {cuenta.alias && (
                         <div>
@@ -248,14 +250,14 @@ export default function ConfiguracionCuentasPage() {
           )}
           
           {cuentas.length > 0 && (
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-6 pt-4 border-t border-line">
               <Button
                 onClick={guardarCuentas}
                 disabled={guardando}
                 className="gap-2 bg-primary hover:bg-primary"
               >
                 <Save className="h-4 w-4" />
-                {guardando ? 'Guardando...' : 'Guardar Cambios'}
+                {guardando ? 'Guardando...' : 'Guardar cambios'}
               </Button>
             </div>
           )}

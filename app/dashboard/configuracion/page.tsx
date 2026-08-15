@@ -284,14 +284,14 @@ export default function ConfiguracionPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-body-sm">
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between py-2 border-b border-line">
               <span className="text-ink-2">Tipo de cuenta:</span>
               <span className="font-semibold">
                 {session?.user?.rol === 'ADMIN' ? 'Administrador' :
                  session?.user?.rol === 'ABOGADO' ? 'Abogado' : 'Cliente'}
               </span>
             </div>
-            <div className="flex justify-between py-2 border-b">
+            <div className="flex justify-between py-2 border-b border-line">
               <span className="text-ink-2">Email verificado:</span>
               <span className="font-semibold">
                 {session?.user?.emailVerified ? 'Sí' : 'No'}

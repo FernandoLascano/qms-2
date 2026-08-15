@@ -147,7 +147,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
             const enlaceRelacionado = getEnlaceRelacionado(comprobante.nombre)
             
             return (
-              <div key={comprobante.id} className="border-2 rounded-control p-4 hover:bg-surface-2 transition">
+              <div key={comprobante.id} className="border border-line rounded-control p-4 hover:bg-surface-2 transition">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

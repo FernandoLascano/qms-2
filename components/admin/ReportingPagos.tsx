@@ -122,7 +122,7 @@ export default function ReportingPagos({ pagos }: ReportingPagosProps) {
             </h4>
             <div className="space-y-2">
               {conceptosArray.map((item) => (
-                <div key={item.concepto} className="flex items-center justify-between p-3 bg-surface border rounded-control">
+                <div key={item.concepto} className="flex items-center justify-between p-3 bg-surface border border-line rounded-control">
                   <div>
                     <p className="font-medium text-body-sm text-ink">{item.concepto}</p>
                     <p className="text-label text-ink-2">

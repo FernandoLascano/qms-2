@@ -104,7 +104,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
           <div className="space-y-2 mb-4">
             <h4 className="font-medium text-body-sm text-ink-2">Pagos Registrados</h4>
             {pagos.map((pago) => (
-              <div key={pago.id} className="flex items-center justify-between p-3 bg-surface border rounded-control">
+              <div key={pago.id} className="flex items-center justify-between p-3 bg-surface border border-line rounded-control">
                 <div className="flex items-center gap-3">
                   {pago.estado === 'APROBADO' ? (
                     <CheckCircle className="h-5 w-5 text-success" />
@@ -131,7 +131,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         )}
 
         {/* Registrar Nuevo Pago */}
-        <div className="border-t pt-4">
+        <div className="border-t border-line pt-4">
           <h4 className="font-medium text-body-sm text-ink-2 mb-3">Registrar Nuevo Pago</h4>
           <div className="space-y-3">
             <div>

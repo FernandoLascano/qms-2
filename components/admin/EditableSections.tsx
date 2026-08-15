@@ -322,7 +322,7 @@ export function EditSocios({ tramiteId, tramite }: EditableSectionsProps) {
           >
             <Plus className="w-4 h-4" /> Agregar socio
           </button>
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-line">
             <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
@@ -416,7 +416,7 @@ export function EditAdministradores({ tramiteId, tramite }: EditableSectionsProp
           >
             <Plus className="w-4 h-4" /> Agregar administrador
           </button>
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-line">
             <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

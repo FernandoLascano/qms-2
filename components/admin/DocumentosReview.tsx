@@ -141,7 +141,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
         ) : (
           <div className="space-y-3">
             {documentosDelCliente.map((doc) => (
-              <div key={doc.id} className="border rounded-control p-4 hover:bg-surface-2 transition">
+              <div key={doc.id} className="border border-line rounded-control p-4 hover:bg-surface-2 transition">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

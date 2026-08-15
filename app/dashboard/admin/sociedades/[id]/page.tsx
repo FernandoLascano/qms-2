@@ -228,18 +228,18 @@ async function SociedadDetallePage({ params }: PageProps) {
         icon={<Tag className="h-5 w-5" />}
       >
         <div className="space-y-2">
-          <div className="p-3 border rounded-control bg-surface-2">
+          <div className="p-3 border border-line rounded-control bg-surface-2">
             <span className="text-label text-ink-2">Opción 1 (Preferida)</span>
             <p className="font-medium text-ink mt-1">{tramite.denominacionSocial1}</p>
           </div>
           {tramite.denominacionSocial2 && (
-            <div className="p-3 border rounded-control">
+            <div className="p-3 border border-line rounded-control">
               <span className="text-label text-ink-2">Opción 2</span>
               <p className="font-medium text-ink mt-1">{tramite.denominacionSocial2}</p>
             </div>
           )}
           {tramite.denominacionSocial3 && (
-            <div className="p-3 border rounded-control">
+            <div className="p-3 border border-line rounded-control">
               <span className="text-label text-ink-2">Opción 3</span>
               <p className="font-medium text-ink mt-1">{tramite.denominacionSocial3}</p>
             </div>
@@ -330,8 +330,8 @@ async function SociedadDetallePage({ params }: PageProps) {
             const porcentajeFormateado = porcentaje.toFixed(2)
             
             return (
-              <div key={index} className="border-2 rounded-control p-card bg-surface-2">
-                <div className="flex items-start justify-between mb-4 pb-3 border-b">
+              <div key={index} className="border border-line rounded-control p-card bg-surface-2">
+                <div className="flex items-start justify-between mb-4 pb-3 border-b border-line">
                   <div>
                     <h4 className="text-heading font-semibold text-ink mb-1">
                       {socio.nombre} {socio.apellido}
@@ -345,27 +345,27 @@ async function SociedadDetallePage({ params }: PageProps) {
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">DNI</p>
                     <p className="font-semibold text-ink">{socio.dni}</p>
                   </div>
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">CUIT</p>
                     <p className="font-semibold text-ink">{socio.cuit}</p>
                   </div>
                   {socio.email && (
-                    <div className="bg-surface p-3 rounded-control border">
+                    <div className="bg-surface p-3 rounded-control border border-line">
                       <p className="text-label text-ink-2 mb-1">Email</p>
                       <p className="font-semibold text-ink text-body-sm break-all">{socio.email}</p>
                     </div>
                   )}
                   {socio.telefono && (
-                    <div className="bg-surface p-3 rounded-control border">
+                    <div className="bg-surface p-3 rounded-control border border-line">
                       <p className="text-label text-ink-2 mb-1">Teléfono</p>
                       <p className="font-semibold text-ink">{socio.telefono}</p>
                     </div>
                   )}
-                  <div className="bg-surface p-3 rounded-control border md:col-span-2">
+                  <div className="bg-surface p-3 rounded-control border border-line md:col-span-2">
                     <p className="text-label text-ink-2 mb-1">Domicilio</p>
                     <p className="font-semibold text-ink">
                       {[
@@ -377,21 +377,21 @@ async function SociedadDetallePage({ params }: PageProps) {
                     </p>
                   </div>
                   {socio.nacionalidad && (
-                    <div className="bg-surface p-3 rounded-control border">
+                    <div className="bg-surface p-3 rounded-control border border-line">
                       <p className="text-label text-ink-2 mb-1">Nacionalidad</p>
                       <p className="font-semibold text-ink">{socio.nacionalidad}</p>
                     </div>
                   )}
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Estado Civil</p>
                     <p className="font-semibold text-ink">{socio.estadoCivil}</p>
                   </div>
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Profesión</p>
                     <p className="font-semibold text-ink">{socio.profesion}</p>
                   </div>
                   {socio.fechaNacimiento && (
-                    <div className="bg-surface p-3 rounded-control border">
+                    <div className="bg-surface p-3 rounded-control border border-line">
                       <p className="text-label text-ink-2 mb-1">Fecha de Nacimiento</p>
                       <p className="font-semibold text-ink">{socio.fechaNacimiento}</p>
                     </div>
@@ -411,8 +411,8 @@ async function SociedadDetallePage({ params }: PageProps) {
       >
         <div className="space-y-4">
           {administradores.map((admin: any, index: number) => (
-            <div key={index} className="border-2 rounded-control p-card bg-surface-2">
-              <div className="flex items-start justify-between mb-4 pb-3 border-b">
+            <div key={index} className="border border-line rounded-control p-card bg-surface-2">
+              <div className="flex items-start justify-between mb-4 pb-3 border-b border-line">
                 <div>
                   <h4 className="text-heading font-semibold text-ink mb-1">
                     {admin.nombre} {admin.apellido}
@@ -423,27 +423,27 @@ async function SociedadDetallePage({ params }: PageProps) {
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-surface p-3 rounded-control border">
+                <div className="bg-surface p-3 rounded-control border border-line">
                   <p className="text-label text-ink-2 mb-1">DNI</p>
                   <p className="font-semibold text-ink">{admin.dni}</p>
                 </div>
-                <div className="bg-surface p-3 rounded-control border">
+                <div className="bg-surface p-3 rounded-control border border-line">
                   <p className="text-label text-ink-2 mb-1">CUIT</p>
                   <p className="font-semibold text-ink">{admin.cuit}</p>
                 </div>
                 {admin.email && (
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Email</p>
                     <p className="font-semibold text-ink text-body-sm break-all">{admin.email}</p>
                   </div>
                 )}
                 {admin.telefono && (
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Teléfono</p>
                     <p className="font-semibold text-ink">{admin.telefono}</p>
                   </div>
                 )}
-                <div className="bg-surface p-3 rounded-control border md:col-span-2">
+                <div className="bg-surface p-3 rounded-control border border-line md:col-span-2">
                   <p className="text-label text-ink-2 mb-1">Domicilio</p>
                   <p className="font-semibold text-ink">
                     {[
@@ -455,21 +455,21 @@ async function SociedadDetallePage({ params }: PageProps) {
                   </p>
                 </div>
                 {admin.nacionalidad && (
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Nacionalidad</p>
                     <p className="font-semibold text-ink">{admin.nacionalidad}</p>
                   </div>
                 )}
-                <div className="bg-surface p-3 rounded-control border">
+                <div className="bg-surface p-3 rounded-control border border-line">
                   <p className="text-label text-ink-2 mb-1">Estado Civil</p>
                   <p className="font-semibold text-ink">{admin.estadoCivil}</p>
                 </div>
-                <div className="bg-surface p-3 rounded-control border">
+                <div className="bg-surface p-3 rounded-control border border-line">
                   <p className="text-label text-ink-2 mb-1">Profesión</p>
                   <p className="font-semibold text-ink">{admin.profesion}</p>
                 </div>
                 {admin.fechaNacimiento && (
-                  <div className="bg-surface p-3 rounded-control border">
+                  <div className="bg-surface p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">Fecha de Nacimiento</p>
                     <p className="font-semibold text-ink">{admin.fechaNacimiento}</p>
                   </div>
@@ -494,14 +494,14 @@ async function SociedadDetallePage({ params }: PageProps) {
             >
               <div className="grid md:grid-cols-2 gap-4">
                 {cbuPrincipal && (
-                  <div className="bg-surface-2 p-3 rounded-control border">
+                  <div className="bg-surface-2 p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">CBU Principal</p>
                     <p className="font-semibold text-ink">{cbuPrincipal}</p>
                     <p className="text-label text-ink-2 mt-1">Administrador Titular</p>
                   </div>
                 )}
                 {cbuSecundario && (
-                  <div className="bg-surface-2 p-3 rounded-control border">
+                  <div className="bg-surface-2 p-3 rounded-control border border-line">
                     <p className="text-label text-ink-2 mb-1">CBU Secundario</p>
                     <p className="font-semibold text-ink">{cbuSecundario}</p>
                     <p className="text-label text-ink-2 mt-1">Administrador Suplente</p>

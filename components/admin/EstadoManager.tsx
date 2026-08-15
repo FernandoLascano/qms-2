@@ -140,7 +140,7 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
             </div>
           </div>
 
-          <div className="border-t pt-4">
+          <div className="border-t border-line pt-4">
             <label className="text-body-sm font-medium text-ink-2 mb-2 block">
               Cambiar a (manual)
             </label>

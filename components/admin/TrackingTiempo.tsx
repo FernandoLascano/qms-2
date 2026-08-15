@@ -228,14 +228,14 @@ export default function TrackingTiempo() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b">
+                <tr className="border-b border-line">
                   <th className="text-left py-3 px-4 font-semibold text-ink-2">Etapa</th>
                   <th className="text-right py-3 px-4 font-semibold text-ink-2">Días Promedio</th>
                 </tr>
               </thead>
               <tbody>
                 {Object.entries(data.promedios).map(([etapa, dias]) => (
-                  <tr key={etapa} className="border-b hover:bg-surface-2">
+                  <tr key={etapa} className="border-b border-line hover:bg-surface-2">
                     <td className="py-3 px-4 text-ink">
                       {nombresEtapas[etapa] || etapa}
                     </td>

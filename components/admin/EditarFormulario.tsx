@@ -145,7 +145,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                   <div className="space-y-6 py-4">
                     {/* Denominaciones */}
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-ink border-b pb-2">Denominaciones</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Denominaciones</h3>
                       <div className="space-y-3">
                         <div>
                           <Label htmlFor="denominacion1">Denominación 1 (Preferida) *</Label>
@@ -182,7 +182,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Objeto Social */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-ink border-b pb-2">Objeto Social</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Objeto Social</h3>
                       <div>
                         <Label htmlFor="objetoSocial">Objeto Social *</Label>
                         <Textarea
@@ -201,7 +201,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Domicilio Legal */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-ink border-b pb-2">Domicilio Legal</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Domicilio Legal</h3>
                       <div>
                         <Label htmlFor="domicilioLegal">Domicilio Legal *</Label>
                         <Input
@@ -216,7 +216,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Capital Social */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-ink border-b pb-2">Capital Social</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Capital Social</h3>
                       <div>
                         <Label htmlFor="capitalSocial">Capital Social (ARS) *</Label>
                         <Input

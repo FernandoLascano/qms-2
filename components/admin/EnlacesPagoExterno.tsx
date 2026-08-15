@@ -164,9 +164,9 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
         )}
 
         {/* Enviar Nuevo Enlace */}
-        <div className="border-t pt-4">
+        <div className="border-t border-line pt-4">
           <h4 className="font-medium text-body-sm text-ink-2 mb-3">Enviar Nuevo Enlace de Pago</h4>
-          <div className="space-y-3 bg-surface p-4 rounded-control border">
+          <div className="space-y-3 bg-surface p-4 rounded-control border border-line">
             <div>
               <Label htmlFor="conceptoEnlace">Concepto *</Label>
               <select

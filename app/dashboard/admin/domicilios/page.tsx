@@ -204,10 +204,10 @@ export default function DomiciliosPage() {
             <p className="text-body-sm text-ink-2 py-2">No hay solicitudes pendientes.</p>
           ) : (
             <table className="w-full text-body-sm text-ink">
-              <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th></th></tr></thead>
+              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th></th></tr></thead>
               <tbody>
                 {pendientes.map((i) => (
-                  <tr key={i.id} className="border-b last:border-0 align-top">
+                  <tr key={i.id} className="border-b border-line last:border-0 align-top">
                     <td className="py-2 pr-3">
                       <div className="font-medium text-ink">{i.tramite.cliente}</div>
                       {i.tramite.email && <div className="text-label text-ink-2">{i.tramite.email}</div>}
@@ -341,10 +341,10 @@ export default function DomiciliosPage() {
           <CardHeader><CardTitle variant="section">Cancelados / no contrataron ({cancelados.length})</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-body-sm text-ink">
-              <thead><tr className="text-left text-ink-2 border-b"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th></th></tr></thead>
+              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th></th></tr></thead>
               <tbody>
                 {cancelados.map((i) => (
-                  <tr key={i.id} className="border-b last:border-0">
+                  <tr key={i.id} className="border-b border-line last:border-0">
                     <td className="py-2 pr-3 text-ink">{i.tramite.cliente}</td>
                     <td className="pr-3"><Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-primary hover:underline">{i.tramite.denominacion}</Link></td>
                     <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: config.precioAnual, direccion: config.direcciones[0] || undefined }, 'Reactivado')} className="text-ink-2">Reactivar</Button></td>
