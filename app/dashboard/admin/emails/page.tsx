@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight, Eye, EyeOff, MessageSquare } from 'lucide-react'
+import { Mail, Inbox, Send, Search, Archive, Paperclip, Circle, RefreshCw, Plus, ChevronLeft, ChevronRight, Eye, EyeOff, MessageSquare, FileText } from 'lucide-react'
 
 interface Email {
   id: string
@@ -161,15 +161,19 @@ export default function EmailsPage() {
             Actualizar
           </button>
           <Link
-            href="/emails/preview"
+            href="/dashboard/admin/emails/preview"
+            title="Los mails que salen solos al avanzar un trámite"
             className="flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2 transition"
           >
-            Previsualizar mails
+            <Eye className="w-4 h-4" />
+            Mails automáticos
           </Link>
           <Link
             href="/dashboard/admin/emails/plantillas"
+            title="Las plantillas editables que usás al redactar a mano"
             className="flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2 transition"
           >
+            <FileText className="w-4 h-4" />
             Plantillas
           </Link>
           <Link

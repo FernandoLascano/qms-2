@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save, Shield } from 'lucide-react'
+import { ArrowLeft, Loader2, Save, Shield, Code2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 
 const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
@@ -36,6 +36,14 @@ export default function EditarPlantillaPage() {
   const [category, setCategory] = useState('general')
   const [isActive, setIsActive] = useState(true)
 
+  // Vista previa: el HTML se manda al servidor para que lo devuelva dentro del
+  // mismo sobre que usan los mails automáticos. Va con retardo para no pedirla
+  // en cada tecla.
+  const [vista, setVista] = useState<'html' | 'previa'>('html')
+  const [previa, setPrevia] = useState('')
+  const [altoPrevia, setAltoPrevia] = useState(600)
+  const marco = useRef<HTMLIFrameElement>(null)
+
   const load = useCallback(async () => {
     if (!id) return
     setLoading(true)
@@ -62,6 +70,29 @@ export default function EditarPlantillaPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  useEffect(() => {
+    if (!bodyHtml) {
+      setPrevia('')
+      return
+    }
+    const t = setTimeout(() => {
+      fetch('/api/emails/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bodyHtml }),
+      })
+        .then((res) => res.text())
+        .then(setPrevia)
+        .catch(() => setPrevia(''))
+    }, 400)
+    return () => clearTimeout(t)
+  }, [bodyHtml])
+
+  const medirPrevia = () => {
+    const doc = marco.current?.contentDocument
+    if (doc) setAltoPrevia(doc.body.scrollHeight + 24)
+  }
 
   const handleSave = async () => {
     if (!id) return
@@ -100,7 +131,7 @@ export default function EditarPlantillaPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl">
       <Link
         href="/dashboard/admin/emails/plantillas"
         className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink-2"
@@ -185,13 +216,66 @@ export default function EditarPlantillaPage() {
         </div>
 
         <div>
-          <label className="block text-label font-semibold text-ink-2 mb-1">Cuerpo HTML</label>
-          <textarea
-            value={bodyHtml}
-            onChange={(e) => setBodyHtml(e.target.value)}
-            rows={16}
-            className="w-full px-3 py-2 border border-line rounded-control text-body-sm font-mono leading-relaxed"
-          />
+          <div className="flex items-center justify-between gap-4 mb-1">
+            <label className="block text-label font-semibold text-ink-2">Cuerpo</label>
+            <div className="flex items-center rounded-control border border-line p-0.5">
+              <button
+                type="button"
+                onClick={() => setVista('html')}
+                aria-pressed={vista === 'html'}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-chip text-label font-semibold transition ${
+                  vista === 'html' ? 'bg-surface-3 text-ink' : 'text-ink-2 hover:text-ink'
+                }`}
+              >
+                <Code2 className="w-3.5 h-3.5" />
+                HTML
+              </button>
+              <button
+                type="button"
+                onClick={() => setVista('previa')}
+                aria-pressed={vista === 'previa'}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-chip text-label font-semibold transition ${
+                  vista === 'previa' ? 'bg-surface-3 text-ink' : 'text-ink-2 hover:text-ink'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Vista previa
+              </button>
+            </div>
+          </div>
+
+          {vista === 'html' ? (
+            <textarea
+              value={bodyHtml}
+              onChange={(e) => setBodyHtml(e.target.value)}
+              rows={16}
+              spellCheck={false}
+              className="w-full px-3 py-2 border border-line rounded-control text-body-sm font-mono leading-relaxed"
+            />
+          ) : (
+            <div className="rounded-control border border-line bg-surface-2 p-4 overflow-x-auto">
+              {previa ? (
+                <iframe
+                  ref={marco}
+                  srcDoc={previa}
+                  title="Vista previa de la plantilla"
+                  onLoad={medirPrevia}
+                  className="w-full max-w-[680px] mx-auto border-0 rounded-control bg-white block"
+                  style={{ height: altoPrevia }}
+                  sandbox="allow-same-origin"
+                />
+              ) : (
+                <p className="py-12 text-center text-body-sm text-ink-3">
+                  Escribí el cuerpo para ver la vista previa.
+                </p>
+              )}
+            </div>
+          )}
+
+          <p className="mt-2 text-label text-ink-3">
+            La vista previa muestra el cuerpo dentro del sobre de QuieroMiSAS, con las variables
+            rellenadas con datos de ejemplo.
+          </p>
         </div>
 
         <div className="flex justify-end pt-2">

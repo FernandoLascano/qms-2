@@ -29,11 +29,24 @@ const sampleData: Record<string, Record<string, unknown>> = {
   emailValidacionTramite: { nombre: 'Fernando', denominacion: 'Mi Empresa S.A.S.', validado: true, observaciones: undefined, tramiteId: 'cltx123' },
 }
 
+/**
+ * Las plantillas apuntan las imágenes a NEXTAUTH_URL, que en desarrollo suele
+ * ser un puerto distinto del que está sirviendo. Para la vista previa se
+ * vuelven relativas, así el logo y los iconos se ven siempre.
+ */
+function aRutasRelativas(html: string): string {
+  return html.replace(/src="[^"]*?(\/assets\/)/g, 'src="$1')
+}
+
+async function esAdmin(): Promise<boolean> {
+  const session = await getServerSession(authOptions)
+  return session?.user?.rol === 'ADMIN'
+}
+
 export async function GET(request: NextRequest) {
   // Solo administradores: este endpoint expone plantillas internas y refleja
   // parámetros del usuario en HTML servido desde nuestro propio dominio.
-  const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.rol !== 'ADMIN') {
+  if (!(await esAdmin())) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 
@@ -48,7 +61,47 @@ export async function GET(request: NextRequest) {
   const data = { ...(sampleData[template] || sampleData.emailBienvenida) }
   const nombreParam = searchParams.get('nombre')
   if (nombreParam) data.nombre = escapeHtml(nombreParam)
-  const html = templateFn(data)
+
+  // Las plantillas apuntan las imágenes a NEXTAUTH_URL, que en desarrollo suele
+  const html = aRutasRelativas(templateFn(data))
+
+  return new NextResponse(html, {
+    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+  })
+}
+
+/**
+ * Vista previa de una plantilla de la base: recibe el fragmento que se está
+ * editando y lo devuelve dentro del mismo sobre que usan los mails
+ * automáticos, para que el editor muestre cómo se va a ver de verdad y no el
+ * fragmento suelto.
+ */
+export async function POST(request: NextRequest) {
+  if (!(await esAdmin())) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
+  const body = await request.json().catch(() => null)
+  if (!body || typeof body.bodyHtml !== 'string') {
+    return NextResponse.json({ error: 'Falta bodyHtml' }, { status: 400 })
+  }
+
+  // Las variables de la plantilla ({{nombre}}) se rellenan con un ejemplo para
+  // que el previsualizado no muestre las llaves crudas.
+  const ejemplos: Record<string, string> = {
+    nombre: typeof body.nombre === 'string' && body.nombre ? escapeHtml(body.nombre) : 'Fernando',
+    denominacion: 'Mi Empresa S.A.S.',
+    monto: '$320.000',
+    concepto: 'Plan Emprendedor',
+  }
+  const fragmento = body.bodyHtml.replace(
+    /\{\{\s*(\w+)\s*\}\}/g,
+    (crudo: string, clave: string) => ejemplos[clave] ?? crudo,
+  )
+
+  const html = aRutasRelativas(
+    templates.EmailLayout({ children: fragmento, nombre: ejemplos.nombre }),
+  )
 
   return new NextResponse(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },

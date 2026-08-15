@@ -261,11 +261,6 @@ const CTASecundario = (text: string, url: string) => `
   </table>
 `
 
-/**
- * Aviso con tono semántico. Reemplaza al InfoCard con emoji: el panel dejó
- * de usar emojis como iconografía y los emails los renderiza distinto cada
- * cliente de correo.
- */
 type Tono = 'neutral' | 'success' | 'warning' | 'info' | 'danger'
 
 const TONOS: Record<Tono, { bg: string; line: string; text: string }> = {
@@ -276,13 +271,67 @@ const TONOS: Record<Tono, { bg: string; line: string; text: string }> = {
   danger: { bg: colors.errorBg, line: colors.errorLine, text: colors.error },
 }
 
-const InfoCard = (content: string, tono: Tono = 'neutral', titulo?: string) => {
+/**
+ * Iconografía de los emails.
+ *
+ * Son los mismos lucide que usa el panel, pero rasterizados a PNG monocromo:
+ * los clientes de correo no renderizan SVG ni componentes, y los emojis salen
+ * distintos (y a color) en cada plataforma. Se generan con
+ * `node scripts/iconos-email.mjs`, que también define qué pares icono/tono
+ * existen — pedir uno que no esté generado deja un hueco, no un error.
+ *
+ * Van sueltos, sin recuadro de color detrás: si el cliente bloquea las
+ * imágenes queda un espacio vacío y no un cuadrado de color sin sentido.
+ */
+type IconoEmail =
+  | 'circle-check-success'
+  | 'badge-check-success'
+  | 'credit-card-warning'
+  | 'clock-warning'
+  | 'file-text-danger'
+  | 'circle-alert-danger'
+  | 'info-info'
+  | 'circle-help-info'
+  | 'info-neutral'
+  | 'sparkles-brand'
+  | 'mail-check-brand'
+  | 'clock-brand'
+  | 'shield-check-brand'
+  | 'chart-line-brand'
+  | 'message-circle-brand'
+
+const Icono = (nombre: IconoEmail, lado = 20) =>
+  `<img src="${BASE_URL}/assets/img/email/${nombre}.png" width="${lado}" height="${lado}" alt="" style="display: inline-block; border: 0;" />`
+
+/** El icono que le corresponde a cada tono cuando no se pide uno concreto. */
+const ICONO_DE_TONO: Record<Tono, IconoEmail> = {
+  neutral: 'info-neutral',
+  success: 'circle-check-success',
+  warning: 'clock-warning',
+  info: 'info-info',
+  danger: 'circle-alert-danger',
+}
+
+/** Aviso con tono semántico: fondo tenue, línea del tono e icono en el título. */
+const InfoCard = (content: string, tono: Tono = 'neutral', titulo?: string, icono?: IconoEmail) => {
   const t = TONOS[tono]
+  const glifo = icono ?? ICONO_DE_TONO[tono]
   return `
   <table cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
     <tr>
       <td style="background-color: ${t.bg}; border: 1px solid ${t.line}; border-radius: ${radius.card}; padding: 18px 20px;">
-        ${titulo ? `<p style="margin: 0 0 6px 0; color: ${t.text}; ${type.heading}">${titulo}</p>` : ''}
+        ${
+          titulo
+            ? `<table cellpadding="0" cellspacing="0" style="margin: 0 0 8px 0;">
+                 <tr>
+                   <td width="26" style="vertical-align: top; padding-right: 8px; line-height: 0;">${Icono(glifo, 18)}</td>
+                   <td style="vertical-align: top;">
+                     <p style="margin: 0; color: ${t.text}; ${type.heading}">${titulo}</p>
+                   </td>
+                 </tr>
+               </table>`
+            : ''
+        }
         <div style="color: ${colors.text}; ${type.bodySm}">${content}</div>
       </td>
     </tr>
@@ -347,14 +396,24 @@ const StepIndicator = (steps: { number: string; title: string; done?: boolean }[
  * Bloque de apertura: título del hecho que motiva el email, con el color del
  * estado que corresponde. `extra` recibe la tarjeta blanca con el dato
  * concreto (denominación, monto, etc.) cuando el email tiene uno.
+ *
+ * Si no se pasa `icono` toma el del tono, para que un mail de estado nunca
+ * quede sin señal visual.
  */
-const Hero = (titulo: string, subtitulo: string, tono: Tono = 'neutral', extra = '') => {
+const Hero = (
+  titulo: string,
+  subtitulo: string,
+  tono: Tono = 'neutral',
+  extra = '',
+  icono?: IconoEmail,
+) => {
   const t = TONOS[tono]
   return `
   <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 24px 0;">
     <tr>
       <td align="center">
         <div style="background-color: ${t.bg}; border: 1px solid ${t.line}; border-radius: ${radius.card}; padding: 28px; max-width: 100%;">
+          <div style="line-height: 0; margin: 0 0 12px 0;">${Icono(icono ?? ICONO_DE_TONO[tono], 30)}</div>
           <h1 style="margin: 0${subtitulo || extra ? ' 0 6px 0' : ''}; color: ${colors.dark}; ${type.title}">${titulo}</h1>
           ${subtitulo ? `<p style="margin: 0${extra ? ' 0 20px 0' : ''}; color: ${t.text}; ${type.bodySm} font-weight: 600;">${subtitulo}</p>` : ''}
           ${extra}
@@ -422,6 +481,43 @@ const ListaPasos = (
   </table>
 `
 
+/**
+ * Rejilla de dos columnas con lo que incluye el servicio. Los items se toman
+ * de a pares: en pantallas angostas los clientes de correo apilan las celdas
+ * solos, así que no hace falta media query.
+ */
+const Beneficios = (items: { icono: IconoEmail; titulo: string; detalle: string }[]) => {
+  const filas = []
+  for (let i = 0; i < items.length; i += 2) filas.push(items.slice(i, i + 2))
+  return `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0 0 0;">
+    ${filas
+      .map(
+        (fila, f) => `
+    ${f > 0 ? '<tr><td colspan="2" style="height: 8px;"></td></tr>' : ''}
+    <tr>
+      ${fila
+        .map(
+          (item) => `
+      <td width="50%" style="padding: 4px; vertical-align: top;">
+        <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
+          <tr>
+            <td style="padding: 18px 20px;">
+              <div style="line-height: 0; margin: 0 0 10px 0;">${Icono(item.icono, 20)}</div>
+              <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">${item.titulo}</p>
+              <p style="margin: 0; color: ${colors.textMuted}; ${type.bodySm}">${item.detalle}</p>
+            </td>
+          </tr>
+        </table>
+      </td>`,
+        )
+        .join('')}
+    </tr>`,
+      )
+      .join('')}
+  </table>
+`
+}
 
 
 // ========================================
@@ -446,6 +542,7 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
               width="220"
               style="height: auto; margin: 0 auto 16px auto; display: block;"
             />
+            <!-- Sin icono: la ilustración de arriba ya cumple ese papel. -->
             <div style="text-align: center;">
               <h1 style="margin: 0 0 6px 0; color: ${colors.dark}; ${type.title}">
                 ¡Bienvenido a QuieroMiSAS!
@@ -459,56 +556,12 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
       </tr>
     </table>
 
-    <!-- Qué incluye el servicio -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0 0 0;">
-      <tr>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
-            <tr>
-              <td style="padding: 20px;">
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Rápido</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Tu S.A.S. lista en solo 5 días hábiles</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
-            <tr>
-              <td style="padding: 20px;">
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Seguro</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Proceso 100% online y documentos protegidos</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2" style="height: 16px;"></td>
-      </tr>
-      <tr>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
-            <tr>
-              <td style="padding: 20px;">
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Seguimiento</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Panel online para ver tu progreso 24/7</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
-            <tr>
-              <td style="padding: 20px;">
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Soporte</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Equipo experto disponible para ayudarte</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    ${Beneficios([
+      { icono: 'clock-brand', titulo: 'Rápido', detalle: 'Tu S.A.S. lista en solo 5 días hábiles' },
+      { icono: 'shield-check-brand', titulo: 'Seguro', detalle: 'Proceso 100% online y documentos protegidos' },
+      { icono: 'chart-line-brand', titulo: 'Seguimiento', detalle: 'Panel online para ver tu progreso 24/7' },
+      { icono: 'message-circle-brand', titulo: 'Soporte', detalle: 'Equipo experto disponible para ayudarte' },
+    ])}
 
     ${CTAButton('Comenzar mi trámite', `${BASE_URL}/tramite/nuevo`)}
 
@@ -528,10 +581,11 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
 // 1b. Verificación de email (activar cuenta)
 export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) => {
   const content = `
-    <h2 style="margin: 0 0 12px 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">
+    <div style="line-height: 0; margin: 0 0 12px 0;">${Icono('mail-check-brand', 30)}</div>
+    <h2 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">
       Confirmá tu email
     </h2>
-    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: 15px; line-height: 24px;">
+    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; ${type.body}">
       Para activar tu cuenta y poder completar tu trámite, necesitamos que confirmes tu dirección de email.
     </p>
 
@@ -627,6 +681,7 @@ export const emailPagoPendiente = ({ nombre, concepto, monto, montoTransferencia
          </div>` : ''}`,
         'warning',
       ),
+      'credit-card-warning',
     )}
 
     ${InfoCard(
@@ -652,7 +707,7 @@ export const emailDocumentoRechazado = ({ nombre, nombreDocumento, observaciones
       Hemos revisado el documento <strong>"${nombreDocumento}"</strong> y necesita algunas correcciones para poder continuar.
     </p>
 
-    ${Hero('El documento necesita corrección', 'Revisá las observaciones y volvé a subirlo', 'danger')}
+    ${Hero('El documento necesita corrección', 'Revisá las observaciones y volvé a subirlo', 'danger', '', 'file-text-danger')}
 
     ${InfoCard(
       `<span style="white-space: pre-wrap;">${observaciones}</span>`,
@@ -725,6 +780,7 @@ export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, 
          <p style="margin: 0; color: ${colors.dark}; ${type.title}">${denominacion}</p>`,
         'success',
       ),
+      'badge-check-success',
     )}
 
     ${(cuit || matricula) ? `
@@ -817,6 +873,7 @@ export const emailRecordatorioPago = ({ nombre, concepto, monto, diasPendientes,
          <p style="margin: 0; color: ${colors.warning}; ${type.hero}">$${Number(monto).toLocaleString('es-AR')}</p>`,
         'warning',
       ),
+      'credit-card-warning',
     )}
 
     <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
@@ -850,6 +907,8 @@ export const emailRecordatorioDocumento = ({ nombre, nombreDocumento, observacio
       'Todavía falta el documento',
       `Hace ${diasPendientes} días que esperamos el documento corregido`,
       'danger',
+      '',
+      'file-text-danger',
     )}
 
     ${InfoCard(observaciones, 'danger', 'Observaciones originales')}
@@ -888,7 +947,7 @@ export const emailRecordatorioTramiteEstancado = ({ nombre, etapaActual, diasEst
       <strong>"${etapaActual}"</strong>. ¿Hay algo en lo que podamos ayudarte?
     </p>
 
-    ${Hero('¿Necesitás ayuda?', `Tu trámite lleva ${diasEstancado} días sin avanzar`, 'info')}
+    ${Hero('¿Necesitás ayuda?', `Tu trámite lleva ${diasEstancado} días sin avanzar`, 'info', '', 'circle-help-info')}
 
     ${InfoCard(
       `<ul style="margin: 0; padding-left: 18px; line-height: 1.9;">
@@ -926,9 +985,10 @@ export const emailAlertaDenominacion = ({ nombre, denominacion, diasParaVencer, 
       HeroDato(
         `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Denominación</p>
          <p style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${denominacion}</p>
-         <span style="background-color: ${colors.warning}; color: white; padding: 8px 16px; border-radius: ${radius.card}; font-size: 13px; font-weight: 700;">Vence en ${diasParaVencer} días</span>`,
+         <span style="display: inline-block; background-color: ${colors.warning}; color: ${colors.white}; padding: 8px 16px; border-radius: ${radius.chip}; ${type.bodySm} font-weight: 700;">Vence en ${diasParaVencer} días</span>`,
         'warning',
       ),
+      'clock-warning',
     )}
 
     ${CTAButton('Ver trámite', `${BASE_URL}/dashboard/admin/tramites/${tramiteId}`)}
