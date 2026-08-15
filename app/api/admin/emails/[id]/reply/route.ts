@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
+import { emailManual } from '@/lib/emails/templates'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
@@ -31,9 +32,9 @@ export async function POST(
     }
 
     const { id } = await params
-    const { html, text, to, cc, bcc, attachments } = await request.json()
+    const { text, to, cc, bcc, attachments } = await request.json()
 
-    if (!html) {
+    if (!text?.trim()) {
       return NextResponse.json({ error: 'El cuerpo del email es obligatorio' }, { status: 400 })
     }
 
@@ -42,6 +43,13 @@ export async function POST(
     if (!originalEmail) {
       return NextResponse.json({ error: 'Email no encontrado' }, { status: 404 })
     }
+
+    // Mismo sobre que los mails automáticos: el HTML se arma en el servidor
+    // para que no haya una segunda definición del diseño en el navegador.
+    const html = emailManual({
+      texto: String(text),
+      nombre: originalEmail.fromName || originalEmail.from,
+    })
 
     const replyTo = originalEmail.replyTo || originalEmail.from
     const toList = normalizeRecipients(to)

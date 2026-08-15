@@ -47,7 +47,7 @@ export function VerifyEmailClient() {
   }, [searchParams, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-brand-50 to-white">
+    <div className="canvas-landing min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-surface border border-line rounded-card shadow-pop p-8">
         <h1 className="text-title font-semibold text-ink mb-2">Verificación de email</h1>
         <p className="text-ink-2 mb-6">Estamos confirmando tu dirección de email.</p>

@@ -82,8 +82,24 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json().catch(() => null)
-  if (!body || typeof body.bodyHtml !== 'string') {
-    return NextResponse.json({ error: 'Falta bodyHtml' }, { status: 400 })
+  if (!body) {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
+  }
+
+  // Mensaje escrito a mano desde la bandeja: se previsualiza con la misma
+  // función que lo va a enviar, así lo que se ve es lo que sale.
+  if (typeof body.texto === 'string') {
+    const html = aRutasRelativas(
+      templates.emailManual({
+        texto: body.texto,
+        nombre: typeof body.nombre === 'string' && body.nombre ? body.nombre : 'Fernando',
+      }),
+    )
+    return new NextResponse(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+  }
+
+  if (typeof body.bodyHtml !== 'string') {
+    return NextResponse.json({ error: 'Falta bodyHtml o texto' }, { status: 400 })
   }
 
   // Las variables de la plantilla ({{nombre}}) se rellenan con un ejemplo para

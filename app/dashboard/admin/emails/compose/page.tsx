@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { FileInput } from '@/components/ui/file-input'
 import { ArrowLeft, Send, Loader2, Eye, EyeOff, X, FileText, User } from 'lucide-react'
 
 interface Tramite {
@@ -35,9 +36,6 @@ interface UploadAttachment {
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
 const MAX_TOTAL_ATTACHMENTS_BYTES = 20 * 1024 * 1024
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const EMAIL_PRIMARY_RED = '#991B1B'
-const EMAIL_PRIMARY_RED_DARK = '#7F1D1D'
-const EMAIL_LOGO_URL = 'https://www.quieromisas.com/assets/img/qms-logo-white.png'
 const DRAFT_STORAGE_KEY = 'qms-admin-email-compose-draft'
 
 function htmlToPlainText(html: string) {
@@ -102,6 +100,12 @@ export default function ComposeEmailPage() {
   const [sending, setSending] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [error, setError] = useState('')
+
+  // La vista previa la arma el servidor con la misma función que envía, para
+  // que lo que se ve acá sea exactamente lo que le llega al destinatario.
+  const [previa, setPrevia] = useState('')
+  const [altoPrevia, setAltoPrevia] = useState(600)
+  const marcoPrevia = useRef<HTMLIFrameElement>(null)
   const [selectedTemplate, setSelectedTemplate] = useState('')
   const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
   const [draftRestored, setDraftRestored] = useState(false)
@@ -293,44 +297,24 @@ export default function ComposeEmailPage() {
     return btoa(binary)
   }
 
-  const buildHtml = (text: string) => {
-    const signatureBlock = `
-      <div data-qms-signature="true" style="margin-top:24px;padding-top:18px;border-top:1px solid #e5e7eb;">
-        <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#111827;border-radius:12px;overflow:hidden;">
-          <tr>
-            <td style="padding:16px 20px;background:linear-gradient(135deg,${EMAIL_PRIMARY_RED} 0%,${EMAIL_PRIMARY_RED_DARK} 100%);text-align:center;">
-              <img src="${EMAIL_LOGO_URL}" alt="QuieroMiSAS" width="150" style="height:auto;display:block;margin:0 auto;" />
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:14px 20px;text-align:center;">
-              <p style="margin:0;color:#E5E7EB;font-size:13px;line-height:1.6;">
-                QuieroMiSAS · Constitui tu empresa en 5 dias
-              </p>
-              <p style="margin:6px 0 0 0;color:#9CA3AF;font-size:12px;line-height:1.6;">
-                contacto@quieromisas.com · <a href="https://www.quieromisas.com" style="color:#FCA5A5;text-decoration:none;">www.quieromisas.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </div>
-    `
+  useEffect(() => {
+    if (!showPreview) return
+    const t = setTimeout(() => {
+      fetch('/api/emails/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto: body || 'Tu mensaje aparecerá acá…' }),
+      })
+        .then((res) => res.text())
+        .then(setPrevia)
+        .catch(() => setPrevia(''))
+    }, 400)
+    return () => clearTimeout(t)
+  }, [body, showPreview])
 
-    return `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, ${EMAIL_PRIMARY_RED} 0%, ${EMAIL_PRIMARY_RED_DARK} 100%); padding: 24px 32px; border-radius: 16px 16px 0 0; text-align: center;">
-          <img src="${EMAIL_LOGO_URL}" alt="QuieroMiSAS" width="160" style="height: auto;" />
-        </div>
-        <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none;">
-          ${text.split('\n').map(line => `<p style="margin: 0 0 12px 0; font-size: 15px; line-height: 1.7; color: #374151;">${line || '&nbsp;'}</p>`).join('')}
-        </div>
-        <div style="background: #1f2937; padding: 24px 32px; border-radius: 0 0 16px 16px; text-align: center; margin-bottom: 12px;">
-          <p style="color: #9ca3af; font-size: 13px; margin: 0;">QuieroMiSAS · contacto@quieromisas.com</p>
-          <p style="color: #6b7280; font-size: 11px; margin: 8px 0 0 0;">© ${new Date().getFullYear()} QuieroMiSAS. Todos los derechos reservados.</p>
-        </div>
-        ${signatureBlock}
-      </div>
-    `
+  const medirPrevia = () => {
+    const doc = marcoPrevia.current?.contentDocument
+    if (doc) setAltoPrevia(doc.body.scrollHeight + 24)
   }
 
   const handleSend = async () => {
@@ -368,7 +352,6 @@ export default function ComposeEmailPage() {
           cc,
           bcc,
           subject: subject.trim(),
-          html: buildHtml(body),
           text: body,
           attachments: attachmentsPayload,
         }),
@@ -603,13 +586,16 @@ export default function ComposeEmailPage() {
             {/* Attachments */}
             <div>
               <label className="block text-body-sm font-semibold text-ink mb-1.5">Adjuntos</label>
-              <input
-                type="file"
+              {/* `archivo={null}` mantiene la zona de arrastre siempre visible:
+                  los adjuntos elegidos se listan abajo, no dentro del control. */}
+              <FileInput
                 multiple
+                archivo={null}
+                compacto
+                label="Elegí archivos o arrastralos acá"
+                ayuda="Máximo 10 MB por archivo, 20 MB totales"
                 onChange={(e) => handleAttachmentPick(e.target.files)}
-                className="w-full px-4 py-2 border border-line-strong rounded-control text-body-sm text-ink-2 file:mr-3 file:px-3 file:py-1 file:rounded-control file:border-0 file:bg-surface-3 file:text-ink-2 file:cursor-pointer"
               />
-              <p className="text-label text-ink-2 mt-1">Máximo 10 MB por archivo, 20 MB totales.</p>
               {attachments.length > 0 && (
                 <div className="mt-2 space-y-1">
                   {attachments.map(({ id, file }) => (
@@ -662,9 +648,15 @@ export default function ComposeEmailPage() {
               <p className="text-body-sm font-semibold text-ink">Vista previa</p>
               <p className="text-label text-ink-2 mt-0.5">Así se verá el email en la bandeja del destinatario</p>
             </div>
-            <div className="p-6 bg-surface-3">
-              <div
-                dangerouslySetInnerHTML={{ __html: buildHtml(body || 'Tu mensaje aparecerá acá...') }}
+            <div className="p-6 bg-surface-3 overflow-x-auto">
+              <iframe
+                ref={marcoPrevia}
+                srcDoc={previa}
+                title="Vista previa del email"
+                onLoad={medirPrevia}
+                className="w-full max-w-[680px] mx-auto border-0 rounded-control bg-white block"
+                style={{ height: altoPrevia }}
+                sandbox="allow-same-origin"
               />
             </div>
           </div>

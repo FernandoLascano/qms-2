@@ -105,8 +105,24 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="canvas-landing min-h-screen flex flex-col">
+      <header className="border-b border-line bg-surface/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link href="/" aria-label="Ir al inicio">
+            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" className="h-9 w-auto" />
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-body-sm font-medium text-ink-2 hover:text-primary transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al inicio
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center">
+      <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-10">
         {siteKey && (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
@@ -117,25 +133,15 @@ export default function RegistroPage() {
 
         {/* Logo y Header */}
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Link href="/" className="inline-block mb-4">
-            <img
-              src="/assets/img/qms-logo-reg.png"
-              alt="QuieroMiSAS Logo"
-              className="h-16 w-auto mx-auto"
-            />
-          </Link>
-          <span className="block text-primary font-semibold text-body-sm mb-4">
-            Registro
-          </span>
-          <h1 className="text-display md:text-display font-semibold text-ink mb-2">
+          <h1 className="text-title font-semibold text-ink mb-1">
             Crear <span className="text-primary">cuenta</span>
           </h1>
-          <p className="text-ink-2">
+          <p className="text-body-sm text-ink-2">
             Registrate para comenzar tu trámite
           </p>
         </motion.div>
@@ -323,23 +329,8 @@ export default function RegistroPage() {
             </div>
           </form>
         </motion.div>
-
-        {/* Footer */}
-        <motion.div
-          className="text-center mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-primary transition font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al inicio
-          </Link>
-        </motion.div>
       </div>
+      </main>
     </div>
   )
 }

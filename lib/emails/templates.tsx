@@ -1074,3 +1074,52 @@ export const emailValidacionTramite = ({ nombre, denominacion, validado, observa
       : `Tu trámite de ${denominacion} requiere correcciones`
   })
 }
+
+// ========================================
+// CORREO MANUAL
+// ========================================
+
+/**
+ * Escapa el texto que escribe el operador antes de meterlo en el HTML.
+ * Es texto plano de un textarea: si trae un `<` no debe convertirse en marcado.
+ */
+function escaparHtml(texto: string): string {
+  return texto
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+/**
+ * Envuelve un mensaje escrito a mano desde la bandeja en el mismo sobre que
+ * usan los mails automáticos.
+ *
+ * Antes cada pantalla armaba su propio HTML: la de redactar ponía cabecera con
+ * degradado rojo, pie oscuro y encima un bloque de firma que repetía el logo
+ * y el pie otra vez; la de responder mandaba texto pelado con una línea
+ * "— QuieroMiSAS". Eran tres estéticas distintas para correos del mismo
+ * remitente, así que el armado pasó al servidor y hay un solo sobre.
+ *
+ * Recibe un objeto como el resto de las plantillas, para que siga entrando en
+ * el registro por nombre que usan sendEmail y la vista previa.
+ *
+ * @param texto   Lo que escribió el operador, en texto plano.
+ * @param nombre  Con quién saluda el encabezado.
+ */
+export const emailManual = ({ texto, nombre }: { texto: string; nombre: string }) => {
+  const parrafos = escaparHtml(texto)
+    .split('\n')
+    .map((linea) =>
+      linea.trim()
+        ? `<p style="margin: 0 0 12px 0; color: ${colors.text}; ${type.body}">${linea}</p>`
+        : '<div style="height: 8px; line-height: 8px; font-size: 0;">&nbsp;</div>',
+    )
+    .join('')
+
+  return EmailLayout({
+    children: parrafos,
+    nombre,
+    preheader: texto.replace(/\s+/g, ' ').trim().slice(0, 120),
+  })
+}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { FileInput } from '@/components/ui/file-input'
 import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X } from 'lucide-react'
 
 interface EmailDetail {
@@ -122,15 +123,6 @@ export default function EmailDetailPage() {
         })
       )
 
-      const html = `
-        <div style="font-family: sans-serif; font-size: 15px; line-height: 1.7; color: #374151;">
-          ${replyText.split('\n').map(line => `<p style="margin: 0 0 8px 0;">${line || '&nbsp;'}</p>`).join('')}
-          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; color: #9ca3af; font-size: 13px;">
-            <p style="margin: 0;">— QuieroMiSAS</p>
-          </div>
-        </div>
-      `
-
       const endpoint = composerMode === 'forward'
         ? '/api/admin/emails'
         : `/api/admin/emails/${id}/reply`
@@ -140,12 +132,10 @@ export default function EmailDetailPage() {
             cc: replyCc,
             bcc: replyBcc,
             subject: (replySubject || `Fwd: ${email.subject}`).trim(),
-            html,
             text: replyText,
             attachments: attachmentsPayload,
           }
         : {
-            html,
             text: replyText,
             to: replyTo,
             cc: replyCc,
@@ -478,11 +468,15 @@ export default function EmailDetailPage() {
               />
             </div>
             <div className="mt-3">
-              <input
-                type="file"
+              {/* Los adjuntos elegidos se listan debajo, así que el control
+                  queda siempre en su estado vacío. */}
+              <FileInput
                 multiple
+                archivo={null}
+                compacto
+                label="Adjuntar archivos"
+                ayuda="Elegilos o arrastralos acá"
                 onChange={(e) => setReplyAttachments(Array.from(e.target.files || []))}
-                className="w-full px-3 py-2 border border-line rounded-control text-body-sm text-ink-2 file:mr-3 file:px-3 file:py-1 file:rounded-control file:border-0 file:bg-surface-3 file:text-ink-2 file:cursor-pointer"
               />
               {replyAttachments.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
