@@ -6,6 +6,7 @@ import {
   Bell,
   BookOpen,
   Building2,
+  Check,
   CheckCircle,
   Clock,
   CreditCard,
@@ -28,7 +29,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LabeledProgress } from '@/components/ui/progress'
 import { EmptyState } from '@/components/ui/states'
-import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/tramites/estado'
 import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
 import { cn } from '@/lib/utils'
 
@@ -151,6 +152,8 @@ async function DashboardPage() {
           accion={proxima}
           tramiteId={foco.id}
           formularioCompleto={foco.formularioCompleto}
+          etapas={detalleEtapas(foco)}
+          progreso={calcularProgreso(foco)}
           otrosPendientes={acciones.filter(
             (a) => a.responsable === 'cliente' && a.tipo !== proxima.tipo,
           ).length}
@@ -319,11 +322,15 @@ function ProximoPaso({
   accion,
   tramiteId,
   formularioCompleto,
+  etapas,
+  progreso,
   otrosPendientes,
 }: {
   accion: ReturnType<typeof accionPrincipal> & object
   tramiteId: string
   formularioCompleto: boolean
+  etapas: ReturnType<typeof detalleEtapas>
+  progreso: number
   otrosPendientes: number
 }) {
   const Icono = ICONOS[accion.icono]
@@ -341,8 +348,9 @@ function ProximoPaso({
       tone={esCliente ? 'warning' : esCompletado ? 'success' : 'default'}
       className={cn('brand-glow', !esCliente && !esCompletado && 'bg-surface')}
     >
-      <CardBody className="flex flex-col gap-5 p-card sm:flex-row sm:items-start sm:p-8">
+      <CardBody className="flex flex-col gap-6 p-card sm:p-8 lg:flex-row lg:items-start">
         {/* Círculo de color con anillo, como los nodos del "Cómo funciona" */}
+        <div className="flex flex-1 flex-col gap-5 sm:flex-row sm:items-start">
         <span
           className={cn(
             'flex h-16 w-16 shrink-0 items-center justify-center rounded-full ring-8',
@@ -398,15 +406,61 @@ function ProximoPaso({
             </p>
           )}
 
-          <div className="mt-4">
-            <Button asChild>
+          <div className="mt-5">
+            <Button asChild size="lg">
               <Link href={destino}>
                 {!formularioCompleto
                   ? 'Continuar el formulario'
                   : (accion.accion ?? 'Ver el trámite')}
-                <ArrowRight className="h-4 w-4" aria-hidden />
+                <ArrowRight className="h-4.5 w-4.5" aria-hidden />
               </Link>
             </Button>
+          </div>
+        </div>
+        </div>
+
+        {/* Las 7 etapas, para que el bloque diga además dónde estás parado.
+            Ocupaba un vacío grande a la derecha. */}
+        <div className="shrink-0 lg:w-56">
+          <div className="rounded-card border border-line bg-surface/70 p-4 backdrop-blur-sm">
+            <div className="mb-3 flex items-baseline justify-between">
+              <span className="text-label font-semibold text-ink-2">Tu trámite</span>
+              <span className="text-body font-bold text-primary tnum">{progreso}%</span>
+            </div>
+            <ol className="space-y-2">
+              {etapas.map((etapa) => (
+                <li key={etapa.key} className="flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      'flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                      etapa.completada
+                        ? 'bg-success-solid text-on-primary'
+                        : etapa.actual
+                          ? 'bg-primary text-on-primary'
+                          : 'bg-surface-3',
+                    )}
+                    aria-hidden
+                  >
+                    {etapa.completada && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+                    {etapa.actual && !etapa.completada && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-on-primary" />
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      'truncate text-body-sm',
+                      etapa.completada
+                        ? 'text-ink-2'
+                        : etapa.actual
+                          ? 'font-semibold text-ink'
+                          : 'text-ink-3',
+                    )}
+                  >
+                    {etapa.label}
+                  </span>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </CardBody>

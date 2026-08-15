@@ -181,10 +181,16 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
               documentos={tramite.documentos || []}
               notificaciones={tramite.notificaciones || []}
             />
-            <DocumentosParaFirmar
-              tramiteId={tramite.id}
-              documentos={tramite.documentos || []}
-            />
+            {tramite.documentos?.some((d: any) =>
+              ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR'].includes(
+                d.tipo ?? '',
+              ),
+            ) && (
+              <DocumentosParaFirmar
+                tramiteId={tramite.id}
+                documentos={tramite.documentos || []}
+              />
+            )}
             {tramite.notificaciones?.length > 0 && (
               <MensajesDelEquipo notificaciones={tramite.notificaciones} />
             )}

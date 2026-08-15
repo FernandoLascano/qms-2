@@ -113,7 +113,8 @@
   --surface-3:     var(--n-100);   /* hover de filas, code                  */
 
   /* Bordes */
-  --line:          var(--n-200);   /* divisores, borde de card              */
+  --line:          var(--n-200);   /* divisores                             */
+  --line-card:     var(--n-300);   /* borde de card: definido, no fantasma  */
   --line-strong:   var(--n-300);   /* hover, separadores marcados           */
   --line-input:    var(--n-400);   /* borde de controles de formulario      */
 
@@ -129,12 +130,12 @@
      todo el resto, así que suman vida sin romper el sistema: el fondo (soft)
      va en 50, el texto en 700 y el relleno en 600.
        a1 marca · a2 verde · a3 azul · a4 violeta · a5 ámbar · a6 turquesa  */
-  --a1-soft: var(--brand-50);  --a1: var(--brand-700);  --a1-solid: var(--brand-600);
-  --a2-soft: oklch(0.970 0.0086 150); --a2: oklch(0.446 0.1057 150); --a2-solid: oklch(0.496 0.1166 150);
-  --a3-soft: oklch(0.970 0.0092 250); --a3: oklch(0.446 0.1138 250); --a3-solid: oklch(0.496 0.1256 250);
-  --a4-soft: oklch(0.970 0.0100 295); --a4: oklch(0.446 0.1230 295); --a4-solid: oklch(0.496 0.1360 295);
-  --a5-soft: oklch(0.970 0.0069 70);  --a5: oklch(0.446 0.0853 70);  --a5-solid: oklch(0.496 0.0942 70);
-  --a6-soft: oklch(0.970 0.0080 200); --a6: oklch(0.446 0.0990 200); --a6-solid: oklch(0.496 0.1094 200);
+  --a1-soft: oklch(0.945 0.0352 24.5);  --a1-line: oklch(0.880 0.0665 24.5);  --a1: var(--brand-700);            --a1-solid: var(--brand-600);
+  --a2-soft: oklch(0.945 0.0234 150);   --a2-line: oklch(0.880 0.0442 150);   --a2: oklch(0.446 0.1057 150);     --a2-solid: oklch(0.496 0.1166 150);
+  --a3-soft: oklch(0.945 0.0252 250);   --a3-line: oklch(0.880 0.0476 250);   --a3: oklch(0.446 0.1138 250);     --a3-solid: oklch(0.496 0.1256 250);
+  --a4-soft: oklch(0.945 0.0270 295);   --a4-line: oklch(0.880 0.0510 295);   --a4: oklch(0.446 0.1230 295);     --a4-solid: oklch(0.496 0.1360 295);
+  --a5-soft: oklch(0.945 0.0189 70);    --a5-line: oklch(0.880 0.0357 70);    --a5: oklch(0.446 0.0853 70);      --a5-solid: oklch(0.496 0.0942 70);
+  --a6-soft: oklch(0.945 0.0216 200);   --a6-line: oklch(0.880 0.0408 200);   --a6: oklch(0.446 0.0990 200);     --a6-solid: oklch(0.496 0.1094 200);
 
   /* ---- Navegación -------------------------------------------------------
      Mismo idioma que el Navbar del sitio: reposo neutro, hover y activo en
@@ -243,6 +244,7 @@
   --color-surface-3:   var(--surface-3);
 
   --color-line:        var(--line);
+  --color-line-card:   var(--line-card);
   --color-line-strong: var(--line-strong);
   --color-line-input:  var(--line-input);
 
@@ -292,6 +294,12 @@
      Devuelven color al panel sin volver al desorden de antes: cada destino
      tiene su acento fijo, no uno al azar. Rebrandean con --brand-h sólo el
      primero (que ES la marca); los otros cinco son estables a propósito. */
+  --color-a1-line: var(--a1-line);
+  --color-a2-line: var(--a2-line);
+  --color-a3-line: var(--a3-line);
+  --color-a4-line: var(--a4-line);
+  --color-a5-line: var(--a5-line);
+  --color-a6-line: var(--a6-line);
   --color-a1-soft: var(--a1-soft);  --color-a1: var(--a1);  --color-a1-solid: var(--a1-solid);
   --color-a2-soft: var(--a2-soft);  --color-a2: var(--a2);  --color-a2-solid: var(--a2-solid);
   --color-a3-soft: var(--a3-soft);  --color-a3: var(--a3);  --color-a3-solid: var(--a3-solid);
@@ -319,9 +327,9 @@
   --text-display--font-weight: 800;
   --text-display--letter-spacing: -0.03em;
 
-  --text-title: 1.375rem;                     /* 22 · título de sección    */
-  --text-title--line-height: 1.75rem;
-  --text-title--font-weight: 700;
+  --text-title: 1.5rem;                     /* 22 · título de sección    */
+  --text-title--line-height: 2rem;
+  --text-title--font-weight: 800;
   --text-title--letter-spacing: -0.02em;
 
   --text-heading: 1rem;                       /* 16 · título de card       */

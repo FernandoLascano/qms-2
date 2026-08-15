@@ -1,4 +1,15 @@
-'use client'
+/*
+ * Sin 'use client' a propósito.
+ *
+ * Estos componentes son presentación pura, y marcarlos como cliente rompía la
+ * frontera de React Server Components: las páginas de servidor le pasan el
+ * icono a <EmptyState> como componente (`icon={FileText}`), y una función no
+ * se puede serializar de servidor a cliente. Se caía justo en el peor caso —
+ * un usuario nuevo, sin trámites, entrando por primera vez al panel.
+ *
+ * ErrorState recibe `onRetry`, pero sólo lo usan componentes de cliente
+ * (app/dashboard/error.tsx), que arrastran este módulo a su propio bundle.
+ */
 
 import * as React from "react"
 import { AlertTriangle, RefreshCw } from "lucide-react"

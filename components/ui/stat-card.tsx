@@ -2,28 +2,28 @@ import * as React from "react"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import { NumeroAnimado } from "@/components/ui/motion"
 import { cn } from "@/lib/utils"
 
 /**
  * Tarjeta de métrica.
  *
- * Regla: el color aparece SÓLO cuando el valor exige una acción. Antes cada
- * KPI tenía su color decorativo (gris, azul, verde, naranja) y por eso ninguno
- * destacaba; el número accionable pesaba lo mismo que el informativo.
+ * El número manda: va a 40px en peso 800, arriba de todo. Antes el label
+ * ocupaba la primera línea y la cifra quedaba chica y perdida abajo, que es
+ * justo al revés de lo que uno viene a mirar.
  *
- * El número va en la fuente de display y a 36px: es el dato, tiene que
- * dominar la tarjeta.
+ * El color del icono lo da el acento asignado; el tono de alerta sólo aparece
+ * cuando el valor exige una acción.
  */
 
-/** Acento por métrica: devuelve color al panel sin salirse del sistema. */
 const ACENTOS = {
-  a1: 'bg-a1-soft text-a1',
-  a2: 'bg-a2-soft text-a2',
-  a3: 'bg-a3-soft text-a3',
-  a4: 'bg-a4-soft text-a4',
-  a5: 'bg-a5-soft text-a5',
-  a6: 'bg-a6-soft text-a6',
-  neutro: 'bg-surface-3 text-ink-2',
+  a1: 'bg-a1-soft text-a1 ring-a1-line',
+  a2: 'bg-a2-soft text-a2 ring-a2-line',
+  a3: 'bg-a3-soft text-a3 ring-a3-line',
+  a4: 'bg-a4-soft text-a4 ring-a4-line',
+  a5: 'bg-a5-soft text-a5 ring-a5-line',
+  a6: 'bg-a6-soft text-a6 ring-a6-line',
+  neutro: 'bg-surface-3 text-ink-2 ring-line',
 } as const
 
 interface StatCardProps {
@@ -48,30 +48,35 @@ export function StatCard({
   href,
   className,
 }: StatCardProps) {
+  const esNumero = typeof value === 'number'
+
   const content = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <span className="text-body-sm font-medium text-ink-2">{label}</span>
+        <div className="min-w-0">
+          <div
+            className={cn(
+              'text-hero tnum leading-none',
+              alert ? 'text-warning' : 'text-ink',
+            )}
+          >
+            {esNumero ? <NumeroAnimado valor={value as number} /> : value}
+          </div>
+          <p className="mt-2 text-body-sm font-semibold text-ink">{label}</p>
+        </div>
+
         {Icon && (
           <span
             className={cn(
-              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110',
-              alert ? 'bg-warning-soft text-warning' : ACENTOS[acento],
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-1',
+              'transition-transform duration-200 group-hover:scale-110',
+              alert ? 'bg-warning-soft text-warning ring-warning-line' : ACENTOS[acento],
             )}
             aria-hidden
           >
-            <Icon className="h-4.5 w-4.5" />
+            <Icon className="h-5 w-5" />
           </span>
         )}
-      </div>
-
-      <div
-        className={cn(
-          'mt-3 text-display tnum',
-          alert ? 'text-warning' : 'text-ink',
-        )}
-      >
-        {value}
       </div>
 
       {hint && (
@@ -89,10 +94,10 @@ export function StatCard({
   )
 
   const classes = cn(
-    'group relative block overflow-hidden rounded-card border p-card-sm shadow-card',
-    'transition-[border-color,box-shadow,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
-    alert ? 'border-warning-line bg-warning-soft' : 'border-line bg-surface',
-    href && 'hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift',
+    'group relative block overflow-hidden rounded-card border p-card shadow-card',
+    'transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+    alert ? 'border-warning-line bg-warning-soft' : 'border-line-card bg-surface',
+    href && 'hover:-translate-y-1 hover:border-primary-line hover:shadow-lift',
     className,
   )
 

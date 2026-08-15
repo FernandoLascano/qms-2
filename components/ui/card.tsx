@@ -29,7 +29,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const TONE: Record<string, string> = {
-  default: 'border-line bg-surface',
+  default: 'border-line-card bg-surface',
   success: 'border-success-line bg-success-soft',
   warning: 'border-warning-line bg-warning-soft',
   danger: 'border-danger-line bg-danger-soft',
