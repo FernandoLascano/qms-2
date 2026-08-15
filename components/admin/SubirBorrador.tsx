@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileText, CheckCircle } from 'lucide-react'
@@ -71,10 +71,11 @@ export default function SubirBorrador({ tramiteId, borradorEnviado, borradorApro
           </div>
         ) : null}
 
-        <Input
-          type="file"
+        <FileInput
           accept=".pdf,.doc,.docx"
-          onChange={(e) => setArchivo(e.target.files?.[0] || null)}
+          ayuda="PDF o Word"
+          archivo={archivo}
+          onArchivo={setArchivo}
         />
         <Button onClick={handleSubir} disabled={subiendo || !archivo} className="gap-2">
           {subiendo ? 'Enviando...' : borradorEnviado ? 'Reenviar borrador' : 'Enviar borrador al cliente'}

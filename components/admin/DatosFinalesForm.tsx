@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -143,11 +144,12 @@ export default function DatosFinalesForm({
               Archivo de Resolución de Inscripción
             </Label>
             <div className="flex items-center gap-3">
-              <Input
+              <FileInput
                 id="archivoResolucion"
-                type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => setArchivoResolucion(e.target.files?.[0] || null)}
+                ayuda="PDF o imagen de la resolución del organismo"
+                archivo={archivoResolucion}
+                onArchivo={setArchivoResolucion}
                 disabled={guardando}
                 className="flex-1"
               />

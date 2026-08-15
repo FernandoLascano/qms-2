@@ -137,38 +137,15 @@ export default function DomiciliosPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto text-ink">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="h-11 w-11 rounded-control bg-primary flex items-center justify-center">
-          <Building className="h-6 w-6 text-on-primary" />
-        </div>
-        <div>
-          <h1 className="text-title font-semibold text-ink">Domicilios en Sede</h1>
-          <p className="text-body-sm text-ink-2">Clientes con domicilio legal en la oficina · vencimientos y renovaciones</p>
-        </div>
-      </div>
+    <div className="stagger space-y-section">
+      <PageHeader
+        title="Domicilios en"
+        destacado="sede"
+        description="Clientes con domicilio legal en la oficina, sus vencimientos y renovaciones."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Domicilios' }]}
+      />
 
-      {/* Parámetros */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-control border bg-surface p-4">
-          <p className="text-label text-ink-2">Direcciones de la sede</p>
-          {config.direcciones.length > 0 ? (
-            <ul className="text-body-sm font-semibold text-ink list-disc list-inside">
-              {config.direcciones.map((d, i) => <li key={i}>{d}</li>)}
-            </ul>
-          ) : (
-            <p className="text-body-sm font-semibold text-ink">— (configuralas)</p>
-          )}
-        </div>
-        <div className="rounded-control border bg-surface p-4">
-          <p className="text-label text-ink-2">Precio anual (default)</p>
-          <p className="text-body-sm font-semibold text-ink">{config.precioAnual ? fmt(config.precioAnual) : '— (configuralo)'}</p>
-        </div>
-        <div className="rounded-control border bg-surface p-4">
-          <p className="text-label text-ink-2">Alerta de vencimiento</p>
-          <p className="text-body-sm font-semibold text-ink">{config.diasAlerta} días antes</p>
-        </div>
-      </div>
+      <ResumenDomicilios activos={activos} config={config} />
 
       {/* Cargar sociedad existente */}
       <Card className="mb-6">
@@ -378,6 +355,132 @@ export default function DomiciliosPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+  )
+}
+
+/* ───────────────────────── Resumen del servicio ─────────────────────
+   Es un servicio anual recurrente: lo que importa es cuánto factura y
+   qué vence pronto. Antes la pantalla sólo listaba las sociedades.     */
+
+function ResumenDomicilios({
+  activos,
+  config,
+}: {
+  activos: Item[]
+  config: ConfigDom
+}) {
+  const hoy = new Date()
+  const enDias = (iso: string | null) => {
+    if (!iso) return Infinity
+    return Math.ceil((new Date(iso).getTime() - hoy.getTime()) / 86_400_000)
+  }
+
+  const facturacionAnual = activos.reduce((acc, s) => acc + (s.montoAnual || 0), 0)
+  const vencen30 = activos.filter((s) => enDias(s.fechaVencimiento) <= 30).length
+  const vencen90 = activos.filter((s) => enDias(s.fechaVencimiento) <= 90).length
+  const sinMonto = activos.filter((s) => !s.montoAnual).length
+
+  const proximos = [...activos]
+    .filter((s) => Number.isFinite(enDias(s.fechaVencimiento)))
+    .sort((a, b) => enDias(a.fechaVencimiento) - enDias(b.fechaVencimiento))
+    .slice(0, 5)
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <TarjetaDom titulo="Facturación anual" valor={fmt(facturacionAnual)} destacado />
+        <TarjetaDom titulo="Servicios activos" valor={String(activos.length)} />
+        <TarjetaDom
+          titulo="Vencen en 30 días"
+          valor={String(vencen30)}
+          alerta={vencen30 > 0}
+          nota={vencen90 > vencen30 ? `${vencen90} en 90 días` : undefined}
+        />
+        <TarjetaDom
+          titulo="Sin monto cargado"
+          valor={String(sinMonto)}
+          alerta={sinMonto > 0}
+          nota={sinMonto > 0 ? 'revisar' : undefined}
+        />
+      </div>
+
+      <Card>
+        <CardContent className="space-y-4 p-card">
+          <div>
+            <h3 className="text-heading text-ink">Próximos vencimientos</h3>
+            <p className="mt-0.5 text-body-sm text-ink-2">
+              Se avisa {config.diasAlerta} días antes
+            </p>
+          </div>
+          {proximos.length === 0 ? (
+            <p className="text-body-sm text-ink-2">No hay vencimientos cargados.</p>
+          ) : (
+            <ul className="space-y-2.5">
+              {proximos.map((s) => {
+                const dias = enDias(s.fechaVencimiento)
+                const urgente = dias <= config.diasAlerta
+                return (
+                  <li key={s.id} className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 flex-1 truncate text-body-sm text-ink">
+                      {s.tramite.denominacion}
+                    </span>
+                    <span
+                      className={`shrink-0 text-body-sm font-semibold tnum ${
+                        urgente ? 'text-warning' : 'text-ink-2'
+                      }`}
+                    >
+                      {dias < 0 ? 'vencido' : `en ${dias} d`}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+          <div className="border-t border-line pt-3 text-label text-ink-3">
+            {config.direcciones.length > 0
+              ? `Sedes: ${config.direcciones.join(' · ')}`
+              : 'Configurá las direcciones de la sede'}
+            {config.precioAnual ? ` · Precio anual ${fmt(config.precioAnual)}` : ''}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function TarjetaDom({
+  titulo,
+  valor,
+  nota,
+  destacado = false,
+  alerta = false,
+}: {
+  titulo: string
+  valor: string
+  nota?: string
+  destacado?: boolean
+  alerta?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-card border p-card shadow-card ${
+        alerta
+          ? 'border-warning-line bg-warning-soft'
+          : destacado
+            ? 'border-primary-line bg-primary-soft'
+            : 'border-line-card bg-surface'
+      }`}
+    >
+      <p className="text-body-sm font-medium text-ink-2">{titulo}</p>
+      <p
+        className={`mt-1.5 text-title tnum ${
+          alerta ? 'text-warning' : destacado ? 'text-primary' : 'text-ink'
+        }`}
+      >
+        {valor}
+      </p>
+      {nota && <p className="mt-0.5 text-label text-ink-3">{nota}</p>}
     </div>
   )
 }

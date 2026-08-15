@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { PageSkeleton } from '@/components/ui/states'
+import { BarrasMensuales, BarraDistribucion } from '@/components/ui/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { Coins, RefreshCw, Plus, Trash2, CheckCircle2, Clock, Download } from 'lucide-react'
@@ -251,36 +253,46 @@ export default function ComisionesPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto text-ink">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-control bg-primary flex items-center justify-center">
-            <Coins className="h-6 w-6 text-on-primary" />
-          </div>
-          <div>
-            <h1 className="text-title font-semibold text-ink">Liquidación de Comisiones</h1>
-            <p className="text-body-sm text-ink-2">Distribución de ingresos según el contrato asociativo (cláusula 4)</p>
-          </div>
-        </div>
-        <Button onClick={sincronizar} disabled={saving} variant="outline" className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} /> Sincronizar honorarios cobrados
-        </Button>
-      </div>
+    <div className="stagger space-y-section">
+      <PageHeader
+        title="Liquidación de"
+        destacado="comisiones"
+        description="Distribución de ingresos según el contrato asociativo (cláusula 4)."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Comisiones' }]}
+        actions={
+          <Button onClick={sincronizar} loading={saving} variant="secondary">
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            Sincronizar honorarios cobrados
+          </Button>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-line mb-6">
-        {([['movimientos', 'Movimientos'], ['liquidacion', 'Liquidación'], ['fondo', 'Fondo de Desarrollo']] as const).map(([k, label]) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            className={`px-4 py-2 text-body-sm font-semibold border-b-2 -mb-px transition ${
-              tab === k ? 'border-primary-line text-primary' : 'border-transparent text-ink-2 hover:text-ink'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <ResumenFinanciero
+        movimientos={movimientos}
+        porcentajes={porcentajes}
+        periodoActual={periodoActual}
+      />
+
+      <nav aria-label="Secciones" className="border-b border-line">
+        <ul className="flex items-center gap-1">
+          {([['movimientos', 'Movimientos'], ['liquidacion', 'Liquidación'], ['fondo', 'Fondo de Desarrollo']] as const).map(([k, label]) => (
+            <li key={k}>
+              <button
+                onClick={() => setTab(k)}
+                aria-current={tab === k ? 'page' : undefined}
+                className={`relative flex h-11 items-center rounded-t-control px-3 text-body-sm transition-colors ${
+                  tab === k ? 'font-medium text-primary' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
+                }`}
+              >
+                {label}
+                {tab === k && (
+                  <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" aria-hidden />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* ===================== MOVIMIENTOS ===================== */}
       {tab === 'movimientos' && (
@@ -295,9 +307,9 @@ export default function ComisionesPage() {
                 <div><Label>Honorario (sin gastos)</Label><Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" /></div>
                 <div>
                   <Label>Originador</Label>
-                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
+                  <Select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })}>
                     {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
-                  </select>
+                  </Select>
                 </div>
               </div>
               <div className="mt-3">
@@ -481,6 +493,134 @@ export default function ComisionesPage() {
           </Card>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ─────────────────────── Resumen financiero ─────────────────────────
+   Lo que faltaba para que esto se lea como un módulo de administración y
+   no como un formulario con una tabla: cuánto entró, cuánto hay que
+   pagar, cómo se reparte y cómo viene el año.                          */
+
+const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
+function ResumenFinanciero({
+  movimientos,
+  porcentajes,
+  periodoActual,
+}: {
+  movimientos: Movimiento[]
+  porcentajes: Porcentajes
+  periodoActual: string
+}) {
+  const delPeriodo = movimientos.filter((m) => periodoDeISO(m.fecha) === periodoActual)
+  const tot = totalizar(delPeriodo, porcentajes)
+  const totAnual = totalizar(movimientos, porcentajes)
+  const ticket = delPeriodo.length ? tot.ingresoBruto / delPeriodo.length : 0
+
+  // Últimos 12 meses de ingreso bruto
+  const hoy = new Date()
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - (11 - i), 1)
+    const clave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const suma = movimientos
+      .filter((m) => periodoDeISO(m.fecha) === clave)
+      .reduce((acc, m) => acc + m.monto, 0)
+    return { label: MESES_CORTOS[d.getMonth()], valor: suma, clave }
+  })
+
+  const serie = meses.map((m) => m.valor)
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <TarjetaImporte titulo="Ingreso del mes" valor={tot.ingresoBruto} destacado />
+          <TarjetaImporte titulo="A pagar este mes" valor={tot.subtotalPagable} />
+          <TarjetaImporte titulo="Fondo de desarrollo" valor={totAnual.subtotalFondo} nota="acumulado" />
+          <TarjetaImporte titulo="Honorario promedio" valor={ticket} nota={`${delPeriodo.length} mov.`} />
+        </div>
+
+        <Card>
+          <CardContent className="p-card">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <div>
+                <h3 className="text-heading text-ink">Ingresos por mes</h3>
+                <p className="mt-0.5 text-body-sm text-ink-2">Honorarios cobrados, sin gastos</p>
+              </div>
+              <span className="text-body-sm text-ink-2">
+                Total 12 meses <span className="font-semibold text-ink tnum">{fmt(serie.reduce((a, b) => a + b, 0))}</span>
+              </span>
+            </div>
+            <BarrasMensuales datos={meses} formato={fmt} alto={132} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="space-y-5 p-card">
+          <div>
+            <h3 className="text-heading text-ink">Cómo se reparte</h3>
+            <p className="mt-0.5 text-body-sm text-ink-2">
+              Sobre {fmt(tot.ingresoBruto)} del mes
+            </p>
+          </div>
+
+          <BarraDistribucion
+            tramos={[
+              { label: 'MW', valor: Math.round(tot.mwBase), color: 'bg-primary' },
+              { label: 'Operador', valor: Math.round(tot.operadorFernando), color: 'bg-a3-solid' },
+              { label: 'Fondo F', valor: Math.round(tot.fondoFernando), color: 'bg-a4-solid' },
+              { label: 'Fondo J', valor: Math.round(tot.fondoJustiniano), color: 'bg-a6-solid' },
+            ]}
+            formato={fmt}
+          />
+
+          <div className="space-y-2 border-t border-line pt-4">
+            <p className="text-body-sm font-semibold text-ink">A pagar este mes</p>
+            {(['FERNANDO', 'JUSTINIANO', 'MW'] as Beneficiario[]).map((b) => {
+              const monto =
+                b === 'FERNANDO' ? tot.aPagarFernando : b === 'JUSTINIANO' ? tot.aPagarJustiniano : tot.aPagarMw
+              return (
+                <div key={b} className="flex items-baseline justify-between gap-3">
+                  <span className="text-body-sm text-ink-2">{BENEFICIARIO_LABEL[b]}</span>
+                  <span className="text-body font-semibold text-ink tnum">{fmt(monto)}</span>
+                </div>
+              )
+            })}
+            <div className="flex items-baseline justify-between gap-3 border-t border-line pt-2">
+              <span className="text-body-sm font-semibold text-ink">Total</span>
+              <span className="text-title text-primary tnum">{fmt(tot.subtotalPagable)}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function TarjetaImporte({
+  titulo,
+  valor,
+  nota,
+  destacado = false,
+}: {
+  titulo: string
+  valor: number
+  nota?: string
+  destacado?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-card border p-card shadow-card ${
+        destacado ? 'border-primary-line bg-primary-soft' : 'border-line-card bg-surface'
+      }`}
+    >
+      <p className="text-body-sm font-medium text-ink-2">{titulo}</p>
+      <p className={`mt-1.5 text-title tnum ${destacado ? 'text-primary' : 'text-ink'}`}>
+        {fmt(valor)}
+      </p>
+      {nota && <p className="mt-0.5 text-label text-ink-3">{nota}</p>}
     </div>
   )
 }

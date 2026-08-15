@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink, Info } from 'lucide-react'
 import Link from 'next/link'
 import { PrecioDual } from '@/components/PrecioDual'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -685,7 +685,7 @@ export default function NuevoTramitePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-3xl space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -722,7 +722,7 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8 bg-surface p-4 md:p-6 rounded-card border-2 border-line shadow-raise">
+        <div className="mb-6 md:mb-8 bg-surface p-4 md:p-6 rounded-card border-line shadow-raise">
           {/* Barra de progreso superior */}
           <div className="mb-6 pb-4 border-b border-line">
             <div className="flex items-center justify-between mb-3">
@@ -818,7 +818,7 @@ export default function NuevoTramitePage() {
         {/* La tarjeta del formulario va más angosta que el stepper: un campo de
             "Nombre" de 450px de ancho es incómodo de leer y de completar. A
             768px el recorrido del ojo entre etiqueta y campo es corto. */}
-        <Card className="mx-auto w-full max-w-3xl">
+        <Card>
           <CardContent className="p-card sm:p-8">
             {/* Paso 1: Datos */}
             {pasoActual === 1 && (
@@ -933,7 +933,7 @@ export default function NuevoTramitePage() {
                       <div
                         key={plan.id}
                         onClick={() => setFormData(prev => ({ ...prev, plan: plan.id as any }))}
-                        className={`border-2 rounded-control p-6 cursor-pointer transition-all ${
+                        className={`flex h-full flex-col rounded-card border p-card cursor-pointer transition-all ${
                           formData.plan === plan.id
                             ? 'border-primary-line bg-primary-soft shadow-raise'
                             : 'border-line hover:border-line-strong bg-surface hover:shadow-raise'
@@ -987,7 +987,7 @@ export default function NuevoTramitePage() {
                     Proporciona 3 opciones de nombre para tu SAS
                   </p>
                   
-                  <div className="bg-primary-soft border-2 border-primary-line rounded-control p-4 mb-4">
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-primary">
                       <span className="font-semibold">Importante:</span> Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
                     </p>
@@ -1076,7 +1076,7 @@ export default function NuevoTramitePage() {
                     <div>
                       <Label>Objeto Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-control cursor-pointer hover:border-primary-line transition">
+                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
@@ -1099,7 +1099,7 @@ export default function NuevoTramitePage() {
                             <p className="text-body-sm text-ink-2">Objeto social estándar que cubre la mayoría de las actividades comerciales</p>
                           </div>
                         </label>
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-control cursor-pointer hover:border-primary-line transition">
+                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
                           <div>
                             <p className="font-medium text-ink">Objeto personalizado</p>
@@ -1192,22 +1192,31 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Capital Social y CBU</h3>
                   <p className="text-ink-2 mb-4">Define el capital inicial de tu sociedad</p>
-                  <div className="bg-primary-soft border-2 border-primary-line rounded-control p-4 mb-4">
-                    <p className="text-body-sm text-primary mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
-                    <p className="text-body-sm font-semibold text-primary">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
-                    <p className="text-label text-ink-2 mt-1">SMVM actual: ${smvm.toLocaleString('es-AR')}</p>
+                  <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                    <div>
+                      <p className="text-body-sm text-ink-2">
+                        El capital mínimo es de 2 salarios mínimos:{' '}
+                        <span className="font-semibold text-ink tnum">
+                          ${(2 * smvm).toLocaleString('es-AR')}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-label text-ink-3 tnum">
+                        Salario mínimo actual: ${smvm.toLocaleString('es-AR')}
+                      </p>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label>Capital Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-center gap-3 p-3 border-2 border-primary-line bg-primary-soft rounded-control cursor-pointer">
+                        <label className="flex items-center gap-3 rounded-control border border-primary bg-primary-soft p-4 cursor-pointer">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
                           <div>
                             <p className="font-medium text-ink">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
                           </div>
                         </label>
-                        <label className="flex items-center gap-3 p-3 border-2 rounded-control cursor-pointer hover:border-primary-line transition">
+                        <label className="flex items-center gap-3 rounded-control border border-line p-4 transition-colors cursor-pointer hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
                           <div>
                             <p className="font-medium text-ink">Otro monto</p>
@@ -1228,7 +1237,7 @@ export default function NuevoTramitePage() {
                 </div>
                 <div className="border-t pt-6">
                   <h3 className="font-semibold text-heading text-ink mb-2">Depósito del Capital (CBU)</h3>
-                  <div className="bg-primary-soft border-2 border-primary-line rounded-control p-4 mb-4">
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-primary mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
                     <p className="text-body-sm font-semibold text-primary mt-3">Requisitos de CBU:</p>
                     <ul className="text-label text-ink-2 mt-2 space-y-1 ml-4">
@@ -1373,7 +1382,7 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-2 border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
+                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           −
                         </button>
@@ -1401,7 +1410,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-2 border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
+                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           +
                         </button>
@@ -1468,7 +1477,7 @@ export default function NuevoTramitePage() {
                   </div>
 
                   {formData.socios.map((socio, index) => (
-                    <div key={index} className="border-2 border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
+                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
                       <h4 className="font-semibold text-ink text-heading mb-4">Socio {index + 1}</h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -1650,7 +1659,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'MONTO'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1 text-body-sm rounded-control border-2 transition ${
+                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'MONTO'
                                   ? 'border-primary-line bg-primary-soft text-primary font-medium'
                                   : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
@@ -1665,7 +1674,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'PORCENTAJE'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1 text-body-sm rounded-control border-2 transition ${
+                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'PORCENTAJE'
                                   ? 'border-primary-line bg-primary-soft text-primary font-medium'
                                   : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
@@ -1757,7 +1766,7 @@ export default function NuevoTramitePage() {
                     Define quiénes administrarán la sociedad
                   </p>
 
-                  <div className="bg-primary-soft border-2 border-primary-line rounded-control p-4 mb-4">
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-primary">
                       ℹ️ <strong>Requisitos de administradores:</strong> Es obligatoria la designación de como mínimo un Administrador Titular y un Suplente. Los Administradores pueden o no ser socios de la Sociedad.
                     </p>
@@ -1778,7 +1787,7 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-surface border-2 hover:bg-surface-2 flex items-center justify-center"
+                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                           disabled={formData.numeroAdministradores <= 2}
                         >
                           −
@@ -1804,7 +1813,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-surface border-2 hover:bg-surface-2 flex items-center justify-center"
+                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                         >
                           +
                         </button>
@@ -1819,7 +1828,7 @@ export default function NuevoTramitePage() {
                   </div>
 
                   {formData.administradores.map((admin, index) => (
-                    <div key={index} className="border-2 border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
+                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
                       <div className="flex items-center justify-between mb-4">
                         <h4 className="font-semibold text-ink text-heading">
                           {index === 0 ? 'Administrador Titular' : index === 1 ? 'Administrador Suplente' : `Administrador ${index + 1}`}
@@ -2103,7 +2112,7 @@ export default function NuevoTramitePage() {
                     Define la fecha de cierre del ejercicio económico
                   </p>
 
-                  <div className="bg-surface-2 border-2 border-line rounded-control p-4 mb-4">
+                  <div className="bg-surface-2 border-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-ink-2">
                       El cierre de ejercicio es la fecha anual en la que se cierran los libros contables y se preparan los estados financieros. La fecha más común es el 31 de diciembre (31-12).
                     </p>
@@ -2145,7 +2154,7 @@ export default function NuevoTramitePage() {
                     </label>
                   </div>
 
-                  <div className="mt-8 bg-success-soft border-2 border-success-line rounded-card p-6">
+                  <div className="mt-8 bg-success-soft border-success-line rounded-card p-6">
                     <h4 className="font-semibold text-success text-title mb-3">¡Todo listo para enviar!</h4>
                     <p className="text-success mb-4">
                       Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.

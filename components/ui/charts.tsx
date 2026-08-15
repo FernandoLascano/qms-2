@@ -188,9 +188,12 @@ export interface Tramo {
  */
 export function BarraDistribucion({
   tramos,
+  formato,
   className,
 }: {
   tramos: Tramo[]
+  /** Para importes: pasar el formateador de moneda. */
+  formato?: (valor: number) => string
   className?: string
 }) {
   const total = tramos.reduce((acc, t) => acc + t.valor, 0)
@@ -215,10 +218,66 @@ export function BarraDistribucion({
           <li key={t.label} className="flex items-center gap-2">
             <span className={cn('h-2 w-2 shrink-0 rounded-full', t.color)} aria-hidden />
             <span className="text-body-sm text-ink-2">{t.label}</span>
-            <span className="text-body-sm font-semibold text-ink tnum">{t.valor}</span>
+            <span className="text-body-sm font-semibold text-ink tnum">
+              {formato ? formato(t.valor) : t.valor}
+            </span>
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+/* ─────────────────────────  Barras mensuales  ─────────────────────────── */
+
+export interface BarraMes {
+  label: string
+  valor: number
+}
+
+/**
+ * Serie mensual en barras. Para importes: el alto compara de un vistazo y el
+ * valor exacto queda en el tooltip nativo, sin necesidad de leer una tabla.
+ */
+export function BarrasMensuales({
+  datos,
+  formato = (v) => String(v),
+  alto = 120,
+  className,
+}: {
+  datos: BarraMes[]
+  formato?: (valor: number) => string
+  alto?: number
+  className?: string
+}) {
+  const max = Math.max(...datos.map((d) => d.valor), 1)
+
+  return (
+    <div className={className}>
+      <div className="flex items-end gap-1.5" style={{ height: alto }}>
+        {datos.map((d) => (
+          <div key={d.label} className="flex h-full flex-1 flex-col justify-end">
+            <div
+              className={cn(
+                'w-full rounded-t-chip transition-colors',
+                d.valor > 0 ? 'bg-primary hover:bg-primary-hover' : 'bg-surface-3',
+              )}
+              style={{ height: `${Math.max((d.valor / max) * 100, d.valor > 0 ? 4 : 2)}%` }}
+              title={`${d.label}: ${formato(d.valor)}`}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-1.5">
+        {datos.map((d) => (
+          <span
+            key={d.label}
+            className="flex-1 truncate text-center text-label text-ink-3"
+          >
+            {d.label}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }

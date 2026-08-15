@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
@@ -110,9 +110,9 @@ export default function SubirDocumentosParaCliente({
   }
 
   return (
-    <Card className="border-info-line bg-info-soft">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-info">
+        <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           Enviar Documentos para Firmar
         </CardTitle>
@@ -123,17 +123,17 @@ export default function SubirDocumentosParaCliente({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           {SLOTS.map(slot => (
-            <div key={slot.key} className="rounded-control bg-surface border border-info-line p-3 space-y-2">
+            <div key={slot.key} className="space-y-2 border-t border-line pt-4 first:border-0 first:pt-0">
               <Label htmlFor={`doc-${slot.key}`} className="text-body-sm font-semibold text-ink">
                 {slot.label}
               </Label>
-              <Input
+              <FileInput
                 id={`doc-${slot.key}`}
-                type="file"
                 accept=".pdf,.doc,.docx"
                 disabled={subiendo}
-                onChange={(e) => setArchivo(slot.key, e.target.files?.[0] || null)}
-                className="cursor-pointer"
+                compacto
+                archivo={archivos[slot.key] ?? null}
+                onArchivo={(f) => setArchivo(slot.key, f)}
               />
               <div>
                 <Label htmlFor={`instr-${slot.key}`} className="text-label text-ink-2">Instrucciones para el cliente (editable)</Label>
@@ -142,7 +142,7 @@ export default function SubirDocumentosParaCliente({
                   value={instrucciones[slot.key]}
                   onChange={(e) => setInstrucciones(prev => ({ ...prev, [slot.key]: e.target.value }))}
                   disabled={subiendo}
-                  rows={3}
+                  rows={2}
                   className="mt-1 text-body-sm"
                 />
               </div>
@@ -157,7 +157,7 @@ export default function SubirDocumentosParaCliente({
         <Button
           onClick={handleEnviar}
           disabled={subiendo}
-          className="w-full gap-2 bg-info-solid hover:bg-info-solid"
+          className="w-full"
         >
           <Send className="h-4 w-4" />
           {subiendo ? 'Enviando...' : 'Enviar documentos al cliente'}
@@ -165,16 +165,16 @@ export default function SubirDocumentosParaCliente({
 
         {/* Historial de documentos enviados */}
         {documentosEnviados.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-info-line">
+          <div className="mt-6 pt-4 border-t border-line">
             <div className="flex items-center gap-2 mb-3">
-              <History className="h-4 w-4 text-info" />
-              <h4 className="text-body-sm font-medium text-info">Documentos Enviados</h4>
+              <History className="h-4 w-4 text-ink-3" />
+              <h4 className="text-body-sm font-semibold text-ink">Documentos enviados</h4>
             </div>
             <div className="space-y-2">
               {documentosEnviados.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 bg-surface border border-info-line rounded-control"
+                  className="flex items-center justify-between rounded-control border border-line bg-surface-2 p-3"
                 >
                   <div className="flex items-center gap-3">
                     {doc.estado === 'APROBADO' ? (
