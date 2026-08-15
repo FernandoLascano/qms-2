@@ -40,7 +40,7 @@ export function GastosJurisdiccion() {
   const gastos = (current?.gastos as { concepto: string; valor: string }[]) || []
 
   return (
-    <section id="gastos" className="py-20 md:py-28 bg-surface">
+    <section id="gastos" className="py-seccion md:py-seccion-lg bg-surface">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -109,12 +109,12 @@ export function GastosJurisdiccion() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-control flex items-start gap-3"
+              className="mb-6 p-4 bg-warning-soft border border-warning-line rounded-control flex items-start gap-3"
             >
-              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-amber-900">Jurisdicción no disponible actualmente</p>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm font-semibold text-warning">Jurisdicción no disponible actualmente</p>
+                <p className="text-sm text-warning mt-1">
                   Por el momento no estamos operando en {current.nombre}. Te mostramos los gastos de referencia para que puedas comparar.
                   Te recomendamos constituir en <strong>Córdoba (IPJ)</strong> donde tenemos operación activa y los costos son más accesibles.
                 </p>
@@ -197,20 +197,20 @@ export function GastosJurisdiccion() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-control border border-blue-100">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 bg-info-soft rounded-control border border-info-line">
+              <Info className="w-5 h-5 text-info flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-blue-900 mb-1">Sobre el capital social</p>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm font-semibold text-info mb-1">Sobre el capital social</p>
+                <p className="text-sm text-info">
                   El depósito del 25% del capital social solo aplica para Córdoba y se realiza en una cuenta especial abierta en el Banco de Córdoba y se recupera una vez inscripta la sociedad.
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4 bg-green-50 rounded-control border border-green-100">
-              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 bg-success-soft rounded-control border border-success-line">
+              <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-green-900 mb-1">Sin sorpresas</p>
-                <p className="text-sm text-green-700">
+                <p className="text-sm font-semibold text-success mb-1">Sin sorpresas</p>
+                <p className="text-sm text-success">
                   Te informamos todos los costos detallados antes de comenzar el trámite. Transparencia total.
                 </p>
               </div>
@@ -238,7 +238,7 @@ export function GastosJurisdiccion() {
                         {j.totalEstimado || '-'}
                       </p>
                       {!j.habilitada && (
-                        <p className="text-xs text-amber-600 font-medium mt-1">No disponible</p>
+                        <p className="text-xs text-warning font-medium mt-1">No disponible</p>
                       )}
                     </div>
                     {i < jurisdicciones.length - 1 && (

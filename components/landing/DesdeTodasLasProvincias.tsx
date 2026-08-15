@@ -18,7 +18,7 @@ export function DesdeTodasLasProvincias() {
   ]
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-surface to-surface-2" ref={ref}>
+    <section className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface to-surface-2" ref={ref}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -77,8 +77,8 @@ export function DesdeTodasLasProvincias() {
                       animate={inView ? { opacity: 1, x: 0 } : {}}
                       transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
                     >
-                      <div className="w-8 h-8 rounded-chip bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <v.icon className="w-4 h-4 text-green-700" />
+                      <div className="w-8 h-8 rounded-chip bg-success-soft flex items-center justify-center flex-shrink-0">
+                        <v.icon className="w-4 h-4 text-success" />
                       </div>
                       <span className="text-sm text-n-700">{v.text}</span>
                     </motion.div>

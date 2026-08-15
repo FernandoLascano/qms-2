@@ -19,18 +19,18 @@ import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 
 const servicios: { icon: LucideIcon; name: string; color: string }[] = [
-  { icon: FileEdit, name: 'Reformas de Estatuto', color: 'bg-amber-100 text-amber-600' },
-  { icon: FileCheck, name: 'Confección de Actas', color: 'bg-blue-100 text-blue-600' },
+  { icon: FileEdit, name: 'Reformas de Estatuto', color: 'bg-a5-soft text-a5' },
+  { icon: FileCheck, name: 'Confección de Actas', color: 'bg-a3-soft text-a3' },
   { icon: UserPlus, name: 'Designación de Autoridades', color: 'bg-pink-100 text-pink-600' },
-  { icon: UserMinus, name: 'Renuncia de Autoridades', color: 'bg-purple-100 text-purple-600' },
-  { icon: Calculator, name: 'Tratamiento de Estados Contables', color: 'bg-sky-100 text-sky-600' },
-  { icon: Building2, name: 'Cambio de Sede Social', color: 'bg-orange-100 text-orange-600' },
-  { icon: TrendingUp, name: 'Aumentos de Capital Social', color: 'bg-green-100 text-green-600' },
-  { icon: GitMerge, name: 'Fusiones', color: 'bg-blue-100 text-blue-600' },
+  { icon: UserMinus, name: 'Renuncia de Autoridades', color: 'bg-a4-soft text-a4' },
+  { icon: Calculator, name: 'Tratamiento de Estados Contables', color: 'bg-a6-soft text-a6' },
+  { icon: Building2, name: 'Cambio de Sede Social', color: 'bg-a5-soft text-a5' },
+  { icon: TrendingUp, name: 'Aumentos de Capital Social', color: 'bg-a2-soft text-a2' },
+  { icon: GitMerge, name: 'Fusiones', color: 'bg-a3-soft text-a3' },
   { icon: XCircle, name: 'Disolución/Liquidación', color: 'bg-brand-100 text-brand-600' },
-  { icon: ArrowLeftRight, name: 'Escisión', color: 'bg-blue-100 text-blue-600' },
-  { icon: Repeat, name: 'Transformación', color: 'bg-orange-100 text-orange-600' },
-  { icon: Building, name: 'Compra/Venta de Sociedades', color: 'bg-green-100 text-green-600' },
+  { icon: ArrowLeftRight, name: 'Escisión', color: 'bg-a3-soft text-a3' },
+  { icon: Repeat, name: 'Transformación', color: 'bg-a5-soft text-a5' },
+  { icon: Building, name: 'Compra/Venta de Sociedades', color: 'bg-a2-soft text-a2' },
 ]
 
 export function OtrosServicios() {
@@ -38,7 +38,7 @@ export function OtrosServicios() {
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 bg-surface-2 overflow-hidden">
+    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header - estilo consistente con la página */}
         <motion.div

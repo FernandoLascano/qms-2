@@ -15,36 +15,36 @@ const caracteristicas = [
   },
   {
     icon: Zap,
-    iconBg: 'bg-green-100',
-    iconColor: 'text-green-600',
+    iconBg: 'bg-a2-soft',
+    iconColor: 'text-a2',
     title: 'Trámite 100% digital',
     description: 'Todo el proceso se hace online. Sin necesidad de papelería obsoleta.'
   },
   {
     icon: DollarSign,
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600',
+    iconBg: 'bg-a4-soft',
+    iconColor: 'text-a4',
     title: 'Costos reducidos',
     description: 'Gastos de constitución hasta 50% menores que una S.R.L. o S.A. tradicional.'
   },
   {
     icon: TrendingUp,
-    iconBg: 'bg-orange-100',
-    iconColor: 'text-orange-600',
+    iconBg: 'bg-a5-soft',
+    iconColor: 'text-a5',
     title: 'Flexibilidad',
     description: 'Estatuto adaptable a tus necesidades. Podés modificarlo sin grandes complicaciones.'
   },
   {
     icon: Shield,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-a3-soft',
+    iconColor: 'text-a3',
     title: 'Responsabilidad limitada',
     description: 'Protegés tu patrimonio personal. Respondés solo con el capital que aportaste a la empresa.'
   },
   {
     icon: FileCheck,
-    iconBg: 'bg-amber-100',
-    iconColor: 'text-amber-600',
+    iconBg: 'bg-a5-soft',
+    iconColor: 'text-a5',
     title: 'Reconocimiento oficial',
     description: 'CUIT automático, facturación electrónica, cuentas bancarias, todo como cualquier otra sociedad.'
   }
@@ -55,7 +55,7 @@ export function QueEsSAS() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-28 bg-surface overflow-hidden">
+    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}

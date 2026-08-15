@@ -2,7 +2,19 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Shield, Zap, Users, Star, ChevronRight } from 'lucide-react'
+import {
+  ArrowRight,
+  CheckCircle2,
+  Shield,
+  Zap,
+  Users,
+  Star,
+  ChevronRight,
+  FileText,
+  Paperclip,
+  CreditCard,
+  BadgeCheck,
+} from 'lucide-react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { FAQ } from '@/components/landing/FAQ'
@@ -23,6 +35,44 @@ type PreciosPlanes = {
   precioPlanEmprendedor: number
   precioPlanPremium: number
 }
+
+/**
+ * Los cuatro pasos del trámite.
+ *
+ * Estaban escritos dos veces —una para escritorio y otra para el teléfono— con
+ * el mismo texto duplicado, listo para desincronizarse. Ahora salen de acá.
+ *
+ * La iconografía son los mismos lucide que usa el panel. Antes eran emojis
+ * (📝 📎 💳 🎉): cada sistema operativo los dibuja distinto, van a todo color
+ * y desentonaban con el resto del sitio, sobre todo en el teléfono, donde
+ * quedaban sobre un círculo rojo saturado.
+ */
+const PASOS = [
+  {
+    numero: '01',
+    titulo: 'Completá el formulario',
+    descripcion: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad.',
+    Icono: FileText,
+  },
+  {
+    numero: '02',
+    titulo: 'Subí documentación',
+    descripcion: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento en tiempo real.',
+    Icono: Paperclip,
+  },
+  {
+    numero: '03',
+    titulo: 'Pagá online',
+    descripcion: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.',
+    Icono: CreditCard,
+  },
+  {
+    numero: '04',
+    titulo: 'Recibí tu S.A.S.',
+    descripcion: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.',
+    Icono: BadgeCheck,
+  },
+]
 
 export default function HomePage({
   destacadas = [],
@@ -119,7 +169,7 @@ export default function HomePage({
               >
                 <Link href="/registro">
                   <motion.button
-                    className="group relative bg-brand-700 text-white px-8 py-4 rounded-control font-bold text-lead flex items-center justify-center gap-3 shadow-pop shadow-brand-200 overflow-hidden"
+                    className="group relative h-[60px] bg-brand-700 text-on-primary px-8 rounded-control font-bold text-lead flex items-center justify-center gap-3 shadow-pop shadow-brand-200 overflow-hidden"
                     style={{ cursor: 'pointer' }}
                     whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
                     whileTap={{ scale: 0.98 }}
@@ -132,7 +182,7 @@ export default function HomePage({
 
                 <motion.a
                   href="#planes"
-                  className="group border-2 border-line text-n-700 px-8 py-4 rounded-control font-semibold text-lead flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
+                  className="group h-[60px] border border-line-strong text-n-700 px-8 rounded-control font-semibold text-lead flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -184,8 +234,8 @@ export default function HomePage({
                 whileHover={{ scale: 1.05 }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 bg-success-soft rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-success" />
                   </div>
                   <div>
                     <p className="text-xs text-ink-3">Tiempo promedio</p>
@@ -205,7 +255,7 @@ export default function HomePage({
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                      <Star key={i} className="w-4 h-4 text-a5-solid fill-a5-solid" />
                     ))}
                   </div>
                   <span className="text-sm font-bold text-ink">4.9</span>
@@ -245,7 +295,7 @@ export default function HomePage({
       </section>
 
       {/* Cómo Funciona - Timeline visual moderno */}
-      <section id="procedimiento" className="py-20 md:py-28 bg-gradient-to-b from-surface-2 to-surface" ref={stepsRef}>
+      <section id="procedimiento" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface-2 to-surface" ref={stepsRef}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -280,43 +330,35 @@ export default function HomePage({
               </div>
 
               <div className="grid grid-cols-4 gap-8">
-                {[
-                  { number: '01', title: 'Completá el formulario', description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad.', icon: '📝', color: 'from-brand-500 to-brand-600' },
-                  { number: '02', title: 'Subí documentación', description: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento en tiempo real.', icon: '📎', color: 'from-brand-600 to-brand-700' },
-                  { number: '03', title: 'Pagá online', description: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.', icon: '💳', color: 'from-brand-600 to-brand-700' },
-                  { number: '04', title: 'Recibí tu S.A.S.', description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.', icon: '🎉', color: 'from-green-500 to-green-600' }
-                ].map((step, index) => (
-                  <div key={step.number} className="flex flex-col items-center text-center">
-                    {/* Nodo con glow */}
+                {PASOS.map((step, index) => (
+                  <div key={step.numero} className="flex flex-col items-center text-center">
+                    {/*
+                      Nodo. Antes llevaba un halo difuso detrás (blur-md sobre un
+                      degradado) que no existe en ninguna otra parte del sistema,
+                      y el cuarto paso era verde: verde acá significa "éxito", no
+                      "último". Los cuatro son de marca y la profundidad la da la
+                      sombra del sistema.
+                    */}
                     <div className="relative mb-8 z-10">
-                      {/* Glow ring */}
                       <motion.div
-                        className={`absolute inset-0 rounded-full bg-gradient-to-r ${step.color} blur-md`}
-                        initial={{ opacity: 0, scale: 0.5 }}
-                        animate={stepsInView ? { opacity: 0.4, scale: 1.3 } : {}}
-                        transition={{ duration: 0.6, delay: 0.6 + index * 0.4 }}
-                      />
-
-                      {/* Nodo principal */}
-                      <motion.div
-                        className={`relative w-[104px] h-[104px] rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-pop`}
+                        className="relative w-[104px] h-[104px] rounded-full bg-brand-600 flex items-center justify-center shadow-pop"
                         initial={{ scale: 0, rotate: -180 }}
                         animate={stepsInView ? { scale: 1, rotate: 0 } : {}}
                         transition={{ duration: 0.6, delay: 0.5 + index * 0.4, type: 'spring', bounce: 0.35 }}
                       >
                         <div className="w-[88px] h-[88px] rounded-full bg-surface flex items-center justify-center">
-                          <span className="text-4xl">{step.icon}</span>
+                          <step.Icono className="w-9 h-9 text-brand-700" strokeWidth={1.75} />
                         </div>
                       </motion.div>
 
                       {/* Número */}
                       <motion.div
-                        className={`absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center shadow-raise`}
+                        className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-brand-700 flex items-center justify-center shadow-raise"
                         initial={{ scale: 0 }}
                         animate={stepsInView ? { scale: 1 } : {}}
                         transition={{ duration: 0.3, delay: 0.9 + index * 0.4, type: 'spring' }}
                       >
-                        <span className="text-white font-black text-xs">{step.number}</span>
+                        <span className="text-on-primary font-black text-label">{step.numero}</span>
                       </motion.div>
                     </div>
 
@@ -327,8 +369,8 @@ export default function HomePage({
                       animate={stepsInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.8 + index * 0.4 }}
                     >
-                      <h3 className="text-lead font-bold text-ink mb-2">{step.title}</h3>
-                      <p className="text-ink-3 text-sm leading-relaxed">{step.description}</p>
+                      <h3 className="text-lead font-bold text-ink mb-2">{step.titulo}</h3>
+                      <p className="text-ink-3 text-body leading-relaxed">{step.descripcion}</p>
                     </motion.div>
 
                     {/* Conector flecha (entre nodos, no en el último) */}
@@ -362,14 +404,9 @@ export default function HomePage({
               </div>
 
               <div className="space-y-8">
-                {[
-                  { number: '01', title: 'Completá el formulario', description: 'Ingresá los datos de tu futura sociedad: nombre, socios, capital y actividad.', icon: '📝' },
-                  { number: '02', title: 'Subí documentación', description: 'Cargá DNI, CUIT y comprobantes desde tu panel. Seguimiento en tiempo real.', icon: '📎' },
-                  { number: '03', title: 'Pagá online', description: 'Abonás honorarios y tasas de forma segura. Comprobantes automáticos.', icon: '💳' },
-                  { number: '04', title: 'Recibí tu S.A.S.', description: 'Gestionamos todo ante IPJ/IGJ. En 5 días tenés CUIT y matrícula.', icon: '🎉' }
-                ].map((step, index) => (
+                {PASOS.map((step, index) => (
                   <motion.div
-                    key={step.number}
+                    key={step.numero}
                     className="flex items-start gap-5 relative"
                     initial={{ opacity: 0, x: -20 }}
                     animate={stepsInView ? { opacity: 1, x: 0 } : {}}
@@ -382,15 +419,15 @@ export default function HomePage({
                       animate={stepsInView ? { scale: 1 } : {}}
                       transition={{ duration: 0.4, delay: 0.4 + index * 0.2, type: 'spring' }}
                     >
-                      <span className="text-xl">{step.icon}</span>
+                      <step.Icono className="w-5 h-5 text-on-primary" strokeWidth={2} />
                     </motion.div>
 
                     <div className="bg-surface rounded-control p-4 border border-n-100 shadow-card flex-1">
-                      <span className="inline-block text-xs font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full mb-2">
-                        PASO {step.number}
+                      <span className="inline-block text-label font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full mb-2">
+                        PASO {step.numero}
                       </span>
-                      <h3 className="text-body-lg font-bold text-ink mb-1">{step.title}</h3>
-                      <p className="text-ink-3 text-sm">{step.description}</p>
+                      <h3 className="text-body-lg font-bold text-ink mb-1">{step.titulo}</h3>
+                      <p className="text-ink-3 text-body">{step.descripcion}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -407,7 +444,10 @@ export default function HomePage({
           >
             <Link href="/registro">
               <motion.button
-                className="bg-ink text-white px-8 py-4 rounded-control font-bold text-lead inline-flex items-center gap-2 hover:bg-n-800 transition-colors cursor-pointer"
+                /* Era el único CTA principal en negro: los otros seis del sitio
+                   van en el color de marca, y este cierra el recorrido más
+                   importante de la página. */
+                className="bg-brand-700 text-on-primary px-8 py-4 rounded-control font-bold text-lead inline-flex items-center gap-2 shadow-pop shadow-brand-200 hover:bg-brand-800 transition-colors cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

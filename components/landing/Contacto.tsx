@@ -119,7 +119,7 @@ export function Contacto() {
   ]
 
   return (
-    <section id="contacto" className="py-20 md:py-28 bg-surface-2">
+    <section id="contacto" className="py-seccion md:py-seccion-lg bg-surface-2">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {siteKey && (
           <Script
@@ -238,8 +238,8 @@ export function Contacto() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    <div className="w-16 h-16 bg-success-soft rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-success" />
                     </div>
                     <h3 className="text-title font-bold text-ink mb-2">Mensaje enviado</h3>
                     <p className="text-ink-2 mb-6">Te responderemos a la brevedad.</p>
@@ -349,7 +349,7 @@ export function Contacto() {
 
                     {/* Captcha anti-spam */}
                     {captchaRequired && !siteKey && (
-                      <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-control text-sm">
+                      <div className="bg-warning-soft border border-warning-line text-warning p-3 rounded-control text-sm">
                         Falta configurar el anti-spam. Definí <code className="font-mono">NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> y{' '}
                         <code className="font-mono">TURNSTILE_SECRET_KEY</code> en Vercel.
                       </div>

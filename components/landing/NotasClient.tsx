@@ -19,7 +19,7 @@ export type NotaCard = {
 
 export function NotasClient({ notas }: { notas: NotaCard[] }) {
   return (
-    <section className="py-20 md:py-28 bg-surface overflow-hidden">
+    <section className="py-seccion md:py-seccion-lg bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-12"
@@ -66,7 +66,7 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                 transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
                 className="group bg-surface rounded-card overflow-hidden border border-line hover:border-brand-200 hover:shadow-pop transition-all duration-300"
               >
-                <div className="h-52 bg-gradient-to-br from-brand-50 to-orange-50 overflow-hidden relative">
+                <div className="h-52 bg-gradient-to-br from-brand-50 to-a5-soft overflow-hidden relative">
                   {nota.imagenHero ? (
                     <Image
                       src={nota.imagenHero}

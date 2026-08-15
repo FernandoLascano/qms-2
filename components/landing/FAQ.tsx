@@ -83,7 +83,7 @@ export function FAQ() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} id="faq" className="py-20 md:py-28 bg-surface-2 overflow-hidden">
+    <section ref={sectionRef} id="faq" className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}

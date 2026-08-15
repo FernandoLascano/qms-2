@@ -33,7 +33,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} id="planes" className="py-20 md:py-28 bg-gradient-to-b from-brand-50 to-surface">
+    <section ref={sectionRef} id="planes" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-brand-50 to-surface">
       <div className="container mx-auto px-4">
         {/* Header con nuevo diseño */}
         <motion.div
@@ -73,7 +73,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
                 <PrecioDual transferencia={precios.precioPlanBasico} precioClassName="text-4xl font-bold text-ink" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="inline-block bg-success-soft text-success text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
                 <p className="text-xs text-ink-3">Por la constitución de la sociedad</p>
@@ -84,7 +84,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
               {caracteristicas.map((caracteristica, index) => (
                 <span key={index} className="flex items-start gap-2">
                   {caracteristica.basico ? (
-                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <Check className="w-5 h-5 text-success-solid flex-shrink-0 mt-0.5" />
                   ) : (
                     <X className="w-5 h-5 text-n-300 flex-shrink-0 mt-0.5" />
                   )}
@@ -125,7 +125,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
                 <PrecioDual transferencia={precios.precioPlanEmprendedor} precioClassName="text-4xl font-bold text-brand-700" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="inline-block bg-success-soft text-success text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
                 <p className="text-xs text-ink-3">Por la constitución de la sociedad</p>
@@ -171,7 +171,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
                 <PrecioDual transferencia={precios.precioPlanPremium} precioClassName="text-4xl font-bold text-ink" gastos align="center" />
               </div>
               <div className="mt-2 flex flex-col items-center gap-1">
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="inline-block bg-success-soft text-success text-xs font-bold px-3 py-1 rounded-full">
                   Pago único
                 </span>
                 <p className="text-xs text-ink-3">Por la constitución de la sociedad</p>
@@ -182,7 +182,7 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
               {caracteristicas.map((caracteristica, index) => (
                 <span key={index} className="flex items-start gap-2">
                   {caracteristica.premium ? (
-                    <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <Check className="w-5 h-5 text-success-solid flex-shrink-0 mt-0.5" />
                   ) : (
                     <X className="w-5 h-5 text-n-300 flex-shrink-0 mt-0.5" />
                   )}

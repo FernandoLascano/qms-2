@@ -44,7 +44,7 @@ export function Testimonios() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} className="py-24 bg-gradient-to-b from-surface via-surface-2 to-surface overflow-hidden">
+    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface via-surface-2 to-surface overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header con diseño más impactante */}
         <motion.div
@@ -96,17 +96,12 @@ export function Testimonios() {
                   </div>
                 )}
 
-                {/* Rating con diseño mejorado */}
+                {/* Puntaje. Las estrellas van doradas siempre: en el testimonio
+                    destacado eran rojas y leían como otra cosa. Que sea el
+                    destacado ya se nota por el borde, la chapa y la comilla. */}
                 <div className="flex gap-1 mb-5 pt-2">
                   {[...Array(testimonio.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${
-                        testimonio.destacado
-                          ? 'fill-brand-500 text-brand-500'
-                          : 'fill-amber-400 text-amber-400'
-                      }`}
-                    />
+                    <Star key={i} className="w-5 h-5 fill-a5-solid text-a5-solid" />
                   ))}
                 </div>
 

@@ -2,7 +2,7 @@ import { Check, X } from 'lucide-react'
 
 export function Comparativa() {
   return (
-    <section id="comparativa" className="py-20 bg-gradient-to-b from-surface to-brand-50">
+    <section id="comparativa" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface to-brand-50">
       <div className="container mx-auto px-4">
         <h2 className="text-display md:text-display-lg font-black text-center mb-4 text-ink">S.A.S. vs Otros Tipos Societarios</h2>
         <p className="text-center text-ink-2 mb-12 max-w-2xl mx-auto">

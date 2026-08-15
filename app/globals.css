@@ -391,6 +391,14 @@
      Cliente = card / Admin = card-sm                                      */
   --spacing-card:    1.25rem;   /* 20 */
   --spacing-card-sm: 1rem;      /* 16 */
+
+  /* --- Ritmo vertical de la portada ---
+     Cada sección llevaba py-20 md:py-28, así que entre el contenido de una y
+     el de la siguiente quedaban 224px: un cuarto de pantalla en blanco. Y no
+     era parejo — había juntas de 224, 208, 176 y 160. Con estos dos pasos el
+     ritmo es uno solo y se ajusta desde acá.                              */
+  --spacing-seccion:    3.5rem;  /* 56 · teléfono   → 112 entre secciones */
+  --spacing-seccion-lg: 5rem;    /* 80 · escritorio → 160 entre secciones */
   --spacing-section: 2rem;      /* 32 */
 }
 
