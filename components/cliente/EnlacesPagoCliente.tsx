@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ExternalLink, AlertCircle, CheckCircle, Clock, Upload, X } from 'lucide-react'
+import { FileInput } from '@/components/ui/file-input'
 
 interface EnlacePago {
   id: string
@@ -217,22 +217,18 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                     
                     <div>
                       <Label htmlFor={`comprobante-${enlace.id}`} className="text-body-sm font-medium mb-2 block">
-                        Comprobante (PDF, JPG, PNG)
+                        Comprobante
                       </Label>
-                      <Input
+                      {/* El nombre del archivo lo muestra el propio control. */}
+                      <FileInput
                         id={`comprobante-${enlace.id}`}
-                        type="file"
                         accept="image/*,.pdf"
-                        onChange={(e) => setArchivo(e.target.files?.[0] || null)}
-                        className="mb-2"
+                        archivo={archivo}
+                        onArchivo={setArchivo}
+                        compacto
+                        label="Elegí el comprobante o arrastralo acá"
+                        ayuda="PDF, JPG o PNG"
                       />
-                      
-                      {archivo && (
-                        <p className="text-label text-success flex items-center gap-1 mt-1">
-                          <CheckCircle className="h-3 w-3" />
-                          {archivo.name}
-                        </p>
-                      )}
                     </div>
 
                     <Button

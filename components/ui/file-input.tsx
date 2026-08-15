@@ -58,6 +58,17 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
     // Componente controlado o no, según el consumidor pase `archivo` o no.
     const elegido = archivo !== undefined ? archivo : interno
 
+    /**
+     * Cuando el consumidor limpia la selección (típicamente tras subir el
+     * archivo), hay que vaciar también el input real. Si no, el navegador
+     * conserva el archivo anterior y volver a elegir *el mismo* no dispara
+     * ningún `change`: la pantalla se queda vacía y el botón de subir
+     * deshabilitado sin que se entienda por qué.
+     */
+    React.useEffect(() => {
+      if (archivo === null && inputRef.current?.value) inputRef.current.value = ''
+    }, [archivo])
+
     const setArchivo = (f: File | null) => {
       if (archivo === undefined) setInterno(f)
       onArchivo?.(f)

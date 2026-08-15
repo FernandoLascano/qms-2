@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FileText, Download, Upload, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { FileInput } from '@/components/ui/file-input'
 
 interface Documento {
   id: string
@@ -496,23 +496,17 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                   <p className="text-body-sm font-medium text-ink">
                     Subir documento firmado
                   </p>
-                  <Input
-                    key={`file-input-${doc.id}-${archivosSeleccionados[doc.id] ? 'filled' : 'empty'}`}
-                    type="file"
+                  {/* El control muestra el nombre y el peso del archivo elegido,
+                      así que ya no hace falta la línea de confirmación aparte. */}
+                  <FileInput
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                    archivo={archivosSeleccionados[doc.id] ?? null}
+                    onArchivo={(f) => handleFileChange(doc.id, f)}
                     disabled={subiendo[doc.id]}
-                    className="text-body-sm"
+                    compacto
+                    label="Elegí el documento firmado o arrastralo acá"
+                    ayuda="PDF, JPG o PNG · hasta 10 MB"
                   />
-                  <p className="text-label text-ink-2">
-                    Formatos aceptados: PDF, JPG o PNG (máx. 10MB)
-                  </p>
-                  {archivosSeleccionados[doc.id] && (
-                    <p className="text-label text-success flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      {archivosSeleccionados[doc.id]?.name}
-                    </p>
-                  )}
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
@@ -606,20 +600,15 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                             )}
                             {estaRechazado && (
                               <div className="mt-3 space-y-2">
-                                <Input
-                                  key={`file-input-rechazado-${doc.id}-${archivosSeleccionados[doc.id] ? 'filled' : 'empty'}`}
-                                  type="file"
+                                <FileInput
                                   accept=".pdf,.jpg,.jpeg,.png"
-                                  onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                                  archivo={archivosSeleccionados[doc.id] ?? null}
+                                  onArchivo={(f) => handleFileChange(doc.id, f)}
                                   disabled={subiendo[doc.id]}
-                                  className="text-body-sm"
+                                  compacto
+                                  label="Subir la versión corregida"
+                                  ayuda="PDF, JPG o PNG · hasta 10 MB"
                                 />
-                                {archivosSeleccionados[doc.id] && (
-                                  <p className="text-label text-success flex items-center gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    {archivosSeleccionados[doc.id]?.name}
-                                  </p>
-                                )}
                                 <Button
                                   onClick={(e) => {
                                     e.preventDefault()

@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DollarSign, Upload, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { FileInput } from '@/components/ui/file-input'
 
 interface DepositoCapitalClienteProps {
   tramiteId: string
@@ -100,9 +100,11 @@ export default function DepositoCapitalCliente({
   // Verificar si la cuenta aún no está activa
   const cuentaNoActiva = fechaActivacion && new Date(fechaActivacion) > new Date()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFileChange = (file: File | null) => {
+    if (!file) {
+      setArchivo(null)
+      return
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast.error('El archivo no puede superar los 10MB')
@@ -278,19 +280,18 @@ export default function DepositoCapitalCliente({
           <>
             <div className="space-y-2">
               <Label htmlFor="comprobante-deposito" className="text-body-sm font-medium">
-                Subir Comprobante de Depósito
+                Subir comprobante de depósito
               </Label>
-              <Input
+              <FileInput
                 id="comprobante-deposito"
-                type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
+                archivo={archivo}
+                onArchivo={handleFileChange}
                 disabled={subiendo}
-                className="text-body-sm"
+                compacto
+                label="Elegí el comprobante o arrastralo acá"
+                ayuda="PDF, JPG o PNG · hasta 10 MB"
               />
-              <p className="text-[11px] text-ink-2">
-                Formatos aceptados: PDF, JPG o PNG (máx. 10MB)
-              </p>
             </div>
 
             <Button

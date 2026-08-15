@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { DollarSign, ExternalLink, CheckCircle, Clock, Upload, Building2, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { FileInput } from '@/components/ui/file-input'
 
 interface Pago {
   id: string
@@ -238,18 +238,17 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                         <div className="space-y-3">
                           <div>
                             <label className="block text-label font-medium text-ink-2 mb-2">
-                              Subir Comprobante de Transferencia
+                              Subir comprobante de transferencia
                             </label>
-                            <Input
-                              type="file"
+                            <FileInput
                               accept="image/*,.pdf"
-                              onChange={(e) => handleFileChange(pago.id, e.target.files?.[0] || null)}
+                              archivo={archivoComprobante[pago.id] ?? null}
+                              onArchivo={(f) => handleFileChange(pago.id, f)}
                               disabled={subiendoComprobante[pago.id]}
-                              className="text-body-sm"
+                              compacto
+                              label="Elegí el comprobante o arrastralo acá"
+                              ayuda="JPG, PNG o PDF · hasta 5 MB"
                             />
-                            <p className="text-label text-ink-2 mt-1">
-                              Formatos aceptados: JPG, PNG, PDF (máx. 5MB)
-                            </p>
                           </div>
                           <div className="flex gap-2">
                             <Button
