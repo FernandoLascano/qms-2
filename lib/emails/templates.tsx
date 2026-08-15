@@ -1,5 +1,10 @@
-// Plantillas de emails HTML profesionales - Diseño 2024
-// Matches QuieroMiSAS website design system
+/**
+ * Plantillas HTML de los emails transaccionales.
+ *
+ * Siguen el mismo sistema de diseño que el panel (app/globals.css), traducido
+ * a lo que soportan los clientes de correo: tablas en vez de grid, estilos
+ * en línea en vez de clases, hexadecimales en vez de variables CSS.
+ */
 
 // URL base para los enlaces en emails
 const BASE_URL = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
@@ -14,29 +19,72 @@ interface EmailTemplateProps {
   [key: string]: any
 }
 
-// Colores del sistema de diseño
+/**
+ * Paleta del sistema, en hexadecimal.
+ *
+ * El HTML de los emails no soporta variables CSS, así que estos valores se
+ * escriben a mano. Salen de la MISMA escalera de luminosidad y croma que
+ * app/globals.css: para regenerarlos tras un rebranding, correr
+ *   node scripts/brand-tokens.mjs <tono>
+ * y actualizar el bloque `brand` de acá abajo.
+ */
 const colors = {
-  // Usar mismos valores que --brand-* en globals.css para consistencia
-  primary: '#991D23',      // brand-700 (logo)
-  primaryDark: '#7a181d', // brand-800
-  primaryLight: '#fef2f2', // brand-50
-  accent: '#b0242b',       // brand-600
-  dark: '#111827',         // gray-900
-  text: '#1f2937',         // gray-800
-  textMuted: '#6b7280',    // gray-500
-  textLight: '#9ca3af',    // gray-400
-  border: '#e5e7eb',       // gray-200
-  background: '#f9fafb',   // gray-50
+  // Marca
+  primary: '#991d23',       // brand-700 · el color del logo
+  primaryDark: '#7a181c',   // brand-800 · hover
+  primaryLight: '#fef2f1',  // brand-50  · fondos suaves
+  primaryLine: '#fbc9c4',   // brand-200 · bordes suaves
+  accent: '#b0242a',        // brand-600
+
+  // Neutrales (gris levemente frío, igual que el panel)
   white: '#ffffff',
-  success: '#10b981',      // emerald-500
-  successBg: '#d1fae5',    // emerald-100
-  warning: '#f59e0b',      // amber-500
-  warningBg: '#fef3c7',    // amber-100
-  error: '#dc3d42',        // brand-500
-  errorBg: '#fde2e3',      // brand-100
-  info: '#3b82f6',         // blue-500
-  infoBg: '#dbeafe',       // blue-100
+  surface: '#ffffff',
+  surface2: '#f8fafe',      // n-50  · zonas internas
+  background: '#f2f4f8',    // n-100 · lienzo del email
+  border: '#e5e7eb',        // n-200
+  borderStrong: '#d1d3d8',  // n-300
+  textLight: '#7d7f83',     // n-500 · sólo decorativo
+  textMuted: '#616266',     // n-600 · texto secundario
+  text: '#494b4e',          // n-700
+  dark: '#1e2023',          // n-900 · texto principal
+
+  // Estados
+  success: '#1c6433',       // texto sobre fondo suave
+  successSolid: '#23743c',
+  successBg: '#e1f2e4',
+  successLine: '#c4e0c8',
+
+  warning: '#724b15',
+  warningSolid: '#84571b',
+  warningBg: '#f6ebde',
+  warningLine: '#e7d4bf',
+
+  info: '#145690',
+  infoSolid: '#1a65a6',
+  infoBg: '#dfefff',
+  infoLine: '#c1dbf6',
+
+  error: '#912b26',
+  errorSolid: '#a8342e',
+  errorBg: '#ffe5e1',
+  errorLine: '#fccac3',
 }
+
+/**
+ * Escala tipográfica y de forma, equivalente a la del panel.
+ * (En emails no hay tokens: se interpolan estos valores.)
+ */
+const type = {
+  hero: 'font-size: 30px; line-height: 36px; font-weight: 800; letter-spacing: -0.5px;',
+  title: 'font-size: 22px; line-height: 30px; font-weight: 800; letter-spacing: -0.3px;',
+  heading: 'font-size: 17px; line-height: 24px; font-weight: 700;',
+  body: 'font-size: 15px; line-height: 24px; font-weight: 400;',
+  bodySm: 'font-size: 13px; line-height: 20px; font-weight: 400;',
+  label: 'font-size: 12px; line-height: 16px; font-weight: 600;',
+  metric: 'font-size: 28px; line-height: 32px; font-weight: 800; letter-spacing: -0.5px;',
+}
+
+const radius = { chip: '8px', control: '12px', card: '16px' }
 
 // Template base con estilos modernos
 export const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; nombre: string; preheader?: string }) => {
@@ -86,10 +134,6 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
             text-decoration: none;
           }
 
-          .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(185, 28, 28, 0.4);
-          }
         </style>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: ${colors.background};">
@@ -98,37 +142,29 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
           ${preheader}
         </div>
 
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; padding: 40px 16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: ${colors.background}; padding: 32px 16px;">
           <tr>
             <td align="center">
               <!-- Main Container -->
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: ${colors.white}; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%; background-color: ${colors.white}; border-radius: ${radius.card}; overflow: hidden; border: 1px solid ${colors.border};">
 
                 <!-- Header con Logo -->
                 <tr>
-                  <td style="background-color: ${colors.white}; padding: 28px 40px; text-align: center; border-bottom: 1px solid ${colors.border};">
-                    <!-- Logo -->
+                  <td style="background-color: ${colors.white}; padding: 28px 40px 24px 40px; text-align: center; border-bottom: 1px solid ${colors.border};">
                     <img
                       src="${LOGO_URL}"
                       alt="QuieroMiSAS"
-                      width="180"
+                      width="164"
                       style="height: auto; margin: 0 auto; display: block;"
                     />
-                    <!-- Fallback si el cliente bloquea imágenes -->
-                    <div style="margin-top: 10px; font-size: 18px; font-weight: 900; letter-spacing: 0.6px; color: ${colors.primary};">
-                      QUIEROMISAS
-                    </div>
-                    <p style="margin: 10px 0 0 0; color: ${colors.textMuted}; font-size: 13px; font-weight: 600; letter-spacing: 0.3px;">
-                      Tu empresa lista en 5 días
-                    </p>
                   </td>
                 </tr>
 
                 <!-- Saludo -->
                 <tr>
                   <td style="padding: 40px 40px 0 40px;">
-                    <p style="margin: 0; color: ${colors.text}; font-size: 17px; line-height: 1.6;">
-                      Hola <strong style="color: ${colors.dark}; font-weight: 700;">${nombre}</strong> 👋
+                    <p style="margin: 0; color: ${colors.textMuted}; ${type.body}">
+                      Hola <strong style="color: ${colors.dark}; font-weight: 700;">${nombre}</strong>
                     </p>
                   </td>
                 </tr>
@@ -143,42 +179,29 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
                 <!-- Separator -->
                 <tr>
                   <td style="padding: 0 40px;">
-                    <div style="height: 1px; background: linear-gradient(to right, transparent, ${colors.border}, transparent);"></div>
+                    <div style="height: 1px; background-color: ${colors.border}; line-height: 1px; font-size: 0;">&nbsp;</div>
                   </td>
                 </tr>
 
                 <!-- Footer -->
                 <tr>
                   <td style="padding: 32px 40px; text-align: center;">
-                    <!-- Social/Contact Icons -->
-                    <table cellpadding="0" cellspacing="0" style="margin: 0 auto 20px auto;">
+                    <p style="margin: 0 0 10px 0; color: ${colors.textMuted}; ${type.bodySm}">
+                      ¿Necesitás una mano? Respondé este email o escribinos por WhatsApp.
+                    </p>
+                    <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                       <tr>
-                        <td style="padding: 0 8px;">
-                          <a href="https://wa.me/5493512136212" style="display: inline-block; width: 40px; height: 40px; background-color: ${colors.background}; border-radius: 10px; text-align: center; line-height: 40px;">
-                            <span style="font-size: 18px;">💬</span>
-                          </a>
+                        <td style="padding: 0 10px;">
+                          <a href="https://wa.me/5493512136212" style="color: ${colors.primary}; ${type.bodySm} font-weight: 600;">WhatsApp</a>
                         </td>
-                        <td style="padding: 0 8px;">
-                          <a href="mailto:contacto@quieromisas.com" style="display: inline-block; width: 40px; height: 40px; background-color: ${colors.background}; border-radius: 10px; text-align: center; line-height: 40px;">
-                            <span style="font-size: 18px;">✉️</span>
-                          </a>
-                        </td>
-                        <td style="padding: 0 8px;">
-                          <a href="${BASE_URL}" style="display: inline-block; width: 40px; height: 40px; background-color: ${colors.background}; border-radius: 10px; text-align: center; line-height: 40px;">
-                            <span style="font-size: 18px;">🌐</span>
-                          </a>
+                        <td style="color: ${colors.borderStrong};">·</td>
+                        <td style="padding: 0 10px;">
+                          <a href="mailto:contacto@quieromisas.com" style="color: ${colors.primary}; ${type.bodySm} font-weight: 600;">contacto@quieromisas.com</a>
                         </td>
                       </tr>
                     </table>
 
-                    <p style="margin: 0 0 8px 0; color: ${colors.textMuted}; font-size: 13px;">
-                      ¿Necesitás ayuda? Respondé este email o escribinos por WhatsApp
-                    </p>
-                    <p style="margin: 0 0 16px 0; color: ${colors.textLight}; font-size: 12px;">
-                      <a href="tel:+5493512136212" style="color: ${colors.primary}; font-weight: 600;">+54 9 351 213 6212</a>
-                    </p>
-
-                    <p style="margin: 20px 0 0 0; color: ${colors.textLight}; font-size: 11px; line-height: 1.6;">
+                    <p style="margin: 20px 0 0 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">
                       © ${new Date().getFullYear()} QuieroMiSAS<br/>
                       Córdoba, Argentina
                     </p>
@@ -190,7 +213,7 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
               <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
                 <tr>
                   <td style="padding: 24px 40px; text-align: center;">
-                    <p style="margin: 0; color: ${colors.textLight}; font-size: 11px; line-height: 1.6;">
+                    <p style="margin: 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">
                       Recibís este email porque tenés una cuenta en QuieroMiSAS.<br/>
                       <a href="${BASE_URL}/dashboard/configuracion" style="color: ${colors.textMuted};">Gestionar preferencias de email</a>
                     </p>
@@ -206,83 +229,200 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
 }
 
 // Helper: Botón CTA principal
-const CTAButton = (text: string, url: string, emoji?: string) => `
-  <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+const CTAButton = (text: string, url: string) => `
+  <table cellpadding="0" cellspacing="0" style="margin: 28px auto 0 auto;">
     <tr>
-      <td
-        style="
-          background-color: ${colors.primary};
-          background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%);
-          border-radius: 12px;
-          box-shadow: 0 4px 14px 0 rgba(185, 28, 28, 0.3);
-        "
-      >
+      <td style="background-color: ${colors.primary}; border-radius: ${radius.control};">
         <a
           href="${url}"
           style="
             display: inline-block;
-            padding: 16px 32px;
+            padding: 14px 28px;
             color: ${colors.white} !important;
-            font-size: 16px;
-            font-weight: 800;
+            ${type.heading}
             text-decoration: none;
-            background-color: ${colors.primary};
-            border-radius: 12px;
-            line-height: 1.2;
+            border-radius: ${radius.control};
+            border-top: 1px solid rgba(255,255,255,0.18);
           "
-        >
-          ${emoji ? `${emoji} ` : ''}${text}
-        </a>
+        >${text}</a>
       </td>
     </tr>
   </table>
 `
 
-// Helper: Card informativa
-const InfoCard = (content: string, bgColor: string, borderColor: string, iconEmoji: string) => `
-  <div style="background-color: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 12px; padding: 20px 24px; margin: 24px 0;">
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td width="40" valign="top">
-          <span style="font-size: 24px;">${iconEmoji}</span>
-        </td>
-        <td style="padding-left: 12px;">
-          ${content}
-        </td>
-      </tr>
-    </table>
-  </div>
-`
-
-// Helper: Stat box
-const StatBox = (label: string, value: string, emoji?: string) => `
-  <div style="background-color: ${colors.background}; border-radius: 12px; padding: 20px; text-align: center; border: 1px solid ${colors.border};">
-    ${emoji ? `<span style="font-size: 28px; display: block; margin-bottom: 8px;">${emoji}</span>` : ''}
-    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">${label}</p>
-    <p style="margin: 0; color: ${colors.dark}; font-size: 20px; font-weight: 800;">${value}</p>
-  </div>
-`
-
-// Helper: Step indicator
-const StepIndicator = (steps: { number: string; title: string; done?: boolean }[]) => `
-  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+/** Botón secundario, para acciones que acompañan al principal. */
+const CTASecundario = (text: string, url: string) => `
+  <table cellpadding="0" cellspacing="0" style="margin: 12px auto 0 auto;">
     <tr>
-      ${steps.map((step, i) => `
-        <td style="text-align: center; padding: 0 ${i === 0 ? '0' : '8px'} 0 ${i === steps.length - 1 ? '0' : '8px'};">
-          <div style="width: 36px; height: 36px; border-radius: 50%; background-color: ${step.done ? colors.success : colors.background}; border: 2px solid ${step.done ? colors.success : colors.border}; margin: 0 auto 8px auto; line-height: 32px; text-align: center;">
-            <span style="color: ${step.done ? colors.white : colors.textMuted}; font-size: 14px; font-weight: 700;">${step.done ? '✓' : step.number}</span>
-          </div>
-          <p style="margin: 0; color: ${step.done ? colors.success : colors.textMuted}; font-size: 11px; font-weight: 500;">${step.title}</p>
-        </td>
-        ${i < steps.length - 1 ? `
-          <td style="padding: 0 4px;">
-            <div style="height: 2px; background-color: ${step.done ? colors.success : colors.border}; margin-top: -20px;"></div>
-          </td>
-        ` : ''}
-      `).join('')}
+      <td style="background-color: ${colors.white}; border: 1px solid ${colors.borderStrong}; border-radius: ${radius.control};">
+        <a href="${url}" style="display: inline-block; padding: 12px 24px; color: ${colors.dark} !important; ${type.bodySm} font-weight: 600; text-decoration: none;">${text}</a>
+      </td>
     </tr>
   </table>
 `
+
+/**
+ * Aviso con tono semántico. Reemplaza al InfoCard con emoji: el panel dejó
+ * de usar emojis como iconografía y los emails los renderiza distinto cada
+ * cliente de correo.
+ */
+type Tono = 'neutral' | 'success' | 'warning' | 'info' | 'danger'
+
+const TONOS: Record<Tono, { bg: string; line: string; text: string }> = {
+  neutral: { bg: colors.surface2, line: colors.border, text: colors.textMuted },
+  success: { bg: colors.successBg, line: colors.successLine, text: colors.success },
+  warning: { bg: colors.warningBg, line: colors.warningLine, text: colors.warning },
+  info: { bg: colors.infoBg, line: colors.infoLine, text: colors.info },
+  danger: { bg: colors.errorBg, line: colors.errorLine, text: colors.error },
+}
+
+const InfoCard = (content: string, tono: Tono = 'neutral', titulo?: string) => {
+  const t = TONOS[tono]
+  return `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+    <tr>
+      <td style="background-color: ${t.bg}; border: 1px solid ${t.line}; border-radius: ${radius.card}; padding: 18px 20px;">
+        ${titulo ? `<p style="margin: 0 0 6px 0; color: ${t.text}; ${type.heading}">${titulo}</p>` : ''}
+        <div style="color: ${colors.text}; ${type.bodySm}">${content}</div>
+      </td>
+    </tr>
+  </table>
+`
+}
+
+/**
+ * Dato destacado: etiqueta arriba, valor grande abajo.
+ *
+ * El tamaño del valor baja cuando la cadena es larga: un CUIT o una fecha no
+ * entran a 28px en media columna y se partían en dos líneas, dejando las dos
+ * tarjetas de la fila con distinta altura.
+ */
+const StatBox = (label: string, value: string, destacado = false) => `
+  <table cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+      <td style="
+        background-color: ${destacado ? colors.primaryLight : colors.surface2};
+        border: 1px solid ${destacado ? colors.primaryLine : colors.border};
+        border-radius: ${radius.card};
+        padding: 18px 20px;
+        text-align: center;
+      ">
+        <p style="margin: 0 0 6px 0; color: ${colors.textMuted}; ${type.label}">${label}</p>
+        <p style="margin: 0; color: ${destacado ? colors.primary : colors.dark}; ${value.length > 9 ? type.title : type.metric} white-space: nowrap;">${value}</p>
+      </td>
+    </tr>
+  </table>
+`
+
+/** Las etapas del trámite, con la misma lógica de estados que el panel. */
+const StepIndicator = (steps: { number: string; title: string; done?: boolean }[]) => `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+    <tr>
+      ${steps
+        .map(
+          (step) => `
+        <td style="text-align: center; padding: 0 4px; vertical-align: top;">
+          <table cellpadding="0" cellspacing="0" style="margin: 0 auto 8px auto;">
+            <tr>
+              <td style="
+                width: 28px; height: 28px; border-radius: ${radius.control};
+                background-color: ${step.done ? colors.successSolid : colors.background};
+                border: 1px solid ${step.done ? colors.successSolid : colors.borderStrong};
+                text-align: center; line-height: 28px;
+              ">
+                <span style="color: ${step.done ? colors.white : colors.textMuted}; font-size: 13px; font-weight: 700;">${step.done ? '&#10003;' : step.number}</span>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 0; color: ${step.done ? colors.dark : colors.textMuted}; font-size: 12px; line-height: 15px; font-weight: 600;">${step.title}</p>
+        </td>
+      `,
+        )
+        .join('')}
+    </tr>
+  </table>
+`
+
+/**
+ * Bloque de apertura: título del hecho que motiva el email, con el color del
+ * estado que corresponde. `extra` recibe la tarjeta blanca con el dato
+ * concreto (denominación, monto, etc.) cuando el email tiene uno.
+ */
+const Hero = (titulo: string, subtitulo: string, tono: Tono = 'neutral', extra = '') => {
+  const t = TONOS[tono]
+  return `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 24px 0;">
+    <tr>
+      <td align="center">
+        <div style="background-color: ${t.bg}; border: 1px solid ${t.line}; border-radius: ${radius.card}; padding: 28px; max-width: 100%;">
+          <h1 style="margin: 0${subtitulo || extra ? ' 0 6px 0' : ''}; color: ${colors.dark}; ${type.title}">${titulo}</h1>
+          ${subtitulo ? `<p style="margin: 0${extra ? ' 0 20px 0' : ''}; color: ${t.text}; ${type.bodySm} font-weight: 600;">${subtitulo}</p>` : ''}
+          ${extra}
+        </div>
+      </td>
+    </tr>
+  </table>
+`
+}
+
+/** Tarjeta blanca que va dentro del Hero, con el dato central del email. */
+const HeroDato = (contenido: string, tono: Tono = 'neutral') => `
+  <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${TONOS[tono].line};">
+    <tr>
+      <td style="text-align: center; padding: 18px 28px;">${contenido}</td>
+    </tr>
+  </table>
+`
+
+/**
+ * Las etapas en vertical, con descripción.
+ *
+ * Se usa cuando cada paso necesita una línea de contexto: en dos columnas las
+ * tarjetas quedaban de distinta altura según el largo del texto, y en el
+ * teléfono se apilan igual. Los estados son los mismos del panel: cumplido,
+ * en curso y pendiente.
+ */
+const ListaPasos = (
+  steps: { title: string; detalle: string; estado?: 'hecho' | 'actual' | 'pendiente' }[],
+) => `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 24px 0;">
+    ${steps
+      .map((step, i) => {
+        const estado = step.estado ?? 'pendiente'
+        const marca =
+          estado === 'hecho'
+            ? { fondo: colors.successSolid, borde: colors.successSolid, texto: colors.white }
+            : estado === 'actual'
+              ? { fondo: colors.primary, borde: colors.primary, texto: colors.white }
+              : { fondo: colors.surface2, borde: colors.borderStrong, texto: colors.textMuted }
+        return `
+    <tr>
+      <td width="36" style="vertical-align: top; padding: 0 12px 14px 0;">
+        <table cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="
+              width: 26px; height: 26px; border-radius: 13px;
+              background-color: ${marca.fondo}; border: 1px solid ${marca.borde};
+              text-align: center; line-height: 26px;
+            ">
+              <span style="color: ${marca.texto}; font-size: 12px; font-weight: 700;">${estado === 'hecho' ? '&#10003;' : i + 1}</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+      <td style="vertical-align: top; padding: 0 0 14px 0;">
+        <p style="margin: 0 0 2px 0; color: ${estado === 'pendiente' ? colors.textMuted : colors.dark}; ${type.bodySm} font-weight: 700;">
+          ${step.title}${estado === 'actual' ? ` <span style="color: ${colors.primary}; font-weight: 600;">· en curso</span>` : ''}
+        </p>
+        <p style="margin: 0; color: ${colors.textMuted}; ${type.bodySm}">${step.detalle}</p>
+      </td>
+    </tr>`
+      })
+      .join('')}
+  </table>
+`
+
+
 
 // ========================================
 // TEMPLATES
@@ -291,15 +431,15 @@ const StepIndicator = (steps: { number: string; title: string; done?: boolean }[
 // 1. Email de Bienvenida al Registrarse
 export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
   const content = `
-    <!-- Hero con ilustración -->
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
+      Gracias por confiar en nosotros para la constitución de tu sociedad.
+      Estamos listos para ayudarte a dar el primer paso hacia tu nueva empresa.
+    </p>
+
     <table cellpadding="0" cellspacing="0" width="100%">
       <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
-            Gracias por confiar en nosotros para la constitución de tu sociedad.
-            Estamos listos para ayudarte a dar el primer paso hacia tu nueva empresa.
-          </p>
-          <div style="background-color: ${colors.primaryLight}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
+        <td align="center">
+          <div style="background-color: ${colors.primaryLight}; border-radius: ${radius.card}; padding: 28px; margin: 0 auto; max-width: 100%; border: 1px solid ${colors.primaryLine};">
             <img
               src="${ILLUSTRATION_WELCOME}"
               alt="Constituí tu empresa"
@@ -307,10 +447,10 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
               style="height: auto; margin: 0 auto 16px auto; display: block;"
             />
             <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
+              <h1 style="margin: 0 0 6px 0; color: ${colors.dark}; ${type.title}">
                 ¡Bienvenido a QuieroMiSAS!
               </h1>
-              <p style="margin: 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
+              <p style="margin: 0; color: ${colors.textMuted}; ${type.bodySm} font-weight: 600;">
                 Tu cuenta ha sido creada exitosamente
               </p>
             </div>
@@ -319,31 +459,25 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
       </tr>
     </table>
 
-    <!-- Features Grid - diseño mejorado -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 32px 0;">
+    <!-- Qué incluye el servicio -->
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0 0 0;">
       <tr>
         <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
             <tr>
               <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 22px;">⚡</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Rápido</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Tu S.A.S. lista en solo 5 días hábiles</p>
+                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Rápido</p>
+                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Tu S.A.S. lista en solo 5 días hábiles</p>
               </td>
             </tr>
           </table>
         </td>
         <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
             <tr>
               <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 22px;">🔒</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Seguro</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Proceso 100% online y documentos protegidos</p>
+                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Seguro</p>
+                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Proceso 100% online y documentos protegidos</p>
               </td>
             </tr>
           </table>
@@ -354,27 +488,21 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
       </tr>
       <tr>
         <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
             <tr>
               <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 22px;">📊</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Seguimiento</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Panel online para ver tu progreso 24/7</p>
+                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Seguimiento</p>
+                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Panel online para ver tu progreso 24/7</p>
               </td>
             </tr>
           </table>
         </td>
         <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
+          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: ${radius.control}; border: 1px solid ${colors.border};">
             <tr>
               <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 22px;">💬</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Soporte</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Equipo experto disponible para ayudarte</p>
+                <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">Soporte</p>
+                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 20px;">Equipo experto disponible para ayudarte</p>
               </td>
             </tr>
           </table>
@@ -382,12 +510,9 @@ export const emailBienvenida = ({ nombre }: EmailTemplateProps) => {
       </tr>
     </table>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Comenzar mi trámite', `${BASE_URL}/tramite/nuevo`, '🚀')}
-    </div>
+    ${CTAButton('Comenzar mi trámite', `${BASE_URL}/tramite/nuevo`)}
 
-    <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; text-align: center; line-height: 1.6;">
+    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">
       ¿Tenés dudas? Nuestro equipo está listo para ayudarte.<br/>
       Escribinos por WhatsApp o respondé este email.
     </p>
@@ -406,29 +531,21 @@ export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) 
     <h2 style="margin: 0 0 12px 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">
       Confirmá tu email
     </h2>
-    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: 15px; line-height: 24px;">
       Para activar tu cuenta y poder completar tu trámite, necesitamos que confirmes tu dirección de email.
     </p>
 
-    <div style="text-align: center; margin: 24px 0;">
-      <a
-        href="${verifyUrl}"
-        class="button"
-        style="display: inline-block; background-color: ${colors.primary}; background-image: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: ${colors.white} !important; padding: 14px 28px; border-radius: 12px; font-size: 16px; font-weight: 800; box-shadow: 0 8px 20px rgba(153, 29, 35, 0.25); line-height: 1.2;"
-      >
-        Verificar email →
-      </a>
-    </div>
+    ${CTAButton('Verificar email', verifyUrl)}
 
-    <div style="background-color: ${colors.background}; border: 1px solid ${colors.border}; border-radius: 12px; padding: 16px; margin-top: 16px;">
-      <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.6;">
+    <div style="background-color: ${colors.background}; border: 1px solid ${colors.border}; border-radius: ${radius.control}; padding: 16px; margin-top: 16px;">
+      <p style="margin: 0; color: ${colors.textMuted}; ${type.bodySm}">
         Si el botón no funciona, copiá y pegá este link en tu navegador:
         <br />
         <span style="word-break: break-all; color: ${colors.primary}; font-weight: 600;">${verifyUrl}</span>
       </p>
     </div>
 
-    <p style="margin: 16px 0 0 0; color: ${colors.textLight}; font-size: 12px; line-height: 1.6;">
+    <p style="margin: 16px 0 0 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">
       Este link expira en 24 horas.
     </p>
   `
@@ -443,126 +560,40 @@ export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) 
 // 2. Email cuando se envía un trámite
 export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Hemos recibido tu solicitud de constitución. Te mantendremos informado en cada etapa del proceso.
     </p>
 
-    <!-- Hero con ilustración y denominación -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.successBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">✅</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                ¡Trámite Recibido!
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Hemos recibido tu solicitud de constitución
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; padding: 20px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 16px 24px;">
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Tu Sociedad</p>
-                    <p style="margin: 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">${denominacion}</p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      '¡Trámite recibido!',
+      'Ya está en nuestra cola de revisión',
+      'success',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Tu sociedad</p>
+         <p style="margin: 0; color: ${colors.dark}; ${type.title}">${denominacion}</p>`,
+        'success',
+      ),
+    )}
 
-    <!-- Próximos pasos - cards estilo Bienvenida -->
-    <p style="margin: 0 0 16px 0; color: ${colors.text}; font-size: 15px; font-weight: 600;">
-      Próximos pasos:
+    <!-- Próximos pasos -->
+    <p style="margin: 0 0 16px 0; color: ${colors.dark}; ${type.heading}">
+      Próximos pasos
     </p>
 
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 24px 0;">
-      <tr>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 2px solid ${colors.success}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 20px; color: white;">✓</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">1. Revisión</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Validamos tu documentación</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background-color: ${colors.background}; border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 18px; font-weight: 700; color: ${colors.textMuted};">2</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">2. Pagos</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Te notificamos los montos</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2" style="height: 8px;"></td>
-      </tr>
-      <tr>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background-color: ${colors.background}; border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 18px; font-weight: 700; color: ${colors.textMuted};">3</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">3. Documentos</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Firma y presentación</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td width="50%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px;">
-                <div style="width: 44px; height: 44px; background-color: ${colors.background}; border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-                  <span style="font-size: 18px; font-weight: 700; color: ${colors.textMuted};">4</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">4. Inscripción</p>
-                <p style="margin: 0; color: ${colors.textMuted}; font-size: 13px; line-height: 1.5;">Tu S.A.S. lista</p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    ${ListaPasos([
+      { title: 'Revisión', detalle: 'Validamos tu documentación', estado: 'actual' },
+      { title: 'Pagos', detalle: 'Te notificamos los montos a abonar' },
+      { title: 'Documentos', detalle: 'Firma y presentación ante el registro' },
+      { title: 'Inscripción', detalle: 'Tu S.A.S. queda constituida' },
+    ])}
 
-    <!-- ¿Qué sigue? - card informativa -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.infoBg}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">💡</span>
-          </div>
-          <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">¿Qué sigue?</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">
-            Nuestro equipo revisará tu solicitud en las próximas horas y te notificaremos sobre los pagos necesarios para continuar.
-          </p>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      'Nuestro equipo revisará tu solicitud en las próximas horas y te notificaremos sobre los pagos necesarios para continuar.',
+      'info',
+      '¿Qué sigue?',
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver estado del trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📊')}
-    </div>
+    ${CTAButton('Ver estado del trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
@@ -575,67 +606,36 @@ export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTe
 // 3. Email cuando hay un pago pendiente
 export const emailPagoPendiente = ({ nombre, concepto, monto, montoTransferencia, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Para avanzar con la constitución de tu sociedad, necesitamos que realices el siguiente pago:
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.warningBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">💳</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Pago Requerido
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Para continuar con tu trámite
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Concepto</p>
-                    <p style="margin: 0 0 16px 0; color: ${colors.dark}; font-size: 18px; font-weight: 700;">${concepto}</p>
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Monto</p>
-                    <p style="margin: 0; color: ${colors.warning}; font-size: 36px; font-weight: 900;">$${Number(monto).toLocaleString('es-AR')}</p>
-                    <p style="margin: 4px 0 0 0; color: ${colors.textMuted}; font-size: 12px;">Precio regular (tarjeta / Mercado Pago)</p>
-                    ${montoTransferencia ? `
-                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${colors.border};">
-                      <p style="margin: 0; color: ${colors.success}; font-size: 24px; font-weight: 900;">$${Number(montoTransferencia).toLocaleString('es-AR')}</p>
-                      <p style="margin: 2px 0 0 0; color: ${colors.success}; font-size: 12px; font-weight: 700;">Precio promocional pagando por transferencia · ahorrás $${(Number(monto) - Number(montoTransferencia)).toLocaleString('es-AR')}</p>
-                    </div>` : ''}
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'Pago requerido',
+      'Para continuar con tu trámite',
+      'warning',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Concepto</p>
+         <p style="margin: 0 0 16px 0; color: ${colors.dark}; ${type.heading}">${concepto}</p>
+         <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Monto</p>
+         <p style="margin: 0; color: ${colors.warning}; ${type.hero}">$${Number(monto).toLocaleString('es-AR')}</p>
+         <p style="margin: 4px 0 0 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">Precio regular (tarjeta / Mercado Pago)</p>
+         ${montoTransferencia ? `
+         <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid ${colors.border};">
+           <p style="margin: 0; color: ${colors.success}; ${type.title}">$${Number(montoTransferencia).toLocaleString('es-AR')}</p>
+           <p style="margin: 2px 0 0 0; color: ${colors.success}; ${type.label}">Pagando por transferencia · ahorrás $${(Number(monto) - Number(montoTransferencia)).toLocaleString('es-AR')}</p>
+         </div>` : ''}`,
+        'warning',
+      ),
+    )}
 
-    <!-- Tip card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">💡</span>
-          </div>
-          <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Tip</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">
-            Una vez realizado el pago, no olvides adjuntar tu comprobante en la plataforma para que podamos verificarlo rápidamente.
-          </p>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      'Una vez realizado el pago, adjuntá el comprobante en la plataforma para que podamos verificarlo rápidamente.',
+      'neutral',
+      'Después de pagar',
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Realizar pago', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '💳')}
-    </div>
+    ${CTAButton('Realizar pago', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
@@ -648,64 +648,25 @@ export const emailPagoPendiente = ({ nombre, concepto, monto, montoTransferencia
 // 4. Email cuando un documento fue rechazado
 export const emailDocumentoRechazado = ({ nombre, nombreDocumento, observaciones, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Hemos revisado el documento <strong>"${nombreDocumento}"</strong> y necesita algunas correcciones para poder continuar.
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.errorBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.error} 0%, ${colors.primaryDark} 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">📄</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Documento Requiere Corrección
-              </h1>
-              <p style="margin: 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Necesitamos que hagas algunos ajustes
-              </p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero('El documento necesita corrección', 'Revisá las observaciones y volvé a subirlo', 'danger')}
 
-    <!-- Observaciones card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 2px solid ${colors.error}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">⚠️</span>
-          </div>
-          <p style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Observaciones</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${observaciones}</p>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      `<span style="white-space: pre-wrap;">${observaciones}</span>`,
+      'danger',
+      'Observaciones',
+    )}
 
-    <!-- Ayuda card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.infoBg}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">💡</span>
-          </div>
-          <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">¿Necesitás ayuda?</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">
-            Escribinos por WhatsApp y te guiamos con las correcciones necesarias.
-          </p>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      'Escribinos por WhatsApp y te guiamos con las correcciones necesarias.',
+      'info',
+      '¿Necesitás ayuda?',
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Subir documento corregido', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📤')}
-    </div>
+    ${CTAButton('Subir documento corregido', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
@@ -718,47 +679,26 @@ export const emailDocumentoRechazado = ({ nombre, nombreDocumento, observaciones
 // 5. Email cuando una etapa se completa
 export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       ¡Buenas noticias! Hemos completado una etapa importante de tu trámite.
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.successBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">🎯</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                ¡Progreso en tu Trámite!
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Una etapa importante ha sido completada
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 2px solid ${colors.success};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0; color: ${colors.success}; font-size: 20px; font-weight: 800;">${etapa}</p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      '¡Avanzó tu trámite!',
+      'Ya podemos seguir con el próximo paso',
+      'success',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Etapa completada</p>
+         <p style="margin: 0; color: ${colors.success}; ${type.heading}">${etapa}</p>`,
+        'success',
+      ),
+    )}
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; font-size: 14px; line-height: 1.7; text-align: center;">
-      Seguimos trabajando en tu trámite. Te mantendremos informado de cada avance. 🚀
+    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
+      Seguimos trabajando en tu trámite. Te mantendremos informado de cada avance.
     </p>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver progreso completo', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📊')}
-    </div>
+    ${CTAButton('Ver progreso completo', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
@@ -771,165 +711,86 @@ export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplate
 // 6. Email cuando la sociedad está inscripta (¡Trámite completo!)
 export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7; text-align: center;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       ¡Excelentes noticias! Tu sociedad ha sido inscripta exitosamente y ya está oficialmente constituida.
       Ahora podés empezar a operar con tu nueva empresa.
     </p>
 
-    <!-- Hero con celebración -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.successBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">🎉</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                ¡Felicitaciones!
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Tu sociedad está oficialmente inscripta
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Denominación Social</p>
-                    <p style="margin: 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">${denominacion}</p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      '¡Felicitaciones!',
+      `Tu sociedad está oficialmente inscripta`,
+      'success',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Denominación social</p>
+         <p style="margin: 0; color: ${colors.dark}; ${type.title}">${denominacion}</p>`,
+        'success',
+      ),
+    )}
 
     ${(cuit || matricula) ? `
-    <!-- Datos oficiales - cards -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 24px 0;">
+    <!-- Datos oficiales -->
+    <table cellpadding="0" cellspacing="0" width="100%" style="margin: 16px 0 0 0;">
       <tr>
         ${cuit ? `
         <td width="${matricula ? '50' : '100'}%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px; text-align: center;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 12px; text-align: center; line-height: 44px; margin: 0 auto 12px auto;">
-                  <span style="font-size: 20px; color: white;">#</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">CUIT</p>
-                <p style="margin: 0; color: ${colors.dark}; font-size: 18px; font-weight: 800;">${cuit}</p>
-              </td>
-            </tr>
-          </table>
+          ${StatBox('CUIT', cuit)}
         </td>
         ` : ''}
         ${matricula ? `
         <td width="${cuit ? '50' : '100'}%" style="padding: 4px; vertical-align: top;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04);">
-            <tr>
-              <td style="padding: 20px; text-align: center;">
-                <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin: 0 auto 12px auto;">
-                  <span style="font-size: 20px; color: white;">📋</span>
-                </div>
-                <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Matrícula</p>
-                <p style="margin: 0; color: ${colors.dark}; font-size: 18px; font-weight: 800;">${matricula}</p>
-              </td>
-            </tr>
-          </table>
+          ${StatBox('Matrícula', matricula)}
         </td>
         ` : ''}
       </tr>
     </table>
     ` : ''}
 
-    <!-- ¿Qué sigue? - card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">📌</span>
-          </div>
-          <p style="margin: 0 0 12px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">¿Qué sigue ahora?</p>
-          <ul style="margin: 0; padding-left: 20px; color: ${colors.text}; font-size: 14px; line-height: 2;">
-            <li>Descargá la Resolución de Inscripción desde tu panel</li>
-            <li>Tramitá la Constancia de CUIT en AFIP</li>
-            <li>Abrí tu cuenta bancaria empresarial</li>
-            <li>¡Comenzá a operar! 🚀</li>
-          </ul>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      `<ul style="margin: 0; padding-left: 18px; line-height: 1.9;">
+        <li>Descargá la Resolución de Inscripción desde tu panel</li>
+        <li>Tramitá la Constancia de CUIT en AFIP</li>
+        <li>Abrí tu cuenta bancaria empresarial</li>
+        <li>Comenzá a operar</li>
+      </ul>`,
+      'neutral',
+      '¿Qué sigue ahora?',
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-        <tr>
-          <td style="background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 12px; box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.4);">
-            <a href="${BASE_URL}/dashboard/tramites/${tramiteId}" style="display: inline-block; padding: 16px 32px; color: ${colors.white}; font-size: 16px; font-weight: 700; text-decoration: none;">
-              📥 Descargar documentos oficiales
-            </a>
-          </td>
-        </tr>
-      </table>
-    </div>
+    ${CTAButton('Descargar documentos oficiales', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
 
-    <p style="margin: 32px 0 16px 0; color: ${colors.text}; font-size: 15px; text-align: center; line-height: 1.7;">
-      Este es apenas el primer paso. Desde tu panel vas a poder acceder a la documentación de tu Sociedad cuando la necesites, y estamos para acompañarte en lo que siga: libros digitales, contabilidad, marcas y más.
+    <p style="margin: 32px 0 0 0; color: ${colors.text}; ${type.body}">
+      Este es apenas el primer paso. Desde tu panel vas a poder acceder a la documentación de tu Sociedad cuando la necesites,
+      y estamos para acompañarte en lo que siga: libros digitales, contabilidad, marcas y más.
     </p>
 
-    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; font-size: 14px; text-align: center; line-height: 1.6; font-style: italic;">
-      ¡Gracias por confiar en QuieroMiSAS!<br/>
-      Éxitos en tu nueva empresa 🌟
+    <p style="margin: 20px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">
+      ¡Gracias por confiar en QuieroMiSAS! Éxitos en tu nueva empresa.
     </p>
   `
 
   return EmailLayout({
     children: content,
     nombre,
-    preheader: `🎉 ¡Felicitaciones! Tu sociedad ${denominacion} está inscripta. CUIT: ${cuit || 'Pendiente'}`
+    preheader: `¡Felicitaciones! Tu sociedad ${denominacion} está inscripta. CUIT: ${cuit || 'Pendiente'}`
   })
 }
 
 // 7. Email genérico para notificaciones
 export const emailNotificacion = ({ nombre, titulo, mensaje, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.infoBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">📬</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                ${titulo}
-              </h1>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    <!--
+      Notificación genérica: el título y el mensaje son variables, así que no
+      hay un dato que destacar. Va como título y párrafo, sin el bloque de
+      apertura de color: encerrar sólo un título en una caja dejaba un banner
+      vacío.
+    -->
+    <h1 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${titulo}</h1>
 
-    <!-- Mensaje -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <p style="margin: 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
-            ${mensaje}
-          </p>
-        </td>
-      </tr>
-    </table>
+    <p style="margin: 0; color: ${colors.text}; ${type.body}">
+      ${mensaje}
+    </p>
 
-    ${tramiteId ? `
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📋')}
-    </div>
-    ` : ''}
+    ${tramiteId ? CTAButton('Ver trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`) : ''}
   `
 
   return EmailLayout({
@@ -942,52 +803,30 @@ export const emailNotificacion = ({ nombre, titulo, mensaje, tramiteId }: EmailT
 // 8. Recordatorio de pago pendiente
 export const emailRecordatorioPago = ({ nombre, concepto, monto, diasPendientes, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Este es un recordatorio amigable: tenés un pago pendiente que está deteniendo el avance de tu trámite.
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.warningBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">⏰</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Recordatorio: Pago Pendiente
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Hace ${diasPendientes} días que tenés un pago pendiente
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Concepto</p>
-                    <p style="margin: 0 0 16px 0; color: ${colors.dark}; font-size: 18px; font-weight: 700;">${concepto}</p>
-                    <p style="margin: 0; color: ${colors.warning}; font-size: 36px; font-weight: 900;">$${Number(monto).toLocaleString('es-AR')}</p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'Tenés un pago pendiente',
+      `Hace ${diasPendientes} días que tenés un pago pendiente`,
+      'warning',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Concepto</p>
+         <p style="margin: 0 0 16px 0; color: ${colors.dark}; ${type.heading}">${concepto}</p>
+         <p style="margin: 0; color: ${colors.warning}; ${type.hero}">$${Number(monto).toLocaleString('es-AR')}</p>`,
+        'warning',
+      ),
+    )}
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; font-size: 14px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
       Para continuar con tu trámite, por favor realizá este pago a la brevedad.
       Si ya lo realizaste, no olvides subir el comprobante.
     </p>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Realizar pago ahora', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '💳')}
-    </div>
+    ${CTAButton('Realizar pago ahora', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
 
-    <p style="margin: 24px 0 0 0; color: ${colors.textLight}; font-size: 12px; text-align: center; line-height: 1.6;">
+    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">
       Si tenés alguna duda sobre este pago, no dudes en contactarnos.
     </p>
   `
@@ -1002,69 +841,30 @@ export const emailRecordatorioPago = ({ nombre, concepto, monto, diasPendientes,
 // 9. Recordatorio de documento rechazado sin resubir
 export const emailRecordatorioDocumento = ({ nombre, nombreDocumento, observaciones, diasPendientes, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Te recordamos que hace <strong>${diasPendientes} días</strong> te solicitamos correcciones en el documento
       <strong>"${nombreDocumento}"</strong> y aún no lo hemos recibido.
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.errorBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.error} 0%, ${colors.primaryDark} 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">⏰</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Documento Pendiente
-              </h1>
-              <p style="margin: 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Hace ${diasPendientes} días que esperamos el documento corregido
-              </p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'Todavía falta el documento',
+      `Hace ${diasPendientes} días que esperamos el documento corregido`,
+      'danger',
+    )}
 
-    <!-- Observaciones card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 2px solid ${colors.error}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">📋</span>
-          </div>
-          <p style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Observaciones originales</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">${observaciones}</p>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(observaciones, 'danger', 'Observaciones originales')}
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; font-size: 14px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
       Para que podamos avanzar con tu trámite, necesitamos que subas el documento corregido lo antes posible.
     </p>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Subir documento ahora', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📤')}
-    </div>
+    ${InfoCard(
+      'Escribinos por WhatsApp y te guiamos con las correcciones.',
+      'info',
+      '¿Necesitás ayuda?',
+    )}
 
-    <!-- Ayuda card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.infoBg}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">💡</span>
-          </div>
-          <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">¿Necesitás ayuda?</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">
-            Escribinos por WhatsApp y te guiamos con las correcciones.
-          </p>
-        </td>
-      </tr>
-    </table>
+    ${CTAButton('Subir documento ahora', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
@@ -1076,69 +876,32 @@ export const emailRecordatorioDocumento = ({ nombre, nombreDocumento, observacio
 
 // 10. Recordatorio de trámite estancado
 export const emailRecordatorioTramiteEstancado = ({ nombre, etapaActual, diasEstancado, tramiteId }: EmailTemplateProps) => {
-  const actions = [
-    { emoji: '💳', text: 'Verificar si hay pagos pendientes' },
-    { emoji: '📄', text: 'Revisar si hay documentos por subir' },
-    { emoji: '📊', text: 'Consultar el estado en tu panel' },
-    { emoji: '💬', text: 'Contactar a nuestro equipo si tenés dudas' }
+  const acciones = [
+    'Verificar si hay pagos pendientes',
+    'Revisar si hay documentos por subir',
+    'Consultar el estado en tu panel',
+    'Contactar a nuestro equipo si tenés dudas',
   ]
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Notamos que tu trámite lleva <strong>${diasEstancado} días</strong> en la etapa
       <strong>"${etapaActual}"</strong>. ¿Hay algo en lo que podamos ayudarte?
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.infoBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">👋</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                ¿Necesitás ayuda?
-              </h1>
-              <p style="margin: 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Tu trámite lleva ${diasEstancado} días sin avanzar
-              </p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero('¿Necesitás ayuda?', `Tu trámite lleva ${diasEstancado} días sin avanzar`, 'info')}
 
-    <!-- Posibles acciones - cards -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
-      <tr>
-        <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">📋</span>
-          </div>
-          <p style="margin: 0 0 16px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Posibles acciones pendientes</p>
-          <table cellpadding="0" cellspacing="0" width="100%">
-            ${actions.map(item => `
-              <tr>
-                <td style="padding: 8px 0;">
-                  <span style="font-size: 16px; margin-right: 12px;">${item.emoji}</span>
-                  <span style="color: ${colors.text}; font-size: 14px;">${item.text}</span>
-                </td>
-              </tr>
-            `).join('')}
-          </table>
-        </td>
-      </tr>
-    </table>
+    ${InfoCard(
+      `<ul style="margin: 0; padding-left: 18px; line-height: 1.9;">
+        ${acciones.map((a) => `<li>${a}</li>`).join('')}
+      </ul>`,
+      'neutral',
+      'Posibles acciones pendientes',
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver estado del trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`, '📊')}
-    </div>
+    ${CTAButton('Ver estado del trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
 
-    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; font-size: 14px; text-align: center; line-height: 1.6;">
-      Estamos para ayudarte. Escribinos por WhatsApp o respondé este email. 💬
+    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">
+      Estamos para ayudarte. Escribinos por WhatsApp o respondé este email.
     </p>
   `
 
@@ -1152,161 +915,90 @@ export const emailRecordatorioTramiteEstancado = ({ nombre, etapaActual, diasEst
 // 11. Alerta de denominación próxima a vencer (para admin)
 export const emailAlertaDenominacion = ({ nombre, denominacion, diasParaVencer, tramiteId }: EmailTemplateProps) => {
   const content = `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       La reserva de denominación está próxima a vencer. Es necesario completar las etapas pendientes o renovar la reserva.
     </p>
 
-    <!-- Hero -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.warningBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">⚠️</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Denominación Próxima a Vencer
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Quedan ${diasParaVencer} días para que venza
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Denominación</p>
-                    <p style="margin: 0 0 12px 0; color: ${colors.dark}; font-size: 22px; font-weight: 800;">${denominacion}</p>
-                    <span style="background-color: ${colors.warning}; color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 700;">⏰ Vence en ${diasParaVencer} días</span>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'La denominación está por vencer',
+      `Quedan ${diasParaVencer} días para que venza`,
+      'warning',
+      HeroDato(
+        `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">Denominación</p>
+         <p style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${denominacion}</p>
+         <span style="background-color: ${colors.warning}; color: white; padding: 8px 16px; border-radius: ${radius.card}; font-size: 13px; font-weight: 700;">Vence en ${diasParaVencer} días</span>`,
+        'warning',
+      ),
+    )}
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver trámite', `${BASE_URL}/dashboard/admin/tramites/${tramiteId}`, '📋')}
-    </div>
+    ${CTAButton('Ver trámite', `${BASE_URL}/dashboard/admin/tramites/${tramiteId}`)}
   `
 
   return EmailLayout({
     children: content,
     nombre,
-    preheader: `⚠️ La denominación "${denominacion}" vence en ${diasParaVencer} días`
+    preheader: `La denominación "${denominacion}" vence en ${diasParaVencer} días`
   })
 }
 
 // 12. Email de validación de trámite
 export const emailValidacionTramite = ({ nombre, denominacion, validado, observaciones, tramiteId }: EmailTemplateProps) => {
   const content = validado ? `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Tu trámite de constitución de <strong>${denominacion}</strong> ha sido revisado y validado por nuestro equipo.
     </p>
 
-    <!-- Hero validado -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.successBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.success} 0%, #059669 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">✅</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Trámite Validado
-              </h1>
-              <p style="margin: 0 0 20px 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Tu solicitud ha sido revisada y aprobada
-              </p>
-              <table cellpadding="0" cellspacing="0" style="margin: 0 auto; background-color: ${colors.white}; border-radius: 12px; border: 1px solid ${colors.border};">
-                <tr>
-                  <td style="text-align: center; padding: 20px 28px;">
-                    <p style="margin: 0; color: ${colors.success}; font-size: 16px; font-weight: 600;">Procederemos con el siguiente paso del proceso</p>
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'Trámite validado',
+      `Tu solicitud ha sido revisada y aprobada`,
+      'success',
+      HeroDato(
+        `<p style="margin: 0; color: ${colors.success}; ${type.heading}">Procederemos con el siguiente paso del proceso</p>`,
+        'success',
+      ),
+    )}
 
-    <p style="margin: 0 0 16px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 16px 0; color: ${colors.text}; ${type.body}">
       <strong>¿Cómo seguimos?</strong> Un Agente de QuieroMiSAS se va a contactar con vos por <strong>WhatsApp o email</strong> para despejar dudas y coordinar el <strong>pago de los honorarios</strong>, y así avanzar con la constitución de tu Sociedad.
     </p>
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Mientras tanto, para no perder tiempo, ya podés ir gestionando <strong>Ciudadano Digital Nivel 2</strong> para todas las personas que integren la Sociedad (es un requisito del sistema). Podés ver el instructivo <a href="${BASE_URL}/assets/img/CiudadanoDigital.jpeg" style="color: ${colors.primary}; font-weight: 600;">acá</a>.
     </p>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Ver mi trámite', `${BASE_URL}/dashboard/tramites/${tramiteId || ''}`, '📊')}
-    </div>
+    ${CTAButton('Ver mi trámite', `${BASE_URL}/dashboard/tramites/${tramiteId || ''}`)}
   ` : `
-    <!-- Intro -->
-    <p style="margin: 0 0 24px 0; color: ${colors.text}; font-size: 15px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       Hemos revisado tu trámite de constitución de <strong>${denominacion}</strong> y encontramos algunos puntos que requieren atención.
     </p>
 
-    <!-- Hero requiere correcciones -->
-    <table cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="padding-bottom: 24px;">
-          <div style="background-color: ${colors.errorBg}; border-radius: 16px; padding: 28px; margin: 0 auto 24px auto; max-width: 100%; border: 1px solid ${colors.border};">
-            <div style="width: 56px; height: 56px; background: linear-gradient(135deg, ${colors.error} 0%, ${colors.primaryDark} 100%); border-radius: 16px; text-align: center; line-height: 56px; margin: 0 auto 16px auto;">
-              <span style="font-size: 28px;">⚠️</span>
-            </div>
-            <div style="text-align: center;">
-              <h1 style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">
-                Trámite Requiere Correcciones
-              </h1>
-              <p style="margin: 0; color: ${colors.textMuted}; font-size: 14px; font-weight: 500;">
-                Encontramos algunos puntos que necesitan atención
-              </p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    </table>
+    ${Hero(
+      'El trámite necesita correcciones',
+      `Encontramos algunos puntos que necesitan atención`,
+      'danger',
+    )}
 
     ${observaciones ? `
-    <!-- Observaciones card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.white}; border-radius: 12px; border: 2px solid ${colors.error}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.errorBg}; border-radius: ${radius.card}; border: 1px solid ${colors.errorLine}; margin: 24px 0;">
       <tr>
         <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.warning} 0%, #d97706 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">📋</span>
-          </div>
-          <p style="margin: 0 0 8px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">Observaciones</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7; white-space: pre-wrap;">${observaciones}</p>
+          <p style="margin: 0 0 8px 0; color: ${colors.dark}; ${type.heading}">Observaciones</p>
+          <p style="margin: 0; color: ${colors.text}; ${type.bodySm} white-space: pre-wrap;">${observaciones}</p>
         </td>
       </tr>
     </table>
     ` : ''}
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; font-size: 14px; line-height: 1.7;">
+    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
       Por favor, revisá la información y realizá las correcciones necesarias para continuar con el proceso.
     </p>
 
-    <!-- CTA destacado -->
-    <div style="text-align: center; margin: 40px 0 24px 0;">
-      ${CTAButton('Corregir trámite', `${BASE_URL}/dashboard/tramites/${tramiteId || ''}`, '✏️')}
-    </div>
+    ${CTAButton('Corregir trámite', `${BASE_URL}/dashboard/tramites/${tramiteId || ''}`)}
 
-    <!-- Ayuda card -->
-    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.infoBg}; border-radius: 12px; border: 1px solid ${colors.border}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.04); margin: 24px 0;">
+    <table cellpadding="0" cellspacing="0" width="100%" style="background-color: ${colors.infoBg}; border-radius: ${radius.control}; border: 1px solid ${colors.border}; margin: 24px 0;">
       <tr>
         <td style="padding: 20px;">
-          <div style="width: 44px; height: 44px; background: linear-gradient(135deg, ${colors.info} 0%, #2563eb 100%); border-radius: 12px; text-align: center; line-height: 44px; margin-bottom: 12px;">
-            <span style="font-size: 22px;">💡</span>
-          </div>
-          <p style="margin: 0 0 4px 0; color: ${colors.dark}; font-size: 15px; font-weight: 700;">¿Necesitás ayuda?</p>
-          <p style="margin: 0; color: ${colors.text}; font-size: 14px; line-height: 1.7;">
+          <p style="margin: 0 0 4px 0; color: ${colors.dark}; ${type.heading}">¿Necesitás ayuda?</p>
+          <p style="margin: 0; color: ${colors.text}; ${type.bodySm}">
             Escribinos por WhatsApp o respondé este email.
           </p>
         </td>
@@ -1318,7 +1010,7 @@ export const emailValidacionTramite = ({ nombre, denominacion, validado, observa
     children: content,
     nombre,
     preheader: validado
-      ? `✅ Tu trámite de ${denominacion} ha sido validado`
-      : `⚠️ Tu trámite de ${denominacion} requiere correcciones`
+      ? `Tu trámite de ${denominacion} ha sido validado`
+      : `Tu trámite de ${denominacion} requiere correcciones`
   })
 }

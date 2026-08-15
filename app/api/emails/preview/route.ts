@@ -15,6 +15,7 @@ function escapeHtml(value: string): string {
 // Datos de ejemplo por template
 const sampleData: Record<string, Record<string, unknown>> = {
   emailBienvenida: { nombre: 'Fernando' },
+  emailVerificarCuenta: { nombre: 'Fernando', verifyUrl: 'https://quieromisas.com/verificar?token=ejemplo' },
   emailTramiteEnviado: { nombre: 'Fernando', tramiteId: 'cltx123', denominacion: 'Mi Empresa S.A.S.' },
   emailPagoPendiente: { nombre: 'Fernando', concepto: 'Plan Emprendedor', monto: 320000, tramiteId: 'cltx123' },
   emailDocumentoRechazado: { nombre: 'Fernando', nombreDocumento: 'DNI', observaciones: 'La imagen está borrosa. Por favor subí una foto más nítida.', tramiteId: 'cltx123' },
