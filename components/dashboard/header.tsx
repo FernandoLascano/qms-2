@@ -8,11 +8,11 @@ import NotificationBell from './NotificationBell'
 import { itemPorRuta } from '@/lib/dashboard/navigation'
 
 /**
- * Header delgado.
+ * Barra superior, con el mismo tratamiento que el Navbar del sitio:
+ * fondo blanco, borde inferior y el CTA de marca a la derecha.
  *
- * No muestra el título de la página (eso lo hace <PageHeader>) ni repite la
- * identidad del usuario: eso ahora vive en el pie del sidebar oscuro. Queda
- * como una barra de ubicación y acciones, con el mínimo peso visual posible.
+ * No repite el título de la pantalla (eso lo hace <PageHeader>) ni la
+ * identidad del usuario (vive en el pie del sidebar).
  */
 export function Header() {
   const { data: session } = useSession()
@@ -21,29 +21,29 @@ export function Header() {
   const actual = itemPorRuta(pathname)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md">
-      <div className="flex h-14 items-center justify-between gap-3 px-4 pl-16 md:px-6 md:pl-6">
+    <header className="sticky top-0 z-20 border-b border-line bg-surface/85 backdrop-blur-md">
+      <div className="flex h-[72px] items-center justify-between gap-3 px-4 pl-16 md:px-6 md:pl-6">
         <nav aria-label="Ubicación" className="min-w-0">
-          <ol className="flex items-center gap-1 text-body-sm">
+          <ol className="flex items-center gap-1.5 text-body-sm">
             <li className="text-ink-3">{isAdmin ? 'Administración' : 'Mi cuenta'}</li>
             {actual && (
               <>
                 <li aria-hidden>
                   <ChevronRight className="h-3.5 w-3.5 text-ink-3" />
                 </li>
-                <li className="truncate font-medium text-ink">{actual.name}</li>
+                <li className="truncate font-semibold text-ink">{actual.name}</li>
               </>
             )}
           </ol>
         </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3">
           {!isAdmin && (
             <Link
               href="/tramite/nuevo"
-              className="hidden h-9 items-center gap-1.5 rounded-control border border-line-strong bg-surface px-3 text-body-sm font-medium text-ink transition-colors hover:bg-surface-3 lg:inline-flex"
+              className="hidden h-10 items-center gap-2 rounded-control bg-primary px-5 text-body-sm font-semibold text-on-primary shadow-raise transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop lg:inline-flex"
             >
-              <Plus className="h-4 w-4 text-ink-2" aria-hidden />
+              <Plus className="h-4 w-4" aria-hidden />
               Nuevo trámite
             </Link>
           )}

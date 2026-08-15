@@ -15,11 +15,23 @@ import { cn } from "@/lib/utils"
  * dominar la tarjeta.
  */
 
+/** Acento por métrica: devuelve color al panel sin salirse del sistema. */
+const ACENTOS = {
+  a1: 'bg-a1-soft text-a1',
+  a2: 'bg-a2-soft text-a2',
+  a3: 'bg-a3-soft text-a3',
+  a4: 'bg-a4-soft text-a4',
+  a5: 'bg-a5-soft text-a5',
+  a6: 'bg-a6-soft text-a6',
+  neutro: 'bg-surface-3 text-ink-2',
+} as const
+
 interface StatCardProps {
   label: string
   value: React.ReactNode
   hint?: string
   icon?: LucideIcon
+  acento?: keyof typeof ACENTOS
   /** true → la tarjeta se pinta para reclamar atención. */
   alert?: boolean
   href?: string
@@ -31,6 +43,7 @@ export function StatCard({
   value,
   hint,
   icon: Icon,
+  acento = 'neutro',
   alert = false,
   href,
   className,
@@ -38,23 +51,23 @@ export function StatCard({
   const content = (
     <>
       <div className="flex items-start justify-between gap-3">
-        <span className="text-body-sm text-ink-2">{label}</span>
+        <span className="text-body-sm font-medium text-ink-2">{label}</span>
         {Icon && (
           <span
             className={cn(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-chip',
-              alert ? 'bg-warning-solid/12 text-warning' : 'bg-surface-3 text-ink-3',
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110',
+              alert ? 'bg-warning-soft text-warning' : ACENTOS[acento],
             )}
             aria-hidden
           >
-            <Icon className="h-3.5 w-3.5" />
+            <Icon className="h-4.5 w-4.5" />
           </span>
         )}
       </div>
 
       <div
         className={cn(
-          'mt-3 font-display text-display tnum',
+          'mt-3 text-display tnum',
           alert ? 'text-warning' : 'text-ink',
         )}
       >

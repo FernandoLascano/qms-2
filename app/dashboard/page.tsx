@@ -107,7 +107,9 @@ async function DashboardPage() {
   return (
     <div className="stagger space-y-section">
       <PageHeader
-        title={`Hola, ${primerNombre}`}
+        overline="Tu panel"
+        title="Hola,"
+        destacado={primerNombre}
         description={
           tramites.length === 0
             ? 'Constituí tu S.A.S. 100% online. Te guiamos paso a paso.'
@@ -268,24 +270,28 @@ async function DashboardPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Acceso
             href="/dashboard/mi-sociedad"
+            acento="a2"
             icon={Building2}
             titulo="Mi sociedad"
             detalle="Datos y documentos"
           />
           <Acceso
             href="/dashboard/libros-digitales"
+            acento="a3"
             icon={BookOpen}
             titulo="Libros digitales"
             detalle="Cómo llevarlos"
           />
           <Acceso
             href="/dashboard/documentos"
+            acento="a4"
             icon={Upload}
             titulo="Documentos"
             detalle="Subir y consultar"
           />
           <Acceso
             href="/dashboard/notificaciones"
+            acento="a5"
             icon={Bell}
             titulo="Notificaciones"
             detalle={
@@ -297,6 +303,7 @@ async function DashboardPage() {
           />
           <Acceso
             href="/dashboard/servicios"
+            acento="a6"
             icon={Handshake}
             titulo="Servicios"
             detalle="Para tu empresa"
@@ -335,33 +342,52 @@ function ProximoPaso({
       tone={esCliente ? 'warning' : esCompletado ? 'success' : 'default'}
       className={cn('brand-glow', !esCliente && !esCompletado && 'bg-surface')}
     >
-      <CardBody className="flex flex-col gap-5 p-card sm:flex-row sm:items-start sm:p-7">
+      <CardBody className="flex flex-col gap-5 p-card sm:flex-row sm:items-start sm:p-8">
+        {/* Círculo de color con anillo, como los nodos del "Cómo funciona" */}
         <span
           className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-card ring-1',
+            'flex h-16 w-16 shrink-0 items-center justify-center rounded-full ring-8',
             esCliente
-              ? 'bg-warning-solid/12 text-warning ring-warning-line'
+              ? 'bg-warning-solid text-on-primary ring-warning-soft'
               : esCompletado
-                ? 'bg-success-solid/12 text-success ring-success-line'
-                : 'bg-primary-soft text-primary ring-primary-line',
+                ? 'bg-success-solid text-on-primary ring-success-soft'
+                : 'bg-primary text-on-primary ring-primary-soft',
           )}
           aria-hidden
         >
-          <Icono className="h-5.5 w-5.5" />
+          <Icono className="h-7 w-7" />
         </span>
 
         <div className="min-w-0 flex-1">
-          <p
+          <span
             className={cn(
-              'text-label uppercase tracking-[0.1em]',
-              esCliente ? 'text-warning' : esCompletado ? 'text-success' : 'text-primary',
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-label font-semibold',
+              esCliente
+                ? 'border-warning-line bg-warning-soft text-warning'
+                : esCompletado
+                  ? 'border-success-line bg-success-soft text-success'
+                  : 'border-primary-line bg-primary-soft text-primary',
             )}
           >
+            <span className="relative flex h-2 w-2" aria-hidden>
+              {esCliente && (
+                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-warning-solid opacity-75" />
+              )}
+              <span
+                className={cn(
+                  'relative inline-flex h-2 w-2 rounded-full',
+                  esCliente
+                    ? 'bg-warning-solid'
+                    : esCompletado
+                      ? 'bg-success-solid'
+                      : 'bg-primary',
+                )}
+              />
+            </span>
             {esCliente ? 'Te toca a vos' : esCompletado ? 'Listo' : 'En curso'}
-          </p>
-          <h2 className="mt-1 font-display text-hero text-ink text-balance">
-            {accion.titulo}
-          </h2>
+          </span>
+
+          <h2 className="mt-3 text-hero text-ink text-balance">{accion.titulo}</h2>
           <p className="mt-2 max-w-prose text-body text-ink-2 text-pretty">
             {accion.descripcion}
           </p>
@@ -389,40 +415,65 @@ function ProximoPaso({
   )
 }
 
+/**
+ * Cada destino tiene su acento fijo (a1…a6). Es la vuelta del color que el
+ * panel había perdido, pero asignado, no al azar: los seis tonos salen de la
+ * misma escalera de luminosidad que la marca.
+ */
+const ACENTOS = {
+  a1: 'bg-a1-soft text-a1',
+  a2: 'bg-a2-soft text-a2',
+  a3: 'bg-a3-soft text-a3',
+  a4: 'bg-a4-soft text-a4',
+  a5: 'bg-a5-soft text-a5',
+  a6: 'bg-a6-soft text-a6',
+} as const
+
 function Acceso({
   href,
   icon: Icon,
   titulo,
   detalle,
+  acento,
   destacado = false,
 }: {
   href: string
   icon: LucideIcon
   titulo: string
   detalle: string
+  acento: keyof typeof ACENTOS
   destacado?: boolean
 }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 rounded-card border border-line bg-surface p-card-sm transition-[border-color,box-shadow] duration-150 hover:border-line-strong hover:shadow-raise"
+      className={cn(
+        'group flex items-center gap-3.5 rounded-card border border-line bg-surface p-card-sm shadow-card',
+        'transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+        'hover:-translate-y-1 hover:border-primary-line hover:shadow-lift',
+      )}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-3 text-ink-2 transition-colors group-hover:bg-primary-soft group-hover:text-primary">
-        <Icon className="h-4.5 w-4.5" aria-hidden />
+      <span
+        className={cn(
+          'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110',
+          ACENTOS[acento],
+        )}
+      >
+        <Icon className="h-5 w-5" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-body font-medium text-ink">{titulo}</span>
+        <span className="block truncate text-body font-semibold text-ink">{titulo}</span>
         <span
           className={cn(
             'block truncate text-body-sm',
-            destacado ? 'text-warning font-medium' : 'text-ink-2',
+            destacado ? 'font-semibold text-warning' : 'text-ink-2',
           )}
         >
           {detalle}
         </span>
       </span>
       <ArrowRight
-        className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5"
+        className="h-4 w-4 shrink-0 text-ink-3 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
         aria-hidden
       />
     </Link>

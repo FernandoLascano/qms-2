@@ -46,8 +46,9 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-chip border font-medium whitespace-nowrap",
-        size === 'sm' ? "px-1.5 py-0.5 text-label" : "px-2 py-1 text-label",
+        // Píldora redonda, como los badges de la portada.
+        "inline-flex items-center gap-1.5 rounded-full border font-semibold whitespace-nowrap",
+        size === 'sm' ? "px-2.5 py-0.5 text-label" : "px-3 py-1 text-label",
         TONES[tone],
         className,
       )}

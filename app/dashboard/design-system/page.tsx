@@ -104,53 +104,41 @@ export default async function DesignSystemPage() {
       </Bloque>
 
       <Bloque
-        titulo="Chrome oscuro"
-        nota="El sidebar. No es gris neutro: lleva un matiz del tono de marca, así que también rebrandea. Contrastes sobre el fondo: 16,2 · 8,3 · 4,9 · 5,8 — todos AA."
+        titulo="Acentos"
+        nota="Seis tonos con la misma escalera de luminosidad que la marca. Devuelven color al panel sin volver al desorden de antes: cada destino tiene su acento fijo, no uno al azar."
       >
-        <div className="chrome-texture overflow-hidden rounded-card bg-chrome p-card">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <div>
-              <p className="font-display text-title text-chrome-ink">Texto principal</p>
-              <p className="text-body-sm text-chrome-ink-2">Texto secundario</p>
-              <p className="text-label text-chrome-ink-3">GRUPO DE NAVEGACIÓN</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="relative flex h-9 items-center gap-2.5 rounded-control bg-chrome-3 px-3 text-body-sm font-medium text-chrome-ink nav-active-bar">
-                <span className="h-1.5 w-1.5 rounded-full bg-chrome-accent" />
-                Ítem activo
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            ['a1 · marca', 'bg-a1-soft text-a1', 'bg-a1-solid'],
+            ['a2 · verde', 'bg-a2-soft text-a2', 'bg-a2-solid'],
+            ['a3 · azul', 'bg-a3-soft text-a3', 'bg-a3-solid'],
+            ['a4 · violeta', 'bg-a4-soft text-a4', 'bg-a4-solid'],
+            ['a5 · ámbar', 'bg-a5-soft text-a5', 'bg-a5-solid'],
+            ['a6 · turquesa', 'bg-a6-soft text-a6', 'bg-a6-solid'],
+          ].map(([nombre, suave, solido]) => (
+            <div key={nombre} className="text-center">
+              <span
+                className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${suave}`}
+              >
+                <Building2 className="h-6 w-6" aria-hidden />
               </span>
-              <span className="flex h-9 items-center rounded-control px-3 text-body-sm text-chrome-ink-2">
-                Ítem normal
-              </span>
+              <div className={`mx-auto mt-3 h-2 w-14 rounded-full ${solido}`} />
+              <p className="mt-2 text-label text-ink-2">{nombre}</p>
             </div>
-          </div>
-          <div className="mt-5 grid grid-cols-4 gap-3">
-            {[
-              ['chrome', 'bg-chrome'],
-              ['chrome-2', 'bg-chrome-2'],
-              ['chrome-3', 'bg-chrome-3'],
-              ['accent', 'bg-chrome-accent'],
-            ].map(([n, clase]) => (
-              <div key={n}>
-                <div className={`h-10 rounded-control border border-chrome-line ${clase}`} />
-                <p className="mt-1.5 text-label text-chrome-ink-2">{n}</p>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </Bloque>
 
       <Bloque
         titulo="Firma visual"
-        nota="El resplandor de marca detrás del bloque protagonista y la entrada escalonada. Ambos salen de --brand-h, así que rebrandean con todo lo demás."
+        nota="El halo de marca detrás del bloque protagonista, el overline en mayúsculas y la entrada escalonada. Todo tomado de la portada, para que panel y sitio se lean como un mismo producto."
       >
         <div className="brand-glow rounded-card border border-line bg-surface p-card">
-          <p className="text-label uppercase tracking-[0.1em] text-primary">Te toca a vos</p>
-          <h3 className="mt-1 font-display text-hero text-ink">Firmá el estatuto</h3>
+          <p className="overline">Te toca a vos</p>
+          <h3 className="mt-2 text-hero text-ink">Firmá el estatuto</h3>
           <p className="mt-2 max-w-prose text-body text-ink-2">
-            Así se ve el bloque principal: resplandor sutil de marca en la esquina, título en
-            la fuente de display a 40px y el cuerpo a 15px. El salto de escala es lo que le da
-            presencia.
+            Así se ve el bloque principal: el mismo halo difuminado de marca que usa la
+            portada, overline en mayúsculas, título a 40px y cuerpo a 15px.
           </p>
           <div className="mt-4">
             <Button>

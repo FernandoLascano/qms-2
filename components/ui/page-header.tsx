@@ -19,6 +19,13 @@ export interface Crumb {
 
 interface PageHeaderProps {
   title: string
+  /**
+   * Se pinta en el color de marca al final del título, igual que en la
+   * portada ("Elegí el plan **ideal**"). Es la firma tipográfica del sitio.
+   */
+  destacado?: string
+  /** Etiqueta corta en mayúsculas sobre el título. También del sitio. */
+  overline?: string
   description?: string
   /** Migas de pan para rutas de 3 niveles (admin › trámites › DRIX SAS). */
   breadcrumbs?: Crumb[]
@@ -34,6 +41,8 @@ interface PageHeaderProps {
 
 export function PageHeader({
   title,
+  destacado,
+  overline,
   description,
   breadcrumbs,
   backHref,
@@ -82,12 +91,16 @@ export function PageHeader({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
+          {overline && <p className="overline mb-2">{overline}</p>}
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-display text-display text-ink text-balance">{title}</h1>
+            <h1 className="text-display text-ink text-balance">
+              {title}
+              {destacado && <span className="text-primary"> {destacado}</span>}
+            </h1>
             {badge}
           </div>
           {description && (
-            <p className="mt-1.5 text-body text-ink-2 text-pretty">{description}</p>
+            <p className="mt-2 max-w-2xl text-body text-ink-2 text-pretty">{description}</p>
           )}
         </div>
 
@@ -121,7 +134,7 @@ export function SectionHeader({
       )}
     >
       <div className="min-w-0">
-        <Tag className="font-display text-title text-ink">{title}</Tag>
+        <Tag className="text-title text-ink">{title}</Tag>
         {description && <p className="mt-0.5 text-body-sm text-ink-2">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}

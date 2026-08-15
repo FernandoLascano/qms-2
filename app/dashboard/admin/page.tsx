@@ -149,7 +149,9 @@ async function AdminDashboardPage() {
   return (
     <div className="stagger space-y-section">
       <PageHeader
-        title="Hoy"
+        overline="Panel de control"
+        title="Lo de"
+        destacado="hoy"
         description={
           totalPendiente > 0
             ? `Tenés ${totalPendiente} ${totalPendiente === 1 ? 'asunto' : 'asuntos'} para resolver.`
@@ -187,14 +189,14 @@ async function AdminDashboardPage() {
                   >
                     <span
                       className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-control',
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200 group-hover:scale-110',
                         tarea.urgente
-                          ? 'bg-warning-solid/12 text-warning'
-                          : 'bg-surface-3 text-ink-2',
+                          ? 'bg-warning-soft text-warning'
+                          : 'bg-a3-soft text-a3',
                       )}
                       aria-hidden
                     >
-                      <tarea.icono className="h-4.5 w-4.5" />
+                      <tarea.icono className="h-5 w-5" />
                     </span>
 
                     <span className="min-w-0 flex-1">
@@ -224,6 +226,7 @@ async function AdminDashboardPage() {
         <SectionHeader title="Estado general" as="h2" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard
+            acento="a1"
             label="Trámites activos"
             value={enProceso}
             hint="Sin inscribir"
@@ -231,6 +234,7 @@ async function AdminDashboardPage() {
             href="/dashboard/admin/tramites"
           />
           <StatCard
+            acento="a2"
             label="Sociedades inscriptas"
             value={completados}
             hint="Finalizadas"
@@ -238,12 +242,14 @@ async function AdminDashboardPage() {
             href="/dashboard/admin/sociedades"
           />
           <StatCard
+            acento="a3"
             label="Trámites totales"
             value={totalTramites}
             hint="Formulario enviado"
             icon={FileText}
           />
           <StatCard
+            acento="a4"
             label="Usuarios registrados"
             value={totalUsuarios}
             hint="Cuentas"

@@ -10,12 +10,11 @@ import { CountBadge } from '@/components/ui/badge'
 import { navPara, esActivo, type NavItem } from '@/lib/dashboard/navigation'
 
 /**
- * Sidebar en chrome oscuro.
+ * Sidebar claro, con el mismo idioma de navegación que el Navbar del sitio:
+ * reposo neutro, hover y activo en brand-50 con texto brand-700.
  *
- * El fondo no es gris neutro: lleva un matiz del tono de marca
- * (`--chrome`, derivado de `--brand-h`), más un resplandor sutil arriba.
- * Es lo que separa visualmente "producto" de "plantilla", y rebrandea junto
- * con el resto del sistema.
+ * (Una versión anterior lo hizo oscuro. Se veía bien por sí sola, pero la
+ * portada es blanca y luminosa: el panel parecía otro producto.)
  */
 export function Sidebar() {
   const pathname = usePathname()
@@ -99,31 +98,29 @@ export function Sidebar() {
 
   const contenido = (
     <>
-      {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center px-5">
+      {/* Logo: mismo alto y tratamiento que en el Navbar del sitio */}
+      <div className="flex h-[72px] shrink-0 items-center border-b border-line px-5">
         <Link
           href="/"
-          className="flex items-center rounded-control"
+          className="group flex items-center rounded-control"
           onClick={() => setMobileOpen(false)}
         >
           <img
-            src="/assets/img/qms-logo-white.png"
+            src="/assets/img/qms-logo-reg.png"
             alt="QuieroMiSAS — ir al sitio"
-            className="h-8 w-auto"
+            className="h-11 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
       </div>
 
       {/* Navegación */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-4" aria-label="Menú principal">
+      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Menú principal">
         {grupos.map((grupo, gi) => (
           <div key={grupo.title ?? `grupo-${gi}`} className={gi > 0 ? 'mt-6' : undefined}>
             {grupo.title && (
-              <p className="px-3 pb-2 text-label uppercase tracking-[0.08em] text-chrome-ink-3">
-                {grupo.title}
-              </p>
+              <p className="overline px-3 pb-2 text-ink-3">{grupo.title}</p>
             )}
-            <ul className="space-y-0.5">
+            <ul className="space-y-1">
               {grupo.items.map((item) => {
                 const activo = esActivo(item, pathname)
                 const contador = contadorDe(item)
@@ -134,17 +131,17 @@ export function Sidebar() {
                       aria-current={activo ? 'page' : undefined}
                       onClick={() => setMobileOpen(false)}
                       className={cn(
-                        'relative flex h-9 items-center gap-2.5 rounded-control px-3 text-body-sm',
-                        'transition-[background-color,color] duration-150',
+                        'group flex h-10 items-center gap-3 rounded-control px-3 text-body-sm font-medium',
+                        'transition-all duration-200',
                         activo
-                          ? 'nav-active-bar bg-chrome-3 font-medium text-chrome-ink'
-                          : 'text-chrome-ink-2 hover:bg-chrome-2 hover:text-chrome-ink',
+                          ? 'bg-nav-active-bg text-nav-active'
+                          : 'text-nav-item hover:bg-nav-item-bg hover:text-nav-item-hover',
                       )}
                     >
                       <item.icon
                         className={cn(
-                          'h-4 w-4 shrink-0 transition-colors',
-                          activo ? 'text-chrome-accent' : 'text-chrome-ink-3',
+                          'h-[18px] w-[18px] shrink-0 transition-colors',
+                          activo ? 'text-primary' : 'text-ink-3 group-hover:text-primary',
                         )}
                         aria-hidden
                       />
@@ -160,40 +157,39 @@ export function Sidebar() {
       </nav>
 
       {/* Pie */}
-      <div className="shrink-0 border-t border-chrome-line p-3">
+      <div className="shrink-0 border-t border-line p-3">
         {isAdmin ? (
           <Link
             href="/dashboard/tramites"
             onClick={() => setMobileOpen(false)}
-            className="mb-1 flex h-9 items-center gap-2.5 rounded-control px-3 text-body-sm text-chrome-ink-2 transition-colors hover:bg-chrome-2 hover:text-chrome-ink"
+            className="mb-2 flex h-10 items-center gap-3 rounded-control px-3 text-body-sm font-medium text-nav-item transition-all hover:bg-nav-item-bg hover:text-nav-item-hover"
           >
-            <ExternalLink className="h-4 w-4 shrink-0 text-chrome-ink-3" aria-hidden />
+            <ExternalLink className="h-[18px] w-[18px] shrink-0 text-ink-3" aria-hidden />
             Ver como cliente
           </Link>
         ) : (
           <Link
             href="/tramite/nuevo"
             onClick={() => setMobileOpen(false)}
-            className="mb-2 flex h-10 items-center justify-center gap-2 rounded-control bg-primary px-3 text-body-sm font-medium text-on-primary transition-colors hover:bg-brand-600"
+            className="mb-2 flex h-11 items-center justify-center gap-2 rounded-control bg-primary px-3 text-body font-semibold text-on-primary shadow-raise transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop"
           >
-            <Plus className="h-4 w-4 shrink-0" aria-hidden />
+            <Plus className="h-4.5 w-4.5 shrink-0" aria-hidden />
             Nuevo trámite
           </Link>
         )}
 
-        {/* Identidad + salida, juntas: el header ya no las repite */}
-        <div className="flex items-center gap-2.5 rounded-control px-3 py-2">
+        <div className="flex items-center gap-3 rounded-control px-2 py-2">
           <span
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-chrome-3 text-label font-medium text-chrome-ink"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-body-sm font-semibold text-primary"
             aria-hidden
           >
             {iniciales}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-body-sm font-medium text-chrome-ink">
+            <span className="block truncate text-body-sm font-semibold text-ink">
               {session?.user?.name}
             </span>
-            <span className="block truncate text-label text-chrome-ink-3">
+            <span className="block truncate text-label text-ink-2">
               {isAdmin ? 'Administrador' : 'Cliente'}
             </span>
           </span>
@@ -205,7 +201,7 @@ export function Sidebar() {
               setMobileOpen(false)
               signOut({ callbackUrl: '/' })
             }}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-control text-chrome-ink-3 transition-colors hover:bg-chrome-2 hover:text-chrome-ink"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-nav-item-bg hover:text-primary"
           >
             <LogOut className="h-4 w-4" aria-hidden />
           </button>
@@ -222,7 +218,7 @@ export function Sidebar() {
         onClick={() => setMobileOpen(true)}
         aria-label="Abrir menú"
         aria-expanded={mobileOpen}
-        className="md:hidden fixed left-3 top-3 z-30 flex h-10 w-10 items-center justify-center rounded-control bg-chrome text-chrome-ink shadow-pop"
+        className="md:hidden fixed left-3 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-control border border-line bg-surface text-ink-2 shadow-raise"
       >
         <Menu className="h-5 w-5" aria-hidden />
       </button>
@@ -230,14 +226,14 @@ export function Sidebar() {
       {/* Fondo del panel móvil */}
       {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40 bg-n-950/50 backdrop-blur-[2px]"
+          className="md:hidden fixed inset-0 z-40 bg-n-950/40 backdrop-blur-[2px]"
           onClick={() => setMobileOpen(false)}
           aria-hidden
         />
       )}
 
       {/* Sidebar de escritorio */}
-      <aside className="chrome-texture hidden h-full w-64 shrink-0 flex-col bg-chrome md:flex">
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-line bg-nav-bg md:flex">
         {contenido}
       </aside>
 
@@ -247,7 +243,7 @@ export function Sidebar() {
           de la pantalla. */}
       <aside
         className={cn(
-          'chrome-texture md:hidden fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-chrome',
+          'md:hidden fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-line bg-nav-bg',
           'transition-transform duration-200 ease-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -257,7 +253,7 @@ export function Sidebar() {
           type="button"
           onClick={() => setMobileOpen(false)}
           aria-label="Cerrar menú"
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-control text-chrome-ink-2 hover:bg-chrome-2"
+          className="absolute right-3 top-4 flex h-9 w-9 items-center justify-center rounded-control text-ink-2 hover:bg-nav-item-bg hover:text-primary"
         >
           <X className="h-5 w-5" aria-hidden />
         </button>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Bricolage_Grotesque } from "next/font/google";
+import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -16,18 +16,6 @@ import { getPublicConfig } from "@/lib/config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
-/**
- * Fuente de display: sólo para títulos. Es lo que saca a la interfaz del
- * "default de Tailwind". Para cambiarla se toca este import y nada más:
- * el resto del sistema la consume por la variable --font-display.
- * Alternativas en la misma línea: Instrument_Sans, Space_Grotesk, Sora.
- */
-const display = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-display-face",
-  display: "swap",
-  weight: ["500", "600", "700"],
-});
 
 export async function generateMetadata(): Promise<Metadata> {
   const { precioPlanBasico } = await getPublicConfig();
@@ -105,7 +93,7 @@ export default async function RootLayout({
   const faqJsonLd = buildFaqJsonLd({ precioPlanBasico, precioPlanPremium });
 
   return (
-    <html lang="es" className={`${inter.variable} ${display.variable}`}>
+    <html lang="es" className={inter.variable}>
       <body className={inter.className}>
         <Script id="ld-json-org" type="application/ld+json" strategy="afterInteractive">
           {JSON.stringify(rootOrganizationJsonLd)}

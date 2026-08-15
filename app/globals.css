@@ -107,7 +107,7 @@
      agregá un token acá — no un hex en el componente.                      */
 
   /* Superficies */
-  --canvas:        var(--n-100);   /* fondo de la app                       */
+  --canvas:        var(--n-0);     /* la landing es blanca, no gris         */
   --surface:       var(--n-0);     /* cards, sidebar, header                */
   --surface-2:     var(--n-50);    /* zonas internas, cabeceras de tabla    */
   --surface-3:     var(--n-100);   /* hover de filas, code                  */
@@ -124,21 +124,28 @@
   --ink-3:         var(--n-500);
   --ink-invert:    var(--n-0);
 
-  /* ---- Chrome oscuro -----------------------------------------------------
-     El sidebar. Es lo que hace que esto parezca un producto y no una
-     plantilla. Lleva un matiz del tono de marca (no es gris puro), así que
-     rebrandear también cambia el chrome.
-     Contrastes sobre --chrome: ink 16,2 · ink-2 8,3 · ink-3 4,9 ·
-     acento 5,8 — todos AA.                                                */
-  --chrome:        oklch(0.205 0.012 var(--brand-h));
-  --chrome-2:      oklch(0.255 0.014 var(--brand-h));  /* hover            */
-  --chrome-3:      oklch(0.305 0.016 var(--brand-h));  /* activo           */
-  --chrome-line:   oklch(0.315 0.014 var(--brand-h));
-  --chrome-ink:    oklch(0.965 0.004 var(--brand-h));
-  --chrome-ink-2:  oklch(0.760 0.008 var(--brand-h));
-  --chrome-ink-3:  oklch(0.620 0.010 var(--brand-h));
-  /* Acento sobre oscuro: el 700 no contrasta, hay que subir a 400. */
-  --chrome-accent: var(--brand-400);
+  /* ---- Acentos -----------------------------------------------------------
+     El panel pedía más color. Estos seis tonos usan la misma escalera que
+     todo el resto, así que suman vida sin romper el sistema: el fondo (soft)
+     va en 50, el texto en 700 y el relleno en 600.
+       a1 marca · a2 verde · a3 azul · a4 violeta · a5 ámbar · a6 turquesa  */
+  --a1-soft: var(--brand-50);  --a1: var(--brand-700);  --a1-solid: var(--brand-600);
+  --a2-soft: oklch(0.970 0.0086 150); --a2: oklch(0.446 0.1057 150); --a2-solid: oklch(0.496 0.1166 150);
+  --a3-soft: oklch(0.970 0.0092 250); --a3: oklch(0.446 0.1138 250); --a3-solid: oklch(0.496 0.1256 250);
+  --a4-soft: oklch(0.970 0.0100 295); --a4: oklch(0.446 0.1230 295); --a4-solid: oklch(0.496 0.1360 295);
+  --a5-soft: oklch(0.970 0.0069 70);  --a5: oklch(0.446 0.0853 70);  --a5-solid: oklch(0.496 0.0942 70);
+  --a6-soft: oklch(0.970 0.0080 200); --a6: oklch(0.446 0.0990 200); --a6-solid: oklch(0.496 0.1094 200);
+
+  /* ---- Navegación -------------------------------------------------------
+     Mismo idioma que el Navbar del sitio: reposo neutro, hover y activo en
+     brand-50 con texto brand-700. La landing es clara y luminosa; un
+     sidebar oscuro hacía que el panel pareciera otro producto.           */
+  --nav-bg:          var(--n-0);
+  --nav-item:        var(--n-600);
+  --nav-item-hover:  var(--primary);
+  --nav-item-bg:     var(--brand-50);
+  --nav-active:      var(--primary);
+  --nav-active-bg:   var(--brand-50);
 
   /* Marca / acción primaria */
   --primary:        var(--brand-700);
@@ -173,7 +180,7 @@
 
   /* ---- Forma -------------------------------------------------------------
      Una variable manda toda la redondez del módulo.                       */
-  --radius: 10px;
+  --radius: 12px;
 
   /* ---- Sombras -----------------------------------------------------------
      Neutras y bajas. Las cards NO llevan sombra en reposo: sólo borde.    */
@@ -272,15 +279,25 @@
   --color-info-line:     var(--info-line);
   --color-info-solid:    var(--info-solid);
 
-  /* --- Chrome oscuro --- */
-  --color-chrome:        var(--chrome);
-  --color-chrome-2:      var(--chrome-2);
-  --color-chrome-3:      var(--chrome-3);
-  --color-chrome-line:   var(--chrome-line);
-  --color-chrome-ink:    var(--chrome-ink);
-  --color-chrome-ink-2:  var(--chrome-ink-2);
-  --color-chrome-ink-3:  var(--chrome-ink-3);
-  --color-chrome-accent: var(--chrome-accent);
+  /* --- Navegación --- */
+  --color-nav-bg:         var(--nav-bg);
+  --color-nav-item:       var(--nav-item);
+  --color-nav-item-hover: var(--nav-item-hover);
+  --color-nav-item-bg:    var(--nav-item-bg);
+  --color-nav-active:     var(--nav-active);
+  --color-nav-active-bg:  var(--nav-active-bg);
+
+  /* --- Acentos ---
+     Seis tonos generados con la MISMA escalera de luminosidad que la marca.
+     Devuelven color al panel sin volver al desorden de antes: cada destino
+     tiene su acento fijo, no uno al azar. Rebrandean con --brand-h sólo el
+     primero (que ES la marca); los otros cinco son estables a propósito. */
+  --color-a1-soft: var(--a1-soft);  --color-a1: var(--a1);  --color-a1-solid: var(--a1-solid);
+  --color-a2-soft: var(--a2-soft);  --color-a2: var(--a2);  --color-a2-solid: var(--a2-solid);
+  --color-a3-soft: var(--a3-soft);  --color-a3: var(--a3);  --color-a3-solid: var(--a3-solid);
+  --color-a4-soft: var(--a4-soft);  --color-a4: var(--a4);  --color-a4-solid: var(--a4-solid);
+  --color-a5-soft: var(--a5-soft);  --color-a5: var(--a5);  --color-a5-solid: var(--a5-solid);
+  --color-a6-soft: var(--a6-soft);  --color-a6: var(--a6);  --color-a6-solid: var(--a6-solid);
 
   /* --- Tipografía --------------------------------------------------------
      Escala de 7 pasos con interlineado y peso incluidos.
@@ -289,26 +306,22 @@
                "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
                "Liberation Mono", monospace;
-  /* Sólo para títulos. Para cambiar la fuente de display se toca este
-     renglón y el import de app/layout.tsx: nada más. */
-  --font-display: var(--font-display-face), var(--font-inter), ui-sans-serif,
-                  system-ui, sans-serif;
 
   /* El salto entre título (36) y cuerpo (15) es lo que da presencia.
      Antes era 28 contra 15: demasiado tímido. */
   --text-hero: 2.5rem;                        /* 40 · portada del inicio   */
   --text-hero--line-height: 2.75rem;
-  --text-hero--font-weight: 600;
+  --text-hero--font-weight: 800;
   --text-hero--letter-spacing: -0.035em;
 
   --text-display: 2.25rem;                    /* 36 · título de página     */
   --text-display--line-height: 2.5rem;
-  --text-display--font-weight: 600;
+  --text-display--font-weight: 800;
   --text-display--letter-spacing: -0.03em;
 
   --text-title: 1.375rem;                     /* 22 · título de sección    */
   --text-title--line-height: 1.75rem;
-  --text-title--font-weight: 600;
+  --text-title--font-weight: 700;
   --text-title--letter-spacing: -0.02em;
 
   --text-heading: 1rem;                       /* 16 · título de card       */
@@ -329,13 +342,13 @@
 
   --text-metric: 1.625rem;                    /* 26 · números de KPI       */
   --text-metric--line-height: 1.875rem;
-  --text-metric--font-weight: 600;
+  --text-metric--font-weight: 800;
   --text-metric--letter-spacing: -0.02em;
 
   /* --- Radios (derivados de --radius) --- */
   --radius-chip:    calc(var(--radius) - 4px);   /*  6 · badges, chips     */
   --radius-control: var(--radius);               /* 10 · botones, inputs   */
-  --radius-card:    calc(var(--radius) + 4px);   /* 14 · cards, paneles    */
+  --radius-card:    calc(var(--radius) + 4px);   /* 16 · cards, paneles    */
   --radius-modal:   calc(var(--radius) + 10px);  /* 20 · modales           */
 
   /* --- Sombras --- */
@@ -383,10 +396,6 @@ button {
   font-feature-settings: "tnum";
 }
 
-/* Títulos con la fuente de display. */
-.font-display {
-  font-family: var(--font-display);
-}
 
 /* ============================================================================
    FIRMA VISUAL
@@ -403,36 +412,35 @@ button {
 .brand-glow::before {
   content: "";
   position: absolute;
-  inset: -60% 40% 40% -20%;
+  top: -6rem;
+  right: -4rem;
+  width: 22rem;
+  height: 22rem;
   z-index: -1;
-  background: radial-gradient(
-    60% 60% at 30% 30%,
-    oklch(0.598 var(--brand-c) var(--brand-h) / 0.18),
-    transparent 70%
-  );
+  border-radius: 9999px;
+  background: var(--brand-100);
+  opacity: 0.55;
+  filter: blur(64px);
   pointer-events: none;
 }
 
-/* Textura sutil para el chrome oscuro: sin esto el negro se ve muerto. */
-.chrome-texture {
-  background-image: radial-gradient(
-    120% 80% at 0% 0%,
-    oklch(0.598 var(--brand-c) var(--brand-h) / 0.10),
-    transparent 60%
-  );
+/* Fondo del área de contenido: el mismo degradado suave de la portada. */
+.canvas-landing {
+  background:
+    radial-gradient(60rem 40rem at 100% -10%, var(--brand-50), transparent 60%),
+    radial-gradient(50rem 35rem at -10% 110%, var(--brand-50), transparent 55%),
+    linear-gradient(180deg, var(--n-50), var(--surface) 40%);
+  background-attachment: fixed;
 }
 
-/* Barra de acento del ítem activo en el sidebar. */
-.nav-active-bar::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  translate: 0 -50%;
-  width: 3px;
-  height: 1.25rem;
-  border-radius: 0 3px 3px 0;
-  background: var(--chrome-accent);
+/* Overline de sección: la firma tipográfica del sitio. */
+.overline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
 }
 
 /* ============================================================================
