@@ -19,7 +19,7 @@ export type NotaCard = {
 
 export function NotasClient({ notas }: { notas: NotaCard[] }) {
   return (
-    <section className="py-20 md:py-28 bg-white overflow-hidden">
+    <section className="py-20 md:py-28 bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-12"
@@ -31,10 +31,10 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Blog
           </span>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
             Recursos y <span className="text-brand-700">notas</span>
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Información actualizada sobre sociedades, trámites y legislación en Argentina
           </p>
         </motion.div>
@@ -48,12 +48,12 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="text-center py-16 bg-gray-50 rounded-2xl border border-gray-100">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="w-8 h-8 text-gray-400" />
+              <div className="text-center py-16 bg-surface-2 rounded-card border border-n-100">
+                <div className="w-16 h-16 bg-surface-3 rounded-card flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-8 h-8 text-n-400" />
                 </div>
-                <p className="text-gray-500 font-medium">No hay notas publicadas aún</p>
-                <p className="text-gray-400 text-sm mt-1">Pronto agregaremos contenido nuevo</p>
+                <p className="text-ink-3 font-medium">No hay notas publicadas aún</p>
+                <p className="text-n-400 text-sm mt-1">Pronto agregaremos contenido nuevo</p>
               </div>
             </motion.div>
           ) : (
@@ -64,7 +64,7 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
-                className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-brand-200 hover:shadow-xl transition-all duration-300"
+                className="group bg-surface rounded-card overflow-hidden border border-line hover:border-brand-200 hover:shadow-pop transition-all duration-300"
               >
                 <div className="h-52 bg-gradient-to-br from-brand-50 to-orange-50 overflow-hidden relative">
                   {nota.imagenHero ? (
@@ -77,20 +77,20 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center">
+                      <div className="w-16 h-16 bg-surface/80 rounded-card flex items-center justify-center">
                         <BookOpen className="w-8 h-8 text-brand-300" />
                       </div>
                     </div>
                   )}
                   <div className="absolute top-4 left-4">
-                    <span className="text-xs font-bold text-white bg-brand-700 px-3 py-1.5 rounded-full shadow-lg">
+                    <span className="text-xs font-bold text-white bg-brand-700 px-3 py-1.5 rounded-full shadow-pop">
                       {nota.categoria}
                     </span>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mb-4 text-sm text-ink-3">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-4 h-4" />
                       <span>{new Date(nota.fechaPublicacion).toLocaleDateString('es-AR')}</span>
@@ -101,11 +101,11 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                     </div>
                   </div>
 
-                  <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-brand-700 transition-colors leading-tight">
+                  <h3 className="text-xl font-bold mb-3 text-ink group-hover:text-brand-700 transition-colors leading-tight">
                     <Link href={`/blog/${nota.slug}`}>{nota.titulo}</Link>
                   </h3>
 
-                  <p className="text-gray-600 mb-5 line-clamp-3 leading-relaxed text-sm">{nota.descripcion}</p>
+                  <p className="text-ink-2 mb-5 line-clamp-3 leading-relaxed text-sm">{nota.descripcion}</p>
 
                   <Link
                     href={`/blog/${nota.slug}`}
@@ -129,7 +129,7 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
         >
           <Link
             href="/blog"
-            className="inline-flex items-center gap-2 border-2 border-brand-700 text-brand-700 px-8 py-3 rounded-xl hover:bg-brand-50 transition-colors font-semibold"
+            className="inline-flex items-center gap-2 border-2 border-brand-700 text-brand-700 px-8 py-3 rounded-control hover:bg-brand-50 transition-colors font-semibold"
           >
             Ver todas las notas
             <ArrowRight className="w-4 h-4" />

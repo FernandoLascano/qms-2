@@ -40,13 +40,13 @@ export default function HomePage({
 
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface">
       <Navbar currentPage="home" />
 
       {/* Hero Section - Diseño Bold y Diferenciador */}
       <section className="relative overflow-hidden">
         {/* Background base + gradiente */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-brand-50/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-surface-2 via-surface to-brand-50/30" />
 
         {/* Elementos decorativos geométricos */}
         <div className="absolute top-20 right-0 w-96 h-96 bg-brand-100/30 rounded-full blur-3xl" />
@@ -79,7 +79,7 @@ export default function HomePage({
               </motion.div>
 
               <motion.h1
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-6 tracking-tight leading-[1.1]"
+                className="text-display sm:text-display-lg md:text-6xl lg:text-7xl font-black text-ink mb-6 tracking-tight leading-[1.1]"
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.25 }}
@@ -92,7 +92,7 @@ export default function HomePage({
 
               {/* Subtítulo con valor claro */}
               <motion.p
-                className="text-xl md:text-2xl text-gray-600 mb-4 font-medium"
+                className="text-xl md:text-title text-ink-2 mb-4 font-medium"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
@@ -101,7 +101,7 @@ export default function HomePage({
               </motion.p>
 
               <motion.p
-                className="text-base md:text-lg text-gray-500 mb-8 max-w-xl mx-auto lg:mx-0"
+                className="text-body-lg md:text-lead text-ink-3 mb-8 max-w-xl mx-auto lg:mx-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
@@ -119,7 +119,7 @@ export default function HomePage({
               >
                 <Link href="/registro">
                   <motion.button
-                    className="group relative bg-brand-700 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg shadow-brand-200 overflow-hidden"
+                    className="group relative bg-brand-700 text-white px-8 py-4 rounded-control font-bold text-lead flex items-center justify-center gap-3 shadow-pop shadow-brand-200 overflow-hidden"
                     style={{ cursor: 'pointer' }}
                     whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
                     whileTap={{ scale: 0.98 }}
@@ -132,7 +132,7 @@ export default function HomePage({
 
                 <motion.a
                   href="#planes"
-                  className="group border-2 border-gray-200 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
+                  className="group border-2 border-line text-n-700 px-8 py-4 rounded-control font-semibold text-lead flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -155,14 +155,14 @@ export default function HomePage({
                 ].map((item, index) => (
                   <motion.div
                     key={item.text}
-                    className="flex flex-col items-center gap-2 p-3 rounded-lg bg-white border border-gray-100 shadow-sm"
+                    className="flex flex-col items-center gap-2 p-3 rounded-chip bg-surface border border-n-100 shadow-card"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
                     whileHover={{ y: -2, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                   >
                     <item.icon className="w-5 h-5 text-brand-600" />
-                    <span className="text-sm font-medium text-gray-700">{item.text}</span>
+                    <span className="text-sm font-medium text-n-700">{item.text}</span>
                   </motion.div>
                 ))}
               </motion.div>
@@ -177,7 +177,7 @@ export default function HomePage({
             >
               {/* Card flotante con estadística */}
               <motion.div
-                className="absolute -left-8 top-1/4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 z-10"
+                className="absolute -left-8 top-1/4 bg-surface rounded-card shadow-pop p-4 border border-n-100 z-10"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 1.2 }}
@@ -188,15 +188,15 @@ export default function HomePage({
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Tiempo promedio</p>
-                    <p className="text-lg font-bold text-gray-900">5 días</p>
+                    <p className="text-xs text-ink-3">Tiempo promedio</p>
+                    <p className="text-lead font-bold text-ink">5 días</p>
                   </div>
                 </div>
               </motion.div>
 
               {/* Card flotante con rating */}
               <motion.div
-                className="absolute -right-4 bottom-1/4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 z-10"
+                className="absolute -right-4 bottom-1/4 bg-surface rounded-card shadow-pop p-4 border border-n-100 z-10"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 1.4 }}
@@ -208,9 +208,9 @@ export default function HomePage({
                       <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                     ))}
                   </div>
-                  <span className="text-sm font-bold text-gray-900">4.9</span>
+                  <span className="text-sm font-bold text-ink">4.9</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">+200 reseñas</p>
+                <p className="text-xs text-ink-3 mt-1">+200 reseñas</p>
               </motion.div>
 
               <Image
@@ -245,7 +245,7 @@ export default function HomePage({
       </section>
 
       {/* Cómo Funciona - Timeline visual moderno */}
-      <section id="procedimiento" className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white" ref={stepsRef}>
+      <section id="procedimiento" className="py-20 md:py-28 bg-gradient-to-b from-surface-2 to-surface" ref={stepsRef}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="text-center mb-16"
@@ -256,11 +256,11 @@ export default function HomePage({
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Proceso simple
             </span>
-            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
+            <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
               4 pasos y{' '}
               <span className="text-brand-700">listo</span>
             </h2>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            <p className="text-lead text-ink-3 max-w-2xl mx-auto">
               Un proceso diseñado para que sea lo más fácil posible
             </p>
           </motion.div>
@@ -270,7 +270,7 @@ export default function HomePage({
             {/* Desktop: horizontal timeline */}
             <div className="hidden md:block relative px-4">
               {/* Línea horizontal de fondo */}
-              <div className="absolute top-[52px] left-[12.5%] right-[12.5%] h-1 bg-gray-200 rounded-full">
+              <div className="absolute top-[52px] left-[12.5%] right-[12.5%] h-1 bg-n-200 rounded-full">
                 <motion.div
                   className="h-full bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 rounded-full origin-left"
                   initial={{ scaleX: 0 }}
@@ -299,19 +299,19 @@ export default function HomePage({
 
                       {/* Nodo principal */}
                       <motion.div
-                        className={`relative w-[104px] h-[104px] rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-xl`}
+                        className={`relative w-[104px] h-[104px] rounded-full bg-gradient-to-br ${step.color} flex items-center justify-center shadow-pop`}
                         initial={{ scale: 0, rotate: -180 }}
                         animate={stepsInView ? { scale: 1, rotate: 0 } : {}}
                         transition={{ duration: 0.6, delay: 0.5 + index * 0.4, type: 'spring', bounce: 0.35 }}
                       >
-                        <div className="w-[88px] h-[88px] rounded-full bg-white flex items-center justify-center">
+                        <div className="w-[88px] h-[88px] rounded-full bg-surface flex items-center justify-center">
                           <span className="text-4xl">{step.icon}</span>
                         </div>
                       </motion.div>
 
                       {/* Número */}
                       <motion.div
-                        className={`absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center shadow-md`}
+                        className={`absolute -top-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-r ${step.color} flex items-center justify-center shadow-raise`}
                         initial={{ scale: 0 }}
                         animate={stepsInView ? { scale: 1 } : {}}
                         transition={{ duration: 0.3, delay: 0.9 + index * 0.4, type: 'spring' }}
@@ -327,8 +327,8 @@ export default function HomePage({
                       animate={stepsInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.8 + index * 0.4 }}
                     >
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">{step.title}</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed">{step.description}</p>
+                      <h3 className="text-lead font-bold text-ink mb-2">{step.title}</h3>
+                      <p className="text-ink-3 text-sm leading-relaxed">{step.description}</p>
                     </motion.div>
 
                     {/* Conector flecha (entre nodos, no en el último) */}
@@ -351,7 +351,7 @@ export default function HomePage({
             {/* Mobile: vertical con línea */}
             <div className="md:hidden relative pl-8">
               {/* Línea vertical */}
-              <div className="absolute left-[23px] top-0 bottom-0 w-0.5 bg-gray-200">
+              <div className="absolute left-[23px] top-0 bottom-0 w-0.5 bg-n-200">
                 <motion.div
                   className="w-full bg-brand-600 origin-top"
                   initial={{ scaleY: 0 }}
@@ -377,7 +377,7 @@ export default function HomePage({
                   >
                     {/* Nodo */}
                     <motion.div
-                      className="w-12 h-12 rounded-full bg-brand-600 flex items-center justify-center shadow-lg flex-shrink-0 -ml-8 z-10"
+                      className="w-12 h-12 rounded-full bg-brand-600 flex items-center justify-center shadow-pop flex-shrink-0 -ml-8 z-10"
                       initial={{ scale: 0 }}
                       animate={stepsInView ? { scale: 1 } : {}}
                       transition={{ duration: 0.4, delay: 0.4 + index * 0.2, type: 'spring' }}
@@ -385,12 +385,12 @@ export default function HomePage({
                       <span className="text-xl">{step.icon}</span>
                     </motion.div>
 
-                    <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm flex-1">
+                    <div className="bg-surface rounded-control p-4 border border-n-100 shadow-card flex-1">
                       <span className="inline-block text-xs font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full mb-2">
                         PASO {step.number}
                       </span>
-                      <h3 className="text-base font-bold text-gray-900 mb-1">{step.title}</h3>
-                      <p className="text-gray-500 text-sm">{step.description}</p>
+                      <h3 className="text-body-lg font-bold text-ink mb-1">{step.title}</h3>
+                      <p className="text-ink-3 text-sm">{step.description}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -407,7 +407,7 @@ export default function HomePage({
           >
             <Link href="/registro">
               <motion.button
-                className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-lg inline-flex items-center gap-2 hover:bg-gray-800 transition-colors cursor-pointer"
+                className="bg-ink text-white px-8 py-4 rounded-control font-bold text-lead inline-flex items-center gap-2 hover:bg-n-800 transition-colors cursor-pointer"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -450,7 +450,7 @@ export default function HomePage({
       <AsistenteChatGate />
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
+      <footer className="bg-ink text-n-300 pt-16 pb-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Main Footer Content */}
           <div className="grid md:grid-cols-5 gap-8 mb-12">
@@ -465,7 +465,7 @@ export default function HomePage({
                   className="h-12 w-auto"
                 />
               </Link>
-              <p className="text-sm text-gray-400 mb-4 max-w-sm">
+              <p className="text-sm text-n-400 mb-4 max-w-sm">
                 Plataforma digital para la constitución de Sociedades por Acciones Simplificadas en Argentina.
                 Rápido, seguro y 100% online.
               </p>
@@ -482,10 +482,10 @@ export default function HomePage({
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Servicios</h4>
               <ul className="space-y-3 text-sm">
-                <li><Link href="/tramite/nuevo" className="text-gray-400 hover:text-white transition">Constituir S.A.S.</Link></li>
-                <li><a href="#planes" className="text-gray-400 hover:text-white transition">Planes y Precios</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Reformas de Estatuto</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Asesoría Societaria</a></li>
+                <li><Link href="/tramite/nuevo" className="text-n-400 hover:text-white transition">Constituir S.A.S.</Link></li>
+                <li><a href="#planes" className="text-n-400 hover:text-white transition">Planes y Precios</a></li>
+                <li><a href="#" className="text-n-400 hover:text-white transition">Reformas de Estatuto</a></li>
+                <li><a href="#" className="text-n-400 hover:text-white transition">Asesoría Societaria</a></li>
               </ul>
             </div>
 
@@ -493,9 +493,9 @@ export default function HomePage({
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Recursos</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#faq" className="text-gray-400 hover:text-white transition">Preguntas Frecuentes</a></li>
-                <li><Link href="/blog" className="text-gray-400 hover:text-white transition">Blog y Notas</Link></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition">Marco Legal</a></li>
+                <li><a href="#faq" className="text-n-400 hover:text-white transition">Preguntas Frecuentes</a></li>
+                <li><Link href="/blog" className="text-n-400 hover:text-white transition">Blog y Notas</Link></li>
+                <li><a href="#" className="text-n-400 hover:text-white transition">Marco Legal</a></li>
               </ul>
             </div>
 
@@ -503,14 +503,14 @@ export default function HomePage({
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Contacto</h4>
               <ul className="space-y-3 text-sm">
-                <li className="text-gray-400">Córdoba, Argentina</li>
+                <li className="text-n-400">Córdoba, Argentina</li>
                 <li>
-                  <a href="tel:+5493512136212" className="text-gray-400 hover:text-white transition">
+                  <a href="tel:+5493512136212" className="text-n-400 hover:text-white transition">
                     +54 9 351 213 6212
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:contacto@quieromisas.com" className="text-gray-400 hover:text-white transition">
+                  <a href="mailto:contacto@quieromisas.com" className="text-n-400 hover:text-white transition">
                     contacto@quieromisas.com
                   </a>
                 </li>
@@ -519,21 +519,21 @@ export default function HomePage({
           </div>
 
           {/* Jurisdicciones */}
-          <div className="border-t border-gray-800 pt-8 mb-8">
+          <div className="border-t border-n-800 pt-8 mb-8">
             <div className="flex flex-wrap justify-center gap-3 text-sm">
-              <span className="bg-gray-800 px-4 py-2 rounded-full text-gray-300">Córdoba (IPJ)</span>
-              <span className="bg-gray-800 px-4 py-2 rounded-full text-gray-300">CABA (IGJ)</span>
-              <span className="text-gray-500 px-4 py-2">Próximamente más provincias</span>
+              <span className="bg-n-800 px-4 py-2 rounded-full text-n-300">Córdoba (IPJ)</span>
+              <span className="bg-n-800 px-4 py-2 rounded-full text-n-300">CABA (IGJ)</span>
+              <span className="text-ink-3 px-4 py-2">Próximamente más provincias</span>
             </div>
           </div>
 
           {/* Bottom Footer - Centrado para no superponerse con el botón del chat */}
-          <div className="border-t border-gray-800 pt-8 pr-20 md:pr-24">
+          <div className="border-t border-n-800 pt-8 pr-20 md:pr-24">
             <div className="flex flex-col justify-center items-center gap-2 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-ink-3">
                 © 2026 QuieroMiSAS
               </p>
-              <div className="flex gap-6 text-xs text-gray-500">
+              <div className="flex gap-6 text-xs text-ink-3">
                 <a href="/terminos" className="hover:text-white transition">Términos</a>
                 <a href="/privacidad" className="hover:text-white transition">Privacidad</a>
               </div>

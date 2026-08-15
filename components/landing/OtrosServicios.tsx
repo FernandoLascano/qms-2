@@ -38,7 +38,7 @@ export function OtrosServicios() {
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 bg-gray-50 overflow-hidden">
+    <section ref={sectionRef} className="py-12 md:py-16 bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header - estilo consistente con la página */}
         <motion.div
@@ -50,11 +50,11 @@ export function OtrosServicios() {
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Servicios adicionales
           </span>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
             Otros{' '}
             <span className="text-brand-700">Servicios</span>
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Además ofrecemos una gran variedad de Servicios Jurídicos y Contables para tu Sociedad
           </p>
         </motion.div>
@@ -77,12 +77,12 @@ export function OtrosServicios() {
               initial={{ opacity: 0, y: 10 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.3, delay: index * 0.03 }}
-              className="group flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-brand-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-3 p-3 bg-surface rounded-chip border border-line hover:border-brand-300 hover:shadow-raise transition-all duration-200 cursor-pointer"
             >
-              <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${item.color}`}>
+              <div className={`flex-shrink-0 w-9 h-9 rounded-chip flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-4 h-4" />
               </div>
-              <span className="font-medium text-gray-900 text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
+              <span className="font-medium text-ink text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
             </motion.a>
           ))}
         </div>

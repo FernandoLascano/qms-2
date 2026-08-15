@@ -55,7 +55,7 @@ export function QueEsSAS() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-28 bg-white overflow-hidden">
+    <section ref={sectionRef} className="py-20 md:py-28 bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
@@ -68,12 +68,12 @@ export function QueEsSAS() {
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Conocé más
             </span>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+            <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
               ¿Qué es una{' '}
               <span className="text-brand-700">S.A.S.</span>?
             </h2>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-              La <strong className="text-gray-700">Sociedad por Acciones Simplificada</strong> es un tipo societario moderno creado en 2017
+            <p className="text-lead text-ink-3 max-w-2xl mx-auto">
+              La <strong className="text-n-700">Sociedad por Acciones Simplificada</strong> es un tipo societario moderno creado en 2017
               que revolucionó la forma de constituir empresas en Argentina.
             </p>
           </motion.div>
@@ -86,16 +86,16 @@ export function QueEsSAS() {
                 initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
                 animate={isInView ? { opacity: 1, x: 0 } : {}}
                 transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                className="group flex gap-4 p-5 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all duration-300"
+                className="group flex gap-4 p-5 bg-surface-2 rounded-control border border-n-100 hover:border-line hover:shadow-raise transition-all duration-300"
               >
                 <div className="flex-shrink-0">
-                  <div className={`w-12 h-12 ${item.iconBg} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`w-12 h-12 ${item.iconBg} rounded-control flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                     <item.icon className={`w-6 h-6 ${item.iconColor}`} />
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1 text-gray-900">{item.title}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">
+                  <h3 className="font-bold text-lead mb-1 text-ink">{item.title}</h3>
+                  <p className="text-ink-2 text-sm leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -108,14 +108,14 @@ export function QueEsSAS() {
             initial={{ opacity: 0, y: 30 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.8 }}
-            className="bg-gradient-to-r from-brand-50 to-brand-100/50 border-l-4 border-brand-700 p-6 md:p-8 rounded-xl"
+            className="bg-gradient-to-r from-brand-50 to-brand-100/50 border-l-4 border-brand-700 p-6 md:p-8 rounded-control"
           >
-            <h3 className="font-bold text-lg mb-3 text-gray-900">Marco Legal</h3>
-            <p className="text-gray-700 mb-3 leading-relaxed">
+            <h3 className="font-bold text-lead mb-3 text-ink">Marco Legal</h3>
+            <p className="text-n-700 mb-3 leading-relaxed">
               La S.A.S. está regulada por la <strong>Ley 27.349</strong> (modificada por Ley 27.444) y el <strong>Decreto 27/2018</strong>.
               Es un tipo societario oficial, reconocido por ARCA, IGJ, IPJ y todas las entidades públicas y privadas.
             </p>
-            <p className="text-gray-700">
+            <p className="text-n-700">
               Podés consultar más información en el{' '}
               <a
                 href="https://www.argentina.gob.ar/justicia/registronacional/registrodesociedades/sas"

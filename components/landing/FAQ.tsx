@@ -83,7 +83,7 @@ export function FAQ() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} id="faq" className="py-20 md:py-28 bg-gray-50 overflow-hidden">
+    <section ref={sectionRef} id="faq" className="py-20 md:py-28 bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
@@ -96,11 +96,11 @@ export function FAQ() {
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               FAQ
             </span>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+            <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
               Preguntas{' '}
               <span className="text-brand-700">frecuentes</span>
             </h2>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+            <p className="text-lead text-ink-3 max-w-2xl mx-auto">
               Todo lo que necesitás saber sobre la constitución de tu S.A.S.
             </p>
           </motion.div>
@@ -113,10 +113,10 @@ export function FAQ() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
-                className={`bg-white rounded-xl border overflow-hidden transition-all duration-300 ${
+                className={`bg-surface rounded-control border overflow-hidden transition-all duration-300 ${
                   openIndex === index
-                    ? 'border-brand-200 shadow-lg'
-                    : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                    ? 'border-brand-200 shadow-pop'
+                    : 'border-line hover:border-line-strong hover:shadow-raise'
                 }`}
               >
                 <button
@@ -124,22 +124,22 @@ export function FAQ() {
                   className="w-full px-6 py-5 text-left flex items-center justify-between gap-4 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                      openIndex === index ? 'bg-brand-100' : 'bg-gray-100'
+                    <div className={`w-8 h-8 rounded-chip flex items-center justify-center flex-shrink-0 transition-colors ${
+                      openIndex === index ? 'bg-brand-100' : 'bg-surface-3'
                     }`}>
                       <HelpCircle className={`w-4 h-4 transition-colors ${
-                        openIndex === index ? 'text-brand-600' : 'text-gray-500'
+                        openIndex === index ? 'text-brand-600' : 'text-ink-3'
                       }`} />
                     </div>
                     <span className={`font-semibold transition-colors ${
-                      openIndex === index ? 'text-brand-900' : 'text-gray-900'
+                      openIndex === index ? 'text-brand-900' : 'text-ink'
                     }`}>
                       {faq.pregunta}
                     </span>
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
-                      openIndex === index ? 'text-brand-600 rotate-180' : 'text-gray-400'
+                      openIndex === index ? 'text-brand-600 rotate-180' : 'text-n-400'
                     }`}
                   />
                 </button>
@@ -154,7 +154,7 @@ export function FAQ() {
                     >
                       <div className="px-6 pb-5 pt-0">
                         <div className="pl-12">
-                          <p className="text-gray-600 leading-relaxed">{faq.respuesta}</p>
+                          <p className="text-ink-2 leading-relaxed">{faq.respuesta}</p>
                           {faq.link && (
                             <Link
                               href={faq.link.href}
@@ -182,7 +182,7 @@ export function FAQ() {
             >
               <button
                 onClick={() => setShowAll(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:border-brand-300 hover:text-brand-700 transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-line rounded-control text-sm font-semibold text-n-700 hover:border-brand-300 hover:text-brand-700 transition-all cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
                 Ver las {faqs.length - 6} preguntas restantes
@@ -197,17 +197,17 @@ export function FAQ() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-sm">
+            <div className="bg-surface rounded-card p-8 border border-line shadow-card">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-brand-100 rounded-control flex items-center justify-center">
                   <MessageCircle className="w-6 h-6 text-brand-600" />
                 </div>
               </div>
-              <p className="text-gray-900 font-semibold text-lg mb-2">¿No encontraste lo que buscabas?</p>
-              <p className="text-gray-500 mb-6">Estamos acá para ayudarte con cualquier consulta</p>
+              <p className="text-ink font-semibold text-lead mb-2">¿No encontraste lo que buscabas?</p>
+              <p className="text-ink-3 mb-6">Estamos acá para ayudarte con cualquier consulta</p>
               <a
                 href="mailto:contacto@quieromisas.com"
-                className="inline-flex items-center gap-2 bg-brand-700 text-white px-6 py-3 rounded-xl hover:bg-brand-800 transition-colors font-semibold shadow-lg shadow-brand-200"
+                className="inline-flex items-center gap-2 bg-brand-700 text-white px-6 py-3 rounded-control hover:bg-brand-800 transition-colors font-semibold shadow-pop shadow-brand-200"
               >
                 Contactanos directamente
               </a>

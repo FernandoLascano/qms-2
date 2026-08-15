@@ -353,6 +353,24 @@
   --text-metric--font-weight: 800;
   --text-metric--letter-spacing: -0.02em;
 
+  /* --- Escalones de portada ---
+     La portada necesita tipografía más grande y más aireada que el panel: un
+     titular de sección a 24px se pierde en una pantalla de venta. Estos pasos
+     existen sólo ahí, con los MISMOS valores que la portada ya venía usando en
+     la escala cruda de Tailwind, para que ahora salgan de un solo lugar.
+
+     El peso va aparte (con font-bold / font-black en el marcado) porque en
+     estos tamaños conviven titulares de 900 y bajadas de 400.               */
+  --text-body-lg: 1rem;                       /* 16 · lectura en portada   */
+  --text-body-lg--line-height: 1.625rem;
+
+  --text-lead: 1.125rem;                      /* 18 · bajada de sección    */
+  --text-lead--line-height: 1.75rem;
+
+  --text-display-lg: 3rem;                    /* 48 · título de sección    */
+  --text-display-lg--line-height: 1;
+  --text-display-lg--letter-spacing: -0.03em;
+
   /* --- Radios (derivados de --radius) --- */
   --radius-chip:    calc(var(--radius) - 4px);   /*  6 · badges, chips     */
   --radius-control: var(--radius);               /* 10 · botones, inputs   */
