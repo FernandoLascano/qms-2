@@ -1,9 +1,7 @@
 'use client'
 
 import { Shield, Users, Zap, TrendingUp, FileCheck, DollarSign } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 const caracteristicas = [
   {
@@ -51,19 +49,15 @@ const caracteristicas = [
 ]
 
 export function QueEsSAS() {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
+  const grilla = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-surface overflow-hidden">
+    <section className="py-seccion md:py-seccion-lg bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
-          <motion.div
+          <div
             className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
           >
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Conocé más
@@ -76,16 +70,13 @@ export function QueEsSAS() {
               La <strong className="text-n-700">Sociedad por Acciones Simplificada</strong> es un tipo societario moderno creado en 2017
               que revolucionó la forma de constituir empresas en Argentina.
             </p>
-          </motion.div>
+          </div>
 
           {/* Características con animación escalonada */}
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mb-12">
+          <div ref={grilla.ref} className={`grid md:grid-cols-2 gap-6 lg:gap-8 mb-12 ${grilla.clase}`}>
             {caracteristicas.map((item, index) => (
-              <motion.div
+              <div
                 key={item.title}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
                 className="group flex gap-4 p-5 bg-surface-2 rounded-control border border-n-100 hover:border-line hover:shadow-raise transition-all duration-300"
               >
                 <div className="flex-shrink-0">
@@ -99,15 +90,12 @@ export function QueEsSAS() {
                     {item.description}
                   </p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Marco legal con animación */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.8 }}
+          <div
             className="bg-gradient-to-r from-brand-50 to-brand-100/50 border-l-4 border-brand-700 p-6 md:p-8 rounded-control"
           >
             <h3 className="font-bold text-lead mb-3 text-ink">Marco Legal</h3>
@@ -126,7 +114,7 @@ export function QueEsSAS() {
                 sitio oficial del Gobierno Argentino
               </a>.
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

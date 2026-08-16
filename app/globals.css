@@ -530,6 +530,38 @@ button {
 .stagger > *:nth-child(5) { animation-delay: 240ms; }
 .stagger > *:nth-child(n + 6) { animation-delay: 300ms; }
 
+/* Entrada al aparecer en pantalla, para la portada.
+   `.stagger` arranca apenas se renderiza, que sirve en el panel pero no en una
+   página larga: las secciones de abajo terminarían su animación antes de que
+   nadie las vea. Acá los hijos esperan ocultos y entran cuando se le agrega
+   `.a-la-vista` al contenedor.
+
+   Es CSS y no framer-motion a propósito. Framer escribe la opacidad
+   directamente en el `style` del elemento, y cualquier re-render de React la
+   devolvía al valor inicial: la tarjeta terminaba de aparecer, saltaba de
+   golpe a cero y entraba de nuevo. Eso era el parpadeo. Una animación CSS ya
+   corrida no la puede pisar un re-render.                                 */
+.al-aparecer > * { opacity: 0; }
+
+.al-aparecer.a-la-vista > * {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+.al-aparecer.a-la-vista > *:nth-child(1) { animation-delay: 0ms; }
+.al-aparecer.a-la-vista > *:nth-child(2) { animation-delay: 70ms; }
+.al-aparecer.a-la-vista > *:nth-child(3) { animation-delay: 140ms; }
+.al-aparecer.a-la-vista > *:nth-child(4) { animation-delay: 210ms; }
+.al-aparecer.a-la-vista > *:nth-child(5) { animation-delay: 280ms; }
+.al-aparecer.a-la-vista > *:nth-child(6) { animation-delay: 350ms; }
+.al-aparecer.a-la-vista > *:nth-child(n + 7) { animation-delay: 420ms; }
+
+/* Sin animación no puede quedar contenido invisible. */
+@media (prefers-reduced-motion: reduce) {
+  .al-aparecer > * { opacity: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

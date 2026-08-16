@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { Calendar, Clock, ArrowRight, BookOpen } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 export type NotaCard = {
   id: string
@@ -18,15 +18,13 @@ export type NotaCard = {
 }
 
 export function NotasClient({ notas }: { notas: NotaCard[] }) {
+  const grilla = useAlAparecer<HTMLDivElement>()
+
   return (
     <section className="py-seccion md:py-seccion-lg bg-surface overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
+        <div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
         >
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Blog
@@ -37,16 +35,12 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
           <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Información actualizada sobre sociedades, trámites y legislación en Argentina
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto">
+        <div ref={grilla.ref} className={`grid md:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto ${grilla.clase}`}>
           {notas.length === 0 ? (
-            <motion.div
+            <div
               className="col-span-2"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="text-center py-16 bg-surface-2 rounded-card border border-n-100">
                 <div className="w-16 h-16 bg-surface-3 rounded-card flex items-center justify-center mx-auto mb-4">
@@ -55,15 +49,11 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                 <p className="text-ink-3 font-medium">No hay notas publicadas aún</p>
                 <p className="text-n-400 text-sm mt-1">Pronto agregaremos contenido nuevo</p>
               </div>
-            </motion.div>
+            </div>
           ) : (
             notas.map((nota, index) => (
-              <motion.article
+              <article
                 key={nota.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
                 className="group bg-surface rounded-card overflow-hidden border border-line hover:border-brand-200 hover:shadow-pop transition-all duration-300"
               >
                 <div className="h-52 bg-gradient-to-br from-brand-50 to-a5-soft overflow-hidden relative">
@@ -115,17 +105,13 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
                     <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                   </Link>
                 </div>
-              </motion.article>
+              </article>
             ))
           )}
         </div>
 
-        <motion.div
+        <div
           className="mt-12 text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Link
             href="/blog"
@@ -134,7 +120,7 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
             Ver todas las notas
             <ArrowRight className="w-4 h-4" />
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   )

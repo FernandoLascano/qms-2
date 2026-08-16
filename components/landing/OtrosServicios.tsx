@@ -15,8 +15,7 @@ import {
   Building,
   LucideIcon,
 } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 const servicios: { icon: LucideIcon; name: string; color: string }[] = [
   { icon: FileEdit, name: 'Reformas de Estatuto', color: 'bg-a5-soft text-a5' },
@@ -34,19 +33,14 @@ const servicios: { icon: LucideIcon; name: string; color: string }[] = [
 ]
 
 export function OtrosServicios() {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
+  const cabecera = useAlAparecer<HTMLDivElement>()
+  const grilla = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
+    <section className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header - estilo consistente con la página */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
+        <div ref={cabecera.ref} className={`text-center mb-8 ${cabecera.clase}`}>
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Servicios adicionales
           </span>
@@ -57,12 +51,15 @@ export function OtrosServicios() {
           <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Además ofrecemos una gran variedad de Servicios Jurídicos y Contables para tu Sociedad
           </p>
-        </motion.div>
+        </div>
 
         {/* Grid más denso: 4 columnas en desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-6xl mx-auto">
-          {servicios.map((item, index) => (
-            <motion.a
+        <div
+          ref={grilla.ref}
+          className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-6xl mx-auto ${grilla.clase}`}
+        >
+          {servicios.map((item) => (
+            <a
               key={item.name}
               href={`#contacto?asunto=${encodeURIComponent(item.name)}`}
               onClick={(e) => {
@@ -74,16 +71,13 @@ export function OtrosServicios() {
                   contacto.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.3, delay: index * 0.03 }}
               className="group flex items-center gap-3 p-3 bg-surface rounded-chip border border-line hover:border-brand-300 hover:shadow-raise transition-all duration-200 cursor-pointer"
             >
               <div className={`flex-shrink-0 w-9 h-9 rounded-chip flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-4 h-4" />
               </div>
               <span className="font-medium text-ink text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
-            </motion.a>
+            </a>
           ))}
         </div>
       </div>

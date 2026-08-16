@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useInView } from 'framer-motion'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 interface FAQItem {
   pregunta: string
@@ -79,19 +79,15 @@ export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [showAll, setShowAll] = useState(false)
   const visibleFaqs = showAll ? faqs : faqs.slice(0, 6)
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
+  const lista = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section ref={sectionRef} id="faq" className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
+    <section id="faq" className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header con nuevo diseño */}
-          <motion.div
+          <div
             className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6 }}
           >
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               FAQ
@@ -103,16 +99,13 @@ export function FAQ() {
             <p className="text-lead text-ink-3 max-w-2xl mx-auto">
               Todo lo que necesitás saber sobre la constitución de tu S.A.S.
             </p>
-          </motion.div>
+          </div>
 
           {/* Lista de preguntas */}
-          <div className="space-y-3">
+          <div ref={lista.ref} className={`space-y-3 ${lista.clase}`}>
             {visibleFaqs.map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
                 className={`bg-surface rounded-control border overflow-hidden transition-all duration-300 ${
                   openIndex === index
                     ? 'border-brand-200 shadow-pop'
@@ -168,17 +161,14 @@ export function FAQ() {
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </div>
             ))}
           </div>
 
           {/* Ver más preguntas */}
           {!showAll && faqs.length > 6 && (
-            <motion.div
+            <div
               className="text-center mt-8"
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.5 }}
             >
               <button
                 onClick={() => setShowAll(true)}
@@ -187,15 +177,12 @@ export function FAQ() {
                 <ChevronDown className="w-4 h-4" />
                 Ver las {faqs.length - 6} preguntas restantes
               </button>
-            </motion.div>
+            </div>
           )}
 
           {/* CTA de contacto */}
-          <motion.div
+          <div
             className="mt-12 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.6 }}
           >
             <div className="bg-surface rounded-card p-8 border border-line shadow-card">
               <div className="flex items-center justify-center gap-3 mb-4">
@@ -212,7 +199,7 @@ export function FAQ() {
                 Contactanos directamente
               </a>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

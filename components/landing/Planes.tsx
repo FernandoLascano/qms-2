@@ -2,12 +2,10 @@
 
 import { Check, X } from 'lucide-react'
 import Link from 'next/link'
-import { useRef } from 'react'
-import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
 import { AnimatedList } from './AnimatedList'
 import { ParallaxCard } from './ParallaxCard'
 import { PrecioDual } from '@/components/PrecioDual'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 // Definición de características por plan
 const caracteristicas = [
@@ -29,18 +27,14 @@ type PreciosPlanes = {
 // getPublicConfig), así se renderizan en el HTML inicial y los ve cualquier
 // request (crawler/curl) sin depender de JavaScript.
 export function Planes({ precios }: { precios: PreciosPlanes }) {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
+  const grilla = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section ref={sectionRef} id="planes" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-brand-50 to-surface">
+    <section id="planes" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-brand-50 to-surface">
       <div className="container mx-auto px-4">
         {/* Header con nuevo diseño */}
-        <motion.div
+        <div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
         >
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Planes y Precios
@@ -55,16 +49,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
           <p className="text-body-lg font-semibold text-brand-700 max-w-2xl mx-auto mt-3">
             Pago único, no mensual: es el precio por la constitución de tu sociedad según el plan elegido.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div ref={grilla.ref} className={`grid md:grid-cols-3 gap-8 max-w-6xl mx-auto ${grilla.clase}`}>
           {/* Plan Básico */}
           <ParallaxCard intensity={0.15}>
-            <motion.div
+            <div
               className="bg-surface rounded-card shadow-pop p-8 border-2 border-line hover:border-brand-300 transition h-full"
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.2 }}
             >
             <div className="text-center mb-6">
               <h3 className="text-title font-bold mb-2 text-brand-900">Básico</h3>
@@ -101,16 +92,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
             >
               Elegir Plan
             </Link>
-          </motion.div>
+          </div>
           </ParallaxCard>
 
           {/* Plan Emprendedor - Destacado */}
           <ParallaxCard intensity={0.2}>
-          <motion.div
+          <div
             className="bg-surface rounded-card shadow-modal p-8 border-2 border-brand-700 hover:border-brand-800 transition transform md:scale-105 relative h-full"
-            initial={{ opacity: 0, y: 40 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.3 }}
           >
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
               <span className="bg-brand-700 text-white px-4 py-1 rounded-full text-sm font-semibold">
@@ -153,16 +141,13 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
             >
               Elegir Plan
             </Link>
-          </motion.div>
+          </div>
           </ParallaxCard>
 
           {/* Plan Premium */}
           <ParallaxCard intensity={0.15}>
-          <motion.div
+          <div
             className="bg-surface rounded-card shadow-pop p-8 border-2 border-line hover:border-brand-300 transition h-full"
-            initial={{ opacity: 0, y: 40 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.4 }}
           >
             <div className="text-center mb-6">
               <h3 className="text-title font-bold mb-2 text-brand-900">Premium</h3>
@@ -199,22 +184,19 @@ export function Planes({ precios }: { precios: PreciosPlanes }) {
             >
               Elegir Plan
             </Link>
-          </motion.div>
+          </div>
           </ParallaxCard>
         </div>
 
-        <motion.div
+        <div
           className="mt-12 text-center text-sm text-ink-2 max-w-3xl mx-auto"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.5, delay: 0.6 }}
         >
           <p>
             <strong>Es un pago único</strong> por la constitución de la sociedad —no es una suscripción mensual—.
             Los precios no incluyen las tasas de inscripción de IGJ/IPJ (varían según jurisdicción y capital social)
             ni el depósito del 25% del capital social. Te informamos todos los costos detallados antes de comenzar.
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
