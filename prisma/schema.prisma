@@ -673,6 +673,53 @@ model ConfiguracionSistema {
   updatedAt DateTime @updatedAt
 }
 
+// CATÁLOGO DE SERVICIOS (post-venta)
+//
+// Los planes son tres y fijos, por eso viven como columnas en Config. El
+// catálogo de servicios crece —contable, marca, contratos, libros, actas…— así
+// que va como tabla: sumar un servicio es una fila y no una migración.
+//
+// El precio es opcional a propósito: los trámites societarios (reformas,
+// actas, aumentos de capital) dependen del caso y se cotizan, así que sin
+// precio cargado la tarjeta muestra "Consultar".
+model ServicioCatalogo {
+  id     String @id @default(cuid())
+  slug   String @unique // identificador estable para enlazar desde vencimientos
+  nombre String
+  descripcion String @db.Text
+
+  // Nombre del icono de lucide-react (ej. "FileSignature")
+  icono String @default("FileText")
+
+  modalidad ModalidadServicio @default(A_CONSULTAR)
+  // Piso de precio. Null = "Consultar". Con `precioDesde` la tarjeta dice
+  // "desde $X"; el texto libre agrega lo que no entra en un número
+  // (ej. "+ tasas por solicitud").
+  precioDesde Float?
+  precioTexto String?
+
+  // Sólo para el panel: algunos servicios no se le cobran al cliente pero
+  // dejan una comisión de quien recibe el referido (ej. cuenta bancaria).
+  comisionReferido Boolean @default(false)
+  notasInternas    String? @db.Text
+
+  activo Boolean @default(true)
+  orden  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([activo, orden])
+}
+
+enum ModalidadServicio {
+  UNICO // se cobra una vez
+  MENSUAL // abono mensual
+  ANUAL // abono anual (ej. domicilio en sede)
+  SIN_COSTO // no se le cobra al cliente
+  A_CONSULTAR // depende del caso, se cotiza
+}
+
 // PLANES Y PRECIOS
 model PlanPrecio {
   id          String @id @default(cuid())

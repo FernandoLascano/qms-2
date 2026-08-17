@@ -4,8 +4,12 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import {
   BadgeCheck,
+  BookOpen,
   Building2,
+  Calculator,
   Check,
+  FileCheck,
+  Landmark,
   FileSignature,
   FileText,
   LineChart,
@@ -21,50 +25,37 @@ import { Button } from '@/components/ui/button'
 
 const WHATSAPP = '5493512136212'
 
-const SERVICIOS: { nombre: string; icono: LucideIcon; desc: string }[] = [
-  {
-    nombre: 'Reformas de estatuto',
-    icono: FileSignature,
-    desc: 'Modificá el objeto, la denominación u otras cláusulas del estatuto.',
-  },
-  {
-    nombre: 'Confección de actas',
-    icono: FileText,
-    desc: 'Actas de asamblea, de directorio y demás documentación societaria.',
-  },
-  {
-    nombre: 'Designación o renuncia de autoridades',
-    icono: UserCog,
-    desc: 'Cambios en administradores o representantes de la sociedad.',
-  },
-  {
-    nombre: 'Aumentos de capital',
-    icono: TrendingUp,
-    desc: 'Formalizá el aumento del capital social de tu empresa.',
-  },
-  {
-    nombre: 'Cambio de sede social',
-    icono: MapPin,
-    desc: 'Actualizá el domicilio legal de la sociedad.',
-  },
-  {
-    nombre: 'Asesoría contable',
-    icono: LineChart,
-    desc: 'Estados contables, impuestos y acompañamiento contable.',
-  },
-  {
-    nombre: 'Domicilio legal en Córdoba',
-    icono: Building2,
-    desc: 'Usá una sede en Córdoba para tu sociedad (servicio anual de QMS).',
-  },
-  {
-    nombre: 'Registro de marca',
-    icono: BadgeCheck,
-    desc: 'Protegé el nombre y la identidad de tu empresa.',
-  },
-]
+/**
+ * Los servicios llegan desde la base (tabla ServicioCatalogo) y no de un
+ * arreglo en el código: así los precios se editan desde el panel sin tocar
+ * este archivo. El icono viaja como nombre y se resuelve acá.
+ */
+export interface ServicioCard {
+  id: string
+  slug: string
+  nombre: string
+  descripcion: string
+  icono: string
+  modalidad: 'UNICO' | 'MENSUAL' | 'ANUAL' | 'SIN_COSTO' | 'A_CONSULTAR'
+  precioDesde: number | null
+  precioTexto: string | null
+}
 
-export default function ServiciosCatalogo() {
+const ICONOS: Record<string, LucideIcon> = {
+  BadgeCheck, Building2, Calculator, FileSignature, FileText, FileCheck,
+  Landmark, LineChart, MapPin, TrendingUp, UserCog, BookOpen,
+}
+
+/** Lo que se le muestra al cliente. Sin precio cargado: "Consultar". */
+function precioVisible(s: ServicioCard) {
+  if (s.modalidad === 'SIN_COSTO') return 'Sin cargo'
+  if (s.precioDesde == null) return 'Consultar'
+  const monto = `$${s.precioDesde.toLocaleString('es-AR')}`
+  const periodo = s.modalidad === 'MENSUAL' ? ' por mes' : s.modalidad === 'ANUAL' ? ' por año' : ''
+  return `Desde ${monto}${periodo}${s.precioTexto ? ` ${s.precioTexto}` : ''}`
+}
+
+export default function ServiciosCatalogo({ servicios }: { servicios: ServicioCard[] }) {
   const [enviando, setEnviando] = useState<string | null>(null)
   const [consultados, setConsultados] = useState<Record<string, boolean>>({})
 
@@ -91,12 +82,12 @@ export default function ServiciosCatalogo() {
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {SERVICIOS.map((s) => {
+      {servicios.map((s) => {
         const yaConsultado = consultados[s.nombre]
-        const Icono = s.icono
+        const Icono = ICONOS[s.icono] ?? FileText
 
         return (
-          <Card key={s.nombre} className="flex flex-col">
+          <Card key={s.id} className="flex flex-col">
             <CardBody className="flex h-full flex-col gap-3">
               <span
                 className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-3 text-ink-2"
@@ -107,7 +98,8 @@ export default function ServiciosCatalogo() {
 
               <div className="flex-1">
                 <h3 className="text-heading text-ink text-balance">{s.nombre}</h3>
-                <p className="mt-1 text-body-sm text-ink-2 text-pretty">{s.desc}</p>
+                <p className="mt-1 text-body-sm text-ink-2 text-pretty">{s.descripcion}</p>
+                <p className="mt-2 text-body-sm font-semibold text-ink">{precioVisible(s)}</p>
               </div>
 
               {yaConsultado ? (

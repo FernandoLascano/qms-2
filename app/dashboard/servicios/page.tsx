@@ -1,11 +1,29 @@
 import { Handshake } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
 import ServiciosCatalogo from '@/components/cliente/ServiciosCatalogo'
 
 export const metadata = {
   title: 'Servicios'
 }
 
-export default function ServiciosPage() {
+export default async function ServiciosPage() {
+  // El catálogo sale de la base para que los precios se editen desde el panel
+  // (Configuración → Catálogo de servicios) y no haga falta tocar código.
+  const servicios = await prisma.servicioCatalogo.findMany({
+    where: { activo: true },
+    orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+    select: {
+      id: true,
+      slug: true,
+      nombre: true,
+      descripcion: true,
+      icono: true,
+      modalidad: true,
+      precioDesde: true,
+      precioTexto: true,
+    },
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -16,7 +34,7 @@ export default function ServiciosPage() {
         </div>
       </div>
 
-      <ServiciosCatalogo />
+      <ServiciosCatalogo servicios={servicios} />
     </div>
   )
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/ui/page-header'
 import { PageSkeleton } from '@/components/ui/states'
@@ -578,6 +580,25 @@ export default function ConfiguracionAdminPage() {
                   setConfig({ ...config, mercadoPagoEnabled: checked })
                 }
               />
+            </div>
+
+            {/* Los planes son tres y fijos, por eso viven acá como campos. El
+                catálogo post-venta crece, así que se administra aparte. */}
+            <div className="border-t border-line pt-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-body-sm font-semibold text-ink">Catálogo de servicios</h3>
+                  <p className="text-label text-ink-2 mt-0.5">
+                    Precios de lo que se ofrece después de constituir: contable, marca, contratos…
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/admin/servicios"
+                  className="shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2"
+                >
+                  Editar catálogo
+                </Link>
+              </div>
             </div>
 
             <div className="border-t border-line pt-6">
