@@ -705,7 +705,7 @@ export const emailTemplates = {
         </p>
         <ul style="color: ${COLORS.text}; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li>Descargá tu documentación desde el panel</li>
-          <li>Habilitá el punto de venta en AFIP</li>
+          <li>Habilitá el punto de venta en ARCA</li>
           <li>Abrí la cuenta bancaria empresarial</li>
           <li>Registrá tu empresa en actividades comerciales</li>
         </ul>

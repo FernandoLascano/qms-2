@@ -188,7 +188,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 tramite.denominacionAprobada || tramite.denominacionSocial1,
                 tramite.cuit,
                 tramite.matricula,
-                id
+                id,
+                tramite.plan
               )
             } 
             // Para otras etapas importantes, enviar email de progreso

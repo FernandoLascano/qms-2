@@ -76,7 +76,7 @@ const TEMPLATES: Template[] = [
     key: 'tramite-completado',
     name: 'Trámite completado',
     subject: '¡Felicitaciones! Tu S.A.S. ya está inscripta',
-    body: `¡Felicitaciones!\n\nNos alegra informarte que tu Sociedad por Acciones Simplificada ya fue inscripta exitosamente.\n\nDesde tu panel podés descargar toda la documentación:\n- Estatuto inscripto\n- CUIT de la sociedad\n- Matrícula\n\nPróximos pasos recomendados:\n1. Habilitar punto de venta en AFIP\n2. Abrir cuenta bancaria empresarial\n3. Registrar actividad comercial\n\n¡Muchos éxitos con tu nuevo emprendimiento!\n\nSaludos,\nEquipo QuieroMiSAS`
+    body: `¡Felicitaciones!\n\nNos alegra informarte que tu Sociedad por Acciones Simplificada ya fue inscripta exitosamente.\n\nDesde tu panel podés descargar toda la documentación:\n- Estatuto inscripto\n- CUIT de la sociedad\n- Matrícula\n\nPróximos pasos recomendados:\n1. Habilitar punto de venta en ARCA\n2. Abrir cuenta bancaria empresarial\n3. Registrar actividad comercial\n\n¡Muchos éxitos con tu nuevo emprendimiento!\n\nSaludos,\nEquipo QuieroMiSAS`
   },
   {
     key: 'consulta-general',

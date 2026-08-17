@@ -764,7 +764,41 @@ export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplate
 }
 
 // 6. Email cuando la sociedad está inscripta (¡Trámite completo!)
-export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, tramiteId }: EmailTemplateProps) => {
+/**
+ * Qué le queda por hacer al cliente después de la inscripción, según su plan.
+ *
+ * Antes esta lista era la misma para todos y le pedía tramitar el CUIT en
+ * ARCA — que está incluido en los tres planes. Es decir, le pedía a gente que
+ * ya había pagado que hiciera el trabajo que compró. El alta de la actividad
+ * corre por cuenta del cliente sólo en el plan Básico; en Emprendedor y
+ * Premium la hacemos nosotros, y el alta de libros digitales sólo en Premium.
+ */
+function pasosSegunPlan(plan?: string) {
+  const esBasico = plan === 'BASICO'
+  const esPremium = plan === 'PREMIUM'
+
+  const quedaPendiente = ['Descargá la Resolución de Inscripción y tu CUIT desde el panel']
+  const yaIncluido: string[] = []
+
+  if (esBasico) {
+    quedaPendiente.push('Dar de alta la actividad en ARCA y habilitar el punto de venta')
+  } else {
+    yaIncluido.push('El alta de la actividad en ARCA y el punto de venta: te contactamos para hacerlo')
+  }
+
+  if (esPremium) {
+    yaIncluido.push('El alta de tus libros digitales')
+  } else {
+    quedaPendiente.push('Dar de alta los libros digitales (podemos hacerlo por vos)')
+  }
+
+  quedaPendiente.push('Abrir la cuenta bancaria de la sociedad — te asesoramos sin cargo')
+
+  return { quedaPendiente, yaIncluido }
+}
+
+export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, tramiteId, plan }: EmailTemplateProps) => {
+  const { quedaPendiente, yaIncluido } = pasosSegunPlan(plan)
   const content = `
     <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
       ¡Excelentes noticias! Tu sociedad ha sido inscripta exitosamente y ya está oficialmente constituida.
@@ -803,14 +837,23 @@ export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, 
 
     ${InfoCard(
       `<ul style="margin: 0; padding-left: 18px; line-height: 1.9;">
-        <li>Descargá la Resolución de Inscripción desde tu panel</li>
-        <li>Tramitá la Constancia de CUIT en AFIP</li>
-        <li>Abrí tu cuenta bancaria empresarial</li>
-        <li>Comenzá a operar</li>
+        ${quedaPendiente.map((p) => `<li>${p}</li>`).join('')}
       </ul>`,
       'neutral',
       '¿Qué sigue ahora?',
     )}
+
+    ${
+      yaIncluido.length
+        ? InfoCard(
+            `<ul style="margin: 0; padding-left: 18px; line-height: 1.9;">
+              ${yaIncluido.map((p) => `<li>${p}</li>`).join('')}
+            </ul>`,
+            'success',
+            'De esto nos ocupamos nosotros',
+          )
+        : ''
+    }
 
     ${CTAButton('Descargar documentos oficiales', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
 
