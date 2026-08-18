@@ -416,6 +416,35 @@ button {
   cursor: pointer;
 }
 
+/* Tipografía de los controles de formulario.
+   ---------------------------------------------------------------------------
+   Los navegadores NO heredan la fuente en input, textarea, select ni button:
+   sin esto, cada sistema operativo dibuja lo que el usuario escribe con su
+   tipografía por defecto. Se veía como si los campos usaran otra fuente que el
+   resto del panel, porque efectivamente la usaban.
+
+   El tamaño también se unifica: los campos venían a 13px mientras el texto del
+   panel va a 15px, y ese salto se leía como un quiebre de estilo. Va como capa
+   base para que valga en los 143 controles del panel, incluidos los que están
+   escritos a mano y no pasan por components/ui/input.tsx. Cualquier clase de
+   Tailwind en el elemento sigue ganando, porque los selectores de elemento
+   tienen menos peso.                                                          */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: inherit;
+}
+
+/* El select nativo no aplica line-height como el resto: se lo centra por
+   alto de caja para que no baile respecto de los inputs de al lado. */
+select {
+  line-height: normal;
+}
+
 /* Foco visible y consistente en todo el módulo. Ningún componente puede
    quitar el outline sin reponer un anillo.                                */
 :focus-visible {

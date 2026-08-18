@@ -913,7 +913,11 @@ model Config {
   precioPlanBasico       Float @default(285000)
   precioPlanEmprendedor  Float @default(320000)
   precioPlanPremium      Float @default(390000)
-  descuentoTransferencia Float @default(3) // % de descuento aplicado sobre el precio del plan al pagar por transferencia
+  // SIN USO: quedó de una lógica anterior. Ningún cálculo lo lee — la
+  // diferencia entre el precio promocional y el regular sale de
+  // RECARGO_TARJETA en lib/precios.ts, que es la fuente única. Se conserva la
+  // columna para no romper los clientes que todavía la mandan en el PUT.
+  descuentoTransferencia Float @default(3)
   smvm                   Float @default(317800) // Salario Mínimo, Vital y Móvil
 
   // Comisiones (esquema de distribución de ingresos - cláusula 4). Valores en % (30 = 30%).

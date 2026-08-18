@@ -28,6 +28,7 @@ import {
   Forward
 , X } from 'lucide-react'
 import { toast } from 'sonner'
+import { RECARGO_TARJETA, precioRegular, ahorroTransferencia, formatARS } from '@/lib/precios'
 
 interface ConfigData {
   // Notificaciones
@@ -601,11 +602,19 @@ export default function ConfiguracionAdminPage() {
               </div>
             </div>
 
+            {/* Lo que se carga acá es el precio POR TRANSFERENCIA (el
+                promocional). El regular sale de multiplicarlo por el recargo
+                de lib/precios.ts, que es la fuente única de la lógica. */}
             <div className="border-t border-line pt-6">
-              <h3 className="text-body-sm font-semibold text-ink mb-4">Precios de Planes</h3>
+              <h3 className="text-body-sm font-semibold text-ink">Precios de planes</h3>
+              <p className="text-body-sm text-ink-2 mt-1 mb-4">
+                Cargá el <strong>precio por transferencia</strong>, que es el promocional que
+                mostramos destacado. El <strong>precio regular</strong> (tarjeta y Mercado Pago) se
+                calcula solo sumándole {Math.round(RECARGO_TARJETA * 100)}%.
+              </p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="precioPlanBasico">Plan Básico</Label>
+                  <Label htmlFor="precioPlanBasico">Plan Básico — precio por transferencia</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
@@ -618,12 +627,15 @@ export default function ConfiguracionAdminPage() {
                     />
                   </div>
                   <p className="text-body-sm text-ink-2">
-                    Precio del plan Básico (mostrado en landing page y formulario)
+                    Regular (tarjeta / Mercado Pago):{" "}
+                    <strong className="text-ink tnum">{formatARS(precioRegular(config.precioPlanBasico || 0))}</strong>
+                    {" · el cliente ahorra "}
+                    <span className="tnum">{formatARS(ahorroTransferencia(config.precioPlanBasico || 0))}</span>
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="precioPlanEmprendedor">Plan Emprendedor</Label>
+                  <Label htmlFor="precioPlanEmprendedor">Plan Emprendedor — precio por transferencia</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
@@ -636,12 +648,15 @@ export default function ConfiguracionAdminPage() {
                     />
                   </div>
                   <p className="text-body-sm text-ink-2">
-                    Precio del plan Emprendedor (mostrado en landing page y formulario)
+                    Regular (tarjeta / Mercado Pago):{" "}
+                    <strong className="text-ink tnum">{formatARS(precioRegular(config.precioPlanEmprendedor || 0))}</strong>
+                    {" · el cliente ahorra "}
+                    <span className="tnum">{formatARS(ahorroTransferencia(config.precioPlanEmprendedor || 0))}</span>
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="precioPlanPremium">Plan Premium</Label>
+                  <Label htmlFor="precioPlanPremium">Plan Premium — precio por transferencia</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-3 text-ink-2">$</span>
                     <Input
@@ -654,27 +669,26 @@ export default function ConfiguracionAdminPage() {
                     />
                   </div>
                   <p className="text-body-sm text-ink-2">
-                    Precio del plan Premium (mostrado en landing page y formulario)
+                    Regular (tarjeta / Mercado Pago):{" "}
+                    <strong className="text-ink tnum">{formatARS(precioRegular(config.precioPlanPremium || 0))}</strong>
+                    {" · el cliente ahorra "}
+                    <span className="tnum">{formatARS(ahorroTransferencia(config.precioPlanPremium || 0))}</span>
                   </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="descuentoTransferencia">Descuento por transferencia</Label>
-                  <div className="relative">
-                    <Input
-                      id="descuentoTransferencia"
-                      type="number"
-                      value={config.descuentoTransferencia}
-                      onChange={(e) => setConfig({ ...config, descuentoTransferencia: parseFloat(e.target.value) })} className="pr-8"
-                      min={0}
-                      max={100}
-                      step={0.5}
-                    />
-                    <span className="absolute right-3 top-3 text-ink-2">%</span>
-                  </div>
-                  <p className="text-body-sm text-ink-2">
-                    Porcentaje de descuento aplicado sobre el precio del plan cuando el cliente paga por transferencia
-                    (usado al generar el link de pago de honorarios)
+                {/* El recargo vive en lib/precios.ts y no en la base: es la
+                    fuente única que usan la landing, el formulario y el link de
+                    honorarios. Se muestra para que se sepa cuál es, pero no se
+                    edita desde acá para que no queden dos valores distintos. */}
+                <div className="rounded-control border border-line bg-surface-2 p-4">
+                  <p className="text-body-sm font-semibold text-ink">
+                    Recargo por tarjeta / Mercado Pago: {Math.round(RECARGO_TARJETA * 100)}%
+                  </p>
+                  <p className="text-body-sm text-ink-2 mt-1">
+                    Es la diferencia entre el precio promocional y el regular. Se aplica en la
+                    landing, en el formulario y al generar el link de honorarios. Para cambiarlo hay
+                    que tocar <code className="text-label bg-surface-3 px-1 rounded">lib/precios.ts</code>,
+                    que es donde vive la lógica de precios.
                   </p>
                 </div>
               </div>
