@@ -1,13 +1,25 @@
-/** Datos JSON-LD del layout raíz (cargados con next/script para no inflar el HTML inicial). */
+/**
+ * Datos JSON-LD del layout raíz.
+ *
+ * Se renderizan como <script type="application/ld+json"> del lado del servidor
+ * (ver app/layout.tsx). Antes se cargaban con next/script para no inflar el
+ * HTML inicial, y el efecto era que NO existían hasta que el navegador
+ * hidrataba: en el HTML servido no había un solo @type. Googlebot ejecuta JS y
+ * podía llegar a verlos en la segunda pasada, pero los crawlers de los
+ * asistentes (GPTBot, ClaudeBot, PerplexityBot) no ejecutan JavaScript, así que
+ * para ellos el sitio no tenía ningún dato estructurado. Son unos pocos KB.
+ */
+import { SITE_URL, urlDe } from '@/lib/seo/site'
+import { faqs } from '@/lib/faqs'
 
 export const rootOrganizationJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'QuieroMiSAS',
   alternateName: 'Martínez Wehbe & Asociados',
-  url: 'https://www.quieromisas.com',
-  logo: 'https://www.quieromisas.com/assets/img/qms-logo-reg.png',
-  image: 'https://www.quieromisas.com/assets/img/qms-logo-reg.png',
+  url: SITE_URL,
+  logo: urlDe('/assets/img/qms-logo-reg.png'),
+  image: urlDe('/assets/img/qms-logo-reg.png'),
   contactPoint: {
     '@type': 'ContactPoint',
     telephone: '+54-9-351-213-6212',
@@ -38,7 +50,7 @@ export const buildLegalServiceJsonLd = ({ precioPlanBasico, precioPlanPremium }:
   name: 'Constitución de SAS Online - QuieroMiSAS',
   description:
     'Servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) 100% online en Argentina. Córdoba y CABA. CUIT y matrícula en 5 días hábiles.',
-  url: 'https://www.quieromisas.com',
+  url: SITE_URL,
   provider: { '@type': 'Organization', name: 'QuieroMiSAS' },
   areaServed: [
     { '@type': 'State', name: 'Córdoba' },
@@ -68,82 +80,29 @@ export const buildLegalServiceJsonLd = ({ precioPlanBasico, precioPlanPremium }:
   },
 })
 
-export const buildFaqJsonLd = ({ precioPlanBasico, precioPlanPremium }: PreciosPlanes) => ({
+/**
+ * El marcado sale de la MISMA lista que renderiza la sección de preguntas.
+ * Google pide que el contenido marcado esté visible en la página; cuando eran
+ * dos listas escritas aparte, las 8 marcadas no coincidían con ninguna de las
+ * 15 visibles. Ya no recibe los precios: las respuestas visibles no los
+ * mencionan, y marcar un texto que el visitante no lee es justamente lo que la
+ * regla prohíbe.
+ */
+export const buildFaqJsonLd = () => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  mainEntity: [
-    {
-      '@type': 'Question',
-      name: '¿Qué es una S.A.S. y por qué elegirla para mi empresa?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'La Sociedad por Acciones Simplificada (S.A.S.) es el tipo societario más moderno de Argentina, creado por la Ley 27.349. Es ideal para emprendedores porque se constituye 100% online, puede tener un solo socio, tiene menores costos que una S.R.L. o S.A., y otorga responsabilidad limitada al capital aportado.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Cuánto cuesta constituir una S.A.S. en Argentina?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: `Los honorarios profesionales van desde $${precioPlanBasico.toLocaleString('es-AR')} en el plan Básico hasta $${precioPlanPremium.toLocaleString('es-AR')} en el plan Premium, más los gastos de jurisdicción (tasas gubernamentales de IPJ o IGJ). Es significativamente más económico que constituir una S.R.L. o S.A.`,
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Cuánto tiempo tarda constituir una S.A.S.?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Con QuieroMiSAS, tu S.A.S. estará inscripta y operativa en aproximadamente 5 días hábiles desde que se presenta toda la documentación necesaria. Recibís CUIT, matrícula y estatuto inscripto.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Cuál es la diferencia entre S.A.S., S.R.L. y S.A.?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'La S.A.S. se puede constituir con 1 solo socio, es 100% digital, más rápida (5 días vs semanas/meses) y más económica. La S.R.L. necesita mínimo 2 socios y trámites presenciales. La S.A. requiere mínimo 2 accionistas, es más costosa y tiene mayor control estatal. Para emprendedores y startups, la S.A.S. es la opción más conveniente.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Puedo constituir una S.A.S. con un solo socio?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Sí, la S.A.S. permite la constitución unipersonal. Es la única forma societaria en Argentina que permite tener un solo socio con responsabilidad limitada al capital aportado.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Cuál es el capital mínimo para una S.A.S.?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'El capital mínimo es equivalente a 2 veces el salario mínimo vital y móvil vigente. Solo se necesita integrar el 25% al momento de la constitución y el resto dentro de los 2 años.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Necesito ir a una escribanía para constituir la S.A.S.?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'No, el proceso es 100% online. La firma digital reemplaza la necesidad de escribanía. Toda la documentación se gestiona de forma remota a través de nuestra plataforma.',
-      },
-    },
-    {
-      '@type': 'Question',
-      name: '¿Qué recibo al finalizar el trámite de constitución?',
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: 'Recibís el estatuto social inscripto, número de CUIT de la sociedad, matrícula, y según el plan elegido, guía para libros digitales y alta para facturar electrónicamente.',
-      },
-    },
-  ],
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.pregunta,
+    acceptedAnswer: { '@type': 'Answer', text: f.respuesta },
+  })),
 })
 
 export const rootBreadcrumbJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',
   itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://www.quieromisas.com' },
-    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://www.quieromisas.com/blog' },
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: urlDe('/blog') },
   ],
 }

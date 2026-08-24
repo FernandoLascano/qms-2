@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "./providers";
 import { GoogleAnalytics } from '@next/third-parties/google';
@@ -13,6 +12,7 @@ import {
   rootOrganizationJsonLd,
 } from "@/lib/seo/root-jsonld";
 import { getPublicConfig } from "@/lib/config";
+import { SITE_URL } from "@/lib/seo/site";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
@@ -61,7 +61,7 @@ export async function generateMetadata(): Promise<Metadata> {
   openGraph: {
     type: 'website',
     locale: 'es_AR',
-    url: 'https://www.quieromisas.com',
+    url: SITE_URL,
     title: 'Constituir SAS Online en Argentina | Tu Empresa en 5 Días',
     description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles. +500 empresas constituidas.`,
     siteName: 'QuieroMiSAS',
@@ -73,8 +73,9 @@ export async function generateMetadata(): Promise<Metadata> {
     description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles.`,
     images: ['/opengraph-image'],
   },
+  metadataBase: new URL(SITE_URL),
   alternates: {
-    canonical: 'https://www.quieromisas.com',
+    canonical: SITE_URL,
   },
   verification: {
     google: 'Fb9746BUHbwNsQqEI8c6ELfh6ekKpop4tvtpMZ8IEto',
@@ -90,23 +91,34 @@ export default async function RootLayout({
 }>) {
   const { precioPlanBasico, precioPlanPremium } = await getPublicConfig();
   const legalServiceJsonLd = buildLegalServiceJsonLd({ precioPlanBasico, precioPlanPremium });
-  const faqJsonLd = buildFaqJsonLd({ precioPlanBasico, precioPlanPremium });
+  const faqJsonLd = buildFaqJsonLd();
 
   return (
     <html lang="es" className={inter.variable}>
       <body className={inter.className}>
-        <Script id="ld-json-org" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(rootOrganizationJsonLd)}
-        </Script>
-        <Script id="ld-json-legal" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(legalServiceJsonLd)}
-        </Script>
-        <Script id="ld-json-faq" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(faqJsonLd)}
-        </Script>
-        <Script id="ld-json-breadcrumb" type="application/ld+json" strategy="afterInteractive">
-          {JSON.stringify(rootBreadcrumbJsonLd)}
-        </Script>
+        {/* Etiquetas <script> de verdad, renderizadas en el servidor. Con
+            next/script el JSON quedaba dentro del payload de React y sólo
+            existía DESPUÉS de hidratar: los crawlers que no ejecutan JS
+            —GPTBot, ClaudeBot, PerplexityBot— no veían ningún dato
+            estructurado. Es el mismo patrón que ya usa el blog. */}
+        {[
+          ['ld-json-org', rootOrganizationJsonLd],
+          ['ld-json-legal', legalServiceJsonLd],
+          ['ld-json-faq', faqJsonLd],
+          ['ld-json-breadcrumb', rootBreadcrumbJsonLd],
+        ].map(([id, datos]) => (
+          <script
+            key={id as string}
+            id={id as string}
+            type="application/ld+json"
+            /* Se escapa "<" para que un valor con "</script>" no pueda cerrar
+               la etiqueta antes de tiempo. Hoy todo el contenido es nuestro,
+               pero los precios salen de la base y esto no cuesta nada. */
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(datos).replace(/</g, '\\u003c'),
+            }}
+          />
+        ))}
 
         <Providers>
           {children}
