@@ -228,6 +228,16 @@ model Tramite {
   leadEstado          LeadEstado @default(NUEVO)
   leadProximoContacto DateTime?
   leadUltimoContacto  DateTime?
+  // Se llena solo cuando se aprueba el primer pago del cliente.
+  leadGanadoAt        DateTime?
+  // Obligatorio al marcar DESCARTADO: un lead perdido sin motivo es un lead
+  // perdido dos veces.
+  leadMotivoPerdida   LeadMotivoPerdida?
+  leadMotivoNota      String?            @db.Text
+  // Toques de la secuencia automática ya enviados (1, 3, 7, 14). Se registran
+  // para que nadie reciba dos veces lo mismo ni se quede sin nada.
+  leadToquesEnviados  Int                @default(0)
+  leadUltimoToque     DateTime?
 
   // Fechas importantes
   fechaReservaNombre   DateTime?
@@ -282,6 +292,7 @@ model Tramite {
   @@index([createdAt])
   @@index([userId, estadoGeneral])
   @@index([formularioCompleto, leadEstado])
+  @@index([formularioCompleto, leadToquesEnviados, updatedAt])
 }
 
 // Historial de contactos con leads (borradores sin terminar)
@@ -304,8 +315,25 @@ enum LeadEstado {
   NUEVO
   CONTACTADO
   EN_CONVERSACION
+  // La pelota está del lado del cliente: se le pasó algo y falta que responda.
+  ESPERANDO_CLIENTE
+  // CONVERTIDO lo pone el sistema solo, al aprobarse el primer pago. Un estado
+  // que depende de que alguien se acuerde de tildarlo no sirve para medir.
   CONVERTIDO
   DESCARTADO
+}
+
+// Por qué se pierde un lead. La lista sale de lo que se escucha en los
+// contactos reales, no de un manual: los dos primeros son los que más aparecen
+// y son, además, los dos únicos que se pueden atacar desde el producto.
+enum LeadMotivoPerdida {
+  NO_ENTENDIO // no terminó de entender qué es el trámite ni qué incluye
+  SIN_DOMICILIO // no tiene dónde fijar la sede en Córdoba o CABA
+  NO_DEFINIO // todavía no sabe si quiere constituir, ni qué necesita
+  PRECIO
+  LO_HIZO_OTRO
+  NO_CONTESTA
+  OTRO
 }
 
 enum LeadCanal {

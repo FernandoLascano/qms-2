@@ -264,8 +264,16 @@ export async function GET(request: Request) {
     const hace10Dias = new Date()
     hace10Dias.setDate(hace10Dias.getDate() - 10)
 
+    // Sólo trámites YA ENVIADOS.
+    //
+    // Antes esta consulta también alcanzaba a los borradores, y el mensaje les
+    // quedaba absurdo: calcula la "etapa actual" asumiendo que el formulario
+    // está terminado, así que a alguien que no cargó ni su nombre le decía que
+    // estaba en "Reserva de denominación". Los borradores tienen ahora su
+    // propia secuencia, que sabe en qué paso se frenaron.
     const tramitesEstancados = await prisma.tramite.findMany({
       where: {
+        formularioCompleto: true,
         estadoGeneral: {
           notIn: ['COMPLETADO', 'CANCELADO']
         },
