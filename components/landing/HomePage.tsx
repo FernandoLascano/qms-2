@@ -532,13 +532,21 @@ export default function HomePage({
                 ))}
               </div>
 
-              <Image
-                src="/assets/img/grupo-mw.png"
-                alt="Part of Grupo MW"
-                width={140}
-                height={32}
-                className="h-8 w-auto opacity-90"
-              />
+              <a
+                href="https://martinezwehbe.com.ar/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Grupo MW — Martínez Wehbe & Asociados (se abre en una pestaña nueva)"
+                className="inline-block opacity-90 transition-opacity hover:opacity-100"
+              >
+                <Image
+                  src="/assets/img/grupo-mw.png"
+                  alt="Part of Grupo MW"
+                  width={140}
+                  height={32}
+                  className="h-8 w-auto"
+                />
+              </a>
             </div>
 
             {/* Columna 2: Servicios */}
