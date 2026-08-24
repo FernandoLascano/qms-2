@@ -36,7 +36,14 @@ export const rootOrganizationJsonLd = {
     postalCode: '5000',
     addressCountry: 'AR',
   },
-  sameAs: [] as string[],
+  /* `sameAs` es lo que le permite a Google —y a los modelos— entender que
+     "QuieroMiSAS" y "Martínez Wehbe & Asociados" son la misma entidad y no dos
+     empresas distintas. Sin perfiles enlazados, cada mención suelta arranca de
+     cero. */
+  sameAs: [
+    'https://www.instagram.com/quieromisas',
+    'https://www.linkedin.com/company/qms-quiero-mi-sas/',
+  ],
 }
 
 type PreciosPlanes = {

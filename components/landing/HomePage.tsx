@@ -14,6 +14,8 @@ import {
   Paperclip,
   CreditCard,
   BadgeCheck,
+  Instagram,
+  Linkedin,
 } from 'lucide-react'
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
@@ -509,13 +511,42 @@ export default function HomePage({
                 Plataforma digital para la constitución de Sociedades por Acciones Simplificadas en Argentina.
                 Rápido, seguro y 100% online.
               </p>
-              <Image
-                src="/assets/img/grupo-mw.png"
-                alt="Part of Grupo MW"
-                width={140}
-                height={32}
-                className="h-8 w-auto opacity-90"
-              />
+              {/* Los mismos perfiles que declara `sameAs` en el JSON-LD. La señal
+                  de entidad es más fuerte cuando el sitio además los enlaza:
+                  Google confirma la relación en los dos sentidos. */}
+              <div className="flex items-center gap-3 mb-6">
+                {[
+                  { nombre: 'Instagram', href: 'https://www.instagram.com/quieromisas', Icono: Instagram },
+                  { nombre: 'LinkedIn', href: 'https://www.linkedin.com/company/qms-quiero-mi-sas/', Icono: Linkedin },
+                ].map(({ nombre, href, Icono }) => (
+                  <a
+                    key={nombre}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    aria-label={`QuieroMiSAS en ${nombre}`}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-control border border-n-800 text-n-400 transition-colors hover:border-n-600 hover:text-white"
+                  >
+                    <Icono className="h-5 w-5" aria-hidden />
+                  </a>
+                ))}
+              </div>
+
+              <a
+                href="https://www.martinezwehbe.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Grupo MW — Martínez Wehbe & Asociados (se abre en una pestaña nueva)"
+                className="inline-block opacity-90 transition-opacity hover:opacity-100"
+              >
+                <Image
+                  src="/assets/img/grupo-mw.png"
+                  alt="Part of Grupo MW"
+                  width={140}
+                  height={32}
+                  className="h-8 w-auto"
+                />
+              </a>
             </div>
 
             {/* Columna 2: Servicios */}
