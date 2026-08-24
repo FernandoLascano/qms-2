@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailTramiteEnviado } from '@/lib/emails/send'
 import { marcarLeadsGanados } from '@/lib/leads/ganado'
+import { marcarLeadGanadoPorEmail } from '@/lib/leads/capturar'
 
 export async function POST(request: Request) {
   try {
@@ -296,6 +297,7 @@ export async function POST(request: Request) {
     // leads y quedan marcados como ganados. Sin esto la conversión nunca se
     // ve, porque el lead simplemente desaparecía de la pantalla.
     await marcarLeadsGanados(usuario.id)
+    await marcarLeadGanadoPorEmail(usuario.email)
 
     // Servicio de domicilio en sede: si marcó "no tengo domicilio", registrar la
     // solicitud pendiente de contacto (idempotente por trámite).

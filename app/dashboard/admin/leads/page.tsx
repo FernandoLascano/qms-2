@@ -14,6 +14,7 @@ import {
 } from '@/lib/leads/avance'
 import { calcularPrioridad, franjaDe } from '@/lib/leads/prioridad'
 import { mensajeWhatsapp } from '@/lib/leads/mensajes'
+import { ORIGEN_TEXTO, puntajeConsulta, mensajeConsulta } from '@/lib/leads/consultas'
 
 async function AdminLeadsPage() {
   const session = await getServerSession(authOptions)
@@ -50,6 +51,39 @@ async function AdminLeadsPage() {
     orderBy: { updatedAt: 'desc' },
   })
 
+  // La otra mitad: consultas que todavía no son un trámite —formulario de
+  // contacto, chat, registros que nunca abrieron nada—. Viven en `Lead` y hasta
+  // ahora no aparecían en ninguna parte del panel.
+  const consultas = await prisma.lead.findMany({
+    where: { userId: null },
+    include: {
+      partner: { select: { nombre: true } },
+      contactos: {
+        include: { admin: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Los que ya tienen cuenta se muestran igual, salvo que además tengan un
+  // borrador: en ese caso ya están en la lista de arriba y duplicarlos sería
+  // trabajar dos veces a la misma persona.
+  const conCuenta = await prisma.lead.findMany({
+    where: {
+      userId: { not: null },
+      user: { tramites: { none: {} } },
+    },
+    include: {
+      partner: { select: { nombre: true } },
+      contactos: {
+        include: { admin: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
   const ahora = new Date()
 
   const leads = borradores.map((tramite) => {
@@ -73,6 +107,7 @@ async function AdminLeadsPage() {
 
     return {
       id: tramite.id,
+      tipo: 'BORRADOR' as const,
       denominacion:
         tramite.denominacionSocial1 === 'Pendiente de definir'
           ? null
@@ -88,6 +123,8 @@ async function AdminLeadsPage() {
       puntaje,
       franja: franjaDe(puntaje),
       senales,
+      mensaje: null,
+      partner: null,
       mensajeSugerido: mensajeWhatsapp(segmento, nombre),
       creado: tramite.createdAt.toISOString(),
       ultimaActividad: tramite.updatedAt.toISOString(),
@@ -106,18 +143,57 @@ async function AdminLeadsPage() {
     }
   })
 
+  const leadsConsulta = [...consultas, ...conCuenta].map((lead) => {
+    const { puntaje, senales } = puntajeConsulta(lead, ahora)
+    return {
+    id: lead.id,
+    tipo: 'CONSULTA' as const,
+    denominacion: null,
+    nombre: lead.nombre || '',
+    email: lead.email,
+    telefono: lead.telefono,
+    jurisdiccion: '',
+    plan: '',
+    avance: null,
+    segmento: lead.origen,
+    segmentoTexto: ORIGEN_TEXTO[lead.origen] || lead.origen,
+    puntaje,
+    franja: franjaDe(puntaje),
+    senales,
+    mensaje: lead.mensaje,
+    partner: lead.partner?.nombre || null,
+    mensajeSugerido: mensajeConsulta(lead.nombre || ''),
+    creado: lead.createdAt.toISOString(),
+    ultimaActividad: lead.updatedAt.toISOString(),
+    leadEstado: lead.estado,
+    leadMotivoPerdida: lead.motivoPerdida,
+    leadUltimoContacto: lead.ultimoContacto?.toISOString() || null,
+    leadProximoContacto: lead.proximoContacto?.toISOString() || null,
+    leadToquesEnviados: 0,
+    seguimientos: lead.contactos.map((c) => ({
+      id: c.id,
+      canal: c.canal,
+      nota: c.nota,
+      admin: c.admin.name,
+      createdAt: c.createdAt.toISOString(),
+    })),
+    }
+  })
+
+  const todos = [...leads, ...leadsConsulta]
+
   return (
     <div className="space-y-section">
       <PageHeader
         title="Leads"
-        description="Formularios empezados y nunca enviados, ordenados por prioridad"
+        description="Formularios sin terminar y consultas sin trámite, en una sola lista ordenada por prioridad"
         actions={
           <Button asChild variant="secondary">
             <Link href="/dashboard/admin/tramites">Ver trámites</Link>
           </Button>
         }
       />
-      <LeadsLista leads={leads} />
+      <LeadsLista leads={todos} />
     </div>
   )
 }

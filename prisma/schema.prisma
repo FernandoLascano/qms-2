@@ -39,6 +39,8 @@ model User {
 
   emailVerificationTokens EmailVerificationToken[]
   leadSeguimientos        LeadSeguimiento[]
+  leads                   Lead[]
+  leadContactos           LeadContacto[]
 
   @@index([partnerId])
 }
@@ -124,6 +126,7 @@ model Partner {
   users       User[]
   clicks      ReferralClick[]
   conversions PartnerConversion[]
+  leads       Lead[]
 
   @@index([activo])
 }
@@ -746,6 +749,88 @@ enum ModalidadServicio {
   ANUAL // abono anual (ej. domicilio en sede)
   SIN_COSTO // no se le cobra al cliente
   A_CONSULTAR // depende del caso, se cotiza
+}
+
+// LEAD — interés comercial que todavía no es un trámite.
+//
+// Los borradores abandonados ya viven en `Tramite` con sus campos `lead*`, y
+// ahí se quedan: son 25 y no necesitan mudarse para poder trabajarse. Esta
+// tabla es para lo OTRO — el formulario de contacto, el chat y los registros
+// que nunca abrieron un trámite — que hasta ahora no dejaba ningún rastro
+// utilizable. El formulario de contacto en particular sólo mandaba un email:
+// no hay forma de saber cuánta gente escribió, porque nunca se guardó.
+//
+// La pantalla de leads une las dos fuentes en una sola lista.
+model Lead {
+  id String @id @default(cuid())
+
+  // Puede existir con nada más que un email. Esa es toda la gracia.
+  email    String
+  nombre   String?
+  telefono String?
+
+  origen  LeadOrigen
+  mensaje String?    @db.Text // lo que escribió, si escribió algo
+
+  // Atribución de la primera visita. Sin esto no se puede saber si alguien
+  // llegó por el blog, por un anuncio o por un referido.
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  referrer    String?
+  landingPath String?
+
+  partnerId String?
+  partner   Partner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  estado        LeadEstado         @default(NUEVO)
+  motivoPerdida LeadMotivoPerdida?
+  motivoNota    String?            @db.Text
+
+  ultimoContacto  DateTime?
+  proximoContacto DateTime?
+  ganadoAt        DateTime?
+
+  // Se completan cuando la persona se registra o abre un trámite. Que sean
+  // opcionales es el punto: el lead existe antes que la cuenta.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  contactos LeadContacto[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Un mismo email que vuelve a escribir actualiza su lead en vez de duplicarlo.
+  @@unique([email])
+  @@index([estado, createdAt])
+  @@index([origen])
+}
+
+enum LeadOrigen {
+  FORMULARIO_CONTACTO
+  CHAT
+  REGISTRO_SIN_TRAMITE
+  PARTNER
+  MANUAL // cargado a mano tras una llamada o un WhatsApp
+}
+
+// Registro de contactos de un Lead. Es el equivalente de LeadSeguimiento, que
+// cuelga de Tramite y se queda ahí: no se toca una tabla que ya funciona.
+model LeadContacto {
+  id     String @id @default(cuid())
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  adminId String
+  admin   User   @relation(fields: [adminId], references: [id])
+
+  canal LeadCanal
+  nota  String    @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([leadId])
 }
 
 // PLANES Y PRECIOS

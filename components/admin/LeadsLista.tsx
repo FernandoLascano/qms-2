@@ -39,13 +39,20 @@ interface Senal {
 
 interface Lead {
   id: string
+  // De dónde sale este lead. Un BORRADOR es un formulario empezado y sin
+  // enviar; una CONSULTA es alguien que escribió o se registró y todavía no
+  // abrió ningún trámite. Conviven en la misma lista porque para trabajarlos
+  // son lo mismo: gente interesada a la que hay que contactar.
+  tipo: 'BORRADOR' | 'CONSULTA'
   denominacion: string | null
   nombre: string
   email: string
   telefono: string | null
   jurisdiccion: string
   plan: string
-  avance: number
+  mensaje?: string | null
+  partner?: string | null
+  avance: number | null
   segmento: string
   segmentoTexto: string
   puntaje: number
@@ -150,13 +157,19 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
     // entrado hace más tiempo.
     .sort((a, b) => b.puntaje - a.puntaje)
 
+  // Las dos fuentes viven en tablas distintas, así que cada una tiene su ruta.
+  const rutaDe = (lead: Lead) =>
+    lead.tipo === 'CONSULTA'
+      ? `/api/admin/leads/consulta/${lead.id}`
+      : `/api/admin/leads/${lead.id}`
+
   const cambiarEstado = async (
-    leadId: string,
+    lead: Lead,
     leadEstado: string,
     extra?: { leadMotivoPerdida?: string; leadMotivoNota?: string },
   ) => {
     try {
-      const res = await fetch(`/api/admin/leads/${leadId}`, {
+      const res = await fetch(rutaDe(lead), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ leadEstado, ...extra }),
@@ -179,13 +192,13 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
       setMotivoNota('')
       return
     }
-    cambiarEstado(lead.id, valor)
+    cambiarEstado(lead, valor)
   }
 
   const confirmarPerdida = async () => {
     if (!perdiendo) return
     setGuardando(true)
-    await cambiarEstado(perdiendo.id, 'DESCARTADO', {
+    await cambiarEstado(perdiendo, 'DESCARTADO', {
       leadMotivoPerdida: motivo,
       leadMotivoNota: motivoNota.trim() || undefined,
     })
@@ -208,7 +221,11 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
     setGuardando(true)
     try {
-      const res = await fetch(`/api/admin/leads/${leadActivo.id}/seguimiento`, {
+      const res = await fetch(
+        leadActivo.tipo === 'CONSULTA'
+          ? `/api/admin/leads/consulta/${leadActivo.id}`
+          : `/api/admin/leads/${leadActivo.id}/seguimiento`,
+        {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -216,7 +233,8 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
           nota: nota.trim(),
           leadProximoContacto: proximoContacto || undefined,
         }),
-      })
+      },
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       toast.success('Contacto registrado')
@@ -312,10 +330,16 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                         )}
                       </div>
 
-                      <p className="text-body-sm text-ink-2 mb-2 flex items-center gap-1">
-                        <Building2 className="h-4 w-4" />
-                        {lead.denominacion || <span className="italic text-ink-3">Sin denominación elegida</span>}
-                      </p>
+                      {lead.tipo === 'BORRADOR' ? (
+                        <p className="text-body-sm text-ink-2 mb-2 flex items-center gap-1">
+                          <Building2 className="h-4 w-4" />
+                          {lead.denominacion || <span className="italic text-ink-3">Sin denominación elegida</span>}
+                        </p>
+                      ) : lead.mensaje ? (
+                        <p className="text-body-sm text-ink-2 mb-2 line-clamp-3 whitespace-pre-wrap border-l-2 border-line pl-3">
+                          {lead.mensaje}
+                        </p>
+                      ) : null}
 
                       <div className="flex flex-wrap items-center gap-4 text-body-sm text-ink-2">
                         <a href={`mailto:${lead.email}`} className="flex items-center gap-1 hover:text-primary">
@@ -398,8 +422,12 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
                   <div className="grid md:grid-cols-4 gap-4 text-body-sm">
                     <div className="bg-surface-2 p-3 rounded">
-                      <p className="text-ink-2 mb-1">Formulario completado</p>
-                      <p className="font-semibold text-ink">{lead.avance}%</p>
+                      <p className="text-ink-2 mb-1">
+                        {lead.avance === null ? 'Origen' : 'Formulario completado'}
+                      </p>
+                      <p className="font-semibold text-ink">
+                        {lead.avance === null ? lead.segmentoTexto : `${lead.avance}%`}
+                      </p>
                     </div>
                     <div className="bg-surface-2 p-3 rounded">
                       <p className="text-ink-2 mb-1">Última actividad</p>

@@ -80,6 +80,11 @@ interface AnalyticsData {
       inscripcion: number
     }
   }
+  leads?: {
+    consultas: number
+    borradores: number
+    perdidosPorMotivo: { motivo: string | null; cantidad: number }[]
+  }
   clientes: {
     registrados: number
     activos: number
@@ -439,6 +444,7 @@ export default function AnalyticsPage() {
       {/* Embudo de conversión y alertas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ConversionFunnel
+          leads={(data.leads?.consultas || 0) + (data.leads?.borradores || 0)}
           registrados={data.clientes?.registrados || 0}
           conTramite={Math.round((data.clientes?.registrados || 0) * (parseFloat(data.clientes?.tasaRegistroATramite || '0') / 100))}
           completados={data.tramites?.completados || 0}
