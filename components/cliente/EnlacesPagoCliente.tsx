@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ExternalLink, AlertCircle, CheckCircle, Clock, Upload, X } from 'lucide-react'
+import { FileInput } from '@/components/ui/file-input'
 
 interface EnlacePago {
   id: string
@@ -119,25 +119,25 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Enlaces en Proceso (Esperando Validación) */}
         {enlacesEnProceso.length > 0 && (
           <div className="space-y-4 mb-6">
-            <h4 className="font-bold text-sm text-blue-700 uppercase tracking-wider">Esperando Validación</h4>
+            <h4 className="font-semibold text-body-sm text-info">Esperando Validación</h4>
             {enlacesEnProceso.map((enlace) => (
               <div
                 key={enlace.id}
-                className="p-5 border-2 rounded-lg bg-blue-50 border-blue-200"
+                className="p-card border-2 rounded-control bg-info-soft border-info-line"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <Clock className="h-6 w-6 text-blue-600" />
+                  <div className="w-12 h-12 rounded-full bg-info-soft flex items-center justify-center shrink-0">
+                    <Clock className="h-6 w-6 text-info" />
                   </div>
                   <div className="flex-1">
-                    <h5 className="font-bold text-gray-900 text-lg mb-1">
+                    <h5 className="font-semibold text-ink text-heading mb-1">
                       {getConceptoTexto(enlace.concepto)}
                     </h5>
-                    <p className="text-sm text-blue-800 font-medium mb-2">
+                    <p className="text-body-sm text-info font-medium mb-2">
                       Comprobante recibido. Estamos validando el pago externo.
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="font-bold bg-white px-2 py-1 rounded border border-blue-100">
+                    <div className="flex items-center gap-4 text-label text-ink-2">
+                      <span className="font-semibold bg-surface px-2 py-1 rounded border border-info-line">
                         Monto: ${enlace.monto.toLocaleString('es-AR')}
                       </span>
                       <span>Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}</span>
@@ -152,27 +152,27 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Enlaces Pendientes */}
         {enlacesPendientes.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-bold text-sm text-green-700 uppercase tracking-wider">Pagos Pendientes</h4>
+            <h4 className="font-semibold text-body-sm text-success">Pagos Pendientes</h4>
             {enlacesPendientes.map((enlace) => (
               <div
                 key={enlace.id}
-                className={`p-4 border-2 rounded-lg ${
+                className={`p-4 border-2 rounded-control ${
                   enlace.reportadoVencido 
-                    ? 'bg-yellow-50 border-yellow-300' 
-                    : 'bg-blue-50 border-blue-300'
+                    ? 'bg-warning-soft border-warning-line' 
+                    : 'bg-info-soft border-info-line'
                 }`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <h5 className="font-semibold text-gray-900 mb-1">
+                    <h5 className="font-semibold text-ink mb-1">
                       {getConceptoTexto(enlace.concepto)}
                     </h5>
-                    <p className="text-2xl font-bold text-blue-600 mb-2">
+                    <p className="text-title font-semibold text-info mb-2">
                       ${enlace.monto.toLocaleString('es-AR')}
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-600 mb-2">
+                    <div className="flex items-center gap-4 text-label text-ink-2 mb-2">
                       <span>
-                        📅 Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
+                        Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
                       </span>
                       {enlace.fechaVencimiento && (
                         <span className="flex items-center gap-1">
@@ -182,8 +182,8 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       )}
                     </div>
                     {enlace.reportadoVencido && (
-                      <div className="bg-yellow-100 border border-yellow-300 rounded p-2 mb-2">
-                        <p className="text-xs text-yellow-900 flex items-center gap-1">
+                      <div className="bg-warning-soft border border-warning-line rounded p-2 mb-2">
+                        <p className="text-label text-warning flex items-center gap-1">
                           <AlertCircle className="h-3 w-3" />
                           Ya reportaste este enlace como vencido. Estamos generando uno nuevo.
                         </p>
@@ -194,9 +194,9 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
 
                 {/* Formulario de confirmación de pago */}
                 {confirmandoPago === enlace.id ? (
-                  <div className="space-y-3 bg-white border border-blue-300 rounded-lg p-4">
+                  <div className="space-y-3 bg-surface border border-info-line rounded-control p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h6 className="text-sm font-semibold text-gray-900">
+                      <h6 className="text-body-sm font-semibold text-ink">
                         Confirmar Pago Realizado
                       </h6>
                       <Button
@@ -211,34 +211,30 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       </Button>
                     </div>
                     
-                    <p className="text-xs text-gray-600 mb-3">
+                    <p className="text-label text-ink-2 mb-3">
                       Adjunta el comprobante de pago para que podamos verificarlo
                     </p>
                     
                     <div>
-                      <Label htmlFor={`comprobante-${enlace.id}`} className="text-sm font-medium mb-2 block">
-                        Comprobante (PDF, JPG, PNG)
+                      <Label htmlFor={`comprobante-${enlace.id}`} className="text-body-sm font-medium mb-2 block">
+                        Comprobante
                       </Label>
-                      <Input
+                      {/* El nombre del archivo lo muestra el propio control. */}
+                      <FileInput
                         id={`comprobante-${enlace.id}`}
-                        type="file"
                         accept="image/*,.pdf"
-                        onChange={(e) => setArchivo(e.target.files?.[0] || null)}
-                        className="mb-2"
+                        archivo={archivo}
+                        onArchivo={setArchivo}
+                        compacto
+                        label="Elegí el comprobante o arrastralo acá"
+                        ayuda="PDF, JPG o PNG"
                       />
-                      
-                      {archivo && (
-                        <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
-                          <CheckCircle className="h-3 w-3" />
-                          {archivo.name}
-                        </p>
-                      )}
                     </div>
 
                     <Button
                       onClick={() => handleConfirmarPago(enlace.id)}
                       disabled={!archivo || subiendoComprobante}
-                      className="w-full bg-green-600 hover:bg-green-700"
+                      className="w-full bg-success-solid hover:bg-success-solid"
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       {subiendoComprobante ? 'Subiendo...' : 'Confirmar Pago'}
@@ -247,7 +243,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                 ) : (
                   <div className="flex flex-col gap-2">
                     <Button
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-info-solid hover:bg-info-solid"
                       onClick={() => window.open(enlace.enlace, '_blank', 'noopener,noreferrer')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -256,7 +252,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                     
                     <Button
                       onClick={() => setConfirmandoPago(enlace.id)}
-                      className="w-full bg-green-600 hover:bg-green-700"
+                      className="w-full bg-success-solid hover:bg-success-solid"
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
                       Ya Pagué
@@ -267,7 +263,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                         variant="outline"
                         onClick={() => handleReportarVencido(enlace.id)}
                         disabled={reportando === enlace.id}
-                        className="w-full border-brand-300 text-brand-700 hover:bg-brand-50"
+                        className="w-full border-primary-line text-primary hover:bg-primary-soft"
                       >
                         <AlertCircle className="h-4 w-4 mr-1" />
                         {reportando === enlace.id ? 'Reportando...' : 'Enlace Vencido'}
@@ -283,23 +279,23 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         {/* Enlaces Pagados */}
         {enlacesPagados.length > 0 && (
           <div className="space-y-3">
-            <h4 className="font-medium text-sm text-gray-700">Pagos Confirmados</h4>
+            <h4 className="font-medium text-body-sm text-ink-2">Pagos Confirmados</h4>
             {enlacesPagados.map((enlace) => (
               <div
                 key={enlace.id}
-                className="p-4 border-2 rounded-lg bg-green-50 border-green-300"
+                className="p-4 border-2 rounded-control bg-success-soft border-success-line"
               >
                 <div className="flex items-start gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                  <CheckCircle className="h-5 w-5 text-success mt-0.5" />
                   <div className="flex-1">
-                    <h5 className="font-semibold text-gray-900 mb-1">
+                    <h5 className="font-semibold text-ink mb-1">
                       {getConceptoTexto(enlace.concepto)}
                     </h5>
-                    <p className="text-lg font-bold text-green-600 mb-1">
+                    <p className="text-heading font-semibold text-success mb-1">
                       ${enlace.monto.toLocaleString('es-AR')}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      ✅ Pagado el {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
+                    <p className="text-label text-ink-2">
+                      Pagado el {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
                     </p>
                   </div>
                 </div>
@@ -309,9 +305,9 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
         )}
 
         {/* Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p className="text-xs text-blue-900">
-            💡 <strong>Importante:</strong> Después de realizar el pago, usa el botón "Ya Pagué" 
+        <div className="bg-info-soft border border-info-line rounded-control p-3">
+          <p className="text-label text-info">
+            <strong>Importante:</strong> Después de realizar el pago, usa el botón "Ya Pagué"
             para adjuntar tu comprobante y que podamos verificarlo.
           </p>
         </div>

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
@@ -110,9 +110,9 @@ export default function SubirDocumentosParaCliente({
   }
 
   return (
-    <Card className="border-purple-200 bg-purple-50">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-purple-900">
+        <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           Enviar Documentos para Firmar
         </CardTitle>
@@ -123,41 +123,41 @@ export default function SubirDocumentosParaCliente({
       <CardContent className="space-y-4">
         <div className="space-y-3">
           {SLOTS.map(slot => (
-            <div key={slot.key} className="rounded-lg bg-white border border-purple-100 p-3 space-y-2">
-              <Label htmlFor={`doc-${slot.key}`} className="text-sm font-semibold text-gray-900">
+            <div key={slot.key} className="space-y-2 border-t border-line pt-4 first:border-0 first:pt-0">
+              <Label htmlFor={`doc-${slot.key}`} className="text-body-sm font-semibold text-ink">
                 {slot.label}
               </Label>
-              <Input
+              <FileInput
                 id={`doc-${slot.key}`}
-                type="file"
                 accept=".pdf,.doc,.docx"
                 disabled={subiendo}
-                onChange={(e) => setArchivo(slot.key, e.target.files?.[0] || null)}
-                className="cursor-pointer"
+                compacto
+                archivo={archivos[slot.key] ?? null}
+                onArchivo={(f) => setArchivo(slot.key, f)}
               />
               <div>
-                <Label htmlFor={`instr-${slot.key}`} className="text-xs text-gray-500">Instrucciones para el cliente (editable)</Label>
+                <Label htmlFor={`instr-${slot.key}`} className="text-label text-ink-2">Instrucciones para el cliente (editable)</Label>
                 <Textarea
                   id={`instr-${slot.key}`}
                   value={instrucciones[slot.key]}
                   onChange={(e) => setInstrucciones(prev => ({ ...prev, [slot.key]: e.target.value }))}
                   disabled={subiendo}
-                  rows={3}
-                  className="mt-1 text-sm"
+                  rows={2}
+                  className="mt-1 text-body-sm"
                 />
               </div>
             </div>
           ))}
         </div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-label text-ink-2">
           Cada documento se envía con sus instrucciones. El Acta y Estatuto además muestra el instructivo de firma digital (imágenes) en el panel del cliente.
         </p>
 
         <Button
           onClick={handleEnviar}
           disabled={subiendo}
-          className="w-full gap-2 bg-purple-600 hover:bg-purple-700"
+          className="w-full"
         >
           <Send className="h-4 w-4" />
           {subiendo ? 'Enviando...' : 'Enviar documentos al cliente'}
@@ -165,26 +165,26 @@ export default function SubirDocumentosParaCliente({
 
         {/* Historial de documentos enviados */}
         {documentosEnviados.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-purple-200">
+          <div className="mt-6 pt-4 border-t border-line">
             <div className="flex items-center gap-2 mb-3">
-              <History className="h-4 w-4 text-purple-600" />
-              <h4 className="text-sm font-medium text-purple-900">Documentos Enviados</h4>
+              <History className="h-4 w-4 text-ink-3" />
+              <h4 className="text-body-sm font-semibold text-ink">Documentos enviados</h4>
             </div>
             <div className="space-y-2">
               {documentosEnviados.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-3 bg-white border border-purple-100 rounded-lg"
+                  className="flex items-center justify-between rounded-control border border-line bg-surface-2 p-3"
                 >
                   <div className="flex items-center gap-3">
                     {doc.estado === 'APROBADO' ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <CheckCircle className="h-4 w-4 text-success" />
                     ) : (
-                      <Clock className="h-4 w-4 text-orange-500" />
+                      <Clock className="h-4 w-4 text-warning" />
                     )}
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{doc.nombre}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-body-sm font-medium text-ink">{doc.nombre}</p>
+                      <p className="text-label text-ink-2">
                         {new Date(doc.fechaSubida).toLocaleDateString('es-AR', {
                           day: '2-digit',
                           month: '2-digit',
@@ -196,10 +196,10 @@ export default function SubirDocumentosParaCliente({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${
+                    <span className={`text-label px-2 py-1 rounded-full ${
                       doc.estado === 'APROBADO'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-orange-100 text-orange-700'
+                        ? 'bg-success-soft text-success'
+                        : 'bg-warning-soft text-warning'
                     }`}>
                       {doc.estado === 'APROBADO' ? 'Firmado' : 'Pendiente'}
                     </span>
@@ -207,7 +207,7 @@ export default function SubirDocumentosParaCliente({
                       href={`/api/documentos/${doc.id}/view`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 hover:text-purple-800"
+                      className="text-info hover:text-info"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>

@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { DollarSign, Upload, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { FileInput } from '@/components/ui/file-input'
 
 interface DepositoCapitalClienteProps {
   tramiteId: string
@@ -100,9 +100,11 @@ export default function DepositoCapitalCliente({
   // Verificar si la cuenta aún no está activa
   const cuentaNoActiva = fechaActivacion && new Date(fechaActivacion) > new Date()
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleFileChange = (file: File | null) => {
+    if (!file) {
+      setArchivo(null)
+      return
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast.error('El archivo no puede superar los 10MB')
@@ -163,9 +165,9 @@ export default function DepositoCapitalCliente({
   console.log('🎨 DepositoCapitalCliente: RENDERIZANDO COMPONENTE')
 
   return (
-    <Card id="deposito-capital" className="scroll-mt-4 border-2 border-green-300 bg-green-50">
+    <Card id="deposito-capital" className="scroll-mt-4 border-2 border-success-line bg-success-soft">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-900">
+        <CardTitle className="flex items-center gap-2 text-success">
           <DollarSign className="h-5 w-5" />
           Depósito del 25% del Capital
         </CardTitle>
@@ -174,7 +176,7 @@ export default function DepositoCapitalCliente({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="bg-white border border-green-100 rounded-lg p-3 text-xs text-gray-700">
+        <div className="bg-surface border border-success-line rounded-control p-3 text-label text-ink-2">
           <p>
             Capital social informado:{' '}
             <strong>${capitalSocial.toLocaleString('es-AR')}</strong>
@@ -187,14 +189,14 @@ export default function DepositoCapitalCliente({
         </div>
 
         {(banco || cbu || titular) ? (
-          <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-700 space-y-2">
-            <p className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-              <Banknote className="h-5 w-5 text-green-600" /> Datos de la cuenta bancaria
+          <div className="bg-surface border border-success-line rounded-control p-4 text-body-sm text-ink-2 space-y-2">
+            <p className="font-semibold text-ink mb-2 flex items-center gap-2">
+              <Banknote className="h-5 w-5 text-success" /> Datos de la cuenta bancaria
             </p>
             {cuentaNoActiva && (
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-3 mb-3">
-                <p className="text-sm font-semibold text-orange-900 mb-1">⚠️ Importante: Cuenta aún no activa</p>
-                <p className="text-xs text-orange-800">
+              <div className="bg-warning-soft border-2 border-warning-line rounded-control p-3 mb-3">
+                <p className="text-body-sm font-semibold text-warning mb-1">Importante: Cuenta aún no activa</p>
+                <p className="text-label text-warning">
                   Esta cuenta estará operativa recién a partir del{' '}
                   <strong>{new Date(fechaActivacion!).toLocaleDateString('es-AR', { 
                     weekday: 'long', 
@@ -203,7 +205,7 @@ export default function DepositoCapitalCliente({
                     day: 'numeric' 
                   })}</strong>.
                 </p>
-                <p className="text-xs text-orange-800 mt-1 font-semibold">
+                <p className="text-label text-warning mt-1 font-semibold">
                   No realices la transferencia antes de esa fecha, ya que no será procesada.
                 </p>
               </div>
@@ -211,55 +213,55 @@ export default function DepositoCapitalCliente({
             <div className="grid grid-cols-1 gap-2">
               {banco && (
                 <div className="flex items-start gap-2">
-                  <span className="font-medium text-gray-600 min-w-[80px]">Banco:</span>
-                  <span className="text-gray-900">{banco}</span>
+                  <span className="font-medium text-ink-2 min-w-[80px]">Banco:</span>
+                  <span className="text-ink">{banco}</span>
                 </div>
               )}
               {cbu && (
                 <div className="flex items-start gap-2">
-                  <span className="font-medium text-gray-600 min-w-[80px]">CBU:</span>
-                  <span className="text-gray-900 font-mono">{cbu}</span>
+                  <span className="font-medium text-ink-2 min-w-[80px]">CBU:</span>
+                  <span className="text-ink font-mono">{cbu}</span>
                 </div>
               )}
               {alias && (
                 <div className="flex items-start gap-2">
-                  <span className="font-medium text-gray-600 min-w-[80px]">Alias:</span>
-                  <span className="text-gray-900">{alias}</span>
+                  <span className="font-medium text-ink-2 min-w-[80px]">Alias:</span>
+                  <span className="text-ink">{alias}</span>
                 </div>
               )}
               {titular && (
                 <div className="flex items-start gap-2">
-                  <span className="font-medium text-gray-600 min-w-[80px]">Titular:</span>
-                  <span className="text-gray-900">{titular}</span>
+                  <span className="font-medium text-ink-2 min-w-[80px]">Titular:</span>
+                  <span className="text-ink">{titular}</span>
                 </div>
               )}
             </div>
           </div>
         ) : cargando ? (
-          <div className="bg-white border border-green-100 rounded-lg p-4 text-sm text-gray-500">
+          <div className="bg-surface border border-success-line rounded-control p-4 text-body-sm text-ink-2">
             Cargando datos de la cuenta...
           </div>
         ) : (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs text-yellow-800">
-            <p className="font-semibold mb-1">⚠️ Datos no disponibles</p>
+          <div className="bg-warning-soft border border-warning-line rounded-control p-3 text-label text-warning">
+            <p className="font-semibold mb-1">Datos no disponibles</p>
             <p>Los datos de la cuenta bancaria aún no han sido proporcionados. Contacta al equipo si necesitas esta información.</p>
           </div>
         )}
 
         {comprobanteSubido ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-sm text-yellow-900">
+          <div className="bg-warning-soft border border-warning-line rounded-control p-3">
+            <p className="text-body-sm text-warning">
               {comprobanteSubido.estado === 'APROBADO' ? (
                 <>
-                  <strong>✅ Comprobante aprobado:</strong> Tu comprobante de depósito fue aprobado.
+                  <strong>Comprobante aprobado:</strong> Tu comprobante de depósito fue aprobado.
                 </>
               ) : comprobanteSubido.estado === 'PENDIENTE' || comprobanteSubido.estado === 'EN_REVISION' ? (
                 <>
-                  <strong>⏳ Comprobante en revisión:</strong> Tu comprobante de depósito está siendo revisado por el equipo.
+                  <strong>Comprobante en revisión:</strong> Tu comprobante de depósito está siendo revisado por el equipo.
                 </>
               ) : (
                 <>
-                  <strong>📄 Comprobante subido:</strong> Tu comprobante de depósito fue recibido y está siendo procesado.
+                  <strong>Comprobante subido:</strong> Tu comprobante de depósito fue recibido y está siendo procesado.
                 </>
               )}
             </p>
@@ -268,7 +270,7 @@ export default function DepositoCapitalCliente({
                 href={comprobanteSubido.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline mt-2 inline-block"
+                className="text-body-sm text-info hover:underline mt-2 inline-block"
               >
                 Ver comprobante subido
               </a>
@@ -277,26 +279,25 @@ export default function DepositoCapitalCliente({
         ) : (
           <>
             <div className="space-y-2">
-              <Label htmlFor="comprobante-deposito" className="text-sm font-medium">
-                Subir Comprobante de Depósito
+              <Label htmlFor="comprobante-deposito" className="text-body-sm font-medium">
+                Subir comprobante de depósito
               </Label>
-              <Input
+              <FileInput
                 id="comprobante-deposito"
-                type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
+                archivo={archivo}
+                onArchivo={handleFileChange}
                 disabled={subiendo}
-                className="text-sm"
+                compacto
+                label="Elegí el comprobante o arrastralo acá"
+                ayuda="PDF, JPG o PNG · hasta 10 MB"
               />
-              <p className="text-[11px] text-gray-500">
-                Formatos aceptados: PDF, JPG o PNG (máx. 10MB)
-              </p>
             </div>
 
             <Button
               onClick={handleSubirComprobante}
               disabled={subiendo || !archivo}
-              className="w-full bg-green-600 hover:bg-green-700 gap-2"
+              className="w-full bg-success-solid hover:bg-success-solid gap-2"
             >
               <Upload className="h-4 w-4" />
               {subiendo ? 'Subiendo...' : 'Subir Comprobante y Confirmar Pago'}

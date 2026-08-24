@@ -119,13 +119,13 @@ export default function EtapasManager({
   const renderResponsable = (responsable: Responsable) => {
     if (responsable === 'cliente') {
       return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-orange-100 text-orange-800 border border-orange-300 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-warning-soft text-warning border border-warning-line whitespace-nowrap">
           <User className="h-3 w-3" /> Cliente
         </span>
       )
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-300 whitespace-nowrap">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-info-soft text-info border border-info-line whitespace-nowrap">
         <Building2 className="h-3 w-3" /> QMS
       </span>
     )
@@ -135,8 +135,8 @@ export default function EtapasManager({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100">
-            <ListChecks className="h-4 w-4 text-emerald-700" />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-success-soft">
+            <ListChecks className="h-4 w-4 text-success" />
           </span>
           <span>Control de Etapas del Trámite</span>
         </CardTitle>
@@ -152,27 +152,27 @@ export default function EtapasManager({
               key={etapa.key}
               onClick={() => handleToggleEtapa(etapa.key, etapa.valor)}
               disabled={actualizando === etapa.key}
-              className={`flex items-start gap-3 p-4 border-2 rounded-lg transition-all text-left ${
+              className={`flex items-start gap-3 p-4 border-2 rounded-control transition-all text-left ${
                 etapa.valor
-                  ? 'bg-green-50 border-green-300 hover:bg-green-100'
-                  : 'bg-white border-gray-300 hover:bg-gray-50'
+                  ? 'bg-success-soft border-success-line hover:bg-success-soft'
+                  : 'bg-surface border-line-strong hover:bg-surface-2'
               } ${actualizando === etapa.key ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
             >
               <div className="mt-0.5">
                 {etapa.valor ? (
-                  <CheckCircle className="h-6 w-6 text-green-600" />
+                  <CheckCircle className="h-6 w-6 text-success" />
                 ) : (
-                  <Clock className="h-6 w-6 text-gray-400" />
+                  <Clock className="h-6 w-6 text-ink-3" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <p className={`font-medium ${etapa.valor ? 'text-green-900' : 'text-gray-900'}`}>
+                  <p className={`font-medium ${etapa.valor ? 'text-success' : 'text-ink'}`}>
                     {etapa.label}
                   </p>
                   {renderResponsable(etapa.responsable)}
                 </div>
-                <p className="text-xs text-gray-600">
+                <p className="text-label text-ink-2">
                   {etapa.descripcion}
                 </p>
               </div>
@@ -181,18 +181,18 @@ export default function EtapasManager({
         </div>
 
         {/* Resumen de progreso */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mt-6 p-4 bg-info-soft border border-info-line rounded-control">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-blue-900">
+            <span className="text-body-sm font-medium text-info">
               Progreso General
             </span>
-            <span className="text-sm font-bold text-blue-900">
+            <span className="text-body-sm font-semibold text-info">
               {completadas} / {etapasLista.length} completadas
             </span>
           </div>
-          <div className="w-full bg-blue-200 rounded-full h-3">
+          <div className="w-full bg-info-solid rounded-full h-3">
             <div
-              className="bg-blue-600 h-3 rounded-full transition-all"
+              className="bg-info-solid h-3 rounded-full transition-all"
               style={{
                 width: `${(completadas / etapasLista.length) * 100}%`
               }}
@@ -201,22 +201,22 @@ export default function EtapasManager({
         </div>
 
         {/* Resultado observado (fuera del progreso lineal) */}
-        <div className="mt-6 border-t pt-6">
+        <div className="mt-6 border-t border-line pt-6">
           <button
             onClick={() => handleToggleEtapa('tramiteObservado', etapas.tramiteObservado)}
             disabled={actualizando === 'tramiteObservado'}
-            className={`w-full flex items-start gap-3 p-4 border-2 rounded-lg transition-all text-left ${
+            className={`w-full flex items-start gap-3 p-4 border-2 rounded-control transition-all text-left ${
               etapas.tramiteObservado
-                ? 'bg-amber-50 border-amber-300 hover:bg-amber-100'
-                : 'bg-white border-gray-300 hover:bg-gray-50'
+                ? 'bg-warning-soft border-warning-line hover:bg-warning-soft'
+                : 'bg-surface border-line-strong hover:bg-surface-2'
             } ${actualizando === 'tramiteObservado' ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
           >
-            <AlertTriangle className={`h-6 w-6 mt-0.5 ${etapas.tramiteObservado ? 'text-amber-600' : 'text-gray-400'}`} />
+            <AlertTriangle className={`h-6 w-6 mt-0.5 ${etapas.tramiteObservado ? 'text-warning' : 'text-ink-3'}`} />
             <div className="flex-1">
-              <p className={`font-medium mb-1 ${etapas.tramiteObservado ? 'text-amber-900' : 'text-gray-900'}`}>
+              <p className={`font-medium mb-1 ${etapas.tramiteObservado ? 'text-warning' : 'text-ink'}`}>
                 Trámite Observado
               </p>
-              <p className="text-xs text-gray-600">
+              <p className="text-label text-ink-2">
                 Marcá esto si el organismo observó el trámite. Detallá las observaciones abajo.
               </p>
             </div>
@@ -224,9 +224,9 @@ export default function EtapasManager({
         </div>
 
         {/* Textos editables del flujo */}
-        <div className="mt-6 space-y-4 border-t pt-6">
+        <div className="mt-6 space-y-4 border-t border-line pt-6">
           <div>
-            <label htmlFor="instruccionesFirma" className="block text-sm font-medium text-gray-900 mb-1">
+            <label htmlFor="instruccionesFirma" className="block text-body-sm font-medium text-ink mb-1">
               Instrucciones de firma (las ve el cliente)
             </label>
             <Textarea
@@ -239,7 +239,7 @@ export default function EtapasManager({
           </div>
 
           <div>
-            <label htmlFor="observacionesOrganismo" className="block text-sm font-medium text-gray-900 mb-1">
+            <label htmlFor="observacionesOrganismo" className="block text-body-sm font-medium text-ink mb-1">
               Observaciones del organismo (las ve el cliente si el trámite fue observado)
             </label>
             <Textarea

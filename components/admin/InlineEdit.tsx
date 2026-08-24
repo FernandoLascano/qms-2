@@ -21,7 +21,7 @@ export function InlineEditButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick() }}
-      className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-orange-600 transition cursor-pointer"
+      className="p-2 rounded-control hover:bg-surface-3 text-ink-3 hover:text-warning transition cursor-pointer"
       title="Editar"
     >
       <Pencil className="w-4 h-4" />
@@ -39,7 +39,7 @@ export function InlineEditActions({ saving, onSave, onCancel }: {
       <button
         onClick={onSave}
         disabled={saving}
-        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 transition disabled:opacity-50 cursor-pointer"
+        className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid transition disabled:opacity-50 cursor-pointer"
       >
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
         {saving ? 'Guardando...' : 'Guardar'}
@@ -47,7 +47,7 @@ export function InlineEditActions({ saving, onSave, onCancel }: {
       <button
         onClick={onCancel}
         disabled={saving}
-        className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+        className="flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2 transition cursor-pointer"
       >
         <X className="w-4 h-4" />
         Cancelar

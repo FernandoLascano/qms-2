@@ -96,13 +96,13 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'APROBADO':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-success-soft text-success border-success-line'
       case 'RECHAZADO':
-        return 'bg-brand-100 text-brand-800 border-brand-200'
+        return 'bg-primary-soft text-primary border-primary-line'
       case 'EN_REVISION':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-info-soft text-info border-info-line'
       default:
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-warning-soft text-warning border-warning-line'
     }
   }
 
@@ -128,29 +128,29 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
   }
 
   return (
-    <div className="rounded-lg">
+    <div className="rounded-control">
       <CollapsibleCard
         title={`Documentos Subidos por el Cliente (${documentosDelCliente.length})`}
         description="Revisa y aprueba o rechaza los documentos que el cliente ha subido"
-        icon={<FileText className="h-5 w-5 text-indigo-700" />}
+        icon={<FileText className="h-5 w-5 text-info" />}
       >
         {documentosDelCliente.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-ink-2 py-8">
             El cliente aún no ha subido documentos
           </p>
         ) : (
           <div className="space-y-3">
             {documentosDelCliente.map((doc) => (
-              <div key={doc.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
+              <div key={doc.id} className="border border-line rounded-control p-4 hover:bg-surface-2 transition">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-semibold text-gray-900">{doc.nombre}</h4>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getEstadoColor(doc.estado)}`}>
+                      <h4 className="font-semibold text-ink">{doc.nombre}</h4>
+                      <span className={`px-3 py-1 rounded-full text-label font-medium border ${getEstadoColor(doc.estado)}`}>
                         {getEstadoTexto(doc.estado)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-body-sm text-ink-2">
                       <span>{getTipoTexto(doc.tipo)}</span>
                       <span>•</span>
                       <span>{format(new Date(doc.fechaSubida), "d 'de' MMM", { locale: es })}</span>
@@ -158,7 +158,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                       <span>{(doc.tamanio / 1024 / 1024).toFixed(2)} MB</span>
                     </div>
                     {doc.observaciones && (
-                      <p className="text-sm text-brand-600 mt-2 italic">
+                      <p className="text-body-sm text-primary mt-2 italic">
                         {doc.observaciones}
                       </p>
                     )}
@@ -226,7 +226,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                       <>
                         <Button
                           size="sm"
-                          className="gap-2 bg-green-600 hover:bg-green-700"
+                          className="gap-2 bg-success-solid hover:bg-success-solid"
                           onClick={() => handleAprobar(doc.id)}
                           disabled={procesando === doc.id}
                         >

@@ -62,20 +62,20 @@ interface Ga4WebPanelProps {
 export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
-        <p className="text-gray-600 text-center">Cargando métricas de Google Analytics…</p>
+      <div className="bg-surface rounded-card shadow-raise border border-line p-8">
+        <p className="text-ink-2 text-center">Cargando métricas de Google Analytics…</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6">
-        <h3 className="text-lg font-bold text-amber-900 mb-2">Tráfico web (Google Analytics)</h3>
-        <p className="text-amber-800 text-sm mb-2">{error}</p>
-        <p className="text-amber-700 text-xs">
+      <div className="bg-warning-soft border-2 border-warning-line rounded-card p-6">
+        <h3 className="text-heading font-semibold text-warning mb-2">Tráfico web (Google Analytics)</h3>
+        <p className="text-warning text-body-sm mb-2">{error}</p>
+        <p className="text-warning text-label">
           Configurá OAuth en Vercel: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET,
-          GOOGLE_OAUTH_REFRESH_TOKEN (scope <code className="bg-amber-100 px-1 rounded">analytics.readonly</code>).
+          GOOGLE_OAUTH_REFRESH_TOKEN (scope <code className="bg-warning-soft px-1 rounded">analytics.readonly</code>).
           Opcional: GA4_PROPERTY_ID (default 516402270).
         </p>
       </div>
@@ -89,15 +89,15 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Tráfico web (Google Analytics 4)</h2>
-        <p className="text-gray-500 text-sm">
+        <h2 className="text-title font-semibold text-ink mb-1">Tráfico web (Google Analytics 4)</h2>
+        <p className="text-ink-2 text-body-sm">
           Rango GA4: {dateRange.startDate} → {dateRange.endDate} · Propiedad {data.propertyId}
         </p>
         {summary.activeUsers === 0 && summary.sessions === 0 && (
-          <p className="text-amber-800 text-sm mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <p className="text-warning text-body-sm mt-2 bg-warning-soft border border-warning-line rounded-control px-3 py-2">
             GA4 respondió pero el período tiene <strong>0 usuarios / 0 sesiones</strong>. Probá el filtro{' '}
             <strong>«Última semana»</strong> o <strong>«Este año»</strong>. Si en GA4 (Informes → Tiempo real) sí ves visitas,
-            revisá que en Vercel (Producción) esté <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GA_ID=G-MPWZ19GYE7</code> y que
+            revisá que en Vercel (Producción) esté <code className="bg-warning-soft px-1 rounded">NEXT_PUBLIC_GA_ID=G-MPWZ19GYE7</code> y que
             el stream de esa propiedad sea el mismo sitio.
           </p>
         )}
@@ -135,8 +135,8 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
       </div>
 
       {timeseries.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Usuarios y sesiones por día</h3>
+        <div className="bg-surface rounded-card shadow-raise border border-line p-6">
+          <h3 className="text-heading font-semibold text-ink mb-4">Usuarios y sesiones por día</h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={timeseries} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -156,15 +156,15 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-brand-700" />
+        <div className="bg-surface rounded-card shadow-raise border border-line p-6">
+          <h3 className="text-heading font-semibold text-ink mb-4 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
             Países (top)
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-body-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-100">
+                <tr className="text-left text-ink-2 border-b border-line">
                   <th className="pb-2 pr-4">País</th>
                   <th className="pb-2 pr-4 text-right">Usuarios</th>
                   <th className="pb-2 text-right">Sesiones</th>
@@ -172,10 +172,10 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
               </thead>
               <tbody>
                 {byCountry.map((row) => (
-                  <tr key={row.country} className="border-b border-gray-50">
-                    <td className="py-2 pr-4 font-medium text-gray-900">{row.country}</td>
-                    <td className="py-2 pr-4 text-right text-gray-600">{row.activeUsers}</td>
-                    <td className="py-2 text-right text-gray-600">{row.sessions}</td>
+                  <tr key={row.country} className="border-b border-line">
+                    <td className="py-2 pr-4 font-medium text-ink">{row.country}</td>
+                    <td className="py-2 pr-4 text-right text-ink-2">{row.activeUsers}</td>
+                    <td className="py-2 text-right text-ink-2">{row.sessions}</td>
                   </tr>
                 ))}
               </tbody>
@@ -183,15 +183,15 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-brand-700" />
+        <div className="bg-surface rounded-card shadow-raise border border-line p-6">
+          <h3 className="text-heading font-semibold text-ink mb-4 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-primary" />
             Canal por defecto
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-body-sm">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-100">
+                <tr className="text-left text-ink-2 border-b border-line">
                   <th className="pb-2 pr-4">Canal</th>
                   <th className="pb-2 pr-4 text-right">Sesiones</th>
                   <th className="pb-2 text-right">Usuarios</th>
@@ -199,10 +199,10 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
               </thead>
               <tbody>
                 {byChannel.map((row) => (
-                  <tr key={row.channel} className="border-b border-gray-50">
-                    <td className="py-2 pr-4 font-medium text-gray-900">{row.channel}</td>
-                    <td className="py-2 pr-4 text-right text-gray-600">{row.sessions}</td>
-                    <td className="py-2 text-right text-gray-600">{row.activeUsers}</td>
+                  <tr key={row.channel} className="border-b border-line">
+                    <td className="py-2 pr-4 font-medium text-ink">{row.channel}</td>
+                    <td className="py-2 pr-4 text-right text-ink-2">{row.sessions}</td>
+                    <td className="py-2 text-right text-ink-2">{row.activeUsers}</td>
                   </tr>
                 ))}
               </tbody>
@@ -212,12 +212,12 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Fuente / medio</h3>
+        <div className="bg-surface rounded-card shadow-raise border border-line p-6">
+          <h3 className="text-heading font-semibold text-ink mb-4">Fuente / medio</h3>
           <div className="overflow-x-auto max-h-80 overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white">
-                <tr className="text-left text-gray-500 border-b border-gray-100">
+            <table className="w-full text-body-sm">
+              <thead className="sticky top-0 bg-surface">
+                <tr className="text-left text-ink-2 border-b border-line">
                   <th className="pb-2 pr-4">Origen</th>
                   <th className="pb-2 pr-4 text-right">Sesiones</th>
                   <th className="pb-2 text-right">Usuarios</th>
@@ -225,10 +225,10 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
               </thead>
               <tbody>
                 {bySourceMedium.map((row) => (
-                  <tr key={row.sourceMedium} className="border-b border-gray-50">
-                    <td className="py-2 pr-4 font-medium text-gray-900 break-all">{row.sourceMedium}</td>
-                    <td className="py-2 pr-4 text-right text-gray-600">{row.sessions}</td>
-                    <td className="py-2 text-right text-gray-600">{row.activeUsers}</td>
+                  <tr key={row.sourceMedium} className="border-b border-line">
+                    <td className="py-2 pr-4 font-medium text-ink break-all">{row.sourceMedium}</td>
+                    <td className="py-2 pr-4 text-right text-ink-2">{row.sessions}</td>
+                    <td className="py-2 text-right text-ink-2">{row.activeUsers}</td>
                   </tr>
                 ))}
               </tbody>
@@ -236,18 +236,18 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Megaphone className="w-5 h-5 text-brand-700" />
+        <div className="bg-surface rounded-card shadow-raise border border-line p-6">
+          <h3 className="text-heading font-semibold text-ink mb-4 flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-primary" />
             Campañas (session)
           </h3>
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-label text-ink-2 mb-3">
             Usá UTM en tus links (utm_source, utm_medium, utm_campaign) para ver resultados acá.
           </p>
           <div className="overflow-x-auto max-h-80 overflow-y-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white">
-                <tr className="text-left text-gray-500 border-b border-gray-100">
+            <table className="w-full text-body-sm">
+              <thead className="sticky top-0 bg-surface">
+                <tr className="text-left text-ink-2 border-b border-line">
                   <th className="pb-2 pr-4">Campaña</th>
                   <th className="pb-2 pr-4 text-right">Sesiones</th>
                   <th className="pb-2 text-right">Usuarios</th>
@@ -255,10 +255,10 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
               </thead>
               <tbody>
                 {byCampaign.map((row) => (
-                  <tr key={row.campaign} className="border-b border-gray-50">
-                    <td className="py-2 pr-4 font-medium text-gray-900">{row.campaign}</td>
-                    <td className="py-2 pr-4 text-right text-gray-600">{row.sessions}</td>
-                    <td className="py-2 text-right text-gray-600">{row.activeUsers}</td>
+                  <tr key={row.campaign} className="border-b border-line">
+                    <td className="py-2 pr-4 font-medium text-ink">{row.campaign}</td>
+                    <td className="py-2 pr-4 text-right text-ink-2">{row.sessions}</td>
+                    <td className="py-2 text-right text-ink-2">{row.activeUsers}</td>
                   </tr>
                 ))}
               </tbody>

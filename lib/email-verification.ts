@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
+import { SITE_URL } from '@/lib/seo/site'
 
 const DEFAULT_TTL_MS = 1000 * 60 * 60 * 24 // 24h
 
@@ -8,7 +9,7 @@ function sha256(input: string): string {
 }
 
 export function buildEmailVerificationLink(params: { token: string }): string {
-  const base = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
+  const base = process.env.NEXTAUTH_URL || SITE_URL
   return `${base}/verificar-email?token=${encodeURIComponent(params.token)}`
 }
 

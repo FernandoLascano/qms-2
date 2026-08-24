@@ -1,278 +1,141 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { CheckCircle, Circle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { Check } from 'lucide-react'
 
-interface TimelineProgresoProps {
-  tramite: any
+import { Card, CardBody } from '@/components/ui/card'
+import { LabeledProgress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
+import { ETAPAS, calcularProgreso } from '@/lib/tramites/estado'
+
+/**
+ * Línea de tiempo de las 7 etapas.
+ *
+ * Usa ETAPAS de lib/tramites/estado: antes esta lista estaba escrita a mano acá
+ * con otros nombres y otro orden que el resto de las pantallas.
+ */
+
+const DESCRIPCIONES: Record<string, string> = {
+  formulario: 'Datos de la sociedad cargados',
+  denominacion: 'Nombre aprobado y reservado',
+  capital: '25% del capital social depositado',
+  tasa: 'Tasa retributiva abonada',
+  firma: 'Documentación firmada y validada',
+  ingreso: 'Expediente presentado en el organismo',
+  inscripcion: 'CUIT y matrícula asignados',
 }
 
-export default function TimelineProgreso({ tramite }: TimelineProgresoProps) {
-  const [expandido, setExpandido] = useState(false)
-  
-  const etapas = [
-    {
-      id: 1,
-      titulo: 'Formulario Completado',
-      descripcion: 'Datos básicos ingresados',
-      completado: tramite.formularioCompleto,
-      fecha: tramite.createdAt,
-      icono: '📝'
-    },
-    {
-      id: 2,
-      titulo: 'Reserva de Denominación',
-      descripcion: 'Nombre aprobado y reservado',
-      completado: tramite.denominacionReservada,
-      fecha: tramite.fechaReservaNombre,
-      icono: '✅'
-    },
-    {
-      id: 3,
-      titulo: 'Capital Depositado',
-      descripcion: '25% del capital social',
-      completado: tramite.capitalDepositado,
-      fecha: tramite.fechaDepositoCapital,
-      icono: '💰'
-    },
-    {
-      id: 4,
-      titulo: 'Tasa Final Pagada',
-      descripcion: 'Tasa retributiva abonada',
-      completado: tramite.tasaPagada,
-      fecha: tramite.fechaPagoTasa,
-      icono: '💳'
-    },
-    {
-      id: 5,
-      titulo: 'Documentos Firmados',
-      descripcion: 'Documentación completa',
-      completado: tramite.documentosFirmados,
-      fecha: null,
-      icono: '📄'
-    },
-    {
-      id: 6,
-      titulo: 'Trámite Ingresado',
-      descripcion: 'Presentado en el organismo',
-      completado: tramite.tramiteIngresado,
-      fecha: tramite.fechaIngresoTramite,
-      icono: '🏛️'
-    },
-    {
-      id: 7,
-      titulo: 'Sociedad Inscripta',
-      descripcion: 'CUIT y matrícula asignados',
-      completado: tramite.sociedadInscripta,
-      fecha: tramite.fechaInscripcion,
-      icono: '🎉'
-    }
-  ]
+const CAMPOS_FECHA: Record<string, string> = {
+  formulario: 'createdAt',
+  denominacion: 'fechaReservaNombre',
+  capital: 'fechaDepositoCapital',
+  tasa: 'fechaPagoTasa',
+  ingreso: 'fechaIngresoTramite',
+  inscripcion: 'fechaInscripcion',
+}
 
-  const etapasCompletadas = etapas.filter(e => e.completado).length
-  const progresoPercentage = Math.round((etapasCompletadas / etapas.length) * 100)
-  
-  // Encontrar la etapa actual (la primera no completada)
-  const etapaActualIndex = etapas.findIndex((e, index) => !e.completado && (index === 0 || etapas[index - 1].completado))
-  const etapaActual = etapaActualIndex !== -1 ? etapas[etapaActualIndex] : null
-  const siguienteEtapa = etapaActualIndex !== -1 && etapaActualIndex < etapas.length - 1 ? etapas[etapaActualIndex + 1] : null
-  
-  // Todas las etapas completadas
-  const etapasCompletadasList = etapas.filter(e => e.completado)
+export default function TimelineProgreso({ tramite }: { tramite: any }) {
+  const progreso = calcularProgreso(tramite)
+  const completo = progreso === 100
+
+  const etapas = ETAPAS.map((etapa) => {
+    const campoFecha = CAMPOS_FECHA[etapa.key]
+    const fecha = campoFecha ? tramite[campoFecha] : null
+    return {
+      ...etapa,
+      completada: Boolean(tramite[etapa.campo]),
+      fecha: fecha ? new Date(fecha) : null,
+    }
+  })
+
+  const indiceActual = etapas.findIndex((e) => !e.completada)
 
   return (
-    <Card className={progresoPercentage === 100 ? 'border-2 border-green-500 bg-green-50' : ''}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className={progresoPercentage === 100 ? 'text-green-900' : ''}>Progreso del Trámite</CardTitle>
-            <CardDescription className={progresoPercentage === 100 ? 'text-green-700' : ''}>
-              {etapasCompletadas} de {etapas.length} etapas completadas
-            </CardDescription>
-          </div>
-          <div className="text-right">
-            <p className={`text-3xl font-bold ${progresoPercentage === 100 ? 'text-green-700' : 'text-brand-700'}`}>{progresoPercentage}%</p>
-            <p className={`text-xs ${progresoPercentage === 100 ? 'text-green-600' : 'text-gray-500'}`}>Completado</p>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {/* Barra de Progreso */}
-        <div className="mb-4">
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-brand-600 to-green-500 transition-all duration-500"
-              style={{ width: `${progresoPercentage}%` }}
-            />
-          </div>
-        </div>
+    <Card>
+      <CardBody className="space-y-4">
+        <LabeledProgress
+          value={progreso}
+          caption={completo ? 'Trámite completado' : 'Progreso del trámite'}
+          tone={completo ? 'success' : 'primary'}
+        />
 
-        {/* Vista Compacta (por defecto) */}
-        {!expandido && (
-          <div className="space-y-3">
-            {/* Todas las etapas completadas */}
-            {etapasCompletadasList.length > 0 && (
-              <div className="space-y-2">
-                {etapasCompletadasList.map((etapa) => (
-                  <div key={etapa.id} className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-green-900">{etapa.titulo}</p>
-                      {etapa.fecha && (
-                        <p className="text-xs text-green-700">
-                          Completado el {new Date(etapa.fecha).toLocaleDateString('es-AR')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+        <ol className="relative space-y-0">
+          {etapas.map((etapa, i) => {
+            const actual = i === indiceActual
+            const ultima = i === etapas.length - 1
 
-            {/* Etapa Actual (bien visible) */}
-            {etapaActual && (
-              <div className="p-4 bg-brand-50 border-2 border-brand-500 rounded-lg shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-brand-100 rounded-full flex-shrink-0">
-                    <Clock className="h-5 w-5 text-brand-700 animate-pulse" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h4 className="text-base font-bold text-brand-900">{etapaActual.titulo}</h4>
-                      <span className="px-2 py-1 text-xs font-semibold bg-brand-700 text-white rounded-full whitespace-nowrap">
-                        En curso
-                      </span>
-                    </div>
-                    <p className="text-sm text-brand-800 mb-2">{etapaActual.descripcion}</p>
-                    <p className="text-xs text-brand-700 font-medium">
-                      ⏳ Trabajando en esta etapa...
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Siguiente Etapa (minimizada) */}
-            {siguienteEtapa && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg opacity-75">
-                <Circle className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-gray-600 truncate">{siguienteEtapa.titulo}</p>
-                  <p className="text-xs text-gray-500">Próximo paso</p>
-                </div>
-              </div>
-            )}
-
-            {/* Botón para expandir */}
-            <Button
-              variant="outline"
-              onClick={() => setExpandido(true)}
-              className="w-full mt-4 gap-2 border-brand-300 text-brand-700 hover:bg-brand-50 hover:border-brand-500"
-            >
-              <ChevronDown className="h-4 w-4" />
-              Ver todas las etapas ({etapas.length})
-            </Button>
-          </div>
-        )}
-
-        {/* Vista Expandida (todas las etapas) */}
-        {expandido && (
-          <div className="space-y-4">
-          {etapas.map((etapa, index) => {
-            const esActual = !etapa.completado && (index === 0 || etapas[index - 1].completado)
-            
             return (
-              <div key={etapa.id} className="flex gap-4">
-                {/* Icono y línea */}
-                <div className="flex flex-col items-center flex-shrink-0">
-                  <div className={`
-                    w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0
-                    ${etapa.completado 
-                      ? 'bg-green-100 border-2 border-green-500' 
-                      : esActual
-                      ? 'bg-brand-100 border-2 border-brand-500 animate-pulse'
-                      : 'bg-gray-100 border-2 border-gray-300'
-                    }
-                  `}>
-                    {etapa.completado ? (
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                    ) : esActual ? (
-                      <Clock className="h-5 w-5 text-brand-600" />
-                    ) : (
-                      <Circle className="h-5 w-5 text-gray-400" />
+              <li key={etapa.key} className="relative flex gap-3 pb-5 last:pb-0">
+                {/* Conector */}
+                {!ultima && (
+                  <span
+                    className={cn(
+                      'absolute left-[11px] top-6 bottom-0 w-px',
+                      etapa.completada ? 'bg-success-solid/40' : 'bg-line',
                     )}
-                  </div>
-                  {index < etapas.length - 1 && (
-                    <div className={`w-0.5 h-12 flex-shrink-0 ${
-                      etapa.completado ? 'bg-green-500' : esActual ? 'bg-brand-500' : 'bg-gray-300'
-                    }`} />
-                  )}
-                </div>
+                    aria-hidden
+                  />
+                )}
 
-                {/* Contenido */}
-                <div className="flex-1 pb-4 min-w-0">
-                  <div className={`
-                    p-4 rounded-lg border-2 transition-all
-                    ${etapa.completado 
-                      ? 'bg-green-50 border-green-200' 
-                      : esActual
-                      ? 'bg-brand-50 border-brand-500 shadow-md'
-                      : 'bg-gray-50 border-gray-200'
-                    }
-                  `}>
-                    <div className="flex items-start justify-between mb-1 gap-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="text-xl flex-shrink-0">{etapa.icono}</span>
-                        <h4 className={`font-semibold text-sm break-words ${
-                          etapa.completado ? 'text-green-900' :
-                          esActual ? 'text-brand-900' : 'text-gray-600'
-                        }`}>
-                          {etapa.titulo}
-                        </h4>
-                      </div>
-                      {esActual && (
-                        <span className="px-2 py-1 text-xs font-medium bg-brand-700 text-white rounded-full whitespace-nowrap flex-shrink-0">
-                          En curso
+                <span
+                  className={cn(
+                    'relative z-10 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2',
+                    etapa.completada
+                      ? 'border-success-solid bg-success-solid text-on-primary'
+                      : actual
+                        ? 'border-primary bg-surface'
+                        : 'border-line bg-surface',
+                  )}
+                  aria-hidden
+                >
+                  {etapa.completada ? (
+                    <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                  ) : actual ? (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  ) : null}
+                </span>
+
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <p
+                      className={cn(
+                        'text-body font-medium',
+                        etapa.completada ? 'text-ink' : actual ? 'text-primary' : 'text-ink-3',
+                      )}
+                    >
+                      {etapa.label}
+                      {actual && (
+                        <span className="ml-2 text-label font-normal text-ink-2">
+                          — etapa actual
                         </span>
                       )}
-                    </div>
-                    <p className={`text-sm break-words ${
-                      etapa.completado ? 'text-green-700' :
-                      esActual ? 'text-brand-800' : 'text-gray-500'
-                    }`}>
-                      {etapa.descripcion}
                     </p>
-                    {etapa.fecha && (
-                      <p className="text-xs text-gray-500 mt-2">
-                        ✓ Completado el {new Date(etapa.fecha).toLocaleDateString('es-AR')}
-                      </p>
-                    )}
-                    {esActual && (
-                      <p className="text-xs text-brand-700 mt-2 font-medium">
-                        ⏳ Trabajando en esta etapa...
-                      </p>
+                    {etapa.fecha && etapa.completada && (
+                      <time
+                        dateTime={etapa.fecha.toISOString()}
+                        className="text-label text-ink-3 tnum"
+                      >
+                        {format(etapa.fecha, "d MMM yyyy", { locale: es })}
+                      </time>
                     )}
                   </div>
+                  <p
+                    className={cn(
+                      'text-body-sm',
+                      etapa.completada || actual ? 'text-ink-2' : 'text-ink-3',
+                    )}
+                  >
+                    {actual && !etapa.completada
+                      ? etapa.esperandoCliente
+                      : DESCRIPCIONES[etapa.key]}
+                  </p>
                 </div>
-              </div>
+              </li>
             )
           })}
-            
-            {/* Botón para colapsar */}
-            <Button
-              variant="outline"
-              onClick={() => setExpandido(false)}
-              className="w-full mt-4 gap-2 border-brand-300 text-brand-700 hover:bg-brand-50 hover:border-brand-500"
-            >
-              <ChevronUp className="h-4 w-4" />
-              Ver resumen
-            </Button>
-          </div>
-        )}
-      </CardContent>
+        </ol>
+      </CardBody>
     </Card>
   )
 }
-

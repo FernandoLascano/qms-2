@@ -94,56 +94,56 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
   ]
 
   const getEstadoColor = (estado: string, reportadoVencido: boolean) => {
-    if (reportadoVencido) return 'bg-brand-50 border-brand-300'
-    if (estado === 'PAGADO') return 'bg-green-50 border-green-300'
-    if (estado === 'VENCIDO') return 'bg-orange-50 border-orange-300'
-    return 'bg-blue-50 border-blue-300'
+    if (reportadoVencido) return 'bg-primary-soft border-primary-line'
+    if (estado === 'PAGADO') return 'bg-success-soft border-success-line'
+    if (estado === 'VENCIDO') return 'bg-warning-soft border-warning-line'
+    return 'bg-info-soft border-info-line'
   }
 
   return (
-    <div className="border-orange-200 bg-orange-50 rounded-lg">
+    <div className="border-warning-line bg-warning-soft rounded-control">
       <CollapsibleCard
         title="Enlaces de Pago Externo"
         description="Envía enlaces del portal de Córdoba u otros sistemas externos"
-        icon={<LinkIcon className="h-5 w-5 text-orange-700" />}
+        icon={<LinkIcon className="h-5 w-5 text-warning" />}
       >
         <div className="space-y-4">
         {/* Enlaces Enviados */}
         {enlaces && enlaces.length > 0 && (
           <div className="space-y-3 mb-4">
-            <h4 className="font-medium text-sm text-gray-700">Enlaces Enviados</h4>
+            <h4 className="font-medium text-body-sm text-ink-2">Enlaces Enviados</h4>
             {enlaces.map((enlace: any) => (
               <div
                 key={enlace.id}
-                className={`p-4 border-2 rounded-lg ${getEstadoColor(enlace.estado, enlace.reportadoVencido)}`}
+                className={`p-4 border-2 rounded-control ${getEstadoColor(enlace.estado, enlace.reportadoVencido)}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm text-gray-900">{enlace.concepto}</p>
+                      <p className="font-medium text-body-sm text-ink">{enlace.concepto}</p>
                       {enlace.estado === 'PAGADO' && (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CheckCircle className="h-4 w-4 text-success" />
                       )}
                       {enlace.reportadoVencido && (
-                        <XCircle className="h-4 w-4 text-brand-600" />
+                        <XCircle className="h-4 w-4 text-primary" />
                       )}
                     </div>
-                    <p className="text-xs text-gray-600 mb-2">
+                    <p className="text-label text-ink-2 mb-2">
                       Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
                       {enlace.fechaVencimiento && (
                         <> • Vence: {new Date(enlace.fechaVencimiento).toLocaleDateString('es-AR')}</>
                       )}
                     </p>
                     {enlace.reportadoVencido && (
-                      <p className="text-xs text-brand-600 font-medium">
-                        ⚠️ Cliente reportó que el enlace está vencido
+                      <p className="text-label text-primary font-medium">
+                        Cliente reportó que el enlace está vencido
                       </p>
                     )}
                     <a
                       href={enlace.enlace}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline break-all"
+                      className="text-label text-info hover:underline break-all"
                     >
                       {enlace.enlace}
                     </a>
@@ -152,7 +152,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                     <Button
                       size="sm"
                       onClick={() => handleMarcarPagado(enlace.id)}
-                      className="ml-2 bg-green-600 hover:bg-green-700"
+                      className="ml-2 bg-success-solid hover:bg-success-solid"
                     >
                       Marcar Pagado
                     </Button>
@@ -164,16 +164,16 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
         )}
 
         {/* Enviar Nuevo Enlace */}
-        <div className="border-t pt-4">
-          <h4 className="font-medium text-sm text-gray-700 mb-3">Enviar Nuevo Enlace de Pago</h4>
-          <div className="space-y-3 bg-white p-4 rounded-lg border">
+        <div className="border-t border-line pt-4">
+          <h4 className="font-medium text-body-sm text-ink-2 mb-3">Enviar Nuevo Enlace de Pago</h4>
+          <div className="space-y-3 bg-surface p-4 rounded-control border border-line">
             <div>
               <Label htmlFor="conceptoEnlace">Concepto *</Label>
               <select
                 id="conceptoEnlace"
                 value={nuevoEnlace.concepto}
                 onChange={(e) => setNuevoEnlace(prev => ({ ...prev, concepto: e.target.value }))}
-                className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
                 disabled={enviando}
               >
                 {conceptosDisponibles.map(opt => (
@@ -204,7 +204,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                 placeholder="https://pagos.cba.gov.ar/..."
                 disabled={enviando}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-label text-ink-2 mt-1">
                 Enlace del portal de pagos de Córdoba u otro sistema
               </p>
             </div>
@@ -223,7 +223,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
             <Button
               onClick={handleEnviarEnlace}
               disabled={enviando || !nuevoEnlace.enlace || !nuevoEnlace.monto}
-              className="w-full gap-2 bg-orange-600 hover:bg-orange-700"
+              className="w-full gap-2 bg-warning-solid hover:bg-warning-solid"
             >
               <Send className="h-4 w-4" />
               {enviando ? 'Enviando...' : 'Enviar Enlace al Cliente'}
@@ -232,9 +232,9 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
         </div>
 
         {/* Info */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <p className="text-xs text-yellow-900">
-            💡 <strong>Tip:</strong> El cliente verá este enlace en su panel y recibirá una notificación. 
+        <div className="bg-warning-soft border border-warning-line rounded-control p-3">
+          <p className="text-label text-warning">
+            <strong>Tip:</strong> El cliente verá este enlace en su panel y recibirá una notificación.
             Si el enlace vence, puede reportarlo y recibirás una alerta para enviar uno nuevo.
           </p>
         </div>

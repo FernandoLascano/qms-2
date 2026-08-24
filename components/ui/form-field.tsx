@@ -51,15 +51,15 @@ export function FormField({
     <div className={cn('space-y-2', className)}>
       <div className="flex items-center justify-between">
         <Label htmlFor={name} className={cn(
-          'text-sm font-semibold',
-          hasError && 'text-brand-600',
-          hasSuccess && 'text-green-600'
+          'text-body-sm font-semibold',
+          hasError && 'text-danger',
+          hasSuccess && 'text-success'
         )}>
           {label}
-          {required && <span className="text-brand-600 ml-1">*</span>}
+          {required && <span className="text-danger ml-1">*</span>}
         </Label>
         {hasSuccess && (
-          <CheckCircle className="h-4 w-4 text-green-600" />
+          <CheckCircle className="h-4 w-4 text-success" />
         )}
       </div>
       
@@ -79,25 +79,25 @@ export function FormField({
           pattern={pattern}
           autoComplete={autoComplete}
           className={cn(
-            hasError && 'border-brand-500 focus:ring-brand-500 focus:border-brand-500',
-            hasSuccess && 'border-green-500 focus:ring-green-500 focus:border-green-500',
-            !hasError && !hasSuccess && 'border-gray-300'
+            hasError && 'border-danger-solid focus:ring-ring focus:border-danger-solid',
+            hasSuccess && 'border-success-solid focus:ring-success-solid focus:border-success-solid',
+            !hasError && !hasSuccess && 'border-line-strong'
           )}
         />
         {hasError && (
-          <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-500 pointer-events-none" />
+          <AlertCircle className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-danger pointer-events-none" />
         )}
       </div>
 
       {error && (
-        <p className="text-xs text-brand-600 flex items-center gap-1">
+        <p className="text-label text-danger flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>
       )}
 
       {!error && helpText && (
-        <p className="text-xs text-gray-500 flex items-start gap-1">
+        <p className="text-label text-ink-2 flex items-start gap-1">
           <HelpCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
           <span>{helpText}</span>
         </p>

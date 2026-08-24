@@ -26,12 +26,12 @@ interface EstadoManagerProps {
 }
 
 const ESTADOS = [
-  { value: 'INICIADO', label: 'Iniciado', color: 'bg-gray-100 text-gray-800' },
-  { value: 'EN_PROCESO', label: 'En Proceso', color: 'bg-blue-100 text-blue-800' },
-  { value: 'ESPERANDO_CLIENTE', label: 'Esperando Cliente', color: 'bg-orange-100 text-orange-800' },
-  { value: 'ESPERANDO_APROBACION', label: 'Esperando Aprobación', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'COMPLETADO', label: 'Completado', color: 'bg-green-100 text-green-800' },
-  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-brand-100 text-brand-800' },
+  { value: 'INICIADO', label: 'Iniciado', color: 'bg-surface-3 text-ink' },
+  { value: 'EN_PROCESO', label: 'En Proceso', color: 'bg-info-soft text-info' },
+  { value: 'ESPERANDO_CLIENTE', label: 'Esperando Cliente', color: 'bg-warning-soft text-warning' },
+  { value: 'ESPERANDO_APROBACION', label: 'Esperando Aprobación', color: 'bg-warning-soft text-warning' },
+  { value: 'COMPLETADO', label: 'Completado', color: 'bg-success-soft text-success' },
+  { value: 'CANCELADO', label: 'Cancelado', color: 'bg-primary-soft text-primary' },
 ]
 
 export default function EstadoManager({ tramiteId, estadoActual, etapas }: EstadoManagerProps) {
@@ -109,8 +109,8 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-            <SlidersHorizontal className="h-4 w-4 text-blue-700" />
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-info-soft">
+            <SlidersHorizontal className="h-4 w-4 text-info" />
           </span>
           <span>Gestión de Estado</span>
         </CardTitle>
@@ -122,26 +122,26 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="flex-1">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
+              <label className="text-body-sm font-medium text-ink-2 mb-2 block">
                 Estado Actual
               </label>
-              <span className={`inline-block px-4 py-2 rounded-lg font-medium ${estadoActualInfo?.color}`}>
+              <span className={`inline-block px-4 py-2 rounded-control font-medium ${estadoActualInfo?.color}`}>
                 {estadoActualInfo?.label}
               </span>
             </div>
 
             <div className="flex-1">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
+              <label className="text-body-sm font-medium text-ink-2 mb-2 block">
                 Estado Sugerido (automático)
               </label>
-              <span className={`inline-block px-4 py-2 rounded-lg font-medium ${ESTADOS.find(e => e.value === estadoSugerido)?.color || 'bg-gray-100 text-gray-800'}`}>
+              <span className={`inline-block px-4 py-2 rounded-control font-medium ${ESTADOS.find(e => e.value === estadoSugerido)?.color || 'bg-surface-3 text-ink'}`}>
                 {ESTADOS.find(e => e.value === estadoSugerido)?.label || estadoSugerido}
               </span>
             </div>
           </div>
 
-          <div className="border-t pt-4">
-            <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <div className="border-t border-line pt-4">
+            <label className="text-body-sm font-medium text-ink-2 mb-2 block">
               Cambiar a (manual)
             </label>
             <div className="flex items-center gap-4">
@@ -165,8 +165,8 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
               </Button>
             </div>
             {estadoSugerido !== nuevoEstado && estadoSugerido !== estadoActual && (
-              <p className="text-xs text-gray-500 mt-2">
-                💡 El estado sugerido basado en las etapas es: <strong>{ESTADOS.find(e => e.value === estadoSugerido)?.label}</strong>
+              <p className="text-label text-ink-2 mt-2">
+                El estado sugerido basado en las etapas es: <strong>{ESTADOS.find(e => e.value === estadoSugerido)?.label}</strong>
               </p>
             )}
           </div>

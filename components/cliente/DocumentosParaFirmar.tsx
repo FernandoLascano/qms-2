@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { FileText, Download, Upload, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { FileInput } from '@/components/ui/file-input'
 
 interface Documento {
   id: string
@@ -380,13 +380,13 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
   })
 
   return (
-    <Card id="documentos-para-firmar" className="scroll-mt-4 border-2 border-purple-300 bg-purple-50">
+    <Card id="documentos-para-firmar" className="scroll-mt-4 border-2 border-info-line bg-info-soft">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-purple-900">
+        <CardTitle className="flex items-center gap-2 text-info">
           <FileText className="h-6 w-6" />
-          ✍️ Documentos para Firmar
+          Documentos para Firmar
         </CardTitle>
-        <CardDescription className="text-purple-700">
+        <CardDescription className="text-info">
           {documentosPendientes.length > 0 
             ? 'Descarga estos documentos, fírmalos y súbelos firmados'
             : documentosEnValidacion.length > 0
@@ -398,8 +398,8 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
       <CardContent className="space-y-6">
         {/* Nota general + subida en lote. Las instrucciones específicas van en cada documento. */}
         {documentosPendientes.length > 0 && (
-          <div className="rounded-lg bg-white border border-purple-200 p-4 space-y-2">
-            <p className="text-sm text-gray-700">
+          <div className="rounded-control bg-surface border border-info-line p-4 space-y-2">
+            <p className="text-body-sm text-ink-2">
               Cada documento tiene sus <strong>instrucciones de firma específicas</strong> (mirá el paso 2 de cada uno). Firmá cada uno como se indica y subí las versiones firmadas.
             </p>
             {documentosPendientes.length > 1 && (
@@ -407,12 +407,12 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                 <Button
                   onClick={handleSubirTodos}
                   disabled={subiendoTodos}
-                  className="gap-2 bg-purple-600 hover:bg-purple-700"
+                  className="gap-2 bg-info-solid hover:bg-info-solid"
                 >
                   <Upload className="h-4 w-4" />
                   {subiendoTodos ? 'Subiendo...' : 'Subir todos los firmados de una vez'}
                 </Button>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-label text-ink-2 mt-1">
                   Elegí el archivo firmado en cada documento de abajo y subilos todos juntos.
                 </p>
               </div>
@@ -426,15 +426,15 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
             {documentosPendientes.map((doc) => (
           <div
             key={doc.id}
-            className="p-4 bg-white border-2 border-purple-200 rounded-lg"
+            className="p-4 bg-surface border-2 border-info-line rounded-control"
           >
             <div className="flex items-start gap-3 mb-3">
-              <FileText className="h-8 w-8 text-purple-600 flex-shrink-0" />
+              <FileText className="h-8 w-8 text-info flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-900 mb-1">
+                <h4 className="font-semibold text-ink mb-1">
                   {doc.nombre}
                 </h4>
-                <p className="text-xs text-gray-500">
+                <p className="text-label text-ink-2">
                   Enviado el {new Date(doc.createdAt).toLocaleDateString('es-AR')}
                 </p>
               </div>
@@ -442,19 +442,19 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
 
             <div className="space-y-2">
               {/* Paso 1: Descargar */}
-              <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="flex items-start gap-3 p-3 bg-info-soft border border-info-line rounded-control">
+                <span className="flex-shrink-0 w-6 h-6 bg-info-solid text-on-primary rounded-full flex items-center justify-center text-body-sm font-semibold">
                   1
                 </span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 mb-2">
+                  <p className="text-body-sm font-medium text-ink mb-2">
                     Descargar documento
                   </p>
                   <a
                     href={`/api/documentos/${doc.id}/view?download=1`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium"
+                    className="inline-flex items-center gap-2 bg-info-solid hover:bg-info-solid text-on-primary px-3 py-1 rounded-chip text-body-sm font-medium"
                   >
                     <Download className="h-4 w-4" />
                     Ver / Descargar
@@ -463,15 +463,15 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
               </div>
 
               {/* Paso 2: Firmar */}
-              <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="flex items-start gap-3 p-3 bg-info-soft border border-info-line rounded-control">
+                <span className="flex-shrink-0 w-6 h-6 bg-info-solid text-on-primary rounded-full flex items-center justify-center text-body-sm font-semibold">
                   2
                 </span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
+                  <p className="text-body-sm font-medium text-ink mb-1">
                     Instrucciones de firma:
                   </p>
-                  <p className="text-sm text-purple-900 font-bold bg-white/50 p-2 rounded border border-purple-100 italic">
+                  <p className="text-body-sm text-info font-semibold bg-surface/50 p-2 rounded border border-info-line italic">
                     {doc.descripcion || 'Firmar en todas las páginas indicadas'}
                   </p>
                   {doc.tipo === 'ESTATUTO_PARA_FIRMAR' && (
@@ -479,40 +479,34 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                       href="/assets/img/InstructivoFirma.jpeg"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 underline hover:text-brand-800"
+                      className="mt-2 inline-flex items-center gap-2 text-body-sm font-medium text-primary underline hover:text-primary"
                     >
-                      📄 Ver instructivo de firma digital (Ciudadano Digital)
+                      Ver instructivo de firma digital (Ciudadano Digital)
                     </a>
                   )}
                 </div>
               </div>
 
               {/* Paso 3: Subir */}
-              <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <span className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+              <div className="flex items-start gap-3 p-3 bg-success-soft border border-success-line rounded-control">
+                <span className="flex-shrink-0 w-6 h-6 bg-success-solid text-on-primary rounded-full flex items-center justify-center text-body-sm font-semibold">
                   3
                 </span>
                 <div className="flex-1 space-y-2">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-body-sm font-medium text-ink">
                     Subir documento firmado
                   </p>
-                  <Input
-                    key={`file-input-${doc.id}-${archivosSeleccionados[doc.id] ? 'filled' : 'empty'}`}
-                    type="file"
+                  {/* El control muestra el nombre y el peso del archivo elegido,
+                      así que ya no hace falta la línea de confirmación aparte. */}
+                  <FileInput
                     accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                    archivo={archivosSeleccionados[doc.id] ?? null}
+                    onArchivo={(f) => handleFileChange(doc.id, f)}
                     disabled={subiendo[doc.id]}
-                    className="text-sm"
+                    compacto
+                    label="Elegí el documento firmado o arrastralo acá"
+                    ayuda="PDF, JPG o PNG · hasta 10 MB"
                   />
-                  <p className="text-xs text-gray-500">
-                    Formatos aceptados: PDF, JPG o PNG (máx. 10MB)
-                  </p>
-                  {archivosSeleccionados[doc.id] && (
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" />
-                      {archivosSeleccionados[doc.id]?.name}
-                    </p>
-                  )}
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
@@ -520,7 +514,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                       handleSubirFirmado(doc)
                     }}
                     disabled={subiendo[doc.id] || !archivosSeleccionados[doc.id]}
-                    className="gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="gap-2 bg-success-solid hover:bg-success-solid disabled:opacity-50 disabled:cursor-not-allowed"
                     size="sm"
                     type="button"
                   >
@@ -534,12 +528,12 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
             ))}
           </div>
         ) : (
-          <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 text-center">
-            <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm font-medium text-gray-700">
+          <div className="bg-surface-2 border-2 border-line rounded-control p-6 text-center">
+            <CheckCircle className="h-12 w-12 text-ink-3 mx-auto mb-3" />
+            <p className="text-body-sm font-medium text-ink-2">
               No hay documentos pendientes para firmar
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-label text-ink-2 mt-1">
               {documentosAprobados.length > 0 
                 ? 'Todos los documentos pendientes han sido procesados'
                 : 'Aún no se han enviado documentos para firmar'
@@ -551,9 +545,9 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
         {/* Documentos En Validación (subidos pero esperando aprobación) */}
         {documentosEnValidacion.length > 0 && (
           <div className="space-y-4">
-            <div className="border-t border-purple-200 pt-4">
-              <h3 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                <Clock className="h-5 w-5 text-yellow-600" />
+            <div className="border-t border-info-line pt-4">
+              <h3 className="text-body-sm font-semibold text-info mb-3 flex items-center gap-2">
+                <Clock className="h-5 w-5 text-warning" />
                 Documentos en Validación
               </h3>
               {documentosEnValidacion.map((doc) => {
@@ -563,63 +557,58 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                 return (
                   <div
                     key={doc.id}
-                    className={`p-4 border-2 rounded-lg ${
+                    className={`p-4 border-2 rounded-control ${
                       estaRechazado
-                        ? 'bg-brand-50 border-brand-200'
-                        : 'bg-yellow-50 border-yellow-200'
+                        ? 'bg-primary-soft border-primary-line'
+                        : 'bg-warning-soft border-warning-line'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <Clock className={`h-6 w-6 flex-shrink-0 mt-0.5 ${
-                        estaRechazado ? 'text-brand-600' : 'text-yellow-600'
+                        estaRechazado ? 'text-primary' : 'text-warning'
                       }`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className={`font-semibold ${
-                            estaRechazado ? 'text-brand-900' : 'text-yellow-900'
+                            estaRechazado ? 'text-primary' : 'text-warning'
                           }`}>
                             {doc.nombre}
                           </h4>
-                          <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          <span className={`px-2 py-0.5 text-label font-medium rounded-full ${
                             estaRechazado
-                              ? 'bg-brand-600 text-white'
-                              : 'bg-yellow-600 text-white'
+                              ? 'bg-primary text-on-primary'
+                              : 'bg-warning-solid text-on-primary'
                           }`}>
                             {estaRechazado ? 'Rechazado' : 'Esperando Validación'}
                           </span>
                         </div>
                         {documentoFirmado && (
                           <>
-                            <p className={`text-xs mb-1 ${
-                              estaRechazado ? 'text-brand-700' : 'text-yellow-700'
+                            <p className={`text-label mb-1 ${
+                              estaRechazado ? 'text-primary' : 'text-warning'
                             }`}>
                               {estaRechazado ? (
-                                <>⚠️ Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
+                                <>Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
                               ) : (
-                                <>⏳ Subido el {new Date(documentoFirmado.createdAt).toLocaleDateString('es-AR')}. Esperando validación por Quiero Mi SAS.</>
+                                <>Subido el {new Date(documentoFirmado.createdAt).toLocaleDateString('es-AR')}. Esperando validación por Quiero Mi SAS.</>
                               )}
                             </p>
                             {estaRechazado && documentoFirmado.observaciones && (
-                              <div className="mt-2 p-2 bg-brand-100 border border-brand-300 rounded text-xs text-brand-900">
+                              <div className="mt-2 p-2 bg-primary-soft border border-primary-line rounded text-label text-primary">
                                 <strong>Comentarios:</strong> {documentoFirmado.observaciones}
                               </div>
                             )}
                             {estaRechazado && (
                               <div className="mt-3 space-y-2">
-                                <Input
-                                  key={`file-input-rechazado-${doc.id}-${archivosSeleccionados[doc.id] ? 'filled' : 'empty'}`}
-                                  type="file"
+                                <FileInput
                                   accept=".pdf,.jpg,.jpeg,.png"
-                                  onChange={(e) => handleFileChange(doc.id, e.target.files?.[0] || null)}
+                                  archivo={archivosSeleccionados[doc.id] ?? null}
+                                  onArchivo={(f) => handleFileChange(doc.id, f)}
                                   disabled={subiendo[doc.id]}
-                                  className="text-sm"
+                                  compacto
+                                  label="Subir la versión corregida"
+                                  ayuda="PDF, JPG o PNG · hasta 10 MB"
                                 />
-                                {archivosSeleccionados[doc.id] && (
-                                  <p className="text-xs text-green-600 flex items-center gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    {archivosSeleccionados[doc.id]?.name}
-                                  </p>
-                                )}
                                 <Button
                                   onClick={(e) => {
                                     e.preventDefault()
@@ -627,7 +616,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                                     handleSubirFirmado(doc)
                                   }}
                                   disabled={subiendo[doc.id] || !archivosSeleccionados[doc.id]}
-                                  className="gap-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="gap-2 bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                   size="sm"
                                   type="button"
                                 >
@@ -639,7 +628,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                           </>
                         )}
                         {doc.descripcion && (
-                          <p className="text-sm text-gray-600 mt-2">
+                          <p className="text-body-sm text-ink-2 mt-2">
                             {doc.descripcion}
                           </p>
                         )}
@@ -655,9 +644,9 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
         {/* Documentos Aprobados */}
         {documentosAprobados.length > 0 && (
           <div className="space-y-4">
-            <div className="border-t border-purple-200 pt-4">
-              <h3 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="border-t border-info-line pt-4">
+              <h3 className="text-body-sm font-semibold text-info mb-3 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-success" />
                 Documentos Aprobados
               </h3>
               {documentosAprobados.map((doc) => {
@@ -676,26 +665,26 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                 return (
                   <div
                     key={doc.id}
-                    className="p-4 bg-green-50 border-2 border-green-200 rounded-lg"
+                    className="p-4 bg-success-soft border-2 border-success-line rounded-control"
                   >
                     <div className="flex items-start gap-3">
-                      <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-6 w-6 text-success flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-green-900">
+                          <h4 className="font-semibold text-success">
                             {doc.nombre}
                           </h4>
-                          <span className="px-2 py-0.5 text-xs font-medium bg-green-600 text-white rounded-full">
+                          <span className="px-2 py-0.5 text-label font-medium bg-success-solid text-on-primary rounded-full">
                             Aprobado
                           </span>
                         </div>
                         {documentoFirmado && (
-                          <p className="text-xs text-green-700 mb-1">
-                            ✓ Firmado y aprobado el {new Date(documentoFirmado.fechaAprobacion || documentoFirmado.createdAt).toLocaleDateString('es-AR')}
+                          <p className="text-label text-success mb-1">
+                            Firmado y aprobado el {new Date(documentoFirmado.fechaAprobacion || documentoFirmado.createdAt).toLocaleDateString('es-AR')}
                           </p>
                         )}
                         {doc.descripcion && (
-                          <p className="text-sm text-gray-600 mt-2">
+                          <p className="text-body-sm text-ink-2 mt-2">
                             {doc.descripcion}
                           </p>
                         )}
@@ -710,14 +699,14 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
 
         {/* Mensaje importante solo si hay pendientes */}
         {documentosPendientes.length > 0 && (
-          <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-4">
+          <div className="bg-warning-soft border-2 border-warning-line rounded-control p-4">
             <div className="flex gap-3">
-              <AlertCircle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-orange-900 mb-1">
-                  ⚠️ Importante
+                <p className="text-body-sm font-medium text-warning mb-1">
+                  Importante
                 </p>
-                <p className="text-sm text-orange-800">
+                <p className="text-body-sm text-warning">
                   Una vez que hayas firmado los documentos, sube cada uno con el botón "Subir Firmado". 
                   Nosotros los revisaremos y te confirmaremos si están correctos.
                 </p>

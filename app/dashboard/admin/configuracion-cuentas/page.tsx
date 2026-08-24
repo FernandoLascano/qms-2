@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -101,33 +103,29 @@ export default function ConfiguracionCuentasPage() {
 
   if (cargando) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-600">Cargando...</p>
+      <div className="space-y-section">
+        <PageHeader
+          title="Cuentas bancarias"
+          description="Cuentas pre-configuradas para transferencias."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Cuentas bancarias' }]}
+        />
+        <PageSkeleton cards={2} />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </Link>
-        <div className="flex-1">
-          <h2 className="text-3xl font-bold text-brand-900">Configuración de Cuentas Bancarias</h2>
-          <p className="text-gray-600 mt-1">
-            Gestiona las cuentas bancarias pre-configuradas para transferencias
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Cuentas bancarias"
+        description="Cuentas pre-configuradas para transferencias y depósitos de capital."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Cuentas bancarias' }]}
+      />
 
-      {/* Agregar Nueva Cuenta */}
+      {/* Agregar una cuenta */}
       <Card>
         <CardHeader>
-          <CardTitle>Agregar Nueva Cuenta</CardTitle>
+          <CardTitle>Agregar una cuenta</CardTitle>
           <CardDescription>
             Las cuentas agregadas estarán disponibles en el dropdown al generar links de pago
           </CardDescription>
@@ -135,7 +133,7 @@ export default function ConfiguracionCuentasPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="nombre">Nombre de la Cuenta *</Label>
+              <Label htmlFor="nombre">Nombre de la cuenta *</Label>
               <Input
                 id="nombre"
                 value={nuevaCuenta.nombre}
@@ -172,7 +170,7 @@ export default function ConfiguracionCuentasPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="titular">Titular de la Cuenta *</Label>
+              <Label htmlFor="titular">Titular de la cuenta *</Label>
               <Input
                 id="titular"
                 value={nuevaCuenta.titular}
@@ -181,9 +179,11 @@ export default function ConfiguracionCuentasPage() {
               />
             </div>
             <div className="md:col-span-2">
-              <Button onClick={agregarCuenta} className="gap-2">
+              <Button
+              variant="secondary"
+              onClick={agregarCuenta} className="gap-2">
                 <Plus className="h-4 w-4" />
-                Agregar Cuenta
+                Agregar cuenta
               </Button>
             </div>
           </div>
@@ -193,14 +193,14 @@ export default function ConfiguracionCuentasPage() {
       {/* Lista de Cuentas */}
       <Card>
         <CardHeader>
-          <CardTitle>Cuentas Pre-configuradas ({cuentas.length})</CardTitle>
+          <CardTitle>Cuentas configuradas ({cuentas.length})</CardTitle>
           <CardDescription>
             Estas cuentas estarán disponibles al generar links de pago de honorarios
           </CardDescription>
         </CardHeader>
         <CardContent>
           {cuentas.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
+            <p className="text-ink-2 text-center py-8">
               No hay cuentas configuradas. Agrega una cuenta arriba.
             </p>
           ) : (
@@ -208,38 +208,38 @@ export default function ConfiguracionCuentasPage() {
               {cuentas.map((cuenta) => (
                 <div
                   key={cuenta.id}
-                  className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition"
+                  className="border border-line rounded-control p-4 bg-surface-2 hover:bg-surface-3 transition"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-sm text-gray-500">Nombre</p>
-                        <p className="font-semibold text-gray-900">{cuenta.nombre}</p>
+                        <p className="text-body-sm text-ink-2">Nombre</p>
+                        <p className="font-semibold text-ink">{cuenta.nombre}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">Banco</p>
-                        <p className="font-semibold text-gray-900">{cuenta.banco}</p>
+                        <p className="text-body-sm text-ink-2">Banco</p>
+                        <p className="font-semibold text-ink">{cuenta.banco}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">CBU</p>
-                        <p className="font-semibold text-gray-900 font-mono">{cuenta.cbu}</p>
+                        <p className="text-body-sm text-ink-2">CBU</p>
+                        <p className="font-mono text-body font-semibold text-ink tnum">{cuenta.cbu}</p>
                       </div>
                       {cuenta.alias && (
                         <div>
-                          <p className="text-sm text-gray-500">Alias</p>
-                          <p className="font-semibold text-gray-900">{cuenta.alias}</p>
+                          <p className="text-body-sm text-ink-2">Alias</p>
+                          <p className="font-semibold text-ink">{cuenta.alias}</p>
                         </div>
                       )}
                       <div className="md:col-span-2">
-                        <p className="text-sm text-gray-500">Titular</p>
-                        <p className="font-semibold text-gray-900">{cuenta.titular}</p>
+                        <p className="text-body-sm text-ink-2">Titular</p>
+                        <p className="font-semibold text-ink">{cuenta.titular}</p>
                       </div>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => eliminarCuenta(cuenta.id)}
-                      className="text-brand-600 hover:text-brand-700 hover:bg-brand-50"
+                      className="text-primary hover:text-primary hover:bg-primary-soft"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -250,14 +250,14 @@ export default function ConfiguracionCuentasPage() {
           )}
           
           {cuentas.length > 0 && (
-            <div className="mt-6 pt-4 border-t">
+            <div className="mt-6 pt-4 border-t border-line">
               <Button
                 onClick={guardarCuentas}
                 disabled={guardando}
-                className="gap-2 bg-brand-600 hover:bg-brand-700"
+                className="gap-2 bg-primary hover:bg-primary"
               >
                 <Save className="h-4 w-4" />
-                {guardando ? 'Guardando...' : 'Guardar Cambios'}
+                {guardando ? 'Guardando...' : 'Guardar cambios'}
               </Button>
             </div>
           )}

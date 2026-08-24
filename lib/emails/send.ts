@@ -171,13 +171,14 @@ export async function enviarEmailSociedadInscripta(
   denominacion: string,
   cuit: string | null,
   matricula: string | null,
-  tramiteId: string
+  tramiteId: string,
+  plan?: string
 ) {
   return sendEmail({
     to: email,
-    subject: '🎉 ¡Felicitaciones! Tu sociedad está inscripta - ' + denominacion,
+    subject: '¡Felicitaciones! Tu sociedad está inscripta - ' + denominacion,
     template: 'emailSociedadInscripta',
-    data: { nombre, denominacion, cuit, matricula, tramiteId }
+    data: { nombre, denominacion, cuit, matricula, tramiteId, plan }
   })
 }
 

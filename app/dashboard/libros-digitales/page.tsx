@@ -21,20 +21,20 @@ export default async function LibrosDigitalesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <BookOpen className="h-7 w-7 text-brand-700" />
+        <BookOpen className="h-7 w-7 text-primary" />
         <div>
-          <h1 className="text-2xl font-bold text-brand-900">Guía de Libros Digitales</h1>
-          <p className="text-sm text-gray-500">Todo lo que necesitás saber para llevar los libros de tu sociedad.</p>
+          <h1 className="text-title font-semibold text-primary">Guía de Libros Digitales</h1>
+          <p className="text-body-sm text-ink-2">Todo lo que necesitás saber para llevar los libros de tu sociedad.</p>
         </div>
       </div>
 
       {habilitada ? (
         <GuiaLibrosDigitales />
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 text-center">
-          <BookOpen className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-700">La guía estará disponible cuando tu sociedad esté inscripta.</p>
-          <p className="text-sm text-gray-500 mt-1">Es un beneficio incluido en tu plan, para usar una vez constituida tu sociedad.</p>
+        <div className="rounded-control border border-line bg-surface p-6 text-center">
+          <BookOpen className="h-10 w-10 text-ink-3 mx-auto mb-3" />
+          <p className="text-body-sm font-medium text-ink-2">La guía estará disponible cuando tu sociedad esté inscripta.</p>
+          <p className="text-body-sm text-ink-2 mt-1">Es un beneficio incluido en tu plan, para usar una vez constituida tu sociedad.</p>
         </div>
       )}
     </div>

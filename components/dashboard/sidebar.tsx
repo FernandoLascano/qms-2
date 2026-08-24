@@ -3,294 +3,262 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
-import { Home, FileText, Upload, Settings, LogOut, Shield, Bell, BarChart3, Menu, X, Building2, BookOpen, Calendar, User, Users, ChevronRight, Mail, MapPin, MessageCircle, Handshake, UserSearch, Coins, Building } from 'lucide-react'
+import { LogOut, Menu, X, ExternalLink, Plus } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
+import { CountBadge } from '@/components/ui/badge'
+import { navPara, esActivo, type NavItem } from '@/lib/dashboard/navigation'
 
-const navigation = [
-  { name: 'Inicio', href: '/dashboard', icon: Home },
-  { name: 'Mis Trámites', href: '/dashboard/tramites', icon: FileText },
-  { name: 'Mi Sociedad', href: '/dashboard/mi-sociedad', icon: Building2 },
-  { name: 'Libros Digitales', href: '/dashboard/libros-digitales', icon: BookOpen },
-  { name: 'Servicios', href: '/dashboard/servicios', icon: Handshake },
-  { name: 'Documentos', href: '/dashboard/documentos', icon: Upload },
-  { name: 'Notificaciones', href: '/dashboard/notificaciones', icon: Bell },
-  { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
-]
-
+/**
+ * Sidebar claro, con el mismo idioma de navegación que el Navbar del sitio:
+ * reposo neutro, hover y activo en brand-50 con texto brand-700.
+ *
+ * (Una versión anterior lo hizo oscuro. Se veía bien por sí sola, pero la
+ * portada es blanca y luminosa: el panel parecía otro producto.)
+ */
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const isAdmin = session?.user?.rol === 'ADMIN'
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [emailUnreadCount, setEmailUnreadCount] = useState(0)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [emailsSinLeer, setEmailsSinLeer] = useState(0)
 
-  const refreshEmailUnread = useCallback(() => {
+  const grupos = navPara(isAdmin)
+
+  /* Contador de emails sin leer (sólo admin) */
+  const refrescarEmails = useCallback(() => {
     if (!isAdmin) return
     fetch('/api/admin/emails/unread-count')
       .then((r) => r.json())
       .then((d: { unreadCount?: number }) =>
-        setEmailUnreadCount(typeof d.unreadCount === 'number' ? d.unreadCount : 0),
+        setEmailsSinLeer(typeof d.unreadCount === 'number' ? d.unreadCount : 0),
       )
       .catch(() => {})
   }, [isAdmin])
 
-  // Polling suave: 2 min, solo con pestaña visible (menos CPU del cliente y menos invocaciones serverless).
+  // Polling suave: 2 min, sólo con la pestaña visible.
   useEffect(() => {
     if (!isAdmin) return
-
     const POLL_MS = 120_000
     let interval: ReturnType<typeof setInterval> | null = null
 
-    const stopInterval = () => {
+    const stop = () => {
       if (interval) {
         clearInterval(interval)
         interval = null
       }
     }
-
-    const startInterval = () => {
-      stopInterval()
-      interval = setInterval(() => {
-        void refreshEmailUnread()
-      }, POLL_MS)
+    const start = () => {
+      stop()
+      interval = setInterval(() => void refrescarEmails(), POLL_MS)
     }
-
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
-        void refreshEmailUnread()
-        startInterval()
+        void refrescarEmails()
+        start()
       } else {
-        stopInterval()
+        stop()
       }
     }
 
-    void refreshEmailUnread()
-    if (document.visibilityState === 'visible') {
-      startInterval()
-    }
+    void refrescarEmails()
+    if (document.visibilityState === 'visible') start()
 
     document.addEventListener('visibilitychange', onVisibility)
-
-    const onRefresh = () => {
-      void refreshEmailUnread()
-    }
+    const onRefresh = () => void refrescarEmails()
     window.addEventListener('admin-email-unread-refresh', onRefresh)
 
     return () => {
-      stopInterval()
+      stop()
       document.removeEventListener('visibilitychange', onVisibility)
       window.removeEventListener('admin-email-unread-refresh', onRefresh)
     }
-  }, [isAdmin, refreshEmailUnread])
+  }, [isAdmin, refrescarEmails])
 
   useEffect(() => {
     if (!isAdmin || !pathname?.startsWith('/dashboard/admin/emails')) return
-    refreshEmailUnread()
-  }, [pathname, isAdmin, refreshEmailUnread])
+    refrescarEmails()
+  }, [pathname, isAdmin, refrescarEmails])
 
-  // Para admin, cambiar "Inicio" por "Panel de Admin" y agregar Analytics, Sociedades, Blog, Calendario y Usuarios
-  const navItems = isAdmin
-    ? [
-        { name: 'Panel de Admin', href: '/dashboard/admin', icon: Shield },
-        { name: 'Analytics', href: '/dashboard/admin/analytics', icon: BarChart3 },
-        { name: 'Sociedades', href: '/dashboard/admin/sociedades', icon: Building2 },
-        { name: 'Leads', href: '/dashboard/admin/leads', icon: UserSearch },
-        { name: 'Usuarios', href: '/dashboard/admin/usuarios', icon: Users },
-        { name: 'Email', href: '/dashboard/admin/emails', icon: Mail },
-        { name: 'Blog', href: '/dashboard/admin/blog', icon: BookOpen },
-        { name: 'Calendario', href: '/dashboard/admin/calendario', icon: Calendar },
-        { name: 'Consultas Chat', href: '/dashboard/admin/consultas-chat', icon: MessageCircle },
-        { name: 'Jurisdicciones', href: '/dashboard/admin/jurisdicciones', icon: MapPin },
-        { name: 'Partners', href: '/dashboard/admin/partners', icon: Handshake },
-        { name: 'Liquidación de Comisiones', href: '/dashboard/admin/comisiones', icon: Coins },
-        { name: 'Domicilios en Sede', href: '/dashboard/admin/domicilios', icon: Building },
-        { name: 'Configuración', href: '/dashboard/admin/configuracion', icon: Settings },
-        ...navigation.slice(1, -1), // Excluir "Inicio" y "Configuración" normal
-        { name: 'Mi Cuenta', href: '/dashboard/configuracion', icon: User }
-      ]
-    : navigation
+  // Cerrar el menú móvil con Escape.
+  useEffect(() => {
+    if (!mobileOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false)
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mobileOpen])
 
-  const sidebarContent = (
+  const contadorDe = (item: NavItem) => (item.badge === 'emails' ? emailsSinLeer : 0)
+
+  const iniciales = (session?.user?.name ?? 'U')
+    .split(' ')
+    .slice(0, 2)
+    .map((p) => p.charAt(0).toUpperCase())
+    .join('')
+
+  const contenido = (
     <>
-      {/* Logo */}
-      <div className="flex h-20 items-center border-b border-gray-100 px-6">
-        <Link href="/" className="flex items-center gap-3" onClick={() => setMobileMenuOpen(false)}>
+      {/* Logo: mismo alto y tratamiento que en el Navbar del sitio */}
+      <div className="flex h-[72px] shrink-0 items-center border-b border-line px-5">
+        <Link
+          href="/"
+          className="group flex items-center rounded-control"
+          onClick={() => setMobileOpen(false)}
+        >
           <img
             src="/assets/img/qms-logo-reg.png"
-            alt="QuieroMiSAS Logo"
-            className="h-12 w-auto"
+            alt="QuieroMiSAS — ir al sitio"
+            className="h-11 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
       </div>
 
-      {/* User Info */}
-      <div className="px-4 py-5 border-b border-gray-100">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-200">
-            <span className="text-white font-bold text-sm">
-              {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
-            </span>
+      {/* Navegación */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Menú principal">
+        {grupos.map((grupo, gi) => (
+          <div key={grupo.title ?? `grupo-${gi}`} className={gi > 0 ? 'mt-6' : undefined}>
+            {grupo.title && (
+              <p className="px-3 pb-2 text-label font-semibold text-ink-3">{grupo.title}</p>
+            )}
+            <ul className="space-y-1">
+              {grupo.items.map((item) => {
+                const activo = esActivo(item, pathname)
+                const contador = contadorDe(item)
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      aria-current={activo ? 'page' : undefined}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        'group flex h-10 items-center gap-3 rounded-control px-3 text-body-sm font-medium',
+                        'transition-all duration-200',
+                        activo
+                          ? 'bg-nav-active-bg text-nav-active'
+                          : 'text-nav-item hover:bg-nav-item-bg hover:text-nav-item-hover',
+                      )}
+                    >
+                      <item.icon
+                        className={cn(
+                          'h-[18px] w-[18px] shrink-0 transition-colors',
+                          activo ? 'text-primary' : 'text-ink-3 group-hover:text-primary',
+                        )}
+                        aria-hidden
+                      />
+                      <span className="flex-1 truncate">{item.name}</span>
+                      {contador > 0 && <CountBadge count={contador} />}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">
-              {session?.user?.name || 'Usuario'}
-            </p>
-            <p className="text-xs text-gray-500 truncate">
-              {isAdmin ? 'Administrador' : 'Cliente'}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {isAdmin && (
-          <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Administración
-          </p>
-        )}
-        {navItems.slice(0, isAdmin ? 13 : navItems.length).map((item) => {
-          const isActive = pathname === item.href ||
-            (item.href === '/dashboard/admin' && pathname === '/dashboard/admin') ||
-            (item.href === '/dashboard/admin/analytics' && pathname?.startsWith('/dashboard/admin/analytics')) ||
-            (item.href === '/dashboard/admin/sociedades' && pathname?.startsWith('/dashboard/admin/sociedades')) ||
-            (item.href === '/dashboard/admin/leads' && pathname?.startsWith('/dashboard/admin/leads')) ||
-            (item.href === '/dashboard/admin/emails' && pathname?.startsWith('/dashboard/admin/emails')) ||
-            (item.href === '/dashboard/admin/consultas-chat' && pathname?.startsWith('/dashboard/admin/consultas-chat')) ||
-            (item.href === '/dashboard/admin/jurisdicciones' && pathname?.startsWith('/dashboard/admin/jurisdicciones')) ||
-            (item.href === '/dashboard/admin/partners' && pathname?.startsWith('/dashboard/admin/partners')) ||
-            (item.href === '/dashboard/admin/comisiones' && pathname?.startsWith('/dashboard/admin/comisiones')) ||
-            (item.href === '/dashboard/admin/domicilios' && pathname?.startsWith('/dashboard/admin/domicilios')) ||
-            (item.href === '/dashboard/admin/blog' && pathname?.startsWith('/dashboard/admin/blog')) ||
-            (item.href === '/dashboard/admin/calendario' && pathname?.startsWith('/dashboard/admin/calendario')) ||
-            (item.href === '/dashboard/admin/configuracion' && pathname?.startsWith('/dashboard/admin/configuracion')) ||
-            (item.href === '/dashboard/admin/usuarios' && pathname?.startsWith('/dashboard/admin/usuarios'))
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className={cn(
-                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                isActive
-                  ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-              )}
-            >
-              <item.icon className={cn(
-                "h-5 w-5 transition-transform duration-200",
-                isActive ? "" : "group-hover:scale-110"
-              )} />
-              <span className="flex-1">{item.name}</span>
-              {item.href === '/dashboard/admin/emails' && emailUnreadCount > 0 && (
-                <span
-                  className={cn(
-                    'shrink-0 min-w-[1.25rem] rounded-full px-1.5 py-0.5 text-center text-[11px] font-bold leading-none tabular-nums',
-                    isActive ? 'bg-white/25 text-white' : 'bg-red-600 text-white shadow-sm',
-                  )}
-                  title={`${emailUnreadCount} correo(s) entrante(s) sin leer`}
-                >
-                  {emailUnreadCount > 99 ? '99+' : emailUnreadCount}
-                </span>
-              )}
-              {isActive && (
-                <ChevronRight className="h-4 w-4 opacity-70 shrink-0" />
-              )}
-            </Link>
-          )
-        })}
-
-        {/* Separador para admin */}
-        {isAdmin && (
-          <>
-            <div className="my-4 border-t border-gray-100" />
-            <p className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Mi cuenta
-            </p>
-            {navItems.slice(13).map((item) => {
-              const isActive = pathname === item.href ||
-                (item.href !== '/dashboard/admin' && pathname?.startsWith(item.href))
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-brand-700 text-white shadow-lg shadow-brand-200'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                  )}
-                >
-                  <item.icon className={cn(
-                    "h-5 w-5 transition-transform duration-200",
-                    isActive ? "" : "group-hover:scale-110"
-                  )} />
-                  <span className="flex-1">{item.name}</span>
-                  {isActive && (
-                    <ChevronRight className="h-4 w-4 opacity-70" />
-                  )}
-                </Link>
-              )
-            })}
-          </>
-        )}
+        ))}
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-gray-100 p-4">
-        <button
-          onClick={() => {
-            setMobileMenuOpen(false)
-            signOut({ callbackUrl: '/' })
-          }}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-brand-50 hover:text-brand-700 transition-all duration-200 cursor-pointer group"
-        >
-          <LogOut className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-          <span>Cerrar Sesión</span>
-        </button>
+      {/* Pie */}
+      <div className="shrink-0 border-t border-line p-3">
+        {isAdmin ? (
+          <Link
+            href="/dashboard/tramites"
+            onClick={() => setMobileOpen(false)}
+            className="mb-2 flex h-10 items-center gap-3 rounded-control px-3 text-body-sm font-medium text-nav-item transition-all hover:bg-nav-item-bg hover:text-nav-item-hover"
+          >
+            <ExternalLink className="h-[18px] w-[18px] shrink-0 text-ink-3" aria-hidden />
+            Ver como cliente
+          </Link>
+        ) : (
+          <Link
+            href="/tramite/nuevo"
+            onClick={() => setMobileOpen(false)}
+            className="mb-2 flex h-11 items-center justify-center gap-2 rounded-control bg-primary px-3 text-body font-semibold text-on-primary shadow-raise transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-pop"
+          >
+            <Plus className="h-4.5 w-4.5 shrink-0" aria-hidden />
+            Nuevo trámite
+          </Link>
+        )}
+
+        <div className="flex items-center gap-3 rounded-control px-2 py-2">
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-body-sm font-semibold text-primary"
+            aria-hidden
+          >
+            {iniciales}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-body-sm font-semibold text-ink">
+              {session?.user?.name}
+            </span>
+            <span className="block truncate text-label text-ink-2">
+              {isAdmin ? 'Administrador' : 'Cliente'}
+            </span>
+          </span>
+          <button
+            type="button"
+            aria-label="Cerrar sesión"
+            title="Cerrar sesión"
+            onClick={() => {
+              setMobileOpen(false)
+              signOut({ callbackUrl: '/' })
+            }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-ink-3 transition-colors hover:bg-nav-item-bg hover:text-primary"
+          >
+            <LogOut className="h-4 w-4" aria-hidden />
+          </button>
+        </div>
       </div>
     </>
   )
 
   return (
     <>
-      {/* Mobile Menu Button */}
+      {/* Disparador móvil */}
       <button
-        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 p-2.5 bg-white border border-gray-200 rounded-xl shadow-lg text-gray-700 hover:text-brand-700 hover:border-brand-200 transition-all duration-200 cursor-pointer"
-        aria-label="Toggle menu"
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Abrir menú"
+        aria-expanded={mobileOpen}
+        className="md:hidden fixed left-3 top-4 z-30 flex h-11 w-11 items-center justify-center rounded-control border border-line bg-surface text-ink-2 shadow-raise"
       >
-        {mobileMenuOpen ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <Menu className="h-5 w-5" />
-        )}
+        <Menu className="h-5 w-5" aria-hidden />
       </button>
 
-      {/* Mobile Overlay */}
-      {mobileMenuOpen && (
+      {/* Fondo del panel móvil */}
+      {mobileOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40 cursor-pointer transition-opacity duration-300"
-          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden fixed inset-0 z-40 bg-n-950/40 backdrop-blur-[2px]"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden
         />
       )}
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex h-full w-72 flex-col bg-white border-r border-gray-200 shadow-sm">
-        {sidebarContent}
-      </div>
+      {/* Sidebar de escritorio */}
+      <aside className="hidden h-full w-64 shrink-0 flex-col border-r border-line bg-nav-bg md:flex">
+        {contenido}
+      </aside>
 
-      {/* Mobile Sidebar */}
-      <div
+      {/* Sidebar móvil.
+          Usa `inert` y no aria-hidden: con aria-hidden los enlaces del panel
+          cerrado seguían siendo alcanzables con Tab, mandando el foco fuera
+          de la pantalla. */}
+      <aside
         className={cn(
-          'md:hidden fixed top-0 left-0 h-full w-72 flex-col bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-out shadow-2xl',
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          'md:hidden fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-line bg-nav-bg',
+          'transition-transform duration-200 ease-out',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
+        inert={!mobileOpen}
       >
-        {sidebarContent}
-      </div>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Cerrar menú"
+          className="absolute right-3 top-4 flex h-9 w-9 items-center justify-center rounded-control text-ink-2 hover:bg-nav-item-bg hover:text-primary"
+        >
+          <X className="h-5 w-5" aria-hidden />
+        </button>
+        {contenido}
+      </aside>
     </>
   )
 }

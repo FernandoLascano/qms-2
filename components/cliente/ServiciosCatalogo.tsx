@@ -1,25 +1,61 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { MessageCircle, Check } from 'lucide-react'
+import {
+  BadgeCheck,
+  BookOpen,
+  Building2,
+  Calculator,
+  Check,
+  FileCheck,
+  Landmark,
+  FileSignature,
+  FileText,
+  LineChart,
+  MapPin,
+  MessageCircle,
+  TrendingUp,
+  UserCog,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+import { Card, CardBody } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 const WHATSAPP = '5493512136212'
 
-const SERVICIOS = [
-  { nombre: 'Reformas de Estatuto', icono: '📝', desc: 'Modificá el objeto, la denominación u otras cláusulas del estatuto.' },
-  { nombre: 'Confección de Actas', icono: '📄', desc: 'Actas de asamblea, de directorio y demás documentación societaria.' },
-  { nombre: 'Designación o Renuncia de Autoridades', icono: '👤', desc: 'Cambios en administradores o representantes de la sociedad.' },
-  { nombre: 'Aumentos de Capital', icono: '💹', desc: 'Formalizá el aumento del capital social de tu empresa.' },
-  { nombre: 'Cambio de Sede Social', icono: '📍', desc: 'Actualizá el domicilio legal de la sociedad.' },
-  { nombre: 'Asesoría Contable', icono: '📊', desc: 'Estados contables, impuestos y acompañamiento contable.' },
-  { nombre: 'Domicilio Legal en Córdoba', icono: '🏢', desc: 'Usá una sede en Córdoba para tu sociedad (servicio anual de QMS).' },
-  { nombre: 'Registro de Marca', icono: '®️', desc: 'Protegé el nombre y la identidad de tu empresa.' }
-]
+/**
+ * Los servicios llegan desde la base (tabla ServicioCatalogo) y no de un
+ * arreglo en el código: así los precios se editan desde el panel sin tocar
+ * este archivo. El icono viaja como nombre y se resuelve acá.
+ */
+export interface ServicioCard {
+  id: string
+  slug: string
+  nombre: string
+  descripcion: string
+  icono: string
+  modalidad: 'UNICO' | 'MENSUAL' | 'ANUAL' | 'SIN_COSTO' | 'A_CONSULTAR'
+  precioDesde: number | null
+  precioTexto: string | null
+}
 
-export default function ServiciosCatalogo() {
+const ICONOS: Record<string, LucideIcon> = {
+  BadgeCheck, Building2, Calculator, FileSignature, FileText, FileCheck,
+  Landmark, LineChart, MapPin, TrendingUp, UserCog, BookOpen,
+}
+
+/** Lo que se le muestra al cliente. Sin precio cargado: "Consultar". */
+function precioVisible(s: ServicioCard) {
+  if (s.modalidad === 'SIN_COSTO') return 'Sin cargo'
+  if (s.precioDesde == null) return 'Consultar'
+  const monto = `$${s.precioDesde.toLocaleString('es-AR')}`
+  const periodo = s.modalidad === 'MENSUAL' ? ' por mes' : s.modalidad === 'ANUAL' ? ' por año' : ''
+  return `Desde ${monto}${periodo}${s.precioTexto ? ` ${s.precioTexto}` : ''}`
+}
+
+export default function ServiciosCatalogo({ servicios }: { servicios: ServicioCard[] }) {
   const [enviando, setEnviando] = useState<string | null>(null)
   const [consultados, setConsultados] = useState<Record<string, boolean>>({})
 
@@ -29,7 +65,7 @@ export default function ServiciosCatalogo() {
       const res = await fetch('/api/servicios/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ servicio })
+        body: JSON.stringify({ servicio }),
       })
       if (res.ok) {
         toast.success('¡Listo! Un asesor de QMS se va a contactar con vos.')
@@ -45,41 +81,55 @@ export default function ServiciosCatalogo() {
   }
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {SERVICIOS.map((s) => {
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {servicios.map((s) => {
         const yaConsultado = consultados[s.nombre]
+        const Icono = ICONOS[s.icono] ?? FileText
+
         return (
-          <Card key={s.nombre} className="flex flex-col">
-            <CardContent className="flex flex-col gap-3 p-5 h-full">
-              <div className="text-3xl">{s.icono}</div>
+          <Card key={s.id} className="flex flex-col">
+            <CardBody className="flex h-full flex-col gap-3">
+              <span
+                className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-3 text-ink-2"
+                aria-hidden
+              >
+                <Icono className="h-4.5 w-4.5" />
+              </span>
+
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">{s.nombre}</h3>
-                <p className="text-sm text-gray-600 mt-1">{s.desc}</p>
+                <h3 className="text-heading text-ink text-balance">{s.nombre}</h3>
+                <p className="mt-1 text-body-sm text-ink-2 text-pretty">{s.descripcion}</p>
+                <p className="mt-2 text-body-sm font-semibold text-ink">{precioVisible(s)}</p>
               </div>
+
               {yaConsultado ? (
-                <div className="flex items-center gap-2 text-sm font-medium text-green-700">
-                  <Check className="h-4 w-4" /> Consulta enviada
-                </div>
+                <p className="flex items-center gap-2 text-body-sm font-medium text-success">
+                  <Check className="h-4 w-4" aria-hidden />
+                  Consulta enviada
+                </p>
               ) : (
                 <div className="flex flex-col gap-2">
                   <Button
                     onClick={() => consultar(s.nombre)}
-                    disabled={enviando === s.nombre}
-                    className="w-full bg-brand-700 hover:bg-brand-800"
+                    loading={enviando === s.nombre}
+                    className="w-full"
                   >
-                    {enviando === s.nombre ? 'Enviando...' : 'Me interesa'}
+                    Me interesa
                   </Button>
                   <a
-                    href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Hola! Quiero consultar por el servicio: ${s.nombre}`)}`}
+                    href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
+                      `Hola! Quiero consultar por el servicio: ${s.nombre}`,
+                    )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1 text-sm font-medium text-green-700 hover:text-green-800"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-chip text-body-sm font-medium text-ink-2 hover:text-ink"
                   >
-                    <MessageCircle className="h-4 w-4" /> Consultar por WhatsApp
+                    <MessageCircle className="h-4 w-4" aria-hidden />
+                    Consultar por WhatsApp
                   </a>
                 </div>
               )}
-            </CardContent>
+            </CardBody>
           </Card>
         )
       })}

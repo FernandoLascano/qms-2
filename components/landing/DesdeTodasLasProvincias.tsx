@@ -18,11 +18,11 @@ export function DesdeTodasLasProvincias() {
   ]
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50" ref={ref}>
+    <section className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface to-surface-2" ref={ref}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <motion.div
-            className="bg-white rounded-3xl border-2 border-brand-100 shadow-xl overflow-hidden"
+            className="bg-surface rounded-modal border-2 border-brand-100 shadow-pop overflow-hidden"
             initial={{ opacity: 0, y: 40 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6 }}
@@ -41,7 +41,7 @@ export function DesdeTodasLasProvincias() {
                 </motion.div>
 
                 <motion.h2
-                  className="text-3xl md:text-4xl font-black text-gray-900 mb-4 leading-tight"
+                  className="text-3xl md:text-display font-black text-ink mb-4 leading-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.3 }}
@@ -51,13 +51,13 @@ export function DesdeTodasLasProvincias() {
                 </motion.h2>
 
                 <motion.p
-                  className="text-lg text-gray-600 mb-6 leading-relaxed"
+                  className="text-lead text-ink-2 mb-6 leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
                   Tu S.A.S. se inscribe en Córdoba (IPJ) pero es{' '}
-                  <strong className="text-gray-900">válida en todo el territorio argentino</strong>.
+                  <strong className="text-ink">válida en todo el territorio argentino</strong>.
                   Podés operar, facturar y tributar desde cualquier provincia.
                   Solo necesitás declarar tu domicilio fiscal donde tengas tu actividad comercial.
                 </motion.p>
@@ -68,7 +68,7 @@ export function DesdeTodasLasProvincias() {
                   animate={inView ? { opacity: 1 } : {}}
                   transition={{ duration: 0.5, delay: 0.5 }}
                 >
-                  <p className="text-sm font-bold text-gray-900 uppercase tracking-wider">¿Por qué Córdoba?</p>
+                  <p className="text-sm font-bold text-ink uppercase tracking-wider">¿Por qué Córdoba?</p>
                   {ventajas.map((v, i) => (
                     <motion.div
                       key={i}
@@ -77,10 +77,10 @@ export function DesdeTodasLasProvincias() {
                       animate={inView ? { opacity: 1, x: 0 } : {}}
                       transition={{ duration: 0.4, delay: 0.6 + i * 0.1 }}
                     >
-                      <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <v.icon className="w-4 h-4 text-green-700" />
+                      <div className="w-8 h-8 rounded-chip bg-success-soft flex items-center justify-center flex-shrink-0">
+                        <v.icon className="w-4 h-4 text-success" />
                       </div>
-                      <span className="text-sm text-gray-700">{v.text}</span>
+                      <span className="text-sm text-n-700">{v.text}</span>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -92,7 +92,7 @@ export function DesdeTodasLasProvincias() {
                 >
                   <Link href="/registro">
                     <motion.button
-                      className="group bg-brand-700 text-white px-8 py-4 rounded-xl font-bold text-base flex items-center gap-3 shadow-lg shadow-brand-200 cursor-pointer"
+                      className="group bg-brand-700 text-white px-8 py-4 rounded-control font-bold text-body-lg flex items-center gap-3 shadow-pop shadow-brand-200 cursor-pointer"
                       whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
                       whileTap={{ scale: 0.98 }}
                     >
@@ -104,14 +104,14 @@ export function DesdeTodasLasProvincias() {
               </div>
 
               {/* Columna derecha - Mapa de Argentina */}
-              <div className="hidden lg:flex bg-gradient-to-br from-brand-700 via-brand-800 to-gray-900 items-center justify-center p-8 relative overflow-hidden rounded-r-3xl">
+              <div className="hidden lg:flex bg-gradient-to-br from-brand-700 via-brand-800 to-ink items-center justify-center p-8 relative overflow-hidden rounded-r-3xl">
                 <ArgentinaSilhouette />
 
                 {/* Stats superpuestos */}
                 <div className="absolute bottom-8 left-8 right-8">
                   <div className="grid grid-cols-2 gap-3">
                     <motion.div
-                      className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/10 text-center"
+                      className="bg-surface/15 rounded-control p-4 backdrop-blur-sm border border-surface/10 text-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{ delay: 2.2 }}
@@ -120,7 +120,7 @@ export function DesdeTodasLasProvincias() {
                       <p className="text-white/70 text-xs mt-1">días hábiles</p>
                     </motion.div>
                     <motion.div
-                      className="bg-white/15 rounded-xl p-4 backdrop-blur-sm border border-white/10 text-center"
+                      className="bg-surface/15 rounded-control p-4 backdrop-blur-sm border border-surface/10 text-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
                       transition={{ delay: 2.4 }}
@@ -138,7 +138,7 @@ export function DesdeTodasLasProvincias() {
                   animate={inView ? { opacity: 1 } : {}}
                   transition={{ delay: 1.8 }}
                 >
-                  <p className="text-white/90 text-lg font-bold">Inscribí en Córdoba</p>
+                  <p className="text-white/90 text-lead font-bold">Inscribí en Córdoba</p>
                   <p className="text-white/60 text-sm">Operá en todo Argentina</p>
                 </motion.div>
               </div>

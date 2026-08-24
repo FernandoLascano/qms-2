@@ -25,7 +25,7 @@ export function EditButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onClick() }}
-      className="p-1.5 rounded-lg hover:bg-orange-100 text-gray-400 hover:text-orange-600 transition cursor-pointer"
+      className="p-2 rounded-control hover:bg-warning-soft text-ink-3 hover:text-warning transition cursor-pointer"
       title="Editar"
     >
       <Pencil className="w-4 h-4" />
@@ -94,25 +94,25 @@ export function EditDenominaciones({ tramiteId, tramite }: EditableSectionsProps
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => handleCancel()}>
-        <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900">Editar Denominaciones</h3>
+        <div className="bg-surface rounded-card max-w-lg w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink">Editar Denominaciones</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Denominación 1 (Preferida) *</label>
-              <input value={d1} onChange={e => setD1(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <label className="block text-body-sm font-semibold text-ink-2 mb-1">Denominación 1 (Preferida) *</label>
+              <input value={d1} onChange={e => setD1(e.target.value)} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Denominación 2</label>
-              <input value={d2} onChange={e => setD2(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <label className="block text-body-sm font-semibold text-ink-2 mb-1">Denominación 2</label>
+              <input value={d2} onChange={e => setD2(e.target.value)} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Denominación 3</label>
-              <input value={d3} onChange={e => setD3(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <label className="block text-body-sm font-semibold text-ink-2 mb-1">Denominación 3</label>
+              <input value={d3} onChange={e => setD3(e.target.value)} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>
@@ -140,12 +140,12 @@ export function EditObjetoSocial({ tramiteId, tramite }: EditableSectionsProps) 
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setValor(tramite.objetoSocial); setOpen(false) }}>
-        <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900">Editar Objeto Social</h3>
-          <textarea value={valor} onChange={e => setValor(e.target.value)} rows={10} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none" />
+        <div className="bg-surface rounded-card max-w-2xl w-full p-6 space-y-4 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink">Editar Objeto Social</h3>
+          <textarea value={valor} onChange={e => setValor(e.target.value)} rows={10} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid resize-none" />
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setValor(tramite.objetoSocial); setOpen(false) }} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+            <button onClick={() => { setValor(tramite.objetoSocial); setOpen(false) }} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>
@@ -173,12 +173,12 @@ export function EditDomicilio({ tramiteId, tramite }: EditableSectionsProps) {
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setValor(tramite.domicilioLegal); setOpen(false) }}>
-        <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900">Editar Domicilio Legal</h3>
-          <input value={valor} onChange={e => setValor(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+        <div className="bg-surface rounded-card max-w-lg w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink">Editar Domicilio Legal</h3>
+          <input value={valor} onChange={e => setValor(e.target.value)} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
           <div className="flex justify-end gap-2">
-            <button onClick={() => { setValor(tramite.domicilioLegal); setOpen(false) }} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+            <button onClick={() => { setValor(tramite.domicilioLegal); setOpen(false) }} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>
@@ -212,21 +212,21 @@ export function EditInfoGeneral({ tramiteId, tramite }: EditableSectionsProps) {
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-        <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900">Editar Información General</h3>
+        <div className="bg-surface rounded-card max-w-lg w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink">Editar Información General</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Capital Social (ARS)</label>
-              <input value={capital} onChange={e => setCapital(e.target.value.replace(/[^\d.,]/g, ''))} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <label className="block text-body-sm font-semibold text-ink-2 mb-1">Capital Social (ARS)</label>
+              <input value={capital} onChange={e => setCapital(e.target.value.replace(/[^\d.,]/g, ''))} className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Cierre de Ejercicio</label>
-              <input value={fechaCierre} onChange={e => setFechaCierre(e.target.value)} placeholder="Ej: 31/12" className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <label className="block text-body-sm font-semibold text-ink-2 mb-1">Cierre de Ejercicio</label>
+              <input value={fechaCierre} onChange={e => setFechaCierre(e.target.value)} placeholder="Ej: 31/12" className="w-full px-3 py-2 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid" />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <button onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+            <button onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>
@@ -288,15 +288,15 @@ export function EditSocios({ tramiteId, tramite }: EditableSectionsProps) {
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={handleCancel}>
-        <div className="bg-white rounded-2xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Editar Socios / Accionistas</h3>
+        <div className="bg-surface rounded-card max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink mb-4">Editar Socios / Accionistas</h3>
           <div className="space-y-6">
             {socios.map((socio, index) => (
-              <div key={index} className="border border-gray-200 rounded-xl p-4 space-y-3">
+              <div key={index} className="border border-line rounded-control p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-gray-900">Socio #{index + 1}</h4>
+                  <h4 className="font-semibold text-ink">Socio #{index + 1}</h4>
                   {socios.length > 1 && (
-                    <button onClick={() => setSocios(socios.filter((_, i) => i !== index))} className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer">
+                    <button onClick={() => setSocios(socios.filter((_, i) => i !== index))} className="p-1 text-danger hover:bg-danger-soft rounded-control cursor-pointer">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
@@ -304,11 +304,11 @@ export function EditSocios({ tramiteId, tramite }: EditableSectionsProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {campos.map(campo => (
                     <div key={campo.key}>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}{campo.required ? ' *' : ''}</label>
+                      <label className="block text-label font-medium text-ink-2 mb-1">{campo.label}{campo.required ? ' *' : ''}</label>
                       <input
                         value={socio[campo.key] || ''}
                         onChange={e => updateSocio(index, campo.key, e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-1 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid"
                       />
                     </div>
                   ))}
@@ -318,13 +318,13 @@ export function EditSocios({ tramiteId, tramite }: EditableSectionsProps) {
           </div>
           <button
             onClick={() => setSocios([...socios, { nombre: '', apellido: '', dni: '', cuit: '' }])}
-            className="mt-4 flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700 cursor-pointer"
+            className="mt-4 flex items-center gap-2 text-body-sm font-medium text-warning hover:text-warning cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Agregar socio
           </button>
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-line">
+            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>
@@ -382,15 +382,15 @@ export function EditAdministradores({ tramiteId, tramite }: EditableSectionsProp
     <>
       <EditButton onClick={() => setOpen(false)} />
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={handleCancel}>
-        <div className="bg-white rounded-2xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Editar Administradores</h3>
+        <div className="bg-surface rounded-card max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <h3 className="text-heading font-semibold text-ink mb-4">Editar Administradores</h3>
           <div className="space-y-6">
             {admins.map((admin, index) => (
-              <div key={index} className="border border-gray-200 rounded-xl p-4 space-y-3">
+              <div key={index} className="border border-line rounded-control p-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold text-gray-900">Administrador #{index + 1}</h4>
+                  <h4 className="font-semibold text-ink">Administrador #{index + 1}</h4>
                   {admins.length > 1 && (
-                    <button onClick={() => setAdmins(admins.filter((_, i) => i !== index))} className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer">
+                    <button onClick={() => setAdmins(admins.filter((_, i) => i !== index))} className="p-1 text-danger hover:bg-danger-soft rounded-control cursor-pointer">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
@@ -398,11 +398,11 @@ export function EditAdministradores({ tramiteId, tramite }: EditableSectionsProp
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {campos.map(campo => (
                     <div key={campo.key}>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">{campo.label}{campo.required ? ' *' : ''}</label>
+                      <label className="block text-label font-medium text-ink-2 mb-1">{campo.label}{campo.required ? ' *' : ''}</label>
                       <input
                         value={admin[campo.key] || ''}
                         onChange={e => updateAdmin(index, campo.key, e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        className="w-full px-3 py-1 border border-line-strong rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-warning-solid"
                       />
                     </div>
                   ))}
@@ -412,13 +412,13 @@ export function EditAdministradores({ tramiteId, tramite }: EditableSectionsProp
           </div>
           <button
             onClick={() => setAdmins([...admins, { nombre: '', apellido: '', cargo: '' }])}
-            className="mt-4 flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700 cursor-pointer"
+            className="mt-4 flex items-center gap-2 text-body-sm font-medium text-warning hover:text-warning cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Agregar administrador
           </button>
-          <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
-            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-xl text-sm font-semibold hover:bg-orange-700 disabled:opacity-50 cursor-pointer">
+          <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-line">
+            <button onClick={handleCancel} disabled={saving} className="px-4 py-2 text-body-sm font-medium text-ink-2 hover:bg-surface-3 rounded-control cursor-pointer">Cancelar</button>
+            <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-warning-solid text-on-primary rounded-control text-body-sm font-semibold hover:bg-warning-solid disabled:opacity-50 cursor-pointer">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Guardar
             </button>

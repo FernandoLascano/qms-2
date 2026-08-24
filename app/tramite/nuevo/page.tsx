@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink, Info } from 'lucide-react'
 import Link from 'next/link'
 import { PrecioDual } from '@/components/PrecioDual'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -677,43 +677,44 @@ export default function NuevoTramitePage() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-brand-600 mx-auto mb-4" />
-          <p className="text-gray-600">Cargando formulario...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-ink-2">Cargando formulario...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-              Nuevo Trámite
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-black text-gray-900">Constituí tu <span className="text-brand-700">S.A.S.</span></h1>
-            <p className="text-gray-500 mt-2 text-lg">Completa el formulario paso a paso</p>
+            <h1 className="text-display text-ink">
+              Constituí tu <span className="text-primary">S.A.S.</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-body text-ink-2">
+              Son 7 pasos y podés guardar para seguir después.
+            </p>
           </div>
           {/* Auto-save indicator */}
           {status === 'authenticated' && pasoActual >= 2 && (
-            <div className="flex items-center gap-2 text-sm bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-2 text-body-sm bg-surface px-4 py-2 rounded-control border border-line shadow-raise">
                 {isSaving ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
-                    <span className="text-gray-600">Guardando...</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span className="text-ink-2">Guardando...</span>
                   </>
                 ) : lastSaved ? (
                   <>
-                    <Cloud className="h-4 w-4 text-green-600" />
-                    <span className="text-gray-600">
+                    <Cloud className="h-4 w-4 text-success" />
+                    <span className="text-ink-2">
                       Guardado {new Date(lastSaved).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </>
                 ) : (
                   <>
-                    <CloudOff className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-500">Sin guardar</span>
+                    <CloudOff className="h-4 w-4 text-ink-3" />
+                    <span className="text-ink-2">Sin guardar</span>
                   </>
                 )}
               </div>
@@ -721,26 +722,26 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Progress Steps */}
-        <div className="mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-2xl border-2 border-gray-200 shadow-lg">
+        <div className="mb-6 md:mb-8 bg-surface p-4 md:p-6 rounded-card border-line shadow-raise">
           {/* Barra de progreso superior */}
-          <div className="mb-6 pb-4 border-b border-gray-100">
+          <div className="mb-6 pb-4 border-b border-line">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-700">Progreso del formulario</span>
+                <span className="text-body-sm font-semibold text-ink-2">Progreso del formulario</span>
               </div>
-              <span className="text-lg font-bold text-brand-600">
+              <span className="text-heading font-semibold text-primary">
                 {Math.round((pasoActual / 7) * 100)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            <div className="w-full bg-n-200 rounded-full h-3">
               <div
-                className="bg-gradient-to-r from-brand-600 to-brand-700 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                className="bg-primary h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
                 style={{ width: `${(pasoActual / 7) * 100}%` }}
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
               </div>
             </div>
-            <div className="flex items-center justify-between mt-2 text-xs text-gray-500">
+            <div className="flex items-center justify-between mt-2 text-label text-ink-2">
               <span>Paso {pasoActual} de 7</span>
               <span>{Math.round((pasoActual / 7) * 100)}% completado</span>
             </div>
@@ -761,34 +762,26 @@ export default function NuevoTramitePage() {
                     {/* Icon Container - Fixed position */}
                     <div className="relative mb-3 md:mb-4 h-12 md:h-14 flex items-center justify-center">
                       <div
-                        className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
+                        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
                           isCompleted
-                            ? 'bg-brand-600 text-white shadow-lg shadow-brand-200 md:scale-110'
+                            ? 'bg-success-solid text-on-primary'
                             : isActive
-                            ? 'bg-brand-600 text-white shadow-lg shadow-brand-300 md:scale-110 ring-2 md:ring-4 ring-brand-100'
-                            : 'bg-gray-100 text-gray-400'
+                            ? 'bg-primary text-on-primary ring-4 ring-primary-soft md:scale-110'
+                            : 'bg-surface-3 text-ink-3'
                         }`}
                       >
                         {isCompleted ? (
-                          <Check className="h-4 w-4 md:h-6 md:w-6" />
+                          <Check className="h-4 w-4 md:h-5 md:w-5" />
                         ) : (
-                          <Icon className={`h-4 w-4 md:h-6 md:w-6 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                          <Icon className={`h-4 w-4 md:h-5 md:w-5 ${isActive ? 'text-on-primary' : 'text-ink-3'}`} />
                         )}
                       </div>
-                      {/* Step Number Badge */}
-                      {!isCompleted && (
-                        <div className={`absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold ${
-                          isActive ? 'bg-brand-700 text-white' : 'bg-gray-300 text-gray-600'
-                        }`}>
-                          {paso.id}
-                        </div>
-                      )}
                     </div>
                     
                     {/* Labels - Fixed height for alignment */}
                     <div className="text-center w-full h-8 md:h-10 flex items-center justify-center">
-                      <p className={`text-xs md:text-sm font-semibold transition-colors ${
-                        isActive ? 'text-brand-600' : isCompleted ? 'text-gray-700' : 'text-gray-500'
+                      <p className={`text-label md:text-body-sm font-semibold transition-colors ${
+                        isActive ? 'text-primary' : isCompleted ? 'text-ink-2' : 'text-ink-2'
                       }`}>
                         {paso.nombre}
                       </p>
@@ -799,11 +792,11 @@ export default function NuevoTramitePage() {
                   {index < PASOS.length - 1 && (
                     <div className="flex-shrink-0 mx-1 md:mx-2 relative" style={{ marginTop: '20px', alignSelf: 'flex-start' }}>
                       <div className={`w-6 md:w-8 lg:w-10 h-0.5 md:h-1 rounded-full transition-all duration-500 ${
-                        isCompleted ? 'bg-brand-600' : 'bg-gray-200'
+                        isCompleted ? 'bg-primary' : 'bg-n-200'
                       }`} />
                       {/* Animated progress dot */}
                       {isActive && (
-                        <div className="absolute top-1/2 left-0 w-2 h-2 md:w-3 md:h-3 bg-brand-600 rounded-full transform -translate-y-1/2 animate-pulse" />
+                        <div className="absolute top-1/2 left-0 w-2 h-2 md:w-3 md:h-3 bg-primary rounded-full transform -translate-y-1/2 animate-pulse" />
                       )}
                     </div>
                   )}
@@ -814,18 +807,21 @@ export default function NuevoTramitePage() {
         </div>
 
         {/* Form Content */}
-        <Card className="shadow-lg border-2 border-gray-200 rounded-2xl">
-          <CardContent className="p-4 sm:p-6 md:p-8">
+        {/* La tarjeta del formulario va más angosta que el stepper: un campo de
+            "Nombre" de 450px de ancho es incómodo de leer y de completar. A
+            768px el recorrido del ojo entre etiqueta y campo es corto. */}
+        <Card>
+          <CardContent className="p-card sm:p-8">
             {/* Paso 1: Datos */}
             {pasoActual === 1 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">1</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">1</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Datos Personales</h2>
-                    <p className="text-gray-500 mt-1">Información del solicitante y plan elegido</p>
+                    <h2 className="text-title text-ink">Datos Personales</h2>
+                    <p className="mt-1 text-body text-ink-2">Información del solicitante y plan elegido</p>
                   </div>
                 </div>
 
@@ -911,11 +907,11 @@ export default function NuevoTramitePage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
+                <div className="border-t border-line pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-brand-900">Selecciona tu Plan</h3>
+                    <h3 className="font-semibold text-heading text-primary">Selecciona tu Plan</h3>
                     <Link href="/#planes" target="_blank">
-                      <Button variant="outline" size="sm" className="gap-2 text-brand-700 border-brand-300 hover:bg-brand-50">
+                      <Button variant="outline" size="sm" className="gap-2 text-primary border-primary-line hover:bg-primary-soft">
                         Ver Comparativa
                       </Button>
                     </Link>
@@ -929,22 +925,22 @@ export default function NuevoTramitePage() {
                       <div
                         key={plan.id}
                         onClick={() => setFormData(prev => ({ ...prev, plan: plan.id as any }))}
-                        className={`border-2 rounded-lg p-6 cursor-pointer transition-all ${
+                        className={`flex h-full flex-col rounded-card border p-card cursor-pointer transition-all ${
                           formData.plan === plan.id
-                            ? 'border-brand-600 bg-brand-50 shadow-md'
-                            : 'border-gray-200 hover:border-gray-300 bg-white hover:shadow-sm'
+                            ? 'border-primary-line bg-primary-soft shadow-raise'
+                            : 'border-line hover:border-line-strong bg-surface hover:shadow-raise'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-bold text-lg text-brand-900">{plan.nombre}</h4>
+                          <h4 className="font-semibold text-heading text-primary">{plan.nombre}</h4>
                           {formData.plan === plan.id && (
-                            <Check className="h-6 w-6 text-brand-600 flex-shrink-0" />
+                            <Check className="h-6 w-6 text-primary flex-shrink-0" />
                           )}
                         </div>
                         <div className="my-2">
-                          <PrecioDual transferencia={plan.transferencia} precioClassName="text-2xl font-bold text-brand-900" gastos />
+                          <PrecioDual transferencia={plan.transferencia} precioClassName="text-title font-semibold text-primary" gastos />
                         </div>
-                        <ul className="text-sm text-gray-700 space-y-1">
+                        <ul className="text-body-sm text-ink-2 space-y-1">
                           {plan.features.map(feature => (
                             <li key={feature}>✓ {feature}</li>
                           ))}
@@ -954,8 +950,8 @@ export default function NuevoTramitePage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="font-black text-lg text-gray-900 mb-4">Jurisdicción *</h3>
+                <div className="border-t border-line pt-6">
+                  <h3 className="font-semibold text-heading text-ink mb-4">Jurisdicción *</h3>
                   <JurisdiccionSelector
                     value={formData.jurisdiccion}
                     onChange={(id, provincia) => setFormData(prev => ({ ...prev, jurisdiccion: id as any, provincia }))}
@@ -967,24 +963,24 @@ export default function NuevoTramitePage() {
             {/* Paso 2: Nombre */}
             {pasoActual === 2 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">2</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">2</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Denominación Social</h2>
-                    <p className="text-gray-500 mt-1">Nombre de tu sociedad</p>
+                    <h2 className="text-title text-ink">Denominación Social</h2>
+                    <p className="mt-1 text-body text-ink-2">Nombre de tu sociedad</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Nombre de la Sociedad</h3>
-                  <p className="text-gray-500 mb-4">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Nombre de la Sociedad</h3>
+                  <p className="text-ink-2 mb-4">
                     Proporciona 3 opciones de nombre para tu SAS
                   </p>
                   
-                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-brand-800">
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
+                    <p className="text-body-sm text-primary">
                       <span className="font-semibold">Importante:</span> Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
                     </p>
                   </div>
@@ -1043,9 +1039,9 @@ export default function NuevoTramitePage() {
                         onChange={handleInputChange}
                         className="rounded"
                       />
-                      <span className="text-sm font-medium text-gray-900">La marca está registrada</span>
+                      <span className="text-body-sm font-medium text-ink">La marca está registrada</span>
                     </label>
-                    <p className="text-xs text-gray-500 ml-6">
+                    <p className="text-label text-ink-2 ml-6">
                       Si la marca está registrada en el INPI, tendrás prioridad en la aprobación del nombre.
                     </p>
                   </div>
@@ -1056,32 +1052,32 @@ export default function NuevoTramitePage() {
             {/* PASO 3: Objeto */}
             {pasoActual === 3 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">3</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">3</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Objeto y Domicilio Social</h2>
-                    <p className="text-gray-500 mt-1">Actividad y domicilio legal</p>
+                    <h2 className="text-title text-ink">Objeto y Domicilio Social</h2>
+                    <p className="mt-1 text-body text-ink-2">Actividad y domicilio legal</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Objeto y Domicilio</h3>
-                  <p className="text-gray-500 mb-4">Define el propósito de tu sociedad y su domicilio legal</p>
+                  <h3 className="font-semibold text-heading text-ink mb-2">Objeto y Domicilio</h3>
+                  <p className="text-ink-2 mb-4">Define el propósito de tu sociedad y su domicilio legal</p>
                   <div className="space-y-4">
                     <div>
                       <Label>Objeto Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
+                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
-                              <p className="font-medium text-gray-900">Objeto pre-aprobado</p>
+                              <p className="font-medium text-ink">Objeto pre-aprobado</p>
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="gap-1 text-xs text-brand-700 border-brand-300 hover:bg-brand-50"
+                                className="gap-1 text-label text-primary border-primary-line hover:bg-primary-soft"
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
@@ -1092,14 +1088,14 @@ export default function NuevoTramitePage() {
                                 <ExternalLink className="h-3 w-3" />
                               </Button>
                             </div>
-                            <p className="text-sm text-gray-600">Objeto social estándar que cubre la mayoría de las actividades comerciales</p>
+                            <p className="text-body-sm text-ink-2">Objeto social estándar que cubre la mayoría de las actividades comerciales</p>
                           </div>
                         </label>
-                        <label className="flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
+                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
                           <div>
-                            <p className="font-medium text-gray-900">Objeto personalizado</p>
-                            <p className="text-sm text-gray-600">Define actividades específicas para tu sociedad</p>
+                            <p className="font-medium text-ink">Objeto personalizado</p>
+                            <p className="text-body-sm text-ink-2">Define actividades específicas para tu sociedad</p>
                           </div>
                         </label>
                       </div>
@@ -1107,24 +1103,24 @@ export default function NuevoTramitePage() {
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
                         <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>
-                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
+                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="border-t pt-6">
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Domicilio Social</h3>
-                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-brand-900">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
+                <div className="border-t border-line pt-6">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Domicilio Social</h3>
+                  <div className="bg-primary-soft border border-primary-line rounded-control p-3 mb-4">
+                    <p className="text-body-sm text-primary">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
                   </div>
                   <div className="mb-4">
                     <label className="flex items-center gap-2">
                       <input type="checkbox" name="sinDomicilio" checked={formData.sinDomicilio} onChange={handleInputChange} className="rounded" />
-                      <span className="text-sm font-medium text-gray-900">No dispongo de domicilio</span>
+                      <span className="text-body-sm font-medium text-ink">No dispongo de domicilio</span>
                     </label>
                     {formData.sinDomicilio && (
-                      <div className="mt-2 ml-6 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                        <p className="text-sm text-yellow-900">
+                      <div className="mt-2 ml-6 bg-warning-soft border border-warning-line rounded-control p-3">
+                        <p className="text-body-sm text-warning">
                           💡 Por un costo extra anual (que te será informado una vez terminado el formulario), QMS QuieroMiSAS puede proporcionarte un domicilio en Córdoba.
                         </p>
                       </div>
@@ -1134,7 +1130,7 @@ export default function NuevoTramitePage() {
                     <div className="space-y-4">
                       <div>
                         <Label htmlFor="domicilio">Domicilio completo *</Label>
-                        <p className="text-xs text-gray-500 mb-2">Se requiere que sea completo con indicación de piso, departamento, lote o manzana si correspondiera.</p>
+                        <p className="text-label text-ink-2 mb-2">Se requiere que sea completo con indicación de piso, departamento, lote o manzana si correspondiera.</p>
                         <Input id="domicilio" name="domicilio" value={formData.domicilio} onChange={handleInputChange} placeholder="Av. Colón 123, Piso 2, Dpto. A" />
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1163,7 +1159,7 @@ export default function NuevoTramitePage() {
                             name="provincia" 
                             value={formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'} 
                             disabled
-                            className="bg-gray-100"
+                            className="bg-surface-3"
                           />
                         </div>
                       </div>
@@ -1176,37 +1172,46 @@ export default function NuevoTramitePage() {
             {/* PASO 4: Capital */}
             {pasoActual === 4 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">4</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">4</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Capital Social</h2>
-                    <p className="text-gray-500 mt-1">Monto del capital y datos bancarios</p>
+                    <h2 className="text-title text-ink">Capital Social</h2>
+                    <p className="mt-1 text-body text-ink-2">Monto del capital y datos bancarios</p>
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Capital Social y CBU</h3>
-                  <p className="text-gray-500 mb-4">Define el capital inicial de tu sociedad</p>
-                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-brand-900 mb-2">ℹ️ El capital social mínimo es de 2 SMVM (Salario Mínimo, Vital y Móvil).</p>
-                    <p className="text-sm font-bold text-brand-900">2 SMVM = ${(2 * smvm).toLocaleString('es-AR')}</p>
-                    <p className="text-xs text-gray-600 mt-1">SMVM actual: ${smvm.toLocaleString('es-AR')}</p>
+                  <h3 className="font-semibold text-heading text-ink mb-2">Capital Social y CBU</h3>
+                  <p className="text-ink-2 mb-4">Define el capital inicial de tu sociedad</p>
+                  <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                    <div>
+                      <p className="text-body-sm text-ink-2">
+                        El capital mínimo es de 2 salarios mínimos:{' '}
+                        <span className="font-semibold text-ink tnum">
+                          ${(2 * smvm).toLocaleString('es-AR')}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-label text-ink-3 tnum">
+                        Salario mínimo actual: ${smvm.toLocaleString('es-AR')}
+                      </p>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     <div>
                       <Label>Capital Social *</Label>
                       <div className="space-y-3 mt-2">
-                        <label className="flex items-center gap-3 p-3 border-2 border-brand-600 bg-brand-50 rounded-lg cursor-pointer">
+                        <label className="flex items-center gap-3 rounded-control border border-primary bg-primary-soft p-4 cursor-pointer">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
                           <div>
-                            <p className="font-medium text-gray-900">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
+                            <p className="font-medium text-ink">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
                           </div>
                         </label>
-                        <label className="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer hover:border-brand-300 transition">
+                        <label className="flex items-center gap-3 rounded-control border border-line p-4 transition-colors cursor-pointer hover:border-primary hover:bg-primary-soft/40">
                           <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
                           <div>
-                            <p className="font-medium text-gray-900">Otro monto</p>
+                            <p className="font-medium text-ink">Otro monto</p>
                           </div>
                         </label>
                       </div>
@@ -1216,18 +1221,18 @@ export default function NuevoTramitePage() {
                         <Label htmlFor="capitalSocialCustom">Capital Social *</Label>
                         <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} />
                         {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * smvm) && (
-                          <p className="text-xs text-brand-600 mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
+                          <p className="text-label text-primary mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="border-t pt-6">
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Depósito del Capital (CBU)</h3>
-                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-brand-900 mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
-                    <p className="text-sm font-bold text-brand-900 mt-3">Requisitos de CBU:</p>
-                    <ul className="text-xs text-gray-700 mt-2 space-y-1 ml-4">
+                <div className="border-t border-line pt-6">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Depósito del Capital (CBU)</h3>
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
+                    <p className="text-body-sm text-primary mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
+                    <p className="text-body-sm font-semibold text-primary mt-3">Requisitos de CBU:</p>
+                    <ul className="text-label text-ink-2 mt-2 space-y-1 ml-4">
                       <li>• El CBU Principal deberá ser del Administrador Titular</li>
                       <li>• El CBU Secundario deberá corresponder a otra cuenta del Administrador Titular o a otro Administrador</li>
                       <li>• Las cuentas NO pueden ser CVU (Clave Virtual Uniforme)</li>
@@ -1236,7 +1241,7 @@ export default function NuevoTramitePage() {
                   </div>
 
                   <div className="mb-4">
-                    <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
                       <input
                         type="checkbox"
                         checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
@@ -1250,8 +1255,8 @@ export default function NuevoTramitePage() {
                         className="mt-1"
                       />
                       <div>
-                        <p className="font-medium text-gray-900">Informar CBU más adelante</p>
-                        <p className="text-sm text-gray-600">Podrás proporcionar el CBU en otro momento del proceso</p>
+                        <p className="font-medium text-ink">Informar CBU más adelante</p>
+                        <p className="text-body-sm text-ink-2">Podrás proporcionar el CBU en otro momento del proceso</p>
                       </div>
                     </label>
                   </div>
@@ -1332,31 +1337,31 @@ export default function NuevoTramitePage() {
             {/* Paso 5: Socios */}
             {pasoActual === 5 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">5</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">5</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Socios</h2>
-                    <p className="text-gray-500 mt-1">Datos de los accionistas</p>
+                    <h2 className="text-title text-ink">Socios</h2>
+                    <p className="mt-1 text-body text-ink-2">Datos de los accionistas</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Socios / Accionistas</h3>
-                  <p className="text-gray-500 mb-4">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Socios / Accionistas</h3>
+                  <p className="text-ink-2 mb-4">
                     Define quiénes serán los socios y su participación en el capital
                   </p>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-amber-900">
+                  <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
+                    <p className="text-body-sm text-warning">
                       🪪 <strong>Importante:</strong> para avanzar con el trámite, todas las personas que intervengan en la Sociedad (como socias o administradoras) deberán tener <strong>Ciudadano Digital Nivel 2</strong>. Es un requisito del sistema; más adelante te vamos a pasar un instructivo para obtenerlo.
                     </p>
                   </div>
 
-                  <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                  <div className="bg-surface-3 p-4 rounded-control mb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Número de socios:</span>
+                      <span className="text-body-sm font-medium text-ink-2">Número de socios:</span>
                       <div className="flex items-center gap-3">
                         <button
                           type="button"
@@ -1369,11 +1374,11 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-brand-600 text-white border-2 border-brand-600 hover:bg-brand-700 hover:border-brand-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
+                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           −
                         </button>
-                        <span className="text-lg font-bold text-gray-900 w-8 text-center">{formData.numeroSocios}</span>
+                        <span className="text-heading font-semibold text-ink w-8 text-center">{formData.numeroSocios}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -1397,19 +1402,19 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-brand-600 text-white border-2 border-brand-600 hover:bg-brand-700 hover:border-brand-700 flex items-center justify-center font-bold text-lg shadow-sm transition-colors"
+                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           +
                         </button>
                       </div>
                     </div>
 
-                    <div className="text-sm space-y-1">
-                      <p className="text-gray-700">
-                        <span className="font-semibold text-gray-900">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
+                    <div className="text-body-sm space-y-1">
+                      <p className="text-ink-2">
+                        <span className="font-semibold text-ink">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
                       </p>
-                      <p className="text-gray-700">
-                        <span className="font-semibold text-gray-900">Total de Aportes:</span> $
+                      <p className="text-ink-2">
+                        <span className="font-semibold text-ink">Total de Aportes:</span> $
                         {(() => {
                           // Parsear capital social correctamente (remover puntos de miles)
                           const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
@@ -1448,7 +1453,7 @@ export default function NuevoTramitePage() {
                         const faltaAsignar = capitalTotal - totalAportes
                         const diferencia = Math.abs(faltaAsignar)
                         return (
-                          <p className={diferencia <= 1 ? 'text-green-600 font-medium' : 'text-brand-600 font-medium'}>
+                          <p className={diferencia <= 1 ? 'text-success font-medium' : 'text-primary font-medium'}>
                             <span className="font-semibold">{diferencia <= 1 ? '✓ Capital completo' : 'Falta asignar'}:</span> $
                             {diferencia <= 1 ? '0' : Math.round(faltaAsignar).toLocaleString('es-AR')}
                           </p>
@@ -1457,15 +1462,15 @@ export default function NuevoTramitePage() {
                     </div>
                   </div>
 
-                  <div className="bg-brand-50 border border-brand-200 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-brand-900">
+                  <div className="bg-primary-soft border border-primary-line rounded-control p-3 mb-4">
+                    <p className="text-label text-primary">
                       💡 <strong>Requisitos importantes:</strong> Es fundamental que los accionistas designados tengan un domicilio fiscal registrado ante ARCA y su CUIT habilitado. En caso de no cumplir con estos requisitos, deberá regularizarse la situación para continuar con el trámite.
                     </p>
                   </div>
 
                   {formData.socios.map((socio, index) => (
-                    <div key={index} className="border-2 border-gray-200 rounded-2xl p-6 mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
-                      <h4 className="font-black text-gray-900 text-lg mb-4">Socio {index + 1}</h4>
+                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
+                      <h4 className="font-semibold text-ink text-heading mb-4">Socio {index + 1}</h4>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
@@ -1551,7 +1556,7 @@ export default function NuevoTramitePage() {
 
                       <div className="mb-4">
                         <Label>Domicilio completo *</Label>
-                        <p className="text-xs text-gray-500 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
+                        <p className="text-label text-ink-2 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={socio.domicilio}
                           onChange={(e) => {
@@ -1646,10 +1651,10 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'MONTO'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
+                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'MONTO'
-                                  ? 'border-brand-600 bg-brand-50 text-brand-900 font-medium'
-                                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                  ? 'border-primary-line bg-primary-soft text-primary font-medium'
+                                  : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
                               }`}
                             >
                               Monto ($)
@@ -1661,10 +1666,10 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'PORCENTAJE'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1.5 text-sm rounded-lg border-2 transition ${
+                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'PORCENTAJE'
-                                  ? 'border-brand-600 bg-brand-50 text-brand-900 font-medium'
-                                  : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                                  ? 'border-primary-line bg-primary-soft text-primary font-medium'
+                                  : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
                               }`}
                             >
                               Porcentaje (%)
@@ -1692,7 +1697,7 @@ export default function NuevoTramitePage() {
                                 min="0"
                               />
                               {socio.aportePorcentaje && parseFloat(socio.aportePorcentaje) > 0 && (
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-label text-ink-2 mt-1">
                                   Equivale al {socio.aportePorcentaje}% del capital social
                                 </p>
                               )}
@@ -1720,7 +1725,7 @@ export default function NuevoTramitePage() {
                                 step="0.01"
                               />
                               {socio.aporteCapital && parseFloat(socio.aporteCapital) > 0 && (
-                                <p className="text-xs text-gray-500 mt-1">
+                                <p className="text-label text-ink-2 mt-1">
                                   Equivale a ${parseFloat(socio.aporteCapital).toLocaleString('es-AR')}
                                 </p>
                               )}
@@ -1737,31 +1742,31 @@ export default function NuevoTramitePage() {
             {/* Paso 6: Administración */}
             {pasoActual === 6 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">6</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">6</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Administración</h2>
-                    <p className="text-gray-500 mt-1">Órgano de administración</p>
+                    <h2 className="text-title text-ink">Administración</h2>
+                    <p className="mt-1 text-body text-ink-2">Órgano de administración</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Órgano de Administración</h3>
-                  <p className="text-gray-500 mb-4">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Órgano de Administración</h3>
+                  <p className="text-ink-2 mb-4">
                     Define quiénes administrarán la sociedad
                   </p>
 
-                  <div className="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-brand-900">
+                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
+                    <p className="text-body-sm text-primary">
                       ℹ️ <strong>Requisitos de administradores:</strong> Es obligatoria la designación de como mínimo un Administrador Titular y un Suplente. Los Administradores pueden o no ser socios de la Sociedad.
                     </p>
                   </div>
 
-                  <div className="bg-gray-100 p-4 rounded-lg mb-4">
+                  <div className="bg-surface-3 p-4 rounded-control mb-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">Número de administradores:</span>
+                      <span className="text-body-sm font-medium text-ink-2">Número de administradores:</span>
                       <div className="flex items-center gap-3">
                         <button
                           type="button"
@@ -1774,12 +1779,12 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-white border-2 hover:bg-gray-50 flex items-center justify-center"
+                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                           disabled={formData.numeroAdministradores <= 2}
                         >
                           −
                         </button>
-                        <span className="text-lg font-bold text-gray-900 w-8 text-center">{formData.numeroAdministradores}</span>
+                        <span className="text-heading font-semibold text-ink w-8 text-center">{formData.numeroAdministradores}</span>
                         <button
                           type="button"
                           onClick={() => {
@@ -1800,7 +1805,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-white border-2 hover:bg-gray-50 flex items-center justify-center"
+                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                         >
                           +
                         </button>
@@ -1808,16 +1813,16 @@ export default function NuevoTramitePage() {
                     </div>
                   </div>
 
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-yellow-900">
+                  <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
+                    <p className="text-label text-warning">
                       💡 Puedes autocompletar los datos de un administrador seleccionando un socio existente
                     </p>
                   </div>
 
                   {formData.administradores.map((admin, index) => (
-                    <div key={index} className="border-2 border-gray-200 rounded-2xl p-6 mb-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-black text-gray-900 text-lg">
+                        <h4 className="font-semibold text-ink text-heading">
                           {index === 0 ? 'Administrador Titular' : index === 1 ? 'Administrador Suplente' : `Administrador ${index + 1}`}
                         </h4>
                         
@@ -1854,7 +1859,7 @@ export default function NuevoTramitePage() {
                                 setFormData(prev => ({ ...prev, administradores: newAdmins }))
                               }
                             }}
-                            className="text-sm max-w-xs"
+                            className="text-body-sm max-w-xs"
                           >
                             <option value="">Autocompletar desde socio...</option>
                             {formData.socios.map((socio, idx) => {
@@ -1962,7 +1967,7 @@ export default function NuevoTramitePage() {
 
                       <div className="mb-4">
                         <Label>Domicilio completo *</Label>
-                        <p className="text-xs text-gray-500 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
+                        <p className="text-label text-ink-2 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={admin.domicilio}
                           onChange={(e) => {
@@ -1987,7 +1992,7 @@ export default function NuevoTramitePage() {
                             placeholder="Ej: Córdoba, Buenos Aires, Rosario..."
                             required
                           />
-                          <p className="text-xs text-gray-500 mt-1">Puede ser de cualquier provincia de Argentina</p>
+                          <p className="text-label text-ink-2 mt-1">Puede ser de cualquier provincia de Argentina</p>
                         </div>
                         <div>
                           <Label>Departamento *</Label>
@@ -2001,7 +2006,7 @@ export default function NuevoTramitePage() {
                             placeholder="Ej: Capital, La Matanza, Rosario..."
                             required
                           />
-                          <p className="text-xs text-gray-500 mt-1">Puede ser de cualquier provincia de Argentina</p>
+                          <p className="text-label text-ink-2 mt-1">Puede ser de cualquier provincia de Argentina</p>
                         </div>
                         <div>
                           <Label>Provincia *</Label>
@@ -2083,24 +2088,24 @@ export default function NuevoTramitePage() {
             {/* Paso 7: Cierre */}
             {pasoActual === 7 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-                  <div className="h-14 w-14 rounded-2xl bg-brand-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-brand-700 font-black text-xl">7</span>
+                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+                    <span className="text-title text-primary">7</span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-2xl md:text-3xl font-black text-gray-900">Cierre de Ejercicio</h2>
-                    <p className="text-gray-500 mt-1">Fecha de cierre contable</p>
+                    <h2 className="text-title text-ink">Cierre de Ejercicio</h2>
+                    <p className="mt-1 text-body text-ink-2">Fecha de cierre contable</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-black text-lg text-gray-900 mb-2">Cierre de Ejercicio Económico</h3>
-                  <p className="text-gray-500 mb-4">
+                  <h3 className="font-semibold text-heading text-ink mb-2">Cierre de Ejercicio Económico</h3>
+                  <p className="text-ink-2 mb-4">
                     Define la fecha de cierre del ejercicio económico
                   </p>
 
-                  <div className="bg-gray-50 border-2 border-gray-100 rounded-xl p-4 mb-4">
-                    <p className="text-sm text-gray-700">
+                  <div className="bg-surface-2 border-line rounded-control p-4 mb-4">
+                    <p className="text-body-sm text-ink-2">
                       El cierre de ejercicio es la fecha anual en la que se cierran los libros contables y se preparan los estados financieros. La fecha más común es el 31 de diciembre (31-12).
                     </p>
                   </div>
@@ -2117,14 +2122,14 @@ export default function NuevoTramitePage() {
                       required
                       className="max-w-xs"
                     />
-                    <p className="text-xs text-brand-600 mt-1">Este campo es obligatorio</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-label text-primary mt-1">Este campo es obligatorio</p>
+                    <p className="text-label text-ink-2 mt-1">
                       Ingresa el día y mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
                     </p>
                   </div>
 
-                  <div className="border-t pt-6">
-                    <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <div className="border-t border-line pt-6">
+                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
                       <input
                         type="checkbox"
                         name="asesoramientoContable"
@@ -2133,20 +2138,20 @@ export default function NuevoTramitePage() {
                         className="mt-1"
                       />
                       <div>
-                        <p className="font-medium text-gray-900">Deseo recibir asesoramiento contable adicional</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-ink">Deseo recibir asesoramiento contable adicional</p>
+                        <p className="text-body-sm text-ink-2">
                           Recibe ayuda profesional con la gestión contable y fiscal de tu sociedad
                         </p>
                       </div>
                     </label>
                   </div>
 
-                  <div className="mt-8 bg-green-50 border-2 border-green-200 rounded-2xl p-6">
-                    <h4 className="font-black text-green-900 text-xl mb-3">¡Todo listo para enviar!</h4>
-                    <p className="text-green-800 mb-4">
+                  <div className="mt-8 bg-success-soft border-success-line rounded-card p-6">
+                    <h4 className="font-semibold text-success text-title mb-3">¡Todo listo para enviar!</h4>
+                    <p className="text-success mb-4">
                       Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
                     </p>
-                    <div className="bg-white rounded-xl p-4 text-gray-700 space-y-2 border border-green-100">
+                    <div className="bg-surface rounded-control p-4 text-ink-2 space-y-2 border border-success-line">
                       <p><span className="font-semibold">Plan seleccionado:</span> {formData.plan}</p>
                       <p><span className="font-semibold">Jurisdicción:</span> {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}</p>
                       <p><span className="font-semibold">Capital Social:</span> ${formData.capitalSocial}</p>
@@ -2159,19 +2164,19 @@ export default function NuevoTramitePage() {
             )}
 
             {/* Navegación */}
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-8 pt-6 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-8 pt-6 border-t border-line">
               <Button
                 variant="outline"
                 onClick={handleAnterior}
                 disabled={pasoActual === 1}
-                className="gap-2 w-full sm:w-auto rounded-xl h-12 px-6 font-semibold"
+                className="gap-2 w-full sm:w-auto rounded-control h-12 px-6 font-semibold"
               >
                 <ChevronLeft className="h-5 w-5" />
                 Anterior
               </Button>
 
               {pasoActual < 7 ? (
-                <Button onClick={handleSiguiente} className="gap-2 bg-brand-700 hover:bg-brand-800 w-full sm:w-auto rounded-xl shadow-lg shadow-brand-200 h-12 px-6 font-semibold">
+                <Button onClick={handleSiguiente} className="gap-2 bg-primary hover:bg-primary-hover w-full sm:w-auto rounded-control shadow-raise h-12 px-6 font-semibold">
                   Siguiente
                   <ChevronRight className="h-5 w-5" />
                 </Button>
@@ -2179,7 +2184,7 @@ export default function NuevoTramitePage() {
                 <Button
                   onClick={handleSubmit}
                   disabled={guardando}
-                  className="gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto rounded-xl shadow-lg shadow-green-200 h-12 px-8 font-semibold"
+                  className="gap-2 bg-success-solid hover:bg-success-solid w-full sm:w-auto rounded-control shadow-raise h-12 px-8 font-semibold"
                 >
                   {guardando ? 'Enviando...' : 'Enviar Formulario'}
                   <ChevronRight className="h-5 w-5" />
@@ -2199,10 +2204,10 @@ export default function NuevoTramitePage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 mt-4">
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-body-sm text-ink-2 leading-relaxed">
                 La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades:
               </p>
-              <ol className="list-decimal list-inside space-y-3 text-sm text-gray-700 leading-relaxed">
+              <ol className="list-decimal list-inside space-y-3 text-body-sm text-ink-2 leading-relaxed">
                 <li>Construcción de todo tipo de obras, públicas o privadas, edificios, viviendas, locales comerciales y plantas industriales; realizar refacciones, remodelaciones, instalaciones, trabajos de albañilería y/o cualquier trabajo de la construcción.</li>
                 <li>Transporte nacional o internacional de cargas en general, ya sea por vía terrestre, aérea o marítima, con medios de transporte propios o de terceros, pudiendo realizar todo lo inherente a su logística.</li>
                 <li>Compra, venta y permuta, explotación, arrendamientos y administración de bienes inmuebles, urbanos y rurales y la realización de operaciones de propiedad horizontal.</li>

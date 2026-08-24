@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { FileInput } from '@/components/ui/file-input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -82,11 +83,11 @@ export default function DatosFinalesForm({
   }
 
   return (
-    <Card className="border-green-200 bg-green-50">
+    <Card className="border-success-line bg-success-soft">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-green-900">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
-            <Building2 className="h-4 w-4 text-green-700" />
+        <CardTitle className="flex items-center gap-2 text-success">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-success-soft">
+            <Building2 className="h-4 w-4 text-success" />
           </span>
           <span>Datos de la Sociedad Inscripta</span>
         </CardTitle>
@@ -139,26 +140,27 @@ export default function DatosFinalesForm({
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="archivoResolucion" className="text-green-900 font-semibold">
+            <Label htmlFor="archivoResolucion" className="text-success font-semibold">
               Archivo de Resolución de Inscripción
             </Label>
             <div className="flex items-center gap-3">
-              <Input
+              <FileInput
                 id="archivoResolucion"
-                type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
-                onChange={(e) => setArchivoResolucion(e.target.files?.[0] || null)}
+                ayuda="PDF o imagen de la resolución del organismo"
+                archivo={archivoResolucion}
+                onArchivo={setArchivoResolucion}
                 disabled={guardando}
                 className="flex-1"
               />
               {archivoResolucion && (
-                <div className="flex items-center gap-2 text-sm text-green-700">
+                <div className="flex items-center gap-2 text-body-sm text-success">
                   <FileText className="h-4 w-4" />
                   <span>{archivoResolucion.name}</span>
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-600">
+            <p className="text-label text-ink-2">
               Sube el archivo PDF o imagen de la resolución de inscripción. Este documento será enviado al cliente.
             </p>
           </div>

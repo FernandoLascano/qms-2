@@ -113,21 +113,21 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
     <CollapsibleCard
       title="Editar Información del Formulario"
       description="Permite corregir información del formulario si el cliente reporta errores"
-      icon={<Pencil className="h-5 w-5 text-orange-700" />}
+      icon={<Pencil className="h-5 w-5 text-warning" />}
     >
       <div className="space-y-4">
         {!editando ? (
           <>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-sm text-amber-900 mb-3">
-                <strong>⚠️ Uso excepcional:</strong> Este formulario permite editar información básica del trámite. 
+            <div className="bg-warning-soft border border-warning-line rounded-control p-4">
+              <p className="text-body-sm text-warning mb-3">
+                <strong>Uso excepcional:</strong> Este formulario permite editar información básica del trámite.
                 Úsalo solo cuando el cliente reporte errores en los datos cargados.
               </p>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full border-orange-300 text-orange-700 hover:bg-orange-50"
+                    className="w-full border-warning-line text-warning hover:bg-warning-soft"
                     onClick={() => setEditando(true)}
                   >
                     <Pencil className="h-4 w-4 mr-2" />
@@ -136,7 +136,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl">Editar Información del Formulario</DialogTitle>
+                    <DialogTitle className="text-title">Editar Información del Formulario</DialogTitle>
                     <DialogDescription>
                       Modifica los campos necesarios. Los cambios se reflejarán inmediatamente en el trámite.
                     </DialogDescription>
@@ -145,7 +145,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                   <div className="space-y-6 py-4">
                     {/* Denominaciones */}
                     <div className="space-y-4">
-                      <h3 className="font-semibold text-gray-900 border-b pb-2">Denominaciones</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Denominaciones</h3>
                       <div className="space-y-3">
                         <div>
                           <Label htmlFor="denominacion1">Denominación 1 (Preferida) *</Label>
@@ -182,7 +182,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Objeto Social */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-gray-900 border-b pb-2">Objeto Social</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Objeto Social</h3>
                       <div>
                         <Label htmlFor="objetoSocial">Objeto Social *</Label>
                         <Textarea
@@ -193,7 +193,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                           rows={6}
                           className="mt-1"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-label text-ink-2 mt-1">
                           Si es pre-aprobado, usa "PREAPROBADO". Si es personalizado, ingresa el texto completo.
                         </p>
                       </div>
@@ -201,7 +201,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Domicilio Legal */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-gray-900 border-b pb-2">Domicilio Legal</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Domicilio Legal</h3>
                       <div>
                         <Label htmlFor="domicilioLegal">Domicilio Legal *</Label>
                         <Input
@@ -216,7 +216,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
 
                     {/* Capital Social */}
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-gray-900 border-b pb-2">Capital Social</h3>
+                      <h3 className="font-semibold text-ink border-b border-line pb-2">Capital Social</h3>
                       <div>
                         <Label htmlFor="capitalSocial">Capital Social (ARS) *</Label>
                         <Input
@@ -231,19 +231,19 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                           placeholder="Ej: 635600"
                           className="mt-1"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-label text-ink-2 mt-1">
                           Ingresa el monto sin símbolos de moneda. Puedes usar punto o coma como separador decimal.
                         </p>
                       </div>
                     </div>
 
                     {/* Información adicional */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-xs text-blue-900">
+                    <div className="bg-info-soft border border-info-line rounded-control p-3">
+                      <p className="text-label text-info">
                         <strong>Nota:</strong> Los socios y administradores no se pueden editar desde aquí. 
                         Si necesitas modificar esa información, contacta al equipo técnico.
                       </p>
-                      <p className="text-xs text-blue-800 mt-2">
+                      <p className="text-label text-info mt-2">
                         <strong>Socios actuales:</strong> {socios.length} | 
                         <strong> Administradores actuales:</strong> {administradores.length}
                       </p>
@@ -262,7 +262,7 @@ export default function EditarFormulario({ tramiteId, tramite }: EditarFormulari
                     <Button
                       onClick={handleGuardar}
                       disabled={guardando}
-                      className="bg-orange-600 hover:bg-orange-700"
+                      className="bg-warning-solid hover:bg-warning-solid"
                     >
                       <Save className="h-4 w-4 mr-2" />
                       {guardando ? 'Guardando...' : 'Guardar Cambios'}

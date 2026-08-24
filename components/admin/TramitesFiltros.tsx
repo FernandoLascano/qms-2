@@ -1,97 +1,92 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { calcularProgreso } from '@/lib/tramites-helpers'
+import { cn } from '@/lib/utils'
 
-type FiltroTipo = 'TODOS' | 'INICIADOS' | 'EN_PROCESO' | 'ESPERANDO_CLIENTE' | 'COMPLETADOS' | 'PENDIENTE_VALIDACION'
+/**
+ * Barra de filtros del listado de trámites.
+ *
+ * El valor vive en la URL (?filter=…), así que los enlaces del panel "Hoy"
+ * ahora funcionan de verdad: antes apuntaban a ?filter=pendientes-validacion
+ * y este componente ni siquiera leía el parámetro.
+ */
 
-interface TramitesFiltrosProps {
-  tramites: any[]
-  onFiltroChange: (filtro: FiltroTipo) => void
+export type FiltroTipo =
+  | 'TODOS'
+  | 'PENDIENTE_VALIDACION'
+  | 'DOCUMENTOS_PENDIENTES'
+  | 'ESPERANDO_CLIENTE'
+  | 'EN_PROCESO'
+  | 'COMPLETADOS'
+
+/** Alias que llegan por URL desde otras pantallas. */
+export const FILTRO_POR_SLUG: Record<string, FiltroTipo> = {
+  'pendientes-validacion': 'PENDIENTE_VALIDACION',
+  'documentos-pendientes': 'DOCUMENTOS_PENDIENTES',
+  'esperando-cliente': 'ESPERANDO_CLIENTE',
+  'en-proceso': 'EN_PROCESO',
+  completados: 'COMPLETADOS',
+  todos: 'TODOS',
 }
 
-export default function TramitesFiltros({ tramites, onFiltroChange }: TramitesFiltrosProps) {
-  const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>('TODOS')
+export const SLUG_POR_FILTRO: Record<FiltroTipo, string> = {
+  TODOS: 'todos',
+  PENDIENTE_VALIDACION: 'pendientes-validacion',
+  DOCUMENTOS_PENDIENTES: 'documentos-pendientes',
+  ESPERANDO_CLIENTE: 'esperando-cliente',
+  EN_PROCESO: 'en-proceso',
+  COMPLETADOS: 'completados',
+}
 
-  const handleFiltroClick = (filtro: FiltroTipo) => {
-    setFiltroActivo(filtro)
-    onFiltroChange(filtro)
-  }
+const ETIQUETAS: { valor: FiltroTipo; label: string }[] = [
+  { valor: 'TODOS', label: 'Todos' },
+  { valor: 'PENDIENTE_VALIDACION', label: 'Por validar' },
+  { valor: 'DOCUMENTOS_PENDIENTES', label: 'Docs. por aprobar' },
+  { valor: 'ESPERANDO_CLIENTE', label: 'Esperando cliente' },
+  { valor: 'EN_PROCESO', label: 'En proceso' },
+  { valor: 'COMPLETADOS', label: 'Completados' },
+]
 
-  const contadores = {
-    todos: tramites.length,
-    iniciados: tramites.filter(t => t.estadoGeneral === 'INICIADO').length,
-    enProceso: tramites.filter(t => {
-      const progreso = calcularProgreso(t)
-      return t.formularioCompleto && progreso < 100
-    }).length,
-    esperandoCliente: tramites.filter(t => t.estadoGeneral === 'ESPERANDO_CLIENTE').length,
-    completados: tramites.filter(t => {
-      const progreso = calcularProgreso(t)
-      return progreso === 100 || t.sociedadInscripta
-    }).length,
-    pendientesValidacion: tramites.filter(t => t.estadoValidacion === 'PENDIENTE_VALIDACION').length
-  }
+interface Props {
+  contadores: Record<FiltroTipo, number>
+  activo: FiltroTipo
+  onChange: (filtro: FiltroTipo) => void
+}
 
+export default function TramitesFiltros({ contadores, activo, onChange }: Props) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Filtros Rápidos</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('TODOS')}
-            className={`cursor-pointer ${filtroActivo === 'TODOS' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}`}
+    <div
+      role="tablist"
+      aria-label="Filtrar trámites"
+      className="flex flex-wrap gap-2"
+    >
+      {ETIQUETAS.map(({ valor, label }) => {
+        const seleccionado = activo === valor
+        return (
+          <button
+            key={valor}
+            type="button"
+            role="tab"
+            aria-selected={seleccionado}
+            onClick={() => onChange(valor)}
+            className={cn(
+              'inline-flex h-9 items-center gap-2 rounded-control border px-3 text-body-sm transition-colors',
+              seleccionado
+                ? 'border-primary bg-primary text-on-primary'
+                : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink',
+            )}
           >
-            Todos ({contadores.todos})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('INICIADOS')}
-            className={`cursor-pointer ${filtroActivo === 'INICIADOS' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}`}
-          >
-            Iniciados ({contadores.iniciados})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('EN_PROCESO')}
-            className={`cursor-pointer ${filtroActivo === 'EN_PROCESO' ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}`}
-          >
-            En Proceso ({contadores.enProceso})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('ESPERANDO_CLIENTE')}
-            className={`cursor-pointer ${filtroActivo === 'ESPERANDO_CLIENTE' ? 'bg-orange-100 text-orange-700 border-orange-300' : ''}`}
-          >
-            Esperando Cliente ({contadores.esperandoCliente})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('COMPLETADOS')}
-            className={`cursor-pointer ${filtroActivo === 'COMPLETADOS' ? 'bg-green-100 text-green-700 border-green-300' : ''}`}
-          >
-            Completados ({contadores.completados})
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleFiltroClick('PENDIENTE_VALIDACION')}
-            className={`cursor-pointer ${filtroActivo === 'PENDIENTE_VALIDACION' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : 'bg-yellow-50 border-yellow-300 text-yellow-900 hover:bg-yellow-100'}`}
-          >
-            Pendientes Validación ({contadores.pendientesValidacion})
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            {label}
+            <span
+              className={cn(
+                'tnum text-label',
+                seleccionado ? 'text-on-primary/75' : 'text-ink-3',
+              )}
+            >
+              {contadores[valor]}
+            </span>
+          </button>
+        )
+      })}
+    </div>
   )
 }

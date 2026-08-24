@@ -1,11 +1,8 @@
 import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
+import { SITE_URL as baseUrl } from '@/lib/seo/site'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXT_PUBLIC_URL ||
-    'https://www.quieromisas.com'
 
   // Páginas estáticas
   const staticPages = [
@@ -32,6 +29,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'daily' as const,
       priority: 0.9,
+    },
+    // Legales: bajan poco tráfico pero Google las usa como señal de que hay
+    // una empresa real detrás del sitio.
+    {
+      url: `${baseUrl}/terminos`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    },
+    {
+      url: `${baseUrl}/privacidad`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
     },
   ]
 

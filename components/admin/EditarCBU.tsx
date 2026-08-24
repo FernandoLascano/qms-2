@@ -68,10 +68,10 @@ export default function EditarCBU({ tramiteId, cbuPrincipal, cbuSecundario }: Ed
     <CollapsibleCard
       title="CBU Informados"
       description="Datos bancarios del cliente — editable (para cargarlos cuando el cliente los comparte)"
-      icon={<Building2 className="h-5 w-5 text-gray-600" />}
+      icon={<Building2 className="h-5 w-5 text-ink-2" />}
     >
       {pendiente && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-sm text-amber-900">
+        <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4 text-body-sm text-warning">
           El cliente todavía no informó el CBU (eligió informarlo más adelante). Cuando te lo comparta, cargalo acá y guardá.
         </div>
       )}
@@ -86,9 +86,9 @@ export default function EditarCBU({ tramiteId, cbuPrincipal, cbuSecundario }: Ed
             placeholder="22 dígitos"
             className="mt-1"
           />
-          <p className="text-xs text-gray-600 mt-1">Administrador Titular</p>
+          <p className="text-label text-ink-2 mt-1">Administrador Titular</p>
           {cbuDudoso(principal) && (
-            <p className="text-xs text-amber-600 mt-1">Un CBU tiene 22 dígitos — podés guardar igual.</p>
+            <p className="text-label text-warning mt-1">Un CBU tiene 22 dígitos — podés guardar igual.</p>
           )}
         </div>
         <div>
@@ -100,15 +100,15 @@ export default function EditarCBU({ tramiteId, cbuPrincipal, cbuSecundario }: Ed
             placeholder="22 dígitos"
             className="mt-1"
           />
-          <p className="text-xs text-gray-600 mt-1">Administrador Suplente</p>
+          <p className="text-label text-ink-2 mt-1">Administrador Suplente</p>
           {cbuDudoso(secundario) && (
-            <p className="text-xs text-amber-600 mt-1">Un CBU tiene 22 dígitos — podés guardar igual.</p>
+            <p className="text-label text-warning mt-1">Un CBU tiene 22 dígitos — podés guardar igual.</p>
           )}
         </div>
       </div>
 
       <div className="mt-4 flex justify-end">
-        <Button onClick={handleGuardar} disabled={guardando} className="bg-brand-700 hover:bg-brand-800">
+        <Button onClick={handleGuardar} disabled={guardando} className="bg-primary hover:bg-primary-hover">
           <Save className="h-4 w-4 mr-2" />
           {guardando ? 'Guardando…' : 'Guardar CBU'}
         </Button>

@@ -1,33 +1,219 @@
 @import "tailwindcss";
 
-/* ============================================
-   PALETA DE MARCA - Rebranding fácil
-   Cambiá estos valores para cambiar toda la marca.
-   Ej: para verde usar #059669 como --brand-600
-   Ej: para azul usar #2563eb como --brand-600
-   ============================================ */
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============================================================================
+   SISTEMA DE DISEÑO QMS
+   ============================================================================
 
-  /* Brand (color principal de marca) - Igual al logo #991D23 */
-  --brand-50: #fef2f2;
-  --brand-100: #fde2e3;
-  --brand-200: #fbc8ca;
-  --brand-300: #f69b9e;
-  --brand-400: #ed666a;
-  --brand-500: #dc3d42;
-  --brand-600: #b0242b;
-  --brand-700: #991D23;
-  --brand-800: #7a181d;
-  --brand-900: #66161a;
+   Tres capas. Nunca escribas un color literal en un .tsx.
+
+     CAPA 1  PRIMITIVAS   → --brand-h  (LA variable de marca)
+     CAPA 2  SEMÁNTICAS   → --surface, --ink, --primary, --danger…
+     CAPA 3  COMPONENTES  → components/ui/* usan sólo utilidades semánticas
+
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  PARA REBRANDEAR: cambiá --brand-h. Toda la app se actualiza sola.   │
+   │                                                                      │
+   │    24.5 = rojo QMS (actual)   150 = verde    250 = azul              │
+   │    45   = naranja             285 = violeta  200 = turquesa          │
+   │                                                                      │
+   │  Antes de fijar un tono nuevo, corré:                                │
+   │    node scripts/brand-tokens.mjs <tono>                              │
+   │                                                                      │
+   │  Si avisa "fuera de gamut", bajá --brand-c hasta que deje de         │
+   │  hacerlo (los azules y violetas suelen necesitar ~0,15 en vez de     │
+   │  0,1955). Ese mismo comando imprime los hex para pegar en            │
+   │  lib/emails/templates.tsx, que al ser HTML no soporta variables.     │
+   └──────────────────────────────────────────────────────────────────────┘
+   ============================================================================ */
+
+:root {
+  /* ═══════════════════ CAPA 1 · PRIMITIVAS ═══════════════════ */
+
+  /* ---- Marca -------------------------------------------------------------
+     La rampa se genera con una escalera fija de luminosidad y croma.
+     Sólo cambia el tono. Con --brand-h: 24.5 el paso 700 da exactamente
+     #991D23 (el color del logo).                                          */
+  --brand-h: 24.5;
+  --brand-c: 0.1955;
+
+  --brand-50:  oklch(0.970 calc(var(--brand-c) * 0.066) var(--brand-h));
+  --brand-100: oklch(0.935 calc(var(--brand-c) * 0.152) var(--brand-h));
+  --brand-200: oklch(0.878 calc(var(--brand-c) * 0.298) var(--brand-h));
+  --brand-300: oklch(0.782 calc(var(--brand-c) * 0.559) var(--brand-h));
+  --brand-400: oklch(0.679 calc(var(--brand-c) * 0.856) var(--brand-h));
+  --brand-500: oklch(0.598 calc(var(--brand-c) * 1.000) var(--brand-h));
+  --brand-600: oklch(0.496 calc(var(--brand-c) * 0.897) var(--brand-h));
+  --brand-700: oklch(0.446 calc(var(--brand-c) * 0.813) var(--brand-h));
+  --brand-800: oklch(0.382 calc(var(--brand-c) * 0.676) var(--brand-h));
+  --brand-900: oklch(0.340 calc(var(--brand-c) * 0.576) var(--brand-h));
+
+  /* ---- Neutrales ---------------------------------------------------------
+     Gris levemente frío, independiente de la marca: si mañana la marca es
+     verde, los grises no se vuelven verdes.                               */
+  --n-h: 265;
+  --n-c: 0.006;
+
+  --n-0:   #ffffff;
+  --n-50:  oklch(0.985 var(--n-c) var(--n-h));
+  --n-100: oklch(0.967 var(--n-c) var(--n-h));
+  --n-200: oklch(0.928 var(--n-c) var(--n-h));
+  --n-300: oklch(0.868 var(--n-c) var(--n-h));
+  --n-400: oklch(0.715 var(--n-c) var(--n-h));
+  --n-500: oklch(0.596 var(--n-c) var(--n-h));
+  --n-600: oklch(0.497 var(--n-c) var(--n-h));
+  --n-700: oklch(0.412 var(--n-c) var(--n-h));
+  --n-800: oklch(0.318 var(--n-c) var(--n-h));
+  --n-900: oklch(0.242 var(--n-c) var(--n-h));
+  --n-950: oklch(0.170 var(--n-c) var(--n-h));
+
+  /* ---- Estados -----------------------------------------------------------
+     Misma escalera de luminosidad que la marca, tono fijo. NO se rebrandean:
+     "éxito" tiene que ser verde aunque la marca sea verde.
+     Contrastes verificados (texto 700 sobre fondo 50): 6.6 a 7.4 → AA.     */
+  --success-50:  oklch(0.970 0.0086 150);
+  --success-100: oklch(0.935 0.0198 150);
+  --success-200: oklch(0.878 0.0387 150);
+  --success-500: oklch(0.598 0.1300 150);
+  --success-600: oklch(0.496 0.1166 150);
+  --success-700: oklch(0.446 0.1057 150);
+  --success-800: oklch(0.382 0.0879 150);
+
+  --warning-50:  oklch(0.970 0.0069 70);
+  --warning-100: oklch(0.935 0.0160 70);
+  --warning-200: oklch(0.878 0.0313 70);
+  --warning-500: oklch(0.598 0.1050 70);
+  --warning-600: oklch(0.496 0.0942 70);
+  --warning-700: oklch(0.446 0.0853 70);
+  --warning-800: oklch(0.382 0.0710 70);
+
+  --danger-50:  oklch(0.970 0.0112 27);
+  --danger-100: oklch(0.935 0.0258 27);
+  --danger-200: oklch(0.878 0.0507 27);
+  --danger-500: oklch(0.598 0.1700 27);
+  --danger-600: oklch(0.496 0.1525 27);
+  --danger-700: oklch(0.446 0.1382 27);
+  --danger-800: oklch(0.382 0.1149 27);
+
+  --info-50:  oklch(0.970 0.0092 250);
+  --info-100: oklch(0.935 0.0213 250);
+  --info-200: oklch(0.878 0.0417 250);
+  --info-500: oklch(0.598 0.1400 250);
+  --info-600: oklch(0.496 0.1256 250);
+  --info-700: oklch(0.446 0.1138 250);
+  --info-800: oklch(0.382 0.0946 250);
+
+  /* ═══════════════════ CAPA 2 · SEMÁNTICAS ═══════════════════
+     Esto es lo que usan los componentes. Si necesitás un color nuevo,
+     agregá un token acá — no un hex en el componente.                      */
+
+  /* Superficies */
+  --canvas:        var(--n-0);     /* la landing es blanca, no gris         */
+  --surface:       var(--n-0);     /* cards, sidebar, header                */
+  --surface-2:     var(--n-50);    /* zonas internas, cabeceras de tabla    */
+  --surface-3:     var(--n-100);   /* hover de filas, code                  */
+
+  /* Bordes */
+  --line:          var(--n-200);   /* divisores                             */
+  --line-card:     var(--n-300);   /* borde de card: definido, no fantasma  */
+  --line-strong:   var(--n-300);   /* hover, separadores marcados           */
+  --line-input:    var(--n-400);   /* borde de controles de formulario      */
+
+  /* Texto — contraste sobre --surface verificado
+     ink 16.3:1 · ink-2 6.1:1 · ink-3 4.0:1 (sólo ≥18px o decorativo)      */
+  --ink:           var(--n-900);
+  --ink-2:         var(--n-600);
+  --ink-3:         var(--n-500);
+  --ink-invert:    var(--n-0);
+
+  /* ---- Acentos -----------------------------------------------------------
+     El panel pedía más color. Estos seis tonos usan la misma escalera que
+     todo el resto, así que suman vida sin romper el sistema: el fondo (soft)
+     va en 50, el texto en 700 y el relleno en 600.
+       a1 marca · a2 verde · a3 azul · a4 violeta · a5 ámbar · a6 turquesa  */
+  --a1-soft: oklch(0.945 0.0352 24.5);  --a1-line: oklch(0.880 0.0665 24.5);  --a1: var(--brand-700);            --a1-solid: var(--brand-600);
+  --a2-soft: oklch(0.945 0.0234 150);   --a2-line: oklch(0.880 0.0442 150);   --a2: oklch(0.446 0.1057 150);     --a2-solid: oklch(0.496 0.1166 150);
+  --a3-soft: oklch(0.945 0.0252 250);   --a3-line: oklch(0.880 0.0476 250);   --a3: oklch(0.446 0.1138 250);     --a3-solid: oklch(0.496 0.1256 250);
+  --a4-soft: oklch(0.945 0.0270 295);   --a4-line: oklch(0.880 0.0510 295);   --a4: oklch(0.446 0.1230 295);     --a4-solid: oklch(0.496 0.1360 295);
+  --a5-soft: oklch(0.945 0.0189 70);    --a5-line: oklch(0.880 0.0357 70);    --a5: oklch(0.446 0.0853 70);      --a5-solid: oklch(0.496 0.0942 70);
+  --a6-soft: oklch(0.945 0.0216 200);   --a6-line: oklch(0.880 0.0408 200);   --a6: oklch(0.446 0.0990 200);     --a6-solid: oklch(0.496 0.1094 200);
+
+  /* ---- Navegación -------------------------------------------------------
+     Mismo idioma que el Navbar del sitio: reposo neutro, hover y activo en
+     brand-50 con texto brand-700. La landing es clara y luminosa; un
+     sidebar oscuro hacía que el panel pareciera otro producto.           */
+  --nav-bg:          var(--n-0);
+  --nav-item:        var(--n-600);
+  --nav-item-hover:  var(--primary);
+  --nav-item-bg:     var(--brand-50);
+  --nav-active:      var(--primary);
+  --nav-active-bg:   var(--brand-50);
+
+  /* Marca / acción primaria */
+  --primary:        var(--brand-700);
+  --primary-hover:  var(--brand-800);
+  --primary-active: var(--brand-900);
+  --primary-soft:   var(--brand-50);
+  --primary-line:   var(--brand-200);
+  --on-primary:     var(--n-0);
+  --ring:           var(--brand-600);
+
+  /* Estados semánticos: <tono> = texto · -soft = fondo · -line = borde
+     -solid = relleno fuerte                                               */
+  --success:        var(--success-700);
+  --success-soft:   var(--success-50);
+  --success-line:   var(--success-200);
+  --success-solid:  var(--success-600);
+
+  --warning:        var(--warning-700);
+  --warning-soft:   var(--warning-50);
+  --warning-line:   var(--warning-200);
+  --warning-solid:  var(--warning-600);
+
+  --danger:         var(--danger-700);
+  --danger-soft:    var(--danger-50);
+  --danger-line:    var(--danger-200);
+  --danger-solid:   var(--danger-600);
+
+  --info:           var(--info-700);
+  --info-soft:      var(--info-50);
+  --info-line:      var(--info-200);
+  --info-solid:     var(--info-600);
+
+  /* ---- Forma -------------------------------------------------------------
+     Una variable manda toda la redondez del módulo.                       */
+  --radius: 12px;
+
+  /* ---- Sombras -----------------------------------------------------------
+     Neutras y bajas. Las cards NO llevan sombra en reposo: sólo borde.    */
+  --shadow-raise: 0 2px 6px -1px oklch(0.170 0.006 265 / 0.08),
+                  0 1px 2px -1px oklch(0.170 0.006 265 / 0.05);
+  --shadow-pop:   0 8px 24px -6px oklch(0.170 0.006 265 / 0.12),
+                  0 2px 6px -2px oklch(0.170 0.006 265 / 0.06);
+  --shadow-modal: 0 20px 48px -12px oklch(0.170 0.006 265 / 0.20),
+                  0 4px 12px -4px oklch(0.170 0.006 265 / 0.08);
+
+  /* Elevación con anillo interior: el borde de 1px solo se veía plano.
+     El highlight superior da la sensación de material. */
+  --shadow-card:  0 1px 2px oklch(0.170 0.006 265 / 0.04),
+                  0 4px 16px -6px oklch(0.170 0.006 265 / 0.08),
+                  inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+  --shadow-lift:  0 2px 4px oklch(0.170 0.006 265 / 0.05),
+                  0 12px 28px -8px oklch(0.170 0.006 265 / 0.14),
+                  inset 0 1px 0 0 oklch(1 0 0 / 0.7);
+
+  /* ---- Movimiento --------------------------------------------------------
+     Una sola curva para todo el módulo: salida suave, sin rebote.         */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ============================================================================
+   REGISTRO EN TAILWIND
+   Nombres nuevos a propósito: no piso rounded-lg / shadow-md / text-sm,
+   que ya usa la landing. El dashboard usa sólo estos.
+   ============================================================================ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  /* Brand palette - usa las variables de :root */
-  --color-brand-50: var(--brand-50);
+  /* --- Color: rampas crudas (usar sólo si no hay token semántico) --- */
+  --color-brand-50:  var(--brand-50);
   --color-brand-100: var(--brand-100);
   --color-brand-200: var(--brand-200);
   --color-brand-300: var(--brand-300);
@@ -37,46 +223,378 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-n-0:   var(--n-0);
+  --color-n-50:  var(--n-50);
+  --color-n-100: var(--n-100);
+  --color-n-200: var(--n-200);
+  --color-n-300: var(--n-300);
+  --color-n-400: var(--n-400);
+  --color-n-500: var(--n-500);
+  --color-n-600: var(--n-600);
+  --color-n-700: var(--n-700);
+  --color-n-800: var(--n-800);
+  --color-n-900: var(--n-900);
+  --color-n-950: var(--n-950);
+
+  /* --- Color: semánticos (lo que se usa el 95% del tiempo) --- */
+  --color-canvas:      var(--canvas);
+  --color-surface:     var(--surface);
+  --color-surface-2:   var(--surface-2);
+  --color-surface-3:   var(--surface-3);
+
+  --color-line:        var(--line);
+  --color-line-card:   var(--line-card);
+  --color-line-strong: var(--line-strong);
+  --color-line-input:  var(--line-input);
+
+  --color-ink:         var(--ink);
+  --color-ink-2:       var(--ink-2);
+  --color-ink-3:       var(--ink-3);
+  --color-ink-invert:  var(--ink-invert);
+
+  --color-primary:        var(--primary);
+  --color-primary-hover:  var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-soft:   var(--primary-soft);
+  --color-primary-line:   var(--primary-line);
+  --color-on-primary:     var(--on-primary);
+  --color-ring:           var(--ring);
+
+  --color-success:       var(--success);
+  --color-success-soft:  var(--success-soft);
+  --color-success-line:  var(--success-line);
+  --color-success-solid: var(--success-solid);
+
+  --color-warning:       var(--warning);
+  --color-warning-soft:  var(--warning-soft);
+  --color-warning-line:  var(--warning-line);
+  --color-warning-solid: var(--warning-solid);
+
+  --color-danger:        var(--danger);
+  --color-danger-soft:   var(--danger-soft);
+  --color-danger-line:   var(--danger-line);
+  --color-danger-solid:  var(--danger-solid);
+
+  --color-info:          var(--info);
+  --color-info-soft:     var(--info-soft);
+  --color-info-line:     var(--info-line);
+  --color-info-solid:    var(--info-solid);
+
+  /* --- Navegación --- */
+  --color-nav-bg:         var(--nav-bg);
+  --color-nav-item:       var(--nav-item);
+  --color-nav-item-hover: var(--nav-item-hover);
+  --color-nav-item-bg:    var(--nav-item-bg);
+  --color-nav-active:     var(--nav-active);
+  --color-nav-active-bg:  var(--nav-active-bg);
+
+  /* --- Acentos ---
+     Seis tonos generados con la MISMA escalera de luminosidad que la marca.
+     Devuelven color al panel sin volver al desorden de antes: cada destino
+     tiene su acento fijo, no uno al azar. Rebrandean con --brand-h sólo el
+     primero (que ES la marca); los otros cinco son estables a propósito. */
+  --color-a1-line: var(--a1-line);
+  --color-a2-line: var(--a2-line);
+  --color-a3-line: var(--a3-line);
+  --color-a4-line: var(--a4-line);
+  --color-a5-line: var(--a5-line);
+  --color-a6-line: var(--a6-line);
+  --color-a1-soft: var(--a1-soft);  --color-a1: var(--a1);  --color-a1-solid: var(--a1-solid);
+  --color-a2-soft: var(--a2-soft);  --color-a2: var(--a2);  --color-a2-solid: var(--a2-solid);
+  --color-a3-soft: var(--a3-soft);  --color-a3: var(--a3);  --color-a3-solid: var(--a3-solid);
+  --color-a4-soft: var(--a4-soft);  --color-a4: var(--a4);  --color-a4-solid: var(--a4-solid);
+  --color-a5-soft: var(--a5-soft);  --color-a5: var(--a5);  --color-a5-solid: var(--a5-solid);
+  --color-a6-soft: var(--a6-soft);  --color-a6: var(--a6);  --color-a6-solid: var(--a6-solid);
+
+  /* --- Tipografía --------------------------------------------------------
+     Escala de 7 pasos con interlineado y peso incluidos.
+     Pesos permitidos en todo el módulo: 400 · 500 · 600.                  */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+
+  /* El salto entre título (36) y cuerpo (15) es lo que da presencia.
+     Antes era 28 contra 15: demasiado tímido. */
+  --text-hero: 2.5rem;                        /* 40 · portada del inicio   */
+  --text-hero--line-height: 2.75rem;
+  --text-hero--font-weight: 800;
+  --text-hero--letter-spacing: -0.035em;
+
+  --text-display: 2.25rem;                    /* 36 · título de página     */
+  --text-display--line-height: 2.5rem;
+  --text-display--font-weight: 800;
+  --text-display--letter-spacing: -0.03em;
+
+  --text-title: 1.5rem;                     /* 22 · título de sección    */
+  --text-title--line-height: 2rem;
+  --text-title--font-weight: 800;
+  --text-title--letter-spacing: -0.02em;
+
+  --text-heading: 1rem;                       /* 16 · título de card       */
+  --text-heading--line-height: 1.5rem;
+  --text-heading--font-weight: 600;
+
+  --text-body: 0.9375rem;                     /* 15 · texto general        */
+  --text-body--line-height: 1.5rem;
+  --text-body--font-weight: 400;
+
+  --text-body-sm: 0.8125rem;                  /* 13 · denso / metadatos    */
+  --text-body-sm--line-height: 1.25rem;
+  --text-body-sm--font-weight: 400;
+
+  --text-label: 0.75rem;                      /* 12 · badges, overlines    */
+  --text-label--line-height: 1rem;
+  --text-label--font-weight: 500;
+
+  --text-metric: 1.625rem;                    /* 26 · números de KPI       */
+  --text-metric--line-height: 1.875rem;
+  --text-metric--font-weight: 800;
+  --text-metric--letter-spacing: -0.02em;
+
+  /* --- Escalones de portada ---
+     La portada necesita tipografía más grande y más aireada que el panel: un
+     titular de sección a 24px se pierde en una pantalla de venta. Estos pasos
+     existen sólo ahí, con los MISMOS valores que la portada ya venía usando en
+     la escala cruda de Tailwind, para que ahora salgan de un solo lugar.
+
+     El peso va aparte (con font-bold / font-black en el marcado) porque en
+     estos tamaños conviven titulares de 900 y bajadas de 400.               */
+  --text-body-lg: 1rem;                       /* 16 · lectura en portada   */
+  --text-body-lg--line-height: 1.625rem;
+
+  --text-lead: 1.125rem;                      /* 18 · bajada de sección    */
+  --text-lead--line-height: 1.75rem;
+
+  --text-display-lg: 3rem;                    /* 48 · título de sección    */
+  --text-display-lg--line-height: 1;
+  --text-display-lg--letter-spacing: -0.03em;
+
+  /* --- Radios (derivados de --radius) --- */
+  --radius-chip:    calc(var(--radius) - 4px);   /*  6 · badges, chips     */
+  --radius-control: var(--radius);               /* 10 · botones, inputs   */
+  --radius-card:    calc(var(--radius) + 4px);   /* 16 · cards, paneles    */
+  --radius-modal:   calc(var(--radius) + 10px);  /* 20 · modales           */
+
+  /* --- Sombras --- */
+  --shadow-raise: var(--shadow-raise);
+  --shadow-pop:   var(--shadow-pop);
+  --shadow-modal: var(--shadow-modal);
+  --shadow-card:  var(--shadow-card);
+  --shadow-lift:  var(--shadow-lift);
+
+  /* --- Movimiento --- */
+  --ease-out-soft: var(--ease);
+
+  /* --- Espaciado con nombre (densidad mixta) ---
+     Cliente = card / Admin = card-sm                                      */
+  --spacing-card:    1.25rem;   /* 20 */
+  --spacing-card-sm: 1rem;      /* 16 */
+
+  /* --- Ritmo vertical de la portada ---
+     Cada sección llevaba py-20 md:py-28, así que entre el contenido de una y
+     el de la siguiente quedaban 224px: un cuarto de pantalla en blanco. Y no
+     era parejo — había juntas de 224, 208, 176 y 160. Con estos dos pasos el
+     ritmo es uno solo y se ajusta desde acá.                              */
+  --spacing-seccion:    3.5rem;  /* 56 · teléfono   → 112 entre secciones */
+  --spacing-seccion-lg: 5rem;    /* 80 · escritorio → 160 entre secciones */
+  --spacing-section: 2rem;      /* 32 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ============================================================================
+   BASE
+   ============================================================================ */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--canvas);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button {
   cursor: pointer;
 }
 
-/* Animación shimmer para barras de progreso */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+/* Tipografía de los campos de formulario.
+   ---------------------------------------------------------------------------
+   Los controles del panel escritos a mano llevan `text-body-sm` (13px) mientras
+   el texto de alrededor va a 15px, y ese salto se lee como un quiebre de
+   estilo. Esta regla queda FUERA de toda capa a propósito: en Tailwind v4 las
+   utilidades viven en `@layer utilities`, y una declaración sin capa le gana a
+   cualquier capa sin importar la especificidad. Eso es lo que hace que valga
+   sobre los 99 controles sin tocarlos de a uno.
+
+   Por esa misma razón NO puede incluir `button` ni declarar `color`:
+   · `color: inherit` acá pisaba `text-white` y `text-on-primary`, y dejaba los
+     botones de la portada con letra oscura sobre fondo rojo.
+   · `font-size` acá pisaba la escala del componente Button, donde los tamaños
+     sm y md van a 13px por diseño.
+   Las dos cosas ya las cubre el preflight de Tailwind desde `@layer base`
+   (`font: inherit; color: inherit`), que sí deja ganar a las utilidades.      */
+input,
+textarea,
+select {
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite;
+/* El select nativo no aplica line-height como el resto: se lo centra por
+   alto de caja para que no baile respecto de los inputs de al lado. */
+select {
+  line-height: normal;
 }
+
+/* Foco visible y consistente en todo el módulo. Ningún componente puede
+   quitar el outline sin reponer un anillo.                                */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: calc(var(--radius) - 6px);
+}
+
+/* Números alineados en columnas (KPIs, montos, porcentajes). */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+
+/* ============================================================================
+   FIRMA VISUAL
+   ============================================================================ */
+
+/* Resplandor de marca detrás del bloque protagonista. Es lo que hace que la
+   tarjeta principal se lea como un objeto diseñado y no como una caja gris.
+   Se apoya en --brand-h, así que rebrandea junto con todo lo demás.        */
+.brand-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.brand-glow::before {
+  content: "";
+  position: absolute;
+  top: -6rem;
+  right: -4rem;
+  width: 22rem;
+  height: 22rem;
+  z-index: -1;
+  border-radius: 9999px;
+  background: var(--brand-100);
+  opacity: 0.55;
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+/* Fondo del área de contenido: el mismo degradado suave de la portada. */
+.canvas-landing {
+  background:
+    radial-gradient(60rem 40rem at 100% -10%, var(--brand-50), transparent 60%),
+    radial-gradient(50rem 35rem at -10% 110%, var(--brand-50), transparent 55%),
+    linear-gradient(180deg, var(--n-50), var(--surface) 40%);
+  background-attachment: fixed;
+}
+
+/* Etiqueta de grupo. En la portada va en mayúsculas porque es un titular
+   de sección; acá, repetida en cada grupo del menú, resultaba gritada. */
+.overline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1rem;
+  letter-spacing: 0;
+  color: var(--ink-3);
+}
+
+/* ============================================================================
+   ANIMACIONES
+   ============================================================================ */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer { animation: shimmer 2s infinite; }
 
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes beam-pulse {
   0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.35; }
+  50%      { opacity: 0.35; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+.animate-skeleton { animation: skeleton-pulse 1.6s ease-in-out infinite; }
+
+/* Entrada escalonada del contenido. Con `.stagger` en el contenedor, cada
+   hijo directo entra un poco después que el anterior: la pantalla se arma
+   en vez de aparecer de golpe.                                            */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.rise {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+
+.stagger > * {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(n + 6) { animation-delay: 300ms; }
+
+/* Entrada al aparecer en pantalla, para la portada.
+   `.stagger` arranca apenas se renderiza, que sirve en el panel pero no en una
+   página larga: las secciones de abajo terminarían su animación antes de que
+   nadie las vea. Acá los hijos esperan ocultos y entran cuando se le agrega
+   `.a-la-vista` al contenedor.
+
+   Es CSS y no framer-motion a propósito. Framer escribe la opacidad
+   directamente en el `style` del elemento, y cualquier re-render de React la
+   devolvía al valor inicial: la tarjeta terminaba de aparecer, saltaba de
+   golpe a cero y entraba de nuevo. Eso era el parpadeo. Una animación CSS ya
+   corrida no la puede pisar un re-render.                                 */
+.al-aparecer > * { opacity: 0; }
+
+.al-aparecer.a-la-vista > * {
+  animation-name: rise-in;
+  animation-duration: 0.5s;
+  animation-timing-function: var(--ease);
+  animation-fill-mode: both;
+}
+.al-aparecer.a-la-vista > *:nth-child(1) { animation-delay: 0ms; }
+.al-aparecer.a-la-vista > *:nth-child(2) { animation-delay: 70ms; }
+.al-aparecer.a-la-vista > *:nth-child(3) { animation-delay: 140ms; }
+.al-aparecer.a-la-vista > *:nth-child(4) { animation-delay: 210ms; }
+.al-aparecer.a-la-vista > *:nth-child(5) { animation-delay: 280ms; }
+.al-aparecer.a-la-vista > *:nth-child(6) { animation-delay: 350ms; }
+.al-aparecer.a-la-vista > *:nth-child(n + 7) { animation-delay: 420ms; }
+
+/* Sin animación no puede quedar contenido invisible. */
+@media (prefers-reduced-motion: reduce) {
+  .al-aparecer > * { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

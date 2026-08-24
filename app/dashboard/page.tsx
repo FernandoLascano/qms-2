@@ -1,565 +1,565 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
+import {
+  ArrowRight,
+  Bell,
+  BookOpen,
+  Building2,
+  Check,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  FileSignature,
+  FileText,
+  Handshake,
+  IdCard,
+  Landmark,
+  MessageCircle,
+  Plus,
+  Search,
+  Upload,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageHeader, SectionHeader } from '@/components/ui/page-header'
+import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FileText, Clock, CheckCircle, AlertCircle, Plus, ArrowRight, Bell, Upload, TrendingUp, Building2, BookOpen, Handshake } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/states'
+import { AnilloProgreso } from '@/components/ui/charts'
+import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
+import { cn } from '@/lib/utils'
+
+const ICONOS: Record<IconoAccion, LucideIcon> = {
+  pago: CreditCard,
+  documento: FileText,
+  firma: FileSignature,
+  identidad: IdCard,
+  espera: Clock,
+  organismo: Landmark,
+  revision: Search,
+  completado: CheckCircle,
+}
 
 async function DashboardPage() {
   const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return null
 
-  if (!session?.user?.id) {
-    return null
-  }
+  // Los admin no inician trámites: van directo a su panel.
+  if (session.user.rol === 'ADMIN') redirect('/dashboard/admin')
 
-  // Los admin no inician trámites: van directo al Panel de Admin
-  if (session.user.rol === 'ADMIN') {
-    redirect('/dashboard/admin')
-  }
-
-  // Obtener trámites del usuario
-  // Filtrar para evitar duplicados: si hay un trámite completado y un borrador con la misma denominación, mostrar solo el completado
   const todosTramites = await prisma.tramite.findMany({
-    where: {
-      userId: session.user.id
-    },
+    where: { userId: session.user.id },
     include: {
-      pagos: {
-        where: {
-          estado: 'PENDIENTE'
-        },
-        select: { id: true, monto: true }
-      },
-      enlacesPago: {
-        where: {
-          estado: 'PENDIENTE'
-        },
-        select: { id: true, monto: true }
-      },
-      documentos: {
-        where: {
-          tipo: {
-            in: ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR']
-          }
-        },
-        select: { id: true, nombre: true }
-      },
+      pagos: { where: { estado: 'PENDIENTE' }, select: { id: true, monto: true, concepto: true, estado: true, mercadoPagoLink: true } },
+      enlacesPago: { where: { estado: 'PENDIENTE' }, select: { id: true, monto: true, concepto: true, estado: true, reportadoVencido: true } },
+      documentos: { select: { id: true, nombre: true, tipo: true, estado: true, descripcion: true } },
       notificaciones: {
-        where: {
-          leida: false
-        },
+        where: { leida: false },
         take: 5,
-        orderBy: {
-          createdAt: 'desc'
-        },
-        select: { id: true, titulo: true }
-      }
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, titulo: true },
+      },
     },
-    orderBy: {
-      createdAt: 'desc'
-    },
-    take: 20
+    orderBy: { createdAt: 'desc' },
+    take: 20,
   })
 
-  // Filtrar duplicados: si hay un trámite completado y un borrador con la misma denominación, mostrar solo el completado
-  const tramitesMap = new Map()
-  todosTramites.forEach(tramite => {
-    const key = tramite.denominacionSocial1
-    const existing = tramitesMap.get(key)
-
-    if (!existing) {
-      tramitesMap.set(key, tramite)
-    } else {
-      // Si el nuevo es completado y el existente es borrador, reemplazar
-      if (tramite.formularioCompleto && !existing.formularioCompleto) {
-        tramitesMap.set(key, tramite)
-      }
-      // Si ambos son completados o ambos son borradores, mantener el más reciente
-      else if (tramite.createdAt > existing.createdAt) {
-        tramitesMap.set(key, tramite)
-      }
+  // Deduplicar borrador + trámite enviado con la misma denominación.
+  const porDenominacion = new Map<string, (typeof todosTramites)[number]>()
+  for (const tramite of todosTramites) {
+    const clave = tramite.denominacionSocial1
+    const existente = porDenominacion.get(clave)
+    if (!existente) {
+      porDenominacion.set(clave, tramite)
+    } else if (tramite.formularioCompleto && !existente.formularioCompleto) {
+      porDenominacion.set(clave, tramite)
+    } else if (tramite.createdAt > existente.createdAt) {
+      porDenominacion.set(clave, tramite)
     }
-  })
-
-  const tramites = Array.from(tramitesMap.values()).slice(0, 10)
-
-  // Calcular progreso de cada trámite
-  const calcularProgreso = (tramite: any) => {
-    const etapas = [
-      tramite.formularioCompleto,
-      tramite.denominacionReservada,
-      tramite.capitalDepositado,
-      tramite.tasaPagada,
-      tramite.documentosFirmados,
-      tramite.tramiteIngresado,
-      tramite.sociedadInscripta
-    ]
-    const completadas = etapas.filter(e => e).length
-    return Math.round((completadas / etapas.length) * 100)
   }
 
-  // Contar estados
-  const totalTramites = tramites.length
-  // "En Proceso" = trámites con formulario completado pero no al 100%
-  const enProceso = tramites.filter(t => {
-    const progreso = calcularProgreso(t)
-    return t.formularioCompleto && progreso < 100
-  }).length
-  // "Completados" = trámites al 100% (sociedad inscripta)
-  const completados = tramites.filter(t => {
-    const progreso = calcularProgreso(t)
-    return progreso === 100 || t.sociedadInscripta
-  }).length
-  // Un trámite ya completado (sociedad inscripta / 100%) nunca requiere atención.
-  const requiereAtencion = (t: any) => {
-    const progreso = calcularProgreso(t)
-    if (progreso === 100 || t.sociedadInscripta) return false
-    const tienePagosPendientes = t.pagos && t.pagos.length > 0
-    const tieneEnlacesPendientes = t.enlacesPago && t.enlacesPago.length > 0
-    const tieneDocumentosParaFirmar = t.documentos && t.documentos.length > 0
-    const esperandoCliente = t.estadoGeneral === 'ESPERANDO_CLIENTE'
-    return tienePagosPendientes || tieneEnlacesPendientes || tieneDocumentosParaFirmar || esperandoCliente
-  }
+  const tramites = Array.from(porDenominacion.values()).slice(0, 10)
+  const activos = tramites.filter((t) => !t.sociedadInscripta)
+  const sociedades = tramites.filter((t) => t.sociedadInscripta)
 
-  // "Requieren Atención" = trámites con acciones pendientes del usuario
-  const requierenAtencion = tramites.filter(requiereAtencion).length
-
-  // Sociedades ya inscriptas del cliente (para mostrar el legajo en el inicio)
-  const sociedades = tramites.filter((t: any) => t.sociedadInscripta)
-
-  // Obtener notificaciones no leídas
   const notificacionesNoLeidas = await prisma.notificacion.count({
-    where: {
-      userId: session.user.id,
-      leida: false
-    }
+    where: { userId: session.user.id, leida: false },
   })
 
-  const getEstadoColor = (tramite: any) => {
-    // Calcular el progreso del trámite
-    const progreso = calcularProgreso(tramite)
+  const primerNombre = session.user.name?.split(' ')[0] || 'Hola'
 
-    // Si está al 100%, mostrar verde (Completado)
-    if (progreso === 100 || tramite.sociedadInscripta) {
-      return 'bg-green-100 text-green-800 border-green-200'
-    }
-
-    // Si tiene formulario completado pero no está al 100%, mostrar azul (En Proceso)
-    if (tramite.formularioCompleto && progreso < 100) {
-      return 'bg-blue-100 text-blue-800 border-blue-200'
-    }
-
-    // Para otros estados, usar el estado general
-    switch (tramite.estadoGeneral) {
-      case 'COMPLETADO':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'EN_PROCESO':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'ESPERANDO_CLIENTE':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'ESPERANDO_APROBACION':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  const getEstadoTexto = (tramite: any) => {
-    // Calcular el progreso del trámite
-    const progreso = calcularProgreso(tramite)
-
-    // Si está al 100%, mostrar "Completado"
-    if (progreso === 100 || tramite.sociedadInscripta) {
-      return 'Completado'
-    }
-
-    // Si tiene formulario completado pero no está al 100%, mostrar "En Proceso"
-    if (tramite.formularioCompleto && progreso < 100) {
-      return 'En Proceso'
-    }
-
-    // Para otros estados, usar el estado general
-    switch (tramite.estadoGeneral) {
-      case 'COMPLETADO': return 'Completado'
-      case 'EN_PROCESO': return 'En Proceso'
-      case 'ESPERANDO_CLIENTE': return 'Requiere Atención'
-      case 'ESPERANDO_APROBACION': return 'En Aprobación'
-      case 'INICIADO': return 'Iniciado'
-      default: return tramite.estadoGeneral
-    }
-  }
-
-  // Obtener la etapa actual del trámite
-  const obtenerEtapaActual = (tramite: any) => {
-    if (!tramite.formularioCompleto) return 'Formulario pendiente'
-    if (!tramite.denominacionReservada) return 'Esperando reserva de denominación'
-    if (!tramite.capitalDepositado) return 'Esperando depósito de capital'
-    if (!tramite.tasaPagada) return 'Esperando pago de tasa'
-    if (!tramite.documentosFirmados) return 'Esperando firma de documentos'
-    if (!tramite.tramiteIngresado) return 'Esperando ingreso del trámite'
-    if (!tramite.sociedadInscripta) return 'Esperando inscripción'
-    return 'Sociedad inscripta'
-  }
-
-  // Obtener el nombre de visualización del usuario (primer nombre)
-  const firstName = session.user.name?.split(' ')[0] || 'Usuario'
+  // El trámite en curso más reciente define el bloque protagonista.
+  const foco = activos[0] ?? tramites[0]
+  const acciones = foco
+    ? calcularAcciones({
+        tramite: foco,
+        pagos: foco.pagos,
+        enlacesPago: foco.enlacesPago,
+        documentos: foco.documentos,
+        notificaciones: foco.notificaciones,
+      })
+    : []
+  const proxima = accionPrincipal(acciones)
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Section */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div>
-          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-            Dashboard
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Hola, <span className="text-brand-700">{firstName}</span>
-          </h2>
-          <p className="text-gray-500 mt-2 text-lg">
-            Resumen de tus trámites y acciones pendientes
-          </p>
-        </div>
-        <Link href="/tramite/nuevo" className="w-full sm:w-auto">
-          <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 w-full sm:w-auto rounded-xl shadow-lg shadow-brand-200 h-12 px-6 text-base font-semibold">
-            <Plus className="h-5 w-5" />
-            Nuevo Trámite
-          </Button>
-        </Link>
-      </div>
+    <div className="stagger space-y-section">
+      <PageHeader
+        title="Hola,"
+        destacado={primerNombre}
+        description={
+          tramites.length === 0
+            ? 'Constituí tu S.A.S. 100% online. Te guiamos paso a paso.'
+            : 'Esto es lo que está pasando con tus trámites.'
+        }
+        actions={
+          tramites.length > 0 ? (
+            <Button asChild variant="secondary">
+              <Link href="/tramite/nuevo">
+                <Plus className="h-4 w-4" aria-hidden />
+                Nuevo trámite
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card className="hover:shadow-lg hover:border-gray-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Trámites</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-gray-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-gray-900">{totalTramites}</div>
-            <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-              <TrendingUp className="h-3 w-3" />
-              Trámites iniciados
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-blue-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">En Proceso</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-blue-600">{enProceso}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              Siendo procesados
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg hover:border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Completados</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-black text-green-600">{completados}</div>
-            <p className="text-xs text-gray-500 mt-1">
-              Finalizados exitosamente
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className={`hover:shadow-lg ${requierenAtencion > 0 ? 'border-2 border-orange-300 bg-orange-50' : 'hover:border-orange-200'}`}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Requieren Atención</CardTitle>
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${requierenAtencion > 0 ? 'bg-orange-200' : 'bg-orange-100'}`}>
-              <AlertCircle className={`h-5 w-5 ${requierenAtencion > 0 ? 'text-orange-600 animate-pulse' : 'text-orange-400'}`} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-black ${requierenAtencion > 0 ? 'text-orange-600' : 'text-gray-400'}`}>
-              {requierenAtencion}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {requierenAtencion > 0 ? 'Acciones pendientes' : 'Todo al día'}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Legajo de la Sociedad inscripta */}
-      {sociedades.length > 0 && (
-        <div className="space-y-3">
-          {sociedades.slice(0, 2).map((soc: any) => (
-            <Card key={soc.id} className="border-2 border-green-200 bg-green-50/40">
-              <CardContent className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="h-11 w-11 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <Building2 className="h-6 w-6 text-green-700" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-green-700">Tu sociedad</p>
-                    <h3 className="text-lg font-bold text-gray-900 truncate">{soc.denominacionAprobada || soc.denominacionSocial1}</h3>
-                    <p className="text-sm text-gray-600">
-                      {soc.cuit ? `CUIT ${soc.cuit}` : ''}{soc.cuit && soc.matricula ? ' · ' : ''}{soc.matricula ? `Mat. ${soc.matricula}` : ''}
-                    </p>
-                  </div>
-                </div>
-                <Link href="/dashboard/mi-sociedad" className="inline-flex items-center gap-2 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 whitespace-nowrap">
-                  Ver legajo completo <ArrowRight className="h-4 w-4" />
+      {/* ─── Sin trámites ─────────────────────────────────────────────── */}
+      {tramites.length === 0 && (
+        <Card>
+          <EmptyState
+            icon={FileText}
+            title="Todavía no empezaste ningún trámite"
+            description="Constituí tu Sociedad por Acciones Simplificada en pocos pasos. Podés guardar y seguir después."
+            action={
+              <Button asChild size="lg">
+                <Link href="/tramite/nuevo">
+                  <Plus className="h-5 w-5" aria-hidden />
+                  Empezar mi trámite
                 </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              </Button>
+            }
+          />
+        </Card>
       )}
 
-      {/* Trámites Activos */}
-      <Card className="shadow-lg">
-        <CardHeader className="border-b border-gray-100">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="text-xl font-black text-gray-900">Tus Trámites</CardTitle>
-              <CardDescription className="mt-1">
-                {totalTramites === 0 ? 'Aún no has iniciado ningún trámite' : `${totalTramites} trámite${totalTramites > 1 ? 's' : ''} en total`}
-              </CardDescription>
-            </div>
-            {totalTramites > 0 && (
-              <Link href="/dashboard/tramites">
-                <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-300 hover:border-brand-300 hover:text-brand-700">
-                  Ver Todos
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+      {/* ─── Tu próximo paso: lo primero que ve el cliente ────────────── */}
+      {foco && proxima && (
+        <ProximoPaso
+          accion={proxima}
+          tramiteId={foco.id}
+          formularioCompleto={foco.formularioCompleto}
+          etapas={detalleEtapas(foco)}
+          progreso={calcularProgreso(foco)}
+          otrosPendientes={acciones.filter(
+            (a) => a.responsable === 'cliente' && a.tipo !== proxima.tipo,
+          ).length}
+        />
+      )}
+
+      {/* ─── Composición de dos ejes ─────────────────────────────────── */}
+      {tramites.length > 0 && (
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+          {/* Columna principal */}
+          <div className="space-y-section">
+            {activos.length > 0 && (
+              <section className="space-y-4">
+                <SectionHeader
+                  title={activos.length === 1 ? 'Tu trámite' : 'Tus trámites en curso'}
+                  as="h2"
+                  actions={
+                    tramites.length > 1 ? (
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href="/dashboard/tramites">
+                          Ver todos
+                          <ArrowRight className="h-4 w-4" aria-hidden />
+                        </Link>
+                      </Button>
+                    ) : undefined
+                  }
+                />
+
+                <div className="space-y-3">
+                  {activos.slice(0, 3).map((tramite) => {
+                    const estado = getEstado(tramite, 'cliente')
+                    const href = tramite.formularioCompleto
+                      ? `/dashboard/tramites/${tramite.id}`
+                      : `/tramite/nuevo?tramiteId=${tramite.id}`
+
+                    return (
+                      <Link key={tramite.id} href={href} className="block rounded-card">
+                        <Card interactive>
+                          <CardBody className="flex items-center gap-5">
+                            <AnilloProgreso
+                              valor={calcularProgreso(tramite)}
+                              tamano={84}
+                              grosor={8}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <h3 className="truncate text-title text-ink">
+                                  {tramite.denominacionAprobada || tramite.denominacionSocial1}
+                                </h3>
+                                <Badge tone={estado.tone} dot>
+                                  {estado.label}
+                                </Badge>
+                              </div>
+                              <p className="mt-1 text-body-sm text-ink-2">
+                                {tramite.jurisdiccion === 'CORDOBA'
+                                  ? 'Córdoba (IPJ)'
+                                  : 'CABA (IGJ)'}
+                                <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                                Plan {tramite.plan}
+                              </p>
+                              <p className="mt-2 flex items-center gap-2 text-body text-ink">
+                                <Clock className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                                {etapaActual(tramite, 'cliente')}
+                              </p>
+                            </div>
+                          </CardBody>
+                        </Card>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </section>
+            )}
+
+            {sociedades.length > 0 && (
+              <section className="space-y-4">
+                <SectionHeader
+                  title={sociedades.length === 1 ? 'Tu sociedad' : 'Tus sociedades'}
+                  as="h2"
+                  description="Ya inscriptas y operativas."
+                />
+                <div className="space-y-3">
+                  {sociedades.slice(0, 3).map((soc) => (
+                    <Card key={soc.id} tone="success">
+                      <CardBody className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-success-solid text-on-primary">
+                            <Building2 className="h-5 w-5" aria-hidden />
+                          </span>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-heading text-ink">
+                              {soc.denominacionAprobada || soc.denominacionSocial1}
+                            </h3>
+                            <p className="text-body-sm text-ink-2 tnum">
+                              {soc.cuit ? `CUIT ${soc.cuit}` : 'CUIT pendiente'}
+                              {soc.matricula && (
+                                <>
+                                  <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
+                                  Matrícula {soc.matricula}
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <Button asChild variant="secondary" size="sm">
+                          <Link href="/dashboard/mi-sociedad">
+                            Ver legajo
+                            <ArrowRight className="h-4 w-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          {tramites.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-10 w-10 text-gray-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                No hay trámites aún
-              </h3>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                Comenzá tu primer trámite para constituir tu Sociedad por Acciones Simplificada (S.A.S.)
-              </p>
-              <Link href="/tramite/nuevo">
-                <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200">
-                  <Plus className="h-5 w-5" />
-                  Iniciar Nuevo Trámite
-                </Button>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {tramites.slice(0, 5).map((tramite) => {
-                const progreso = calcularProgreso(tramite)
-                const tieneAccionesPendientes = requiereAtencion(tramite)
 
-                // Si el formulario no está completo, redirigir al formulario para continuar
-                const href = !tramite.formularioCompleto
-                  ? `/tramite/nuevo?tramiteId=${tramite.id}`
-                  : `/dashboard/tramites/${tramite.id}`
-
-                return (
-                  <Link key={tramite.id} href={href}>
-                    <div className={`
-                      p-5 border-2 rounded-2xl hover:shadow-lg transition-all duration-200 cursor-pointer group
-                      ${tieneAccionesPendientes
-                        ? 'border-orange-200 bg-orange-50/50 hover:border-orange-300'
-                        : 'border-gray-200 hover:border-brand-200'
-                      }
-                    `}>
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-1">
-                            <h4 className="font-bold text-gray-900 text-lg group-hover:text-brand-700 transition-colors">
-                              {tramite.denominacionAprobada || tramite.denominacionSocial1}
-                            </h4>
-                            {tieneAccionesPendientes && (
-                              <div className="relative">
-                                <AlertCircle className="h-5 w-5 text-orange-600" />
-                                <span className="absolute -top-1 -right-1 h-2 w-2 bg-orange-600 rounded-full animate-ping"></span>
-                                <span className="absolute -top-1 -right-1 h-2 w-2 bg-orange-600 rounded-full"></span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500">
-                            {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} • {tramite.plan}
-                          </p>
-                        </div>
-                        <span className={`px-4 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap ${getEstadoColor(tramite)}`}>
-                          {getEstadoTexto(tramite)}
-                        </span>
-                      </div>
-
-                      {/* Barra de Progreso */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm text-gray-600 font-medium">Progreso</span>
-                          <span className="text-sm font-bold text-brand-700">{progreso}%</span>
-                        </div>
-                        <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-brand-600 to-green-500 transition-all duration-500 rounded-full"
-                            style={{ width: `${progreso}%` }}
-                          />
-                        </div>
-                        {/* Indicador de etapa actual */}
-                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-2">
-                          <Clock className="h-3 w-3" />
-                          {obtenerEtapaActual(tramite)}
-                        </p>
-                      </div>
-
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Acciones Rápidas */}
-      <div>
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Acciones Rápidas</h3>
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <Link href="/dashboard/mi-sociedad" className="group">
-            <Card className="hover:shadow-xl hover:border-green-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-700 transition-colors">
-                    <Building2 className="h-6 w-6 text-green-700 group-hover:text-white transition-colors" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-700 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-green-700 transition-colors">Mi Sociedad</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">El legajo con los datos y documentos de tu sociedad</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/libros-digitales" className="group">
-            <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center group-hover:bg-brand-700 transition-colors">
-                    <BookOpen className="h-6 w-6 text-brand-700 group-hover:text-white transition-colors" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-brand-700 transition-colors">Libros Digitales</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">Guía para llevar los libros de tu sociedad</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/servicios" className="group">
-            <Card className="hover:shadow-xl hover:border-amber-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center group-hover:bg-amber-600 transition-colors">
-                    <Handshake className="h-6 w-6 text-amber-700 group-hover:text-white transition-colors" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-amber-700 transition-colors">Servicios</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">Otros servicios para tu empresa</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/tramite/nuevo" className="group">
-            <Card className="hover:shadow-xl hover:border-brand-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-brand-100 flex items-center justify-center group-hover:bg-brand-700 transition-colors">
-                    <Plus className="h-6 w-6 text-brand-700 group-hover:text-white transition-colors" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-brand-700 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-brand-700 transition-colors">
-                  Nuevo Trámite
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Iniciá la constitución de una nueva S.A.S.
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/notificaciones" className="group">
-            <Card className="hover:shadow-xl hover:border-blue-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center group-hover:bg-blue-600 transition-colors relative">
-                    <Bell className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
-                    {notificacionesNoLeidas > 0 && (
-                      <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-xs font-bold bg-brand-600 text-white rounded-full">
-                        {notificacionesNoLeidas}
-                      </span>
-                    )}
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-blue-600 transition-colors">
-                  Notificaciones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  {notificacionesNoLeidas > 0
-                    ? `Tenés ${notificacionesNoLeidas} notificación${notificacionesNoLeidas > 1 ? 'es' : ''} nueva${notificacionesNoLeidas > 1 ? 's' : ''}`
-                    : 'Ver todas tus notificaciones'
+          {/* Columna lateral: accesos y ayuda */}
+          <aside className="space-y-4">
+            <SectionHeader title="Accesos" as="h2" />
+            <Card className="overflow-hidden">
+              <ul className="divide-y divide-line">
+                <Acceso
+                  href="/dashboard/mi-sociedad"
+                  acento="a2"
+                  icon={Building2}
+                  titulo="Mi sociedad"
+                  detalle="Datos y documentos"
+                />
+                <Acceso
+                  href="/dashboard/libros-digitales"
+                  acento="a3"
+                  icon={BookOpen}
+                  titulo="Libros digitales"
+                  detalle="Cómo llevarlos"
+                />
+                <Acceso
+                  href="/dashboard/documentos"
+                  acento="a4"
+                  icon={Upload}
+                  titulo="Documentos"
+                  detalle="Subir y consultar"
+                />
+                <Acceso
+                  href="/dashboard/notificaciones"
+                  acento="a5"
+                  icon={Bell}
+                  titulo="Notificaciones"
+                  detalle={
+                    notificacionesNoLeidas > 0
+                      ? `${notificacionesNoLeidas} sin leer`
+                      : 'Al día'
                   }
-                </p>
-              </CardContent>
+                  destacado={notificacionesNoLeidas > 0}
+                />
+                <Acceso
+                  href="/dashboard/servicios"
+                  acento="a6"
+                  icon={Handshake}
+                  titulo="Servicios"
+                  detalle="Para tu empresa"
+                />
+              </ul>
             </Card>
-          </Link>
 
-          <Link href="/dashboard/documentos" className="group">
-            <Card className="hover:shadow-xl hover:border-green-300 transition-all duration-200 h-full">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="h-12 w-12 rounded-xl bg-green-100 flex items-center justify-center group-hover:bg-green-600 transition-colors">
-                    <Upload className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
-                </div>
-                <CardTitle className="text-lg font-bold text-gray-900 mt-4 group-hover:text-green-600 transition-colors">
-                  Documentos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-500">
-                  Subí y gestioná tus documentos
+            {/* Contacto: cierra la columna y evita el vacío de media pantalla */}
+            <Card tone="primary">
+              <CardBody className="space-y-3">
+                <h3 className="text-heading text-ink">¿Necesitás una mano?</h3>
+                <p className="text-body-sm text-ink-2 text-pretty">
+                  Escribinos por WhatsApp y te respondemos en el día. También podés dejar tu
+                  consulta en el chat del trámite.
                 </p>
-              </CardContent>
+                <Button asChild variant="secondary" size="sm" className="w-full">
+                  <a
+                    href="https://wa.me/5493512136212"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4" aria-hidden />
+                    Hablar por WhatsApp
+                  </a>
+                </Button>
+              </CardBody>
             </Card>
-          </Link>
+          </aside>
         </div>
-      </div>
+      )}
     </div>
+  )
+}
+
+/* ─────────────────────────── Subcomponentes ─────────────────────────── */
+
+function ProximoPaso({
+  accion,
+  tramiteId,
+  formularioCompleto,
+  etapas,
+  progreso,
+  otrosPendientes,
+}: {
+  accion: ReturnType<typeof accionPrincipal> & object
+  tramiteId: string
+  formularioCompleto: boolean
+  etapas: ReturnType<typeof detalleEtapas>
+  progreso: number
+  otrosPendientes: number
+}) {
+  const Icono = ICONOS[accion.icono]
+  const esCliente = accion.responsable === 'cliente'
+  const esCompletado = accion.responsable === 'ninguno'
+
+  const destino = !formularioCompleto
+    ? `/tramite/nuevo?tramiteId=${tramiteId}`
+    : accion.link && !accion.link.startsWith('#')
+      ? accion.link
+      : `/dashboard/tramites/${tramiteId}${accion.link ?? ''}`
+
+  return (
+    <Card
+      tone={esCliente ? 'warning' : esCompletado ? 'success' : 'default'}
+      className={cn('brand-glow', !esCliente && !esCompletado && 'bg-surface')}
+    >
+      <CardBody className="flex flex-col gap-6 p-card sm:p-8 lg:flex-row lg:items-start">
+        {/* Círculo de color con anillo, como los nodos del "Cómo funciona" */}
+        <div className="flex flex-1 flex-col gap-5 sm:flex-row sm:items-start">
+        <span
+          className={cn(
+            'flex h-16 w-16 shrink-0 items-center justify-center rounded-full ring-8',
+            esCliente
+              ? 'bg-warning-solid text-on-primary ring-warning-soft'
+              : esCompletado
+                ? 'bg-success-solid text-on-primary ring-success-soft'
+                : 'bg-primary text-on-primary ring-primary-soft',
+          )}
+          aria-hidden
+        >
+          <Icono className="h-7 w-7" />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <span
+            className={cn(
+              'inline-flex items-center gap-2 rounded-full border px-3 py-1 text-label font-semibold',
+              esCliente
+                ? 'border-warning-line bg-warning-soft text-warning'
+                : esCompletado
+                  ? 'border-success-line bg-success-soft text-success'
+                  : 'border-primary-line bg-primary-soft text-primary',
+            )}
+          >
+            <span className="relative flex h-2 w-2" aria-hidden>
+              {esCliente && (
+                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-warning-solid opacity-75" />
+              )}
+              <span
+                className={cn(
+                  'relative inline-flex h-2 w-2 rounded-full',
+                  esCliente
+                    ? 'bg-warning-solid'
+                    : esCompletado
+                      ? 'bg-success-solid'
+                      : 'bg-primary',
+                )}
+              />
+            </span>
+            {esCliente ? 'Te toca a vos' : esCompletado ? 'Listo' : 'En curso'}
+          </span>
+
+          <h2 className="mt-3 text-hero text-ink text-balance">{accion.titulo}</h2>
+          <p className="mt-2 max-w-prose text-body text-ink-2 text-pretty">
+            {accion.descripcion}
+          </p>
+
+          {otrosPendientes > 0 && (
+            <p className="mt-2 text-body-sm text-ink-2">
+              Además tenés {otrosPendientes}{' '}
+              {otrosPendientes === 1 ? 'paso pendiente' : 'pasos pendientes'} en el trámite.
+            </p>
+          )}
+
+          <div className="mt-5">
+            <Button asChild size="lg">
+              <Link href={destino}>
+                {!formularioCompleto
+                  ? 'Continuar el formulario'
+                  : (accion.accion ?? 'Ver el trámite')}
+                <ArrowRight className="h-4.5 w-4.5" aria-hidden />
+              </Link>
+            </Button>
+          </div>
+        </div>
+        </div>
+
+        {/* Las 7 etapas, para que el bloque diga además dónde estás parado.
+            Ocupaba un vacío grande a la derecha. */}
+        <div className="shrink-0 lg:w-56">
+          <div className="rounded-card border border-line bg-surface/70 p-4 backdrop-blur-sm">
+            <div className="mb-3 flex items-baseline justify-between">
+              <span className="text-label font-semibold text-ink-2">Tu trámite</span>
+              <span className="text-body font-bold text-primary tnum">{progreso}%</span>
+            </div>
+            <ol className="space-y-2">
+              {etapas.map((etapa) => (
+                <li key={etapa.key} className="flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      'flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
+                      etapa.completada
+                        ? 'bg-success-solid text-on-primary'
+                        : etapa.actual
+                          ? 'bg-primary text-on-primary'
+                          : 'bg-surface-3',
+                    )}
+                    aria-hidden
+                  >
+                    {etapa.completada && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+                    {etapa.actual && !etapa.completada && (
+                      <span className="h-1.5 w-1.5 rounded-full bg-on-primary" />
+                    )}
+                  </span>
+                  <span
+                    className={cn(
+                      'truncate text-body-sm',
+                      etapa.completada
+                        ? 'text-ink-2'
+                        : etapa.actual
+                          ? 'font-semibold text-ink'
+                          : 'text-ink-3',
+                    )}
+                  >
+                    {etapa.label}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  )
+}
+
+/**
+ * Cada destino tiene su acento fijo (a1…a6). Es la vuelta del color que el
+ * panel había perdido, pero asignado, no al azar: los seis tonos salen de la
+ * misma escalera de luminosidad que la marca.
+ */
+const ACENTOS = {
+  a1: 'bg-a1-soft text-a1 ring-a1-line',
+  a2: 'bg-a2-soft text-a2 ring-a2-line',
+  a3: 'bg-a3-soft text-a3 ring-a3-line',
+  a4: 'bg-a4-soft text-a4 ring-a4-line',
+  a5: 'bg-a5-soft text-a5 ring-a5-line',
+  a6: 'bg-a6-soft text-a6 ring-a6-line',
+} as const
+
+function Acceso({
+  href,
+  icon: Icon,
+  titulo,
+  detalle,
+  acento,
+  destacado = false,
+}: {
+  href: string
+  icon: LucideIcon
+  titulo: string
+  detalle: string
+  acento: keyof typeof ACENTOS
+  destacado?: boolean
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        className="group flex items-center gap-3.5 px-card-sm py-3 transition-colors hover:bg-surface-2"
+      >
+        <span
+          className={cn(
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 transition-transform duration-200 group-hover:scale-110',
+            ACENTOS[acento],
+          )}
+        >
+          <Icon className="h-4.5 w-4.5" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-body font-semibold text-ink">{titulo}</span>
+          <span
+            className={cn(
+              'block truncate text-body-sm',
+              destacado ? 'font-semibold text-warning' : 'text-ink-2',
+            )}
+          >
+            {detalle}
+          </span>
+        </span>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-ink-3 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary"
+          aria-hidden
+        />
+      </Link>
+    </li>
   )
 }
 

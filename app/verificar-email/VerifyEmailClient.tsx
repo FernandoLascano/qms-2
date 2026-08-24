@@ -47,36 +47,36 @@ export function VerifyEmailClient() {
   }, [searchParams, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-b from-brand-50 to-white">
-      <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl shadow-xl p-8">
-        <h1 className="text-2xl font-black text-gray-900 mb-2">Verificación de email</h1>
-        <p className="text-gray-600 mb-6">Estamos confirmando tu dirección de email.</p>
+    <div className="canvas-landing min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-surface border border-line rounded-card shadow-pop p-8">
+        <h1 className="text-title font-semibold text-ink mb-2">Verificación de email</h1>
+        <p className="text-ink-2 mb-6">Estamos confirmando tu dirección de email.</p>
 
         {status === 'loading' && (
-          <div className="flex items-center gap-3 text-gray-700">
+          <div className="flex items-center gap-3 text-ink-2">
             <Loader2 className="w-5 h-5 animate-spin" />
             Verificando…
           </div>
         )}
 
         {status === 'ok' && (
-          <div className="flex items-start gap-3 bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl">
+          <div className="flex items-start gap-3 bg-success-soft border border-success-line text-success p-4 rounded-control">
             <CheckCircle className="w-5 h-5 mt-0.5" />
             <div>
               <p className="font-semibold">¡Listo! Tu email fue verificado.</p>
-              <p className="text-sm">Te redirigimos al login…</p>
+              <p className="text-body-sm">Te redirigimos al login…</p>
             </div>
           </div>
         )}
 
         {status === 'error' && (
-          <div className="flex items-start gap-3 bg-brand-50 border border-brand-200 text-brand-800 p-4 rounded-xl">
+          <div className="flex items-start gap-3 bg-primary-soft border border-primary-line text-primary p-4 rounded-control">
             <AlertCircle className="w-5 h-5 mt-0.5" />
             <div>
               <p className="font-semibold">No se pudo verificar el email.</p>
-              <p className="text-sm">{error}</p>
+              <p className="text-body-sm">{error}</p>
               <div className="mt-3">
-                <Link href="/login" className="text-brand-700 font-semibold hover:text-brand-800">
+                <Link href="/login" className="text-primary font-semibold hover:text-primary">
                   Ir al login
                 </Link>
               </div>
@@ -84,7 +84,7 @@ export function VerifyEmailClient() {
           </div>
         )}
 
-        {status === 'idle' && <div className="text-gray-600 text-sm">Preparando verificación…</div>}
+        {status === 'idle' && <div className="text-ink-2 text-body-sm">Preparando verificación…</div>}
       </div>
     </div>
   )

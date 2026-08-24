@@ -1,12 +1,16 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { PageHeader } from '@/components/ui/page-header'
+import { PageSkeleton } from '@/components/ui/states'
+import { BarrasMensuales, BarraDistribucion } from '@/components/ui/charts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { Coins, RefreshCw, Plus, Trash2, CheckCircle2, Clock, Download } from 'lucide-react'
+import { RefreshCw, Plus, Trash2, CheckCircle2, Clock, Download, Search } from 'lucide-react'
 import {
   calcularReparto,
   totalizar,
@@ -48,9 +52,24 @@ export default function ComisionesPage() {
   const [tab, setTab] = useState<'movimientos' | 'liquidacion' | 'fondo'>('movimientos')
 
   const [movimientos, setMovimientos] = useState<Movimiento[]>([])
+  const [busqueda, setBusqueda] = useState('')
+  const [mostrarAlta, setMostrarAlta] = useState(false)
   const [liquidaciones, setLiquidaciones] = useState<Liquidacion[]>([])
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [porcentajes, setPorcentajes] = useState<Porcentajes>(PORCENTAJES_DEFAULT)
+
+  const movimientosFiltrados = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    if (!q) return movimientos
+    return movimientos.filter(
+      (m) => m.cliente.toLowerCase().includes(q) || m.asunto.toLowerCase().includes(q),
+    )
+  }, [movimientos, busqueda])
+
+  const totalesFiltrados = useMemo(
+    () => totalizar(movimientosFiltrados, porcentajes),
+    [movimientosFiltrados, porcentajes],
+  )
 
   const hoy = new Date()
   const periodoActual = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`
@@ -236,112 +255,235 @@ export default function ComisionesPage() {
   const liqDe = (b: Beneficiario) => liquidaciones.find((l) => l.periodo === periodoSel && l.beneficiario === b)
 
   if (loading) {
-    return <div className="p-8 text-gray-500">Cargando…</div>
+    return (
+      <div className="space-y-section">
+        <PageHeader
+          title="Comisiones"
+          description="Liquidación de comisiones por trámite."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Comisiones' }]}
+        />
+        <PageSkeleton cards={2} />
+      </div>
+    )
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto text-gray-900">
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-brand-700 flex items-center justify-center">
-            <Coins className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-gray-900">Liquidación de Comisiones</h1>
-            <p className="text-sm text-gray-500">Distribución de ingresos según el contrato asociativo (cláusula 4)</p>
-          </div>
-        </div>
-        <Button onClick={sincronizar} disabled={saving} variant="outline" className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${saving ? 'animate-spin' : ''}`} /> Sincronizar honorarios cobrados
-        </Button>
-      </div>
+    <div className="stagger space-y-section">
+      <PageHeader
+        title="Liquidación de"
+        destacado="comisiones"
+        description="Distribución de ingresos según el contrato asociativo (cláusula 4)."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Comisiones' }]}
+        actions={
+          <Button onClick={sincronizar} loading={saving} variant="secondary">
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            Sincronizar honorarios cobrados
+          </Button>
+        }
+      />
 
-      {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {([['movimientos', 'Movimientos'], ['liquidacion', 'Liquidación'], ['fondo', 'Fondo de Desarrollo']] as const).map(([k, label]) => (
-          <button
-            key={k}
-            onClick={() => setTab(k)}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition ${
-              tab === k ? 'border-brand-700 text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <ResumenFinanciero
+        movimientos={movimientos}
+        porcentajes={porcentajes}
+        periodoActual={periodoActual}
+      />
+
+      <nav aria-label="Secciones" className="border-b border-line">
+        <ul className="flex items-center gap-1">
+          {([['movimientos', 'Movimientos'], ['liquidacion', 'Liquidación'], ['fondo', 'Fondo de Desarrollo']] as const).map(([k, label]) => (
+            <li key={k}>
+              <button
+                onClick={() => setTab(k)}
+                aria-current={tab === k ? 'page' : undefined}
+                className={`relative flex h-11 items-center rounded-t-control px-3 text-body-sm transition-colors ${
+                  tab === k ? 'font-medium text-primary' : 'text-ink-2 hover:bg-surface-2 hover:text-ink'
+                }`}
+              >
+                {label}
+                {tab === k && (
+                  <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-primary" aria-hidden />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
       {/* ===================== MOVIMIENTOS ===================== */}
       {tab === 'movimientos' && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader><CardTitle variant="section">Agregar movimiento manual</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
-                <div><Label>Fecha</Label><Input type="date" value={nuevo.fecha} onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })} /></div>
-                <div className="md:col-span-2"><Label>Cliente</Label><Input value={nuevo.cliente} onChange={(e) => setNuevo({ ...nuevo, cliente: e.target.value })} placeholder="Nombre del cliente" /></div>
-                <div><Label>Asunto</Label><Input value={nuevo.asunto} onChange={(e) => setNuevo({ ...nuevo, asunto: e.target.value })} placeholder="Mensualización, etc." /></div>
-                <div><Label>Honorario (sin gastos)</Label><Input type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" /></div>
-                <div>
-                  <Label>Originador</Label>
-                  <select value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
-                    {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="mt-3">
-                <Button onClick={agregarMovimiento} disabled={saving} className="gap-2"><Plus className="h-4 w-4" /> Agregar</Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          {/* Barra de herramientas: buscar y cargar a mano */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative lg:w-80">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
+                aria-hidden
+              />
+              <Input
+                type="search"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Buscar por cliente o asunto"
+                aria-label="Buscar movimientos"
+                className="pl-9"
+              />
+            </div>
+            <Button variant="secondary" onClick={() => setMostrarAlta((v) => !v)}>
+              <Plus className="h-4 w-4" aria-hidden />
+              {mostrarAlta ? 'Cerrar' : 'Cargar movimiento a mano'}
+            </Button>
+          </div>
 
-          <Card>
-            <CardHeader><CardTitle variant="section">Movimientos ({movimientos.length})</CardTitle></CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm text-gray-800">
-                <thead>
-                  <tr className="text-left text-gray-600 border-b">
-                    <th className="py-2 pr-3">Fecha</th><th className="pr-3">Cliente</th><th className="pr-3">Asunto</th>
-                    <th className="pr-3">Origen</th><th className="pr-3 text-right">Honorario</th><th className="pr-3">Originador</th>
-                    <th className="pr-3 text-right">Com. orig.</th><th className="pr-3 text-right">MW</th><th className="pr-3 text-right">Operador</th>
-                    <th className="pr-3 text-right">Fondo F</th><th className="pr-3 text-right">Fondo J</th><th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movimientos.length === 0 && (
-                    <tr><td colSpan={12} className="py-6 text-center text-gray-500">Sin movimientos. Sincronizá los honorarios cobrados o agregá uno manual.</td></tr>
-                  )}
-                  {movimientos.map((m) => {
-                    const r = calcularReparto(m.monto, m.originador, porcentajes)
-                    return (
-                      <tr key={m.id} className="border-b last:border-0 hover:bg-gray-50">
-                        <td className="py-2 pr-3 whitespace-nowrap">{fmtFecha(m.fecha)}</td>
-                        <td className="pr-3">{m.cliente}</td>
-                        <td className="pr-3">{m.asunto}</td>
-                        <td className="pr-3">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${m.origen === 'PAGO' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{m.origen === 'PAGO' ? 'Sistema' : 'Manual'}</span>
-                        </td>
-                        <td className="pr-3 text-right font-medium whitespace-nowrap">{fmt(m.monto)}</td>
-                        <td className="pr-3">
-                          <select value={m.originador} onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)} className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs text-gray-900">
-                            {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
-                          </select>
-                        </td>
-                        <td className="pr-3 text-right whitespace-nowrap">{r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}</td>
-                        <td className="pr-3 text-right whitespace-nowrap">{fmt(r.mw)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap">{fmt(r.operadorFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoFernando)}</td>
-                        <td className="pr-3 text-right whitespace-nowrap text-gray-600">{fmt(r.fondoJustiniano)}</td>
-                        <td className="text-right">
-                          <button onClick={() => eliminarMovimiento(m.id)} className="text-gray-500 hover:text-red-600 p-1" title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}><Trash2 className="h-4 w-4" /></button>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
+          {mostrarAlta && (
+            <Card>
+              <CardContent className="p-card">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-6 md:items-end">
+                  <div>
+                    <Label htmlFor="mov-fecha">Fecha</Label>
+                    <Input id="mov-fecha" type="date" value={nuevo.fecha} onChange={(e) => setNuevo({ ...nuevo, fecha: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="mov-cliente">Cliente</Label>
+                    <Input id="mov-cliente" value={nuevo.cliente} onChange={(e) => setNuevo({ ...nuevo, cliente: e.target.value })} placeholder="Nombre del cliente" />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-asunto">Asunto</Label>
+                    <Input id="mov-asunto" value={nuevo.asunto} onChange={(e) => setNuevo({ ...nuevo, asunto: e.target.value })} placeholder="Mensualización, etc." />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-monto">Honorario</Label>
+                    <Input id="mov-monto" type="number" value={nuevo.monto} onChange={(e) => setNuevo({ ...nuevo, monto: e.target.value })} placeholder="0" />
+                  </div>
+                  <div>
+                    <Label htmlFor="mov-orig">Originador</Label>
+                    <Select id="mov-orig" value={nuevo.originador} onChange={(e) => setNuevo({ ...nuevo, originador: e.target.value as Originador })}>
+                      {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
+                    </Select>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <Button onClick={agregarMovimiento} loading={saving}>
+                    <Plus className="h-4 w-4" aria-hidden />
+                    Agregar movimiento
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Libro de movimientos */}
+          {movimientosFiltrados.length === 0 ? (
+            <Card>
+              <div className="px-6 py-12 text-center">
+                <h3 className="text-heading text-ink">
+                  {busqueda ? 'Sin resultados' : 'Todavía no hay movimientos'}
+                </h3>
+                <p className="mx-auto mt-1 max-w-md text-body-sm text-ink-2">
+                  {busqueda
+                    ? `No encontramos nada que coincida con «${busqueda}».`
+                    : 'Sincronizá los honorarios cobrados o cargá uno a mano.'}
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <Card className="overflow-hidden">
+              <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-card-sm py-3">
+                <h3 className="text-heading text-ink">
+                  Movimientos <span className="text-ink-2 tnum">({movimientosFiltrados.length})</span>
+                </h3>
+                <span className="text-body-sm text-ink-2">
+                  Suma <span className="font-semibold text-ink tnum">{fmt(totalesFiltrados.ingresoBruto)}</span>
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-body-sm">
+                  <thead>
+                    <tr className="border-b border-line bg-surface-2 text-left text-label text-ink-2">
+                      <th className="px-card-sm py-2.5 font-semibold">Fecha</th>
+                      <th className="py-2.5 pr-3 font-semibold">Cliente</th>
+                      <th className="py-2.5 pr-3 font-semibold">Asunto</th>
+                      <th className="py-2.5 pr-3 font-semibold">Originador</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Honorario</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Com. orig.</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">MW</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Operador</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Fondo F</th>
+                      <th className="py-2.5 pr-3 text-right font-semibold">Fondo J</th>
+                      <th className="px-card-sm py-2.5" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line">
+                    {movimientosFiltrados.map((m) => {
+                      const r = calcularReparto(m.monto, m.originador, porcentajes)
+                      return (
+                        <tr key={m.id} className="group transition-colors hover:bg-surface-2">
+                          <td className="whitespace-nowrap px-card-sm py-2.5 text-ink-2 tnum">
+                            {fmtFecha(m.fecha)}
+                          </td>
+                          <td className="py-2.5 pr-3 font-medium text-ink">
+                            <span className="flex items-center gap-2">
+                              <span
+                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                  m.origen === 'PAGO' ? 'bg-success-solid' : 'bg-n-400'
+                                }`}
+                                title={m.origen === 'PAGO' ? 'Del sistema' : 'Cargado a mano'}
+                              />
+                              {m.cliente}
+                            </span>
+                          </td>
+                          <td className="py-2.5 pr-3 text-ink-2">{m.asunto}</td>
+                          <td className="py-2.5 pr-3">
+                            <Select
+                              value={m.originador}
+                              onChange={(e) => cambiarOriginador(m.id, e.target.value as Originador)}
+                              className="h-8 w-auto min-w-36 text-label"
+                            >
+                              {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
+                            </Select>
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right font-semibold text-ink tnum">
+                            {fmt(m.monto)}
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">
+                            {r.comisionOriginacion ? fmt(r.comisionOriginacion) : '—'}
+                          </td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink tnum">{fmt(r.mw)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink tnum">{fmt(r.operadorFernando)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">{fmt(r.fondoFernando)}</td>
+                          <td className="whitespace-nowrap py-2.5 pr-3 text-right text-ink-2 tnum">{fmt(r.fondoJustiniano)}</td>
+                          <td className="px-card-sm py-2.5 text-right">
+                            <button
+                              onClick={() => eliminarMovimiento(m.id)}
+                              aria-label={`Eliminar movimiento de ${m.cliente}`}
+                              className="rounded-control p-1.5 text-ink-3 opacity-0 transition hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                              title={m.origen === 'PAGO' ? 'Quitar de comisiones (no cuenta para el reparto)' : 'Eliminar'}
+                            >
+                              <Trash2 className="h-4 w-4" aria-hidden />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-line bg-surface-2 font-semibold text-ink">
+                      <td className="px-card-sm py-3" colSpan={4}>Totales</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.ingresoBruto)}</td>
+                      <td className="py-3 pr-3 text-right tnum">
+                        {fmt(totalesFiltrados.comisionFernando + totalesFiltrados.comisionJustiniano + totalesFiltrados.comisionMw)}
+                      </td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.mwBase)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.operadorFernando)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.fondoFernando)}</td>
+                      <td className="py-3 pr-3 text-right tnum">{fmt(totalesFiltrados.fondoJustiniano)}</td>
+                      <td className="px-card-sm py-3" />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </Card>
+          )}
         </div>
       )}
 
@@ -350,10 +492,10 @@ export default function ComisionesPage() {
         <div className="space-y-6">
           <div className="flex items-center gap-3 flex-wrap">
             <Label className="mb-0">Período:</Label>
-            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium text-gray-900">
+            <select value={periodoSel} onChange={(e) => setPeriodoSel(e.target.value)} className="h-10 rounded-chip border border-line-strong bg-surface px-3 text-body-sm font-medium text-ink">
               {periodos.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
-            <span className="text-sm text-gray-500">Ingreso bruto: <strong className="text-gray-900">{fmt(totales.ingresoBruto)}</strong></span>
+            <span className="text-body-sm text-ink-2">Ingreso bruto: <strong className="text-ink">{fmt(totales.ingresoBruto)}</strong></span>
             <Button onClick={exportarCSV} variant="outline" size="sm" className="gap-2 ml-auto"><Download className="h-4 w-4" /> Exportar CSV</Button>
           </div>
 
@@ -366,13 +508,13 @@ export default function ComisionesPage() {
                   const liq = liqDe(b)
                   const pagado = !!liq?.pagado
                   return (
-                    <div key={b} className={`flex items-center justify-between rounded-lg border p-4 ${pagado ? 'bg-green-50 border-green-200' : 'bg-white'}`}>
+                    <div key={b} className={`flex items-center justify-between rounded-control border p-4 ${pagado ? 'bg-success-soft border-success-line' : 'bg-surface'}`}>
                       <div>
-                        <p className="font-semibold text-gray-900">{BENEFICIARIO_LABEL[b]}</p>
-                        {pagado && liq?.fechaPago && <p className="text-xs text-green-700">Pagado el {fmtFecha(liq.fechaPago)}</p>}
+                        <p className="font-semibold text-ink">{BENEFICIARIO_LABEL[b]}</p>
+                        {pagado && liq?.fechaPago && <p className="text-label text-success">Pagado el {fmtFecha(liq.fechaPago)}</p>}
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-lg font-bold text-gray-900">{fmt(monto)}</span>
+                        <span className="text-heading font-semibold text-ink">{fmt(monto)}</span>
                         <Button
                           size="sm"
                           variant={pagado ? 'outline' : 'default'}
@@ -386,9 +528,9 @@ export default function ComisionesPage() {
                     </div>
                   )
                 })}
-                <div className="flex justify-between border-t pt-3 text-sm">
-                  <span className="font-semibold text-gray-900">Subtotal a pagar</span>
-                  <span className="font-bold text-gray-900">{fmt(totales.subtotalPagable)}</span>
+                <div className="flex justify-between border-t border-line pt-3 text-body-sm">
+                  <span className="font-semibold text-ink">Subtotal a pagar</span>
+                  <span className="font-semibold text-ink">{fmt(totales.subtotalPagable)}</span>
                 </div>
               </div>
             </CardContent>
@@ -397,11 +539,11 @@ export default function ComisionesPage() {
           <Card>
             <CardHeader><CardTitle variant="section">Fondo de Desarrollo del período (acumula, no se paga)</CardTitle></CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Fernando (12%)</span><strong className="text-gray-900">{fmt(totales.fondoFernando)}</strong></div>
-                <div className="flex justify-between rounded-lg bg-gray-50 p-3"><span className="text-gray-700">Fondo Justiniano (8%)</span><strong className="text-gray-900">{fmt(totales.fondoJustiniano)}</strong></div>
+              <div className="grid grid-cols-2 gap-4 text-body-sm">
+                <div className="flex justify-between rounded-control bg-surface-2 p-3"><span className="text-ink-2">Fondo Fernando (12%)</span><strong className="text-ink">{fmt(totales.fondoFernando)}</strong></div>
+                <div className="flex justify-between rounded-control bg-surface-2 p-3"><span className="text-ink-2">Fondo Justiniano (8%)</span><strong className="text-ink">{fmt(totales.fondoJustiniano)}</strong></div>
               </div>
-              <p className={`text-sm mt-3 ${Math.abs(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo) < 0.01 ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`text-body-sm mt-3 ${Math.abs(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo) < 0.01 ? 'text-success' : 'text-danger'}`}>
                 Control: bruto − pagable − fondo = {fmt(totales.ingresoBruto - totales.subtotalPagable - totales.subtotalFondo)}
               </p>
             </CardContent>
@@ -419,10 +561,10 @@ export default function ComisionesPage() {
               return (
                 <Card key={b}>
                   <CardHeader><CardTitle variant="section">Fondo {BENEFICIARIO_LABEL[b]}</CardTitle></CardHeader>
-                  <CardContent className="space-y-1 text-sm">
-                    <div className="flex justify-between"><span className="text-gray-600">Acumulado histórico</span><span className="text-gray-900">{fmt(acum)}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-600">Distribuido</span><span className="text-gray-900">− {fmt(distrib)}</span></div>
-                    <div className="flex justify-between border-t pt-1 font-bold"><span className="text-gray-900">Saldo disponible</span><span className="text-green-700">{fmt(acum - distrib)}</span></div>
+                  <CardContent className="space-y-1 text-body-sm">
+                    <div className="flex justify-between"><span className="text-ink-2">Acumulado histórico</span><span className="text-ink">{fmt(acum)}</span></div>
+                    <div className="flex justify-between"><span className="text-ink-2">Distribuido</span><span className="text-ink">− {fmt(distrib)}</span></div>
+                    <div className="flex justify-between border-t border-line pt-1 font-semibold"><span className="text-ink">Saldo disponible</span><span className="text-success">{fmt(acum - distrib)}</span></div>
                   </CardContent>
                 </Card>
               )
@@ -436,7 +578,7 @@ export default function ComisionesPage() {
                 <div><Label>Fecha</Label><Input type="date" value={dist.fecha} onChange={(e) => setDist({ ...dist, fecha: e.target.value })} /></div>
                 <div>
                   <Label>Beneficiario</Label>
-                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-900">
+                  <select value={dist.beneficiario} onChange={(e) => setDist({ ...dist, beneficiario: e.target.value as Beneficiario })} className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
                     <option value="FERNANDO">Fernando</option>
                     <option value="JUSTINIANO">Justiniano</option>
                   </select>
@@ -451,17 +593,17 @@ export default function ComisionesPage() {
           <Card>
             <CardHeader><CardTitle variant="section">Distribuciones registradas</CardTitle></CardHeader>
             <CardContent className="overflow-x-auto">
-              <table className="w-full text-sm text-gray-800">
-                <thead><tr className="text-left text-gray-600 border-b"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
+              <table className="w-full text-body-sm text-ink">
+                <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Fecha</th><th className="pr-3">Beneficiario</th><th className="pr-3 text-right">Monto</th><th className="pr-3">Nota</th><th></th></tr></thead>
                 <tbody>
-                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-gray-500">Sin distribuciones registradas.</td></tr>}
+                  {distribuciones.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-ink-2">Sin distribuciones registradas.</td></tr>}
                   {distribuciones.map((d) => (
-                    <tr key={d.id} className="border-b last:border-0">
+                    <tr key={d.id} className="border-b border-line last:border-0">
                       <td className="py-2 pr-3">{fmtFecha(d.fecha)}</td>
                       <td className="pr-3">{BENEFICIARIO_LABEL[d.beneficiario]}</td>
                       <td className="pr-3 text-right">{fmt(d.monto)}</td>
-                      <td className="pr-3 text-gray-600">{d.notas || '—'}</td>
-                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-gray-500 hover:text-red-600 p-1"><Trash2 className="h-4 w-4" /></button></td>
+                      <td className="pr-3 text-ink-2">{d.notas || '—'}</td>
+                      <td className="text-right"><button onClick={() => eliminarDistribucion(d.id)} className="text-ink-2 hover:text-danger p-1"><Trash2 className="h-4 w-4" /></button></td>
                     </tr>
                   ))}
                 </tbody>
@@ -470,6 +612,134 @@ export default function ComisionesPage() {
           </Card>
         </div>
       )}
+    </div>
+  )
+}
+
+/* ─────────────────────── Resumen financiero ─────────────────────────
+   Lo que faltaba para que esto se lea como un módulo de administración y
+   no como un formulario con una tabla: cuánto entró, cuánto hay que
+   pagar, cómo se reparte y cómo viene el año.                          */
+
+const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
+function ResumenFinanciero({
+  movimientos,
+  porcentajes,
+  periodoActual,
+}: {
+  movimientos: Movimiento[]
+  porcentajes: Porcentajes
+  periodoActual: string
+}) {
+  const delPeriodo = movimientos.filter((m) => periodoDeISO(m.fecha) === periodoActual)
+  const tot = totalizar(delPeriodo, porcentajes)
+  const totAnual = totalizar(movimientos, porcentajes)
+  const ticket = delPeriodo.length ? tot.ingresoBruto / delPeriodo.length : 0
+
+  // Últimos 12 meses de ingreso bruto
+  const hoy = new Date()
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - (11 - i), 1)
+    const clave = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    const suma = movimientos
+      .filter((m) => periodoDeISO(m.fecha) === clave)
+      .reduce((acc, m) => acc + m.monto, 0)
+    return { label: MESES_CORTOS[d.getMonth()], valor: suma, clave }
+  })
+
+  const serie = meses.map((m) => m.valor)
+
+  return (
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+      <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <TarjetaImporte titulo="Ingreso del mes" valor={tot.ingresoBruto} destacado />
+          <TarjetaImporte titulo="A pagar este mes" valor={tot.subtotalPagable} />
+          <TarjetaImporte titulo="Fondo de desarrollo" valor={totAnual.subtotalFondo} nota="acumulado" />
+          <TarjetaImporte titulo="Honorario promedio" valor={ticket} nota={`${delPeriodo.length} mov.`} />
+        </div>
+
+        <Card>
+          <CardContent className="p-card">
+            <div className="mb-4 flex items-baseline justify-between gap-3">
+              <div>
+                <h3 className="text-heading text-ink">Ingresos por mes</h3>
+                <p className="mt-0.5 text-body-sm text-ink-2">Honorarios cobrados, sin gastos</p>
+              </div>
+              <span className="text-body-sm text-ink-2">
+                Total 12 meses <span className="font-semibold text-ink tnum">{fmt(serie.reduce((a, b) => a + b, 0))}</span>
+              </span>
+            </div>
+            <BarrasMensuales datos={meses} formato={fmt} alto={132} />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="space-y-5 p-card">
+          <div>
+            <h3 className="text-heading text-ink">Cómo se reparte</h3>
+            <p className="mt-0.5 text-body-sm text-ink-2">
+              Sobre {fmt(tot.ingresoBruto)} del mes
+            </p>
+          </div>
+
+          <BarraDistribucion
+            tramos={[
+              { label: 'MW', valor: Math.round(tot.mwBase), color: 'bg-primary' },
+              { label: 'Operador', valor: Math.round(tot.operadorFernando), color: 'bg-a3-solid' },
+              { label: 'Fondo F', valor: Math.round(tot.fondoFernando), color: 'bg-a4-solid' },
+              { label: 'Fondo J', valor: Math.round(tot.fondoJustiniano), color: 'bg-a6-solid' },
+            ]}
+            formato={fmt}
+          />
+
+          <div className="space-y-2 border-t border-line pt-4">
+            <p className="text-body-sm font-semibold text-ink">A pagar este mes</p>
+            {(['FERNANDO', 'JUSTINIANO', 'MW'] as Beneficiario[]).map((b) => {
+              const monto =
+                b === 'FERNANDO' ? tot.aPagarFernando : b === 'JUSTINIANO' ? tot.aPagarJustiniano : tot.aPagarMw
+              return (
+                <div key={b} className="flex items-baseline justify-between gap-3">
+                  <span className="text-body-sm text-ink-2">{BENEFICIARIO_LABEL[b]}</span>
+                  <span className="text-body font-semibold text-ink tnum">{fmt(monto)}</span>
+                </div>
+              )
+            })}
+            <div className="flex items-baseline justify-between gap-3 border-t border-line pt-2">
+              <span className="text-body-sm font-semibold text-ink">Total</span>
+              <span className="text-title text-primary tnum">{fmt(tot.subtotalPagable)}</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function TarjetaImporte({
+  titulo,
+  valor,
+  nota,
+  destacado = false,
+}: {
+  titulo: string
+  valor: number
+  nota?: string
+  destacado?: boolean
+}) {
+  return (
+    <div
+      className={`rounded-card border p-card shadow-card ${
+        destacado ? 'border-primary-line bg-primary-soft' : 'border-line-card bg-surface'
+      }`}
+    >
+      <p className="text-body-sm font-medium text-ink-2">{titulo}</p>
+      <p className={`mt-1.5 text-title tnum ${destacado ? 'text-primary' : 'text-ink'}`}>
+        {fmt(valor)}
+      </p>
+      {nota && <p className="mt-0.5 text-label text-ink-3">{nota}</p>}
     </div>
   )
 }

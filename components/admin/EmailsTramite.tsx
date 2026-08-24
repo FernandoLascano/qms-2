@@ -46,15 +46,15 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
       >
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100">
-              <Mail className="h-4 w-4 text-indigo-700" />
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-info-soft">
+              <Mail className="h-4 w-4 text-info" />
             </span>
             <span>Emails del Trámite</span>
-            <span className="ml-1 font-mono text-xs text-gray-500">({emails.length})</span>
+            <span className="ml-1 font-mono text-label text-ink-2">({emails.length})</span>
             {seccionAbierta ? (
-              <ChevronUp className="ml-auto h-5 w-5 text-gray-400" />
+              <ChevronUp className="ml-auto h-5 w-5 text-ink-3" />
             ) : (
-              <ChevronDown className="ml-auto h-5 w-5 text-gray-400" />
+              <ChevronDown className="ml-auto h-5 w-5 text-ink-3" />
             )}
           </CardTitle>
           <CardDescription>
@@ -65,7 +65,7 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
       {seccionAbierta && (
       <CardContent>
         {emails.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-body-sm text-ink-2">
             Todavía no hay emails registrados para este trámite. Los mails automáticos que se envíen de ahora en adelante van a aparecer acá.
           </p>
         ) : (
@@ -74,45 +74,45 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
               const esEntrante = email.direction === 'INBOUND'
               const estaAbierto = abierto === email.id
               return (
-                <div key={email.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                <div key={email.id} className="border border-line rounded-control overflow-hidden">
                   <button
                     onClick={() => setAbierto(estaAbierto ? null : email.id)}
-                    className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center gap-3 p-3 text-left hover:bg-surface-2 transition-colors"
                   >
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${
                         esEntrante
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                          : 'bg-blue-100 text-blue-800 border border-blue-300'
+                          ? 'bg-success-soft text-success border border-success-line'
+                          : 'bg-info-soft text-info border border-info-line'
                       }`}
                     >
                       {esEntrante ? <ArrowDownLeft className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
                       {esEntrante ? 'Recibido' : 'Enviado'}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{email.subject}</p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-body-sm font-medium text-ink truncate">{email.subject}</p>
+                      <p className="text-label text-ink-2 truncate">
                         {esEntrante ? `De: ${email.from}` : `Para: ${email.to?.join(', ')}`} · {formatFecha(email.createdAt)}
                       </p>
                     </div>
                     {estaAbierto ? (
-                      <ChevronUp className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <ChevronUp className="h-4 w-4 text-ink-3 flex-shrink-0" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <ChevronDown className="h-4 w-4 text-ink-3 flex-shrink-0" />
                     )}
                   </button>
 
                   {estaAbierto && (
-                    <div className="border-t border-gray-200 bg-white p-3">
+                    <div className="border-t border-line bg-surface p-3">
                       {email.bodyHtml ? (
                         <div
-                          className="text-sm text-gray-800 max-w-none overflow-x-auto [&_a]:text-brand-700 [&_a]:underline"
+                          className="text-body-sm text-ink max-w-none overflow-x-auto [&_a]:text-primary [&_a]:underline"
                           dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
                         />
                       ) : email.bodyText ? (
-                        <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans">{email.bodyText}</pre>
+                        <pre className="text-body-sm text-ink whitespace-pre-wrap font-sans">{email.bodyText}</pre>
                       ) : (
-                        <p className="text-sm text-gray-500">Sin contenido guardado.</p>
+                        <p className="text-body-sm text-ink-2">Sin contenido guardado.</p>
                       )}
                     </div>
                   )}

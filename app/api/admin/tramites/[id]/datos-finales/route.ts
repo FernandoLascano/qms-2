@@ -129,7 +129,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         tramite.denominacionAprobada || tramite.denominacionSocial1,
         cuit,
         matricula,
-        id
+        id,
+        tramite.plan
       )
     } catch {
       // No fallar si el email no se envía

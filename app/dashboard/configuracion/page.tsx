@@ -114,24 +114,21 @@ export default function ConfiguracionPage() {
   return (
     <div className="space-y-8">
       <div>
-        <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-          Mi cuenta
-        </span>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-          <span className="text-brand-700">Configuración</span>
+        <h1 className="text-display text-ink">
+          Configuración
         </h1>
-        <p className="text-gray-500 mt-2 text-lg">Administrá tu perfil y preferencias</p>
+        <p className="mt-1 text-body text-ink-2">Administrá tu perfil y preferencias</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Información Personal */}
-        <Card className="shadow-lg">
+        <Card className="shadow-raise">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
-                <User className="h-5 w-5 text-brand-700" />
+              <div className="h-10 w-10 rounded-control bg-primary-soft flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-lg font-bold text-gray-900">Información Personal</CardTitle>
+              <CardTitle className="text-heading font-semibold text-ink">Información Personal</CardTitle>
             </div>
             <CardDescription>
               Actualizá tus datos personales
@@ -153,7 +150,7 @@ export default function ConfiguracionPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-ink-3" />
                   <Input
                     id="email"
                     type="email"
@@ -168,7 +165,7 @@ export default function ConfiguracionPage() {
               <div className="space-y-2">
                 <Label htmlFor="phone">Teléfono</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Phone className="absolute left-3 top-3 h-4 w-4 text-ink-3" />
                   <Input
                     id="phone"
                     type="tel"
@@ -182,7 +179,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200"
+                className="w-full bg-primary hover:bg-primary-hover rounded-control shadow-raise"
                 disabled={loading}
               >
                 {loading ? (
@@ -202,13 +199,13 @@ export default function ConfiguracionPage() {
         </Card>
 
         {/* Cambiar Contraseña */}
-        <Card className="shadow-lg">
+        <Card className="shadow-raise">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
-                <Lock className="h-5 w-5 text-brand-700" />
+              <div className="h-10 w-10 rounded-control bg-primary-soft flex items-center justify-center">
+                <Lock className="h-5 w-5 text-primary" />
               </div>
-              <CardTitle className="text-lg font-bold text-gray-900">Seguridad</CardTitle>
+              <CardTitle className="text-heading font-semibold text-ink">Seguridad</CardTitle>
             </div>
             <CardDescription>
               {needsCurrentPassword
@@ -257,7 +254,7 @@ export default function ConfiguracionPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200"
+                className="w-full bg-primary hover:bg-primary-hover rounded-control shadow-raise"
                 disabled={loading}
               >
                 {loading ? (
@@ -278,30 +275,30 @@ export default function ConfiguracionPage() {
       </div>
 
       {/* Información de la Cuenta */}
-      <Card className="shadow-lg">
+      <Card className="shadow-raise">
         <CardHeader>
-          <CardTitle className="text-lg font-bold text-gray-900">Información de la cuenta</CardTitle>
+          <CardTitle className="text-heading font-semibold text-ink">Información de la cuenta</CardTitle>
           <CardDescription>
             Detalles sobre tu cuenta
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-gray-600">Tipo de cuenta:</span>
+          <div className="space-y-3 text-body-sm">
+            <div className="flex justify-between py-2 border-b border-line">
+              <span className="text-ink-2">Tipo de cuenta:</span>
               <span className="font-semibold">
                 {session?.user?.rol === 'ADMIN' ? 'Administrador' :
                  session?.user?.rol === 'ABOGADO' ? 'Abogado' : 'Cliente'}
               </span>
             </div>
-            <div className="flex justify-between py-2 border-b">
-              <span className="text-gray-600">Email verificado:</span>
+            <div className="flex justify-between py-2 border-b border-line">
+              <span className="text-ink-2">Email verificado:</span>
               <span className="font-semibold">
                 {session?.user?.emailVerified ? 'Sí' : 'No'}
               </span>
             </div>
             <div className="flex justify-between py-2">
-              <span className="text-gray-600">Miembro desde:</span>
+              <span className="text-ink-2">Miembro desde:</span>
               <span className="font-semibold">
                 {session?.user?.createdAt ?
                   new Date(session.user.createdAt).toLocaleDateString('es-AR', {

@@ -17,50 +17,50 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
   const ingresosTendencia = calcularTendencia(ingresos.porMes.map(m => m.ingresos))
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <h3 className="text-lg font-bold text-gray-900 mb-4">📈 Tendencias</h3>
+    <div className="bg-surface rounded-control shadow-raise p-6">
+      <h3 className="text-heading font-semibold text-ink mb-4">Tendencias</h3>
       
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between p-4 bg-info-soft rounded-control border border-info-line">
           <div>
-            <p className="text-sm font-medium text-gray-700">Trámites</p>
-            <p className="text-xs text-gray-500">Últimos 6 meses</p>
+            <p className="text-body-sm font-medium text-ink-2">Trámites</p>
+            <p className="text-label text-ink-2">Últimos 6 meses</p>
           </div>
           <div className="flex items-center gap-2">
             {tramitesTendencia > 0 ? (
-              <TrendingUp className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-success" />
             ) : tramitesTendencia < 0 ? (
-              <TrendingDown className="h-5 w-5 text-brand-600" />
+              <TrendingDown className="h-5 w-5 text-primary" />
             ) : (
-              <Minus className="h-5 w-5 text-gray-400" />
+              <Minus className="h-5 w-5 text-ink-3" />
             )}
-            <span className={`font-bold ${
-              tramitesTendencia > 0 ? 'text-green-600' : 
-              tramitesTendencia < 0 ? 'text-brand-600' : 
-              'text-gray-600'
+            <span className={`font-semibold ${
+              tramitesTendencia > 0 ? 'text-success' : 
+              tramitesTendencia < 0 ? 'text-primary' : 
+              'text-ink-2'
             }`}>
               {tramitesTendencia > 0 ? '+' : ''}{tramitesTendencia.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+        <div className="flex items-center justify-between p-4 bg-success-soft rounded-control border border-success-line">
           <div>
-            <p className="text-sm font-medium text-gray-700">Ingresos</p>
-            <p className="text-xs text-gray-500">Últimos 6 meses</p>
+            <p className="text-body-sm font-medium text-ink-2">Ingresos</p>
+            <p className="text-label text-ink-2">Últimos 6 meses</p>
           </div>
           <div className="flex items-center gap-2">
             {ingresosTendencia > 0 ? (
-              <TrendingUp className="h-5 w-5 text-green-600" />
+              <TrendingUp className="h-5 w-5 text-success" />
             ) : ingresosTendencia < 0 ? (
-              <TrendingDown className="h-5 w-5 text-brand-600" />
+              <TrendingDown className="h-5 w-5 text-primary" />
             ) : (
-              <Minus className="h-5 w-5 text-gray-400" />
+              <Minus className="h-5 w-5 text-ink-3" />
             )}
-            <span className={`font-bold ${
-              ingresosTendencia > 0 ? 'text-green-600' : 
-              ingresosTendencia < 0 ? 'text-brand-600' : 
-              'text-gray-600'
+            <span className={`font-semibold ${
+              ingresosTendencia > 0 ? 'text-success' : 
+              ingresosTendencia < 0 ? 'text-primary' : 
+              'text-ink-2'
             }`}>
               {ingresosTendencia > 0 ? '+' : ''}{ingresosTendencia.toFixed(1)}%
             </span>

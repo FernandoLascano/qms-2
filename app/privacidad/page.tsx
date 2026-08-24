@@ -48,7 +48,7 @@ export default function PrivacidadPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Finalidad del tratamiento</h2>
               <p>
-                Los datos personales se utilizan para: (a) gestionar la constitución de S.A.S. y los trámites asociados; (b) comunicarnos con el usuario sobre el estado de su trámite; (c) cumplir con obligaciones legales y regulatorias (IGJ, IPJ, AFIP, etc.); (d) emitir facturas y documentación; (e) mejorar nuestros servicios; (f) enviar comunicaciones comerciales cuando el usuario haya dado su consentimiento.
+                Los datos personales se utilizan para: (a) gestionar la constitución de S.A.S. y los trámites asociados; (b) comunicarnos con el usuario sobre el estado de su trámite; (c) cumplir con obligaciones legales y regulatorias (IGJ, IPJ, ARCA, etc.); (d) emitir facturas y documentación; (e) mejorar nuestros servicios; (f) enviar comunicaciones comerciales cuando el usuario haya dado su consentimiento.
               </p>
             </section>
 
@@ -92,7 +92,7 @@ export default function PrivacidadPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Cesión y transferencia</h2>
               <p>
-                Los datos pueden ser comunicados a: organismos públicos (IGJ, IPJ, AFIP, etc.) cuando sea necesario para el trámite; proveedores de servicios que nos asisten (hosting, email, pagos), que actúan como encargados del tratamiento y están obligados a mantener la confidencialidad. No vendemos ni cedemos datos a terceros con fines comerciales sin consentimiento expreso.
+                Los datos pueden ser comunicados a: organismos públicos (IGJ, IPJ, ARCA, etc.) cuando sea necesario para el trámite; proveedores de servicios que nos asisten (hosting, email, pagos), que actúan como encargados del tratamiento y están obligados a mantener la confidencialidad. No vendemos ni cedemos datos a terceros con fines comerciales sin consentimiento expreso.
               </p>
             </section>
 

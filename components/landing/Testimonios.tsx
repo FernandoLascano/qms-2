@@ -44,7 +44,7 @@ export function Testimonios() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
 
   return (
-    <section ref={sectionRef} className="py-24 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden">
+    <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface via-surface-2 to-surface overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header con diseño más impactante */}
         <motion.div
@@ -56,11 +56,11 @@ export function Testimonios() {
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Testimonios
           </span>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
             Historias de{' '}
             <span className="text-brand-700">éxito</span>
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Emprendedores que confiaron en nosotros y hoy tienen su empresa funcionando
           </p>
         </motion.div>
@@ -76,14 +76,14 @@ export function Testimonios() {
               className={`relative group ${testimonio.destacado ? 'md:-mt-4 md:mb-4' : ''}`}
             >
               <div
-                className={`relative bg-white rounded-2xl p-8 h-full transition-all duration-300 ${
+                className={`relative bg-surface rounded-card p-8 h-full transition-all duration-300 ${
                   testimonio.destacado
-                    ? 'shadow-xl border-2 border-brand-100 hover:border-brand-200 hover:shadow-2xl'
-                    : 'shadow-lg border border-gray-100 hover:shadow-xl hover:border-gray-200'
+                    ? 'shadow-pop border-2 border-brand-100 hover:border-brand-200 hover:shadow-modal'
+                    : 'shadow-pop border border-n-100 hover:shadow-pop hover:border-line'
                 }`}
               >
                 {/* Icono de comillas decorativo */}
-                <div className={`absolute -top-4 -left-2 ${testimonio.destacado ? 'text-brand-200' : 'text-gray-200'}`}>
+                <div className={`absolute -top-4 -left-2 ${testimonio.destacado ? 'text-brand-200' : 'text-n-200'}`}>
                   <Quote className="w-12 h-12 fill-current" />
                 </div>
 
@@ -96,40 +96,35 @@ export function Testimonios() {
                   </div>
                 )}
 
-                {/* Rating con diseño mejorado */}
+                {/* Puntaje. Las estrellas van doradas siempre: en el testimonio
+                    destacado eran rojas y leían como otra cosa. Que sea el
+                    destacado ya se nota por el borde, la chapa y la comilla. */}
                 <div className="flex gap-1 mb-5 pt-2">
                   {[...Array(testimonio.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-5 h-5 ${
-                        testimonio.destacado
-                          ? 'fill-brand-500 text-brand-500'
-                          : 'fill-amber-400 text-amber-400'
-                      }`}
-                    />
+                    <Star key={i} className="w-5 h-5 fill-a5-solid text-a5-solid" />
                   ))}
                 </div>
 
                 {/* Testimonio con mejor tipografía */}
-                <blockquote className="text-gray-700 mb-8 leading-relaxed text-[15px]">
+                <blockquote className="text-n-700 mb-8 leading-relaxed text-[15px]">
                   "{testimonio.testimonio}"
                 </blockquote>
 
                 {/* Autor con diseño refinado */}
-                <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-4 pt-4 border-t border-n-100">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lead shadow-raise ${
                       testimonio.destacado
                         ? 'bg-gradient-to-br from-brand-600 to-brand-800'
-                        : 'bg-gradient-to-br from-gray-700 to-gray-900'
+                        : 'bg-gradient-to-br from-n-700 to-ink'
                     }`}
                   >
                     {testimonio.nombre.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{testimonio.nombre}</p>
-                    <p className="text-sm text-gray-500">{testimonio.puesto}</p>
-                    <p className={`text-sm font-semibold ${testimonio.destacado ? 'text-brand-700' : 'text-gray-700'}`}>
+                    <p className="font-bold text-ink">{testimonio.nombre}</p>
+                    <p className="text-sm text-ink-3">{testimonio.puesto}</p>
+                    <p className={`text-sm font-semibold ${testimonio.destacado ? 'text-brand-700' : 'text-n-700'}`}>
                       {testimonio.empresa}
                     </p>
                   </div>
@@ -146,7 +141,7 @@ export function Testimonios() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="max-w-6xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-3xl p-8 md:p-12 shadow-2xl">
+          <div className="bg-gradient-to-r from-ink via-n-800 to-ink rounded-modal p-8 md:p-12 shadow-modal">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
               {stats.map((stat, index) => (
                 <motion.div
@@ -156,13 +151,13 @@ export function Testimonios() {
                   transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
                   className="text-center group"
                 >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 mb-4 group-hover:bg-white/20 transition-colors">
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-control bg-surface/10 mb-4 group-hover:bg-surface/20 transition-colors">
                     <stat.icon className="w-6 h-6 text-brand-400" />
                   </div>
-                  <div className="text-3xl md:text-4xl font-black text-white mb-1">
+                  <div className="text-3xl md:text-display font-black text-white mb-1">
                     {stat.valor}
                   </div>
-                  <div className="text-gray-400 text-sm font-medium">
+                  <div className="text-n-400 text-sm font-medium">
                     {stat.label}
                   </div>
                 </motion.div>
@@ -176,7 +171,7 @@ export function Testimonios() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-center mt-10 text-gray-500 text-sm"
+          className="text-center mt-10 text-ink-3 text-sm"
         >
           Unite a los más de 500 emprendedores que ya eligieron QuieroMiSAS
         </motion.p>

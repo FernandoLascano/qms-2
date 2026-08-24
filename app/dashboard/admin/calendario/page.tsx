@@ -16,19 +16,16 @@ export default async function CalendarioPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin">
-          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100">
+        <Button asChild variant="ghost" size="icon" aria-label="Volver al panel" className="rounded-control hover:bg-surface-3">
+            <Link href="/dashboard/admin">
             <ArrowLeft className="h-5 w-5" />
+          </Link>
           </Button>
-        </Link>
         <div>
-          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-            Agenda
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Calendario de <span className="text-brand-700">Eventos</span>
+          <h1 className="text-display text-ink">
+            Calendario de Eventos
           </h1>
-          <p className="text-gray-500 mt-2 text-lg">
+          <p className="mt-1 text-body text-ink-2">
             Gestiona reuniones, vencimientos y fechas importantes
           </p>
         </div>

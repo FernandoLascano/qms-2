@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
+import { emailManual } from '@/lib/emails/templates'
 import { Prisma } from '@prisma/client'
 import { EmailDirection, EmailStatus } from '@prisma/client'
 
@@ -91,14 +92,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const { to, cc, bcc, subject, html, text, tramiteId, attachments } = await request.json()
+    const { to, cc, bcc, subject, text, tramiteId, attachments, destinatario } = await request.json()
     const toList = normalizeRecipients(to)
     const ccList = normalizeRecipients(cc)
     const bccList = normalizeRecipients(bcc)
 
-    if (!toList.length || !subject || !html) {
-      return NextResponse.json({ error: 'Faltan campos obligatorios (to, subject, html)' }, { status: 400 })
+    if (!toList.length || !subject || !text?.trim()) {
+      return NextResponse.json({ error: 'Faltan campos obligatorios (to, subject, text)' }, { status: 400 })
     }
+
+    // El sobre se arma acá y no en el navegador: así el correo manual sale con
+    // la misma cabecera, pie y tipografía que los automáticos, y no hay una
+    // segunda definición del diseño que se desactualice.
+    const html = emailManual({
+      texto: String(text),
+      nombre: typeof destinatario === 'string' && destinatario.trim() ? destinatario.trim() : toList[0],
+    })
 
     const parsedAttachments: Array<{
       filename: string

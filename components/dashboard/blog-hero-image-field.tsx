@@ -46,10 +46,10 @@ export function BlogHeroImageField({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-body-sm font-medium text-ink-2 mb-2">
           Imagen principal
         </label>
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-body-sm text-ink-2 mb-3">
           Subí un archivo desde tu equipo o pegá una URL pública. La vista previa usa la URL guardada.
         </p>
 
@@ -69,7 +69,7 @@ export function BlogHeroImageField({
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current?.click()}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-brand-200 bg-brand-50 text-brand-900 font-medium hover:bg-brand-100 transition disabled:opacity-60 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-control border border-primary-line bg-primary-soft text-primary font-medium hover:bg-primary-soft transition disabled:opacity-60 cursor-pointer"
           >
             {uploading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -82,8 +82,8 @@ export function BlogHeroImageField({
       </div>
 
       {imagenHero ? (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <div className="relative w-full max-h-64 overflow-hidden rounded-lg bg-white">
+        <div className="rounded-control border border-line bg-surface-2 p-4">
+          <div className="relative w-full max-h-64 overflow-hidden rounded-control bg-surface">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={imagenHero}
@@ -94,18 +94,18 @@ export function BlogHeroImageField({
               }}
             />
           </div>
-          <p className="mt-2 text-xs text-gray-500 break-all">{imagenHero}</p>
+          <p className="mt-2 text-label text-ink-2 break-all">{imagenHero}</p>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 py-12 text-gray-500">
+        <div className="flex flex-col items-center justify-center rounded-control border-2 border-dashed border-line bg-surface-2 py-12 text-ink-2">
           <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-          <span className="text-sm">Sin imagen todavía</span>
+          <span className="text-body-sm">Sin imagen todavía</span>
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          URL de la imagen <span className="text-gray-500 font-normal">(opcional si subís un archivo)</span>
+        <label className="block text-body-sm font-medium text-ink-2 mb-1">
+          URL de la imagen <span className="text-ink-2 font-normal">(opcional si subís un archivo)</span>
         </label>
         <input
           type="url"
@@ -113,19 +113,19 @@ export function BlogHeroImageField({
           value={imagenHero}
           onChange={(e) => onImagenHeroChange(e.target.value)}
           placeholder="https://…"
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Alt text (SEO)</label>
+        <label className="block text-body-sm font-medium text-ink-2 mb-1">Alt text (SEO)</label>
         <input
           type="text"
           name="imagenAlt"
           value={imagenAlt}
           onChange={(e) => onImagenAltChange(e.target.value)}
           placeholder="Descripción de la imagen para SEO"
-          className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          className="w-full border border-line-strong rounded-control px-4 py-2 text-ink placeholder:text-ink-3 focus:ring-2 focus:ring-ring focus:border-transparent"
         />
       </div>
     </div>

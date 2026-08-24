@@ -1,14 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { FileText, Calendar, Building2, User, DollarSign, Eye, Trash2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { Building2, FileText, Search, Trash2, User } from 'lucide-react'
+
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Progress } from '@/components/ui/progress'
+import { EmptyState } from '@/components/ui/states'
 import {
   Dialog,
   DialogContent,
@@ -17,265 +22,252 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import TramitesFiltros from './TramitesFiltros'
-import { calcularProgreso, getEstadoColor, getEstadoTexto, obtenerEtapaActual } from '@/lib/tramites-helpers'
+import TramitesFiltros, {
+  FILTRO_POR_SLUG,
+  SLUG_POR_FILTRO,
+  type FiltroTipo,
+} from './TramitesFiltros'
+import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { cn } from '@/lib/utils'
 
-type FiltroTipo = 'TODOS' | 'INICIADOS' | 'EN_PROCESO' | 'ESPERANDO_CLIENTE' | 'COMPLETADOS' | 'PENDIENTE_VALIDACION'
+/** Trámites que no se pueden borrar desde la interfaz. */
+const PROTEGIDOS = [
+  'DRIX SAS',
+  'SPEED AI SOFTWARE',
+  'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
+]
 
-interface TramitesListaProps {
-  tramites: any[]
+const esProtegido = (denominacion: string) =>
+  PROTEGIDOS.some((p) => denominacion.toUpperCase().includes(p.toUpperCase()))
+
+const coincideFiltro = (tramite: any, filtro: FiltroTipo) => {
+  switch (filtro) {
+    case 'PENDIENTE_VALIDACION':
+      return tramite.estadoValidacion === 'PENDIENTE_VALIDACION'
+    case 'DOCUMENTOS_PENDIENTES':
+      return (tramite._count?.documentos ?? 0) > 0
+    case 'ESPERANDO_CLIENTE':
+      return tramite.estadoGeneral === 'ESPERANDO_CLIENTE'
+    case 'EN_PROCESO':
+      return !tramite.sociedadInscripta && calcularProgreso(tramite) < 100
+    case 'COMPLETADOS':
+      return tramite.sociedadInscripta || calcularProgreso(tramite) === 100
+    default:
+      return true
+  }
 }
 
-export default function TramitesLista({ tramites }: TramitesListaProps) {
+export default function TramitesLista({ tramites }: { tramites: any[] }) {
   const router = useRouter()
-  const [filtroActivo, setFiltroActivo] = useState<FiltroTipo>('TODOS')
-  const [tramiteAEliminar, setTramiteAEliminar] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+
+  const filtroUrl = FILTRO_POR_SLUG[searchParams.get('filter') ?? ''] ?? 'TODOS'
+  const [busqueda, setBusqueda] = useState('')
+  const [aEliminar, setAEliminar] = useState<string | null>(null)
   const [eliminando, setEliminando] = useState(false)
 
-  const tramitesFiltrados = tramites.filter(tramite => {
-    switch (filtroActivo) {
-      case 'INICIADOS':
-        return tramite.estadoGeneral === 'INICIADO'
-      case 'EN_PROCESO':
-        const progreso = calcularProgreso(tramite)
-        return tramite.formularioCompleto && progreso < 100
-      case 'ESPERANDO_CLIENTE':
-        return tramite.estadoGeneral === 'ESPERANDO_CLIENTE'
-      case 'COMPLETADOS':
-        const progresoCompleto = calcularProgreso(tramite)
-        return progresoCompleto === 100 || tramite.sociedadInscripta
-      case 'PENDIENTE_VALIDACION':
-        return tramite.estadoValidacion === 'PENDIENTE_VALIDACION'
-      case 'TODOS':
-      default:
-        return true
-    }
-  })
-
-  // Verificar si un trámite está protegido
-  const esTramiteProtegido = (denominacion: string) => {
-    const tramitesProtegidos = [
-      'DRIX SAS',
-      'SPEED AI SOFTWARE',
-      'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
-      'Drixs SAS',
-      'Speed AI Software',
-      'Adocor Servicios de Construccion SAS'
-    ]
-    return tramitesProtegidos.some(protegido => denominacion.toUpperCase().includes(protegido.toUpperCase()))
+  // El filtro vive en la URL: así los enlaces del panel "Hoy" funcionan de
+  // verdad. Antes apuntaban a ?filter=… y este componente no lo leía.
+  const cambiarFiltro = (nuevo: FiltroTipo) => {
+    const url =
+      nuevo === 'TODOS'
+        ? '/dashboard/admin/tramites'
+        : `/dashboard/admin/tramites?filter=${SLUG_POR_FILTRO[nuevo]}`
+    router.replace(url, { scroll: false })
   }
 
-  const handleEliminar = async () => {
-    if (!tramiteAEliminar) return
+  const contadores = useMemo(
+    () =>
+      ({
+        TODOS: tramites.length,
+        PENDIENTE_VALIDACION: tramites.filter((t) => coincideFiltro(t, 'PENDIENTE_VALIDACION'))
+          .length,
+        DOCUMENTOS_PENDIENTES: tramites.filter((t) => coincideFiltro(t, 'DOCUMENTOS_PENDIENTES'))
+          .length,
+        ESPERANDO_CLIENTE: tramites.filter((t) => coincideFiltro(t, 'ESPERANDO_CLIENTE')).length,
+        EN_PROCESO: tramites.filter((t) => coincideFiltro(t, 'EN_PROCESO')).length,
+        COMPLETADOS: tramites.filter((t) => coincideFiltro(t, 'COMPLETADOS')).length,
+      }) as Record<FiltroTipo, number>,
+    [tramites],
+  )
 
+  const visibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase()
+    return tramites.filter((t) => {
+      if (!coincideFiltro(t, filtroUrl)) return false
+      if (!q) return true
+      return [t.denominacionAprobada, t.denominacionSocial1, t.user?.name, t.user?.email]
+        .filter(Boolean)
+        .some((campo: string) => campo.toLowerCase().includes(q))
+    })
+  }, [tramites, filtroUrl, busqueda])
+
+  const eliminar = async () => {
+    if (!aEliminar) return
     setEliminando(true)
     try {
-      const response = await fetch(`/api/admin/tramites/${tramiteAEliminar}/eliminar`, {
-        method: 'DELETE'
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success(data.message || 'Trámite eliminado exitosamente')
-        setTramiteAEliminar(null)
+      const res = await fetch(`/api/admin/tramites/${aEliminar}/eliminar`, { method: 'DELETE' })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success(data.message || 'Trámite eliminado')
+        setAEliminar(null)
         router.refresh()
       } else {
-        toast.error(data.error || 'Error al eliminar el trámite')
+        toast.error(data.error || 'No se pudo eliminar el trámite')
       }
-    } catch (error) {
-      console.error('Error al eliminar trámite:', error)
-      toast.error('Error al eliminar el trámite')
+    } catch {
+      toast.error('No se pudo eliminar el trámite')
     } finally {
       setEliminando(false)
     }
   }
 
-  return (
-    <>
-      <TramitesFiltros
-        tramites={tramites}
-        onFiltroChange={setFiltroActivo}
-      />
+  const tramiteAEliminar = tramites.find((t) => t.id === aEliminar)
 
-      {tramitesFiltrados.length === 0 ? (
+  return (
+    <div className="space-y-4">
+      {/* Barra de herramientas */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <TramitesFiltros contadores={contadores} activo={filtroUrl} onChange={cambiarFiltro} />
+        <div className="relative lg:w-72">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por sociedad o cliente"
+            aria-label="Buscar trámites"
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      {/* Listado denso */}
+      {visibles.length === 0 ? (
         <Card>
-          <CardContent className="py-16">
-            <div className="text-center">
-              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No hay trámites con este filtro
-              </h3>
-              <p className="text-gray-500">
-                Intenta con otro filtro para ver más trámites
-              </p>
-            </div>
-          </CardContent>
+          <EmptyState
+            icon={FileText}
+            title={busqueda ? 'Sin resultados' : 'No hay trámites con este filtro'}
+            description={
+              busqueda
+                ? `No encontramos nada que coincida con «${busqueda}».`
+                : 'Probá con otro filtro para ver más trámites.'
+            }
+          />
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {tramitesFiltrados.map((tramite) => {
-            const socios = (tramite.socios as any[]) || []
-            const administradores = (tramite.administradores as any[]) || []
-            const progreso = calcularProgreso(tramite)
-            const etapaActual = obtenerEtapaActual(tramite)
-            const esCompletado = progreso === 100 || tramite.sociedadInscripta
+        <Card className="overflow-hidden">
+          <ul className="divide-y divide-line">
+            {visibles.map((tramite) => {
+              const estado = getEstado(tramite, 'admin')
+              const progreso = calcularProgreso(tramite)
+              const docsPendientes = tramite._count?.documentos ?? 0
+              const nombre = tramite.denominacionAprobada || tramite.denominacionSocial1
 
-            return (
-              <Card
-                key={tramite.id}
-                className={`hover:shadow-lg transition-shadow ${esCompletado ? 'border-green-300 bg-green-50/30' : ''}`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-900">
-                          {tramite.denominacionAprobada || tramite.denominacionSocial1}
-                        </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getEstadoColor(tramite)}`}>
-                          {getEstadoTexto(tramite)}
-                        </span>
-                        {tramite.estadoValidacion === 'PENDIENTE_VALIDACION' && (
-                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-500 text-white animate-pulse">
-                            ⚠ Pendiente Validación
-                          </span>
-                        )}
-                        {esCompletado && (
-                          <span className="px-2 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">
-                            ✓ Completado
-                          </span>
-                        )}
-                      </div>
-                      <div className="mb-2">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-medium">Etapa actual:</span> {etapaActual}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-6 text-sm text-gray-600">
-                        <span className="flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          {tramite.user.name}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Building2 className="h-4 w-4" />
-                          {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4" />
-                          Plan {tramite.plan}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link href={`/dashboard/admin/tramites/${tramite.id}`}>
-                        <Button className="gap-2">
-                          <Eye className="h-4 w-4" />
-                          Gestionar
-                        </Button>
+              return (
+                <li
+                  key={tramite.id}
+                  className="group relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/dashboard/admin/tramites/${tramite.id}`}
+                        className="truncate rounded-chip text-body font-medium text-ink hover:text-primary"
+                      >
+                        {/* Área clickeable extendida a toda la fila */}
+                        <span className="absolute inset-0" aria-hidden />
+                        {nombre}
                       </Link>
-                      {!esTramiteProtegido(tramite.denominacionAprobada || tramite.denominacionSocial1) && (
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => setTramiteAEliminar(tramite.id)}
-                          className="gap-2"
-                          title="Eliminar trámite"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <Badge tone={estado.tone} dot>
+                        {estado.label}
+                      </Badge>
+                      {docsPendientes > 0 && (
+                        <Badge tone="warning">{docsPendientes} doc. por aprobar</Badge>
                       )}
                     </div>
-                  </div>
 
-                  <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm">
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Capital Social</p>
-                      <p className="font-semibold text-gray-900">${tramite.capitalSocial.toLocaleString('es-AR')}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Socios</p>
-                      <p className="font-semibold text-gray-900">{socios.length}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Administradores</p>
-                      <p className="font-semibold text-gray-900">{administradores.length}</p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded">
-                      <p className="text-gray-500 mb-1">Contacto</p>
-                      <p className="font-semibold text-gray-900 text-xs">{tramite.user.email}</p>
-                    </div>
-                  </div>
-
-                  {/* Barra de Progreso */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-700">Progreso del trámite</span>
-                      <span className={`text-xs font-bold ${esCompletado ? 'text-green-600' : 'text-brand-600'}`}>
-                        {progreso}%
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-body-sm text-ink-2">
+                      <span className="inline-flex items-center gap-2">
+                        <User className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                        {tramite.user.name}
                       </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className={`h-2.5 rounded-full transition-all ${
-                          esCompletado
-                            ? 'bg-gradient-to-r from-green-500 to-green-600'
-                            : 'bg-gradient-to-r from-brand-600 to-brand-700'
-                        }`}
-                        style={{ width: `${progreso}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2 mt-2 text-xs text-gray-600">
-                      {tramite.formularioCompleto && <span className="text-green-600">✓ Formulario</span>}
-                      {tramite.denominacionReservada && <span className="text-green-600">• ✓ Denominación</span>}
-                      {tramite.capitalDepositado && <span className="text-green-600">• ✓ Capital</span>}
-                      {tramite.tasaPagada && <span className="text-green-600">• ✓ Tasa</span>}
-                      {tramite.documentosFirmados && <span className="text-green-600">• ✓ Documentos</span>}
-                      {tramite.tramiteIngresado && <span className="text-green-600">• ✓ Ingresado</span>}
-                      {tramite.sociedadInscripta && <span className="text-green-600">• ✓ Inscripta</span>}
+                      <span className="hidden items-center gap-2 sm:inline-flex">
+                        <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                        {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}
+                      </span>
+                      <span className="hidden sm:inline">Plan {tramite.plan}</span>
+                      <span className="text-ink-3">{etapaActual(tramite, 'admin')}</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
+
+                  {/* Progreso */}
+                  <div className="hidden w-32 shrink-0 md:block">
+                    <Progress
+                      value={progreso}
+                      size="sm"
+                      tone={progreso === 100 ? 'success' : 'primary'}
+                      label={`${nombre}: ${progreso}%`}
+                    />
+                    <p className="mt-1 text-right text-label text-ink-3 tnum">{progreso}%</p>
+                  </div>
+
+                  <time
+                    dateTime={new Date(tramite.updatedAt ?? tramite.createdAt).toISOString()}
+                    className="hidden w-20 shrink-0 text-right text-body-sm text-ink-3 tnum lg:block"
+                  >
+                    {format(new Date(tramite.updatedAt ?? tramite.createdAt), 'd MMM', {
+                      locale: es,
+                    })}
+                  </time>
+
+                  {!esProtegido(nombre) && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Eliminar ${nombre}`}
+                      onClick={() => setAEliminar(tramite.id)}
+                      className={cn(
+                        'relative z-10 shrink-0 text-ink-3',
+                        'hover:bg-danger-soft hover:text-danger',
+                      )}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                    </Button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        </Card>
       )}
 
-      {/* Dialog de confirmación de eliminación */}
-      <Dialog open={!!tramiteAEliminar} onOpenChange={(open) => !open && setTramiteAEliminar(null)}>
+      {/* Confirmación: el único botón rojo relleno del sistema */}
+      <Dialog open={!!aEliminar} onOpenChange={(open) => !open && setAEliminar(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>¿Eliminar trámite?</DialogTitle>
+            <DialogTitle>¿Eliminar este trámite?</DialogTitle>
             <DialogDescription>
-              Esta acción no se puede deshacer. Se eliminarán todos los datos relacionados con este trámite
-              (documentos, pagos, notificaciones, mensajes, etc.).
+              Vas a borrar{' '}
+              {tramiteAEliminar
+                ? `«${tramiteAEliminar.denominacionAprobada || tramiteAEliminar.denominacionSocial1}»`
+                : 'el trámite'}{' '}
+              junto con sus documentos, pagos, notificaciones y mensajes. No se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setTramiteAEliminar(null)}
-              disabled={eliminando}
-            >
+            <Button variant="secondary" onClick={() => setAEliminar(null)} disabled={eliminando}>
               Cancelar
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleEliminar}
-              disabled={eliminando}
-            >
-              {eliminando ? 'Eliminando...' : 'Eliminar'}
+            <Button variant="danger-solid" onClick={eliminar} loading={eliminando}>
+              Eliminar definitivamente
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   )
 }

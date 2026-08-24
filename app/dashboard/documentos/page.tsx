@@ -35,26 +35,26 @@ async function DocumentosPage() {
   const getEstadoIcon = (estado: string) => {
     switch (estado) {
       case 'APROBADO':
-        return <CheckCircle className="h-5 w-5 text-green-600" />
+        return <CheckCircle className="h-5 w-5 text-success" />
       case 'RECHAZADO':
-        return <XCircle className="h-5 w-5 text-brand-600" />
+        return <XCircle className="h-5 w-5 text-primary" />
       case 'EN_REVISION':
-        return <Clock className="h-5 w-5 text-blue-600" />
+        return <Clock className="h-5 w-5 text-info" />
       default:
-        return <AlertCircle className="h-5 w-5 text-orange-600" />
+        return <AlertCircle className="h-5 w-5 text-warning" />
     }
   }
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'APROBADO':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-success-soft text-success border-success-line'
       case 'RECHAZADO':
-        return 'bg-brand-100 text-brand-800 border-brand-200'
+        return 'bg-primary-soft text-primary border-primary-line'
       case 'EN_REVISION':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-info-soft text-info border-info-line'
       default:
-        return 'bg-orange-100 text-orange-800 border-orange-200'
+        return 'bg-warning-soft text-warning border-warning-line'
     }
   }
 
@@ -88,112 +88,109 @@ async function DocumentosPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
         <div>
-          <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-2">
-            Archivos
-          </span>
-          <h1 className="text-3xl sm:text-4xl font-black text-gray-900">
-            Mis <span className="text-brand-700">Documentos</span>
+          <h1 className="text-display text-ink">
+            Mis Documentos
           </h1>
-          <p className="text-gray-500 mt-2 text-lg">
+          <p className="mt-1 text-body text-ink-2">
             Gestiona todos los documentos de tus trámites
           </p>
         </div>
-        <Link href="/dashboard/documentos/subir">
-          <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200 font-semibold">
+        <Button asChild size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise font-semibold">
+            <Link href="/dashboard/documentos/subir">
             <Upload className="h-5 w-5" />
             Subir Documento
+          </Link>
           </Button>
-        </Link>
       </div>
 
       {/* Estadísticas */}
       <div className="grid gap-6 md:grid-cols-4">
-        <Card className="hover:shadow-lg hover:border-gray-300 transition-all">
+        <Card className="hover:shadow-raise hover:border-line-strong transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-gray-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Total</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-surface-3 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-ink-2" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-gray-900">{documentos.length}</p>
-            <p className="text-xs text-gray-500 mt-1">Documentos subidos</p>
+            <p className="text-display text-ink">{documentos.length}</p>
+            <p className="text-label text-ink-2 mt-1">Documentos subidos</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg hover:border-green-200 transition-all">
+        <Card className="hover:shadow-raise hover:border-success-line transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Aprobados</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Aprobados</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-success-soft flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-success" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-green-600">
+            <p className="text-display font-semibold text-success">
               {documentos.filter(d => d.estado === 'APROBADO').length}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Documentos validados</p>
+            <p className="text-label text-ink-2 mt-1">Documentos validados</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg hover:border-blue-200 transition-all">
+        <Card className="hover:shadow-raise hover:border-info-line transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">En Revisión</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-blue-100 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">En Revisión</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-info-soft flex items-center justify-center">
+              <Clock className="h-5 w-5 text-info" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-blue-600">
+            <p className="text-display font-semibold text-info">
               {documentos.filter(d => d.estado === 'EN_REVISION').length}
             </p>
-            <p className="text-xs text-gray-500 mt-1">En proceso</p>
+            <p className="text-label text-ink-2 mt-1">En proceso</p>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg hover:border-orange-200 transition-all">
+        <Card className="hover:shadow-raise hover:border-warning-line transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pendientes</CardTitle>
-            <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
+            <CardTitle className="text-body-sm font-medium text-ink-2">Pendientes</CardTitle>
+            <div className="h-10 w-10 rounded-control bg-warning-soft flex items-center justify-center">
+              <AlertCircle className="h-5 w-5 text-warning" />
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-black text-orange-600">
+            <p className="text-display font-semibold text-warning">
               {documentos.filter(d => d.estado === 'PENDIENTE').length}
             </p>
-            <p className="text-xs text-gray-500 mt-1">Por revisar</p>
+            <p className="text-label text-ink-2 mt-1">Por revisar</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Lista de Documentos */}
       {documentos.length === 0 ? (
-        <Card className="shadow-lg">
+        <Card className="shadow-raise">
           <CardContent className="py-16">
             <div className="text-center">
-              <div className="h-20 w-20 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-6">
-                <FileText className="h-10 w-10 text-gray-400" />
+              <div className="h-20 w-20 rounded-card bg-surface-3 flex items-center justify-center mx-auto mb-6">
+                <FileText className="h-10 w-10 text-ink-3" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
+              <h3 className="text-title font-semibold text-ink mb-2">
                 No hay documentos aún
               </h3>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">
+              <p className="text-ink-2 mb-8 max-w-md mx-auto text-heading">
                 Comienza subiendo los documentos necesarios para tu trámite de constitución.
               </p>
-              <Link href="/dashboard/documentos/subir">
-                <Button size="lg" className="gap-2 bg-brand-700 hover:bg-brand-800 rounded-xl shadow-lg shadow-brand-200">
+              <Button asChild size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise">
+            <Link href="/dashboard/documentos/subir">
                   <Upload className="h-5 w-5" />
                   Subir Mi Primer Documento
-                </Button>
-              </Link>
+                </Link>
+          </Button>
             </div>
           </CardContent>
         </Card>
       ) : (
-        <Card className="shadow-lg">
-          <CardHeader className="border-b border-gray-100">
-            <CardTitle className="text-xl font-bold text-gray-900">Documentos Subidos</CardTitle>
+        <Card className="shadow-raise">
+          <CardHeader className="border-b border-line">
+            <CardTitle className="text-title font-semibold text-ink">Documentos Subidos</CardTitle>
             <CardDescription>
               Todos tus documentos organizados por trámite
             </CardDescription>
@@ -203,30 +200,30 @@ async function DocumentosPage() {
               {documentos.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between p-5 border-2 border-gray-200 rounded-2xl hover:border-gray-300 hover:shadow-lg transition-all"
+                  className="flex items-center justify-between p-card border-2 border-line rounded-card hover:border-line-strong hover:shadow-raise transition-all"
                 >
                   <div className="flex items-center gap-4 flex-1">
-                    <div className="h-12 w-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <div className="h-12 w-12 rounded-control bg-surface-3 flex items-center justify-center flex-shrink-0">
                       {getEstadoIcon(doc.estado)}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1 flex-wrap">
-                        <h4 className="font-semibold text-gray-900">{doc.nombre}</h4>
-                        <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${getEstadoColor(doc.estado)}`}>
+                        <h4 className="font-semibold text-ink">{doc.nombre}</h4>
+                        <span className={`px-3 py-1 rounded-control text-label font-medium border ${getEstadoColor(doc.estado)}`}>
                           {getEstadoTexto(doc.estado)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
-                        <span className="font-medium text-brand-700">{getTipoTexto(doc.tipo)}</span>
-                        <span className="text-gray-300">•</span>
+                      <div className="flex items-center gap-4 text-body-sm text-ink-2 flex-wrap">
+                        <span className="font-medium text-primary">{getTipoTexto(doc.tipo)}</span>
+                        <span className="text-ink-3">•</span>
                         <span>{doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1}</span>
-                        <span className="text-gray-300">•</span>
+                        <span className="text-ink-3">•</span>
                         <span>{format(new Date(doc.fechaSubida), "d 'de' MMMM, yyyy", { locale: es })}</span>
-                        <span className="text-gray-300">•</span>
+                        <span className="text-ink-3">•</span>
                         <span>{(doc.tamanio / 1024 / 1024).toFixed(2)} MB</span>
                       </div>
                       {doc.observaciones && (
-                        <p className="text-sm text-gray-600 mt-2 italic">
+                        <p className="text-body-sm text-ink-2 mt-2 italic">
                           {doc.observaciones}
                         </p>
                       )}
@@ -234,7 +231,7 @@ async function DocumentosPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a href={`/api/documentos/${doc.id}/view?download=1`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-2 rounded-xl border-gray-200 hover:border-brand-300 hover:text-brand-700">
+                      <Button variant="outline" size="sm" className="gap-2 rounded-control border-line hover:border-primary-line hover:text-primary">
                         <Download className="h-4 w-4" />
                         Descargar
                       </Button>

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { PageHeader } from '@/components/ui/page-header'
 import LeadsLista from '@/components/admin/LeadsLista'
 
 // Los campos JSON del trámite (datosUsuario, socios, administradores) no tienen
@@ -104,18 +105,12 @@ async function AdminLeadsPage() {
   })
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-brand-900">Leads</h2>
-          <p className="text-gray-600 mt-1">
-            Clientes que empezaron el formulario y no lo terminaron
-          </p>
-        </div>
-        <Link href="/dashboard/admin">
-          <Button variant="outline">← Volver al Panel</Button>
-        </Link>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        title="Leads"
+        description="Personas que empezaron el formulario y no lo terminaron."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Leads' }]}
+      />
 
       <LeadsLista leads={leads} />
     </div>

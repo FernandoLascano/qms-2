@@ -78,14 +78,14 @@ export default function ConsultasChatPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <span className="text-sm font-semibold text-brand-700 uppercase tracking-wider">Analytics</span>
-          <h1 className="text-2xl font-black text-gray-900 mt-1">Consultas del Asistente</h1>
-          <p className="text-gray-500 mt-1">Preguntas que hacen los visitantes en el chat del sitio</p>
+          <span className="text-body-sm font-semibold text-primary">Analytics</span>
+          <h1 className="text-title font-semibold text-ink mt-1">Consultas del Asistente</h1>
+          <p className="text-ink-2 mt-1">Preguntas que hacen los visitantes en el chat del sitio</p>
         </div>
         <button
           onClick={handleAnalyze}
           disabled={analyzing || total === 0}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 cursor-pointer shadow-lg shadow-purple-200"
+          className="flex items-center gap-2 px-5 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 cursor-pointer shadow-raise"
         >
           {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
           Analizar con IA
@@ -94,38 +94,38 @@ export default function ConsultasChatPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-card border border-line p-4 shadow-raise">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-info-soft rounded-control flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 text-info" />
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900">{total}</p>
-              <p className="text-xs text-gray-500">Total consultas</p>
+              <p className="text-title font-semibold text-ink">{total}</p>
+              <p className="text-label text-ink-2">Total consultas</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-card border border-line p-4 shadow-raise">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-              <Clock className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 bg-success-soft rounded-control flex items-center justify-center">
+              <Clock className="w-5 h-5 text-success" />
             </div>
             <div>
-              <p className="text-2xl font-black text-gray-900">
+              <p className="text-title font-semibold text-ink">
                 {consultas.length > 0 ? formatDate(consultas[0].createdAt).split(',')[0] : '-'}
               </p>
-              <p className="text-xs text-gray-500">Última consulta</p>
+              <p className="text-label text-ink-2">Última consulta</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm col-span-2 md:col-span-1">
+        <div className="bg-surface rounded-card border border-line p-4 shadow-raise col-span-2 md:col-span-1">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 bg-info-soft rounded-control flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-info" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900">Análisis IA</p>
-              <p className="text-xs text-gray-500">Detecta patrones y sugiere FAQs</p>
+              <p className="text-body-sm font-semibold text-ink">Análisis IA</p>
+              <p className="text-label text-ink-2">Detecta patrones y sugiere FAQs</p>
             </div>
           </div>
         </div>
@@ -133,15 +133,15 @@ export default function ConsultasChatPage() {
 
       {/* Panel de análisis IA */}
       {showAnalysis && (
-        <div className="bg-white rounded-2xl border-2 border-purple-200 shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-white">
+        <div className="bg-surface rounded-card border-2 border-info-line shadow-raise overflow-hidden">
+          <div className="bg-primary px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-on-primary">
               <Sparkles className="w-5 h-5" />
-              <span className="font-bold">Análisis de Consultas con IA</span>
+              <span className="font-semibold">Análisis de Consultas con IA</span>
             </div>
             <button
               onClick={() => setShowAnalysis(false)}
-              className="p-1 hover:bg-white/10 rounded-lg transition cursor-pointer text-white"
+              className="p-1 hover:bg-surface/10 rounded-control transition cursor-pointer text-on-primary"
             >
               <X className="w-5 h-5" />
             </button>
@@ -149,12 +149,12 @@ export default function ConsultasChatPage() {
           <div className="p-6">
             {analyzing ? (
               <div className="flex items-center justify-center py-12 gap-3">
-                <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
-                <span className="text-gray-500 font-medium">Analizando {total} consultas...</span>
+                <Loader2 className="w-6 h-6 animate-spin text-info" />
+                <span className="text-ink-2 font-medium">Analizando {total} consultas...</span>
               </div>
             ) : analysis ? (
               <div
-                className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-strong:text-gray-900"
+                className="prose prose-sm max-w-none prose-headings:text-ink prose-p:text-ink-2 prose-li:text-ink-2 prose-strong:text-ink"
                 dangerouslySetInnerHTML={{
                   __html: analysis
                     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -174,56 +174,56 @@ export default function ConsultasChatPage() {
       )}
 
       {/* Search */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+      <div className="bg-surface rounded-card border border-line shadow-raise p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3" />
           <input
             type="text"
             placeholder="Buscar en preguntas..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-line rounded-control text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Lista de consultas */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-card border border-line shadow-raise overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-700" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-line" />
           </div>
         ) : consultas.length === 0 ? (
           <div className="text-center py-20">
-            <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 font-medium">No hay consultas todavía</p>
-            <p className="text-gray-400 text-sm mt-1">Las preguntas del asistente aparecerán acá</p>
+            <MessageCircle className="w-12 h-12 text-ink-3 mx-auto mb-4" />
+            <p className="text-ink-2 font-medium">No hay consultas todavía</p>
+            <p className="text-ink-3 text-body-sm mt-1">Las preguntas del asistente aparecerán acá</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-line">
             {consultas.map((c) => (
               <div
                 key={c.id}
                 onClick={() => setSelected(selected?.id === c.id ? null : c)}
-                className="px-5 py-4 hover:bg-gray-50 transition cursor-pointer"
+                className="px-5 py-4 hover:bg-surface-2 transition cursor-pointer"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 mb-1">
+                    <p className="text-body-sm font-semibold text-ink mb-1">
                       {c.pregunta.length > 120 ? c.pregunta.substring(0, 120) + '...' : c.pregunta}
                     </p>
                     {selected?.id === c.id ? (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Respuesta del asistente:</p>
-                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{c.respuesta}</p>
+                      <div className="mt-3 p-3 bg-surface-2 rounded-control border border-line">
+                        <p className="text-label font-semibold text-ink-2 mb-2">Respuesta del asistente:</p>
+                        <p className="text-body-sm text-ink-2 leading-relaxed whitespace-pre-line">{c.respuesta}</p>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 truncate">
+                      <p className="text-label text-ink-3 truncate">
                         {c.respuesta.substring(0, 80)}...
                       </p>
                     )}
                   </div>
-                  <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                  <span className="text-label text-ink-3 whitespace-nowrap flex-shrink-0">
                     {formatDate(c.createdAt)}
                   </span>
                 </div>
@@ -234,20 +234,20 @@ export default function ConsultasChatPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">Página {page} de {totalPages}</p>
+          <div className="flex items-center justify-between px-5 py-4 border-t border-line">
+            <p className="text-body-sm text-ink-2">Página {page} de {totalPages}</p>
             <div className="flex gap-2">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="p-2 rounded-control border border-line hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="p-2 rounded-control border border-line hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>

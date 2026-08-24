@@ -15,54 +15,51 @@ import {
   Building,
   LucideIcon,
 } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 const servicios: { icon: LucideIcon; name: string; color: string }[] = [
-  { icon: FileEdit, name: 'Reformas de Estatuto', color: 'bg-amber-100 text-amber-600' },
-  { icon: FileCheck, name: 'Confección de Actas', color: 'bg-blue-100 text-blue-600' },
+  { icon: FileEdit, name: 'Reformas de Estatuto', color: 'bg-a5-soft text-a5' },
+  { icon: FileCheck, name: 'Confección de Actas', color: 'bg-a3-soft text-a3' },
   { icon: UserPlus, name: 'Designación de Autoridades', color: 'bg-pink-100 text-pink-600' },
-  { icon: UserMinus, name: 'Renuncia de Autoridades', color: 'bg-purple-100 text-purple-600' },
-  { icon: Calculator, name: 'Tratamiento de Estados Contables', color: 'bg-sky-100 text-sky-600' },
-  { icon: Building2, name: 'Cambio de Sede Social', color: 'bg-orange-100 text-orange-600' },
-  { icon: TrendingUp, name: 'Aumentos de Capital Social', color: 'bg-green-100 text-green-600' },
-  { icon: GitMerge, name: 'Fusiones', color: 'bg-blue-100 text-blue-600' },
+  { icon: UserMinus, name: 'Renuncia de Autoridades', color: 'bg-a4-soft text-a4' },
+  { icon: Calculator, name: 'Tratamiento de Estados Contables', color: 'bg-a6-soft text-a6' },
+  { icon: Building2, name: 'Cambio de Sede Social', color: 'bg-a5-soft text-a5' },
+  { icon: TrendingUp, name: 'Aumentos de Capital Social', color: 'bg-a2-soft text-a2' },
+  { icon: GitMerge, name: 'Fusiones', color: 'bg-a3-soft text-a3' },
   { icon: XCircle, name: 'Disolución/Liquidación', color: 'bg-brand-100 text-brand-600' },
-  { icon: ArrowLeftRight, name: 'Escisión', color: 'bg-blue-100 text-blue-600' },
-  { icon: Repeat, name: 'Transformación', color: 'bg-orange-100 text-orange-600' },
-  { icon: Building, name: 'Compra/Venta de Sociedades', color: 'bg-green-100 text-green-600' },
+  { icon: ArrowLeftRight, name: 'Escisión', color: 'bg-a3-soft text-a3' },
+  { icon: Repeat, name: 'Transformación', color: 'bg-a5-soft text-a5' },
+  { icon: Building, name: 'Compra/Venta de Sociedades', color: 'bg-a2-soft text-a2' },
 ]
 
 export function OtrosServicios() {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
+  const cabecera = useAlAparecer<HTMLDivElement>()
+  const grilla = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section ref={sectionRef} className="py-12 md:py-16 bg-gray-50 overflow-hidden">
+    <section className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header - estilo consistente con la página */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
+        <div ref={cabecera.ref} className={`text-center mb-8 ${cabecera.clase}`}>
           <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
             Servicios adicionales
           </span>
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+          <h2 className="text-display md:text-display-lg font-black text-ink mb-4">
             Otros{' '}
             <span className="text-brand-700">Servicios</span>
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Además ofrecemos una gran variedad de Servicios Jurídicos y Contables para tu Sociedad
           </p>
-        </motion.div>
+        </div>
 
         {/* Grid más denso: 4 columnas en desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-6xl mx-auto">
-          {servicios.map((item, index) => (
-            <motion.a
+        <div
+          ref={grilla.ref}
+          className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 max-w-6xl mx-auto ${grilla.clase}`}
+        >
+          {servicios.map((item) => (
+            <a
               key={item.name}
               href={`#contacto?asunto=${encodeURIComponent(item.name)}`}
               onClick={(e) => {
@@ -74,16 +71,13 @@ export function OtrosServicios() {
                   contacto.scrollIntoView({ behavior: 'smooth' })
                 }
               }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.3, delay: index * 0.03 }}
-              className="group flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-brand-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+              className="group flex items-center gap-3 p-3 bg-surface rounded-chip border border-line hover:border-brand-300 hover:shadow-raise transition-all duration-200 cursor-pointer"
             >
-              <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${item.color}`}>
+              <div className={`flex-shrink-0 w-9 h-9 rounded-chip flex items-center justify-center ${item.color}`}>
                 <item.icon className="w-4 h-4" />
               </div>
-              <span className="font-medium text-gray-900 text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
-            </motion.a>
+              <span className="font-medium text-ink text-xs sm:text-sm leading-tight group-hover:text-brand-700 transition-colors">{item.name}</span>
+            </a>
           ))}
         </div>
       </div>

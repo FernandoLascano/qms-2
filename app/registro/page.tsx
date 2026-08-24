@@ -9,7 +9,7 @@ import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-re
 import { trackEvent } from '@/lib/analytics'
 const GoogleSignInButton = dynamic(
   () => import('@/components/auth/google-sign-in-button').then((m) => m.GoogleSignInButton),
-  { ssr: false, loading: () => <div className="h-12 w-full rounded-xl bg-gray-100/90 animate-pulse" aria-hidden /> }
+  { ssr: false, loading: () => <div className="h-12 w-full rounded-control bg-surface-3/90 animate-pulse" aria-hidden /> }
 )
 const AuthDivider = dynamic(
   () => import('@/components/auth/google-sign-in-button').then((m) => m.AuthDivider),
@@ -105,8 +105,24 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-brand-50 to-white flex items-center justify-center p-4 py-12">
-      <div className="w-full max-w-md">
+    <div className="canvas-landing min-h-screen flex flex-col">
+      <header className="border-b border-line bg-surface/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link href="/" aria-label="Ir al inicio">
+            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" className="h-9 w-auto" />
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-body-sm font-medium text-ink-2 hover:text-primary transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver al inicio
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 flex items-center">
+      <div className="w-full max-w-md mx-auto px-4 sm:px-6 py-10">
         {siteKey && (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
@@ -117,25 +133,15 @@ export default function RegistroPage() {
 
         {/* Logo y Header */}
         <motion.div
-          className="text-center mb-8"
+          className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Link href="/" className="inline-block mb-4">
-            <img
-              src="/assets/img/qms-logo-reg.png"
-              alt="QuieroMiSAS Logo"
-              className="h-16 w-auto mx-auto"
-            />
-          </Link>
-          <span className="block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
-            Registro
-          </span>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
-            Crear <span className="text-brand-700">cuenta</span>
+          <h1 className="text-title font-semibold text-ink mb-1">
+            Crear <span className="text-primary">cuenta</span>
           </h1>
-          <p className="text-gray-500">
+          <p className="text-body-sm text-ink-2">
             Registrate para comenzar tu trámite
           </p>
         </motion.div>
@@ -145,14 +151,14 @@ export default function RegistroPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-white rounded-2xl border border-gray-200 shadow-xl p-8"
+          className="bg-surface rounded-card border border-line shadow-pop p-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-brand-50 border border-brand-200 text-brand-700 p-4 rounded-xl text-sm font-medium"
+                className="bg-primary-soft border border-primary-line text-primary p-4 rounded-control text-body-sm font-medium"
               >
                 {error}
               </motion.div>
@@ -176,12 +182,12 @@ export default function RegistroPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="name" className="text-body-sm font-semibold text-ink-2">
                 Nombre completo
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <User className="w-5 h-5 text-gray-400" />
+                  <User className="w-5 h-5 text-ink-3" />
                 </div>
                 <input
                   id="name"
@@ -192,18 +198,18 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="email" className="text-body-sm font-semibold text-ink-2">
                 Email
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Mail className="w-5 h-5 text-gray-400" />
+                  <Mail className="w-5 h-5 text-ink-3" />
                 </div>
                 <input
                   id="email"
@@ -214,18 +220,18 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-semibold text-gray-700">
-                Teléfono <span className="text-gray-400 font-normal">(opcional)</span>
+              <label htmlFor="phone" className="text-body-sm font-semibold text-ink-2">
+                Teléfono <span className="text-ink-3 font-normal">(opcional)</span>
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Phone className="w-5 h-5 text-gray-400" />
+                  <Phone className="w-5 h-5 text-ink-3" />
                 </div>
                 <input
                   id="phone"
@@ -235,18 +241,18 @@ export default function RegistroPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="password" className="text-body-sm font-semibold text-ink-2">
                 Contraseña
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Lock className="w-5 h-5 text-gray-400" />
+                  <Lock className="w-5 h-5 text-ink-3" />
                 </div>
                 <input
                   id="password"
@@ -257,19 +263,19 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
-              <p className="text-xs text-gray-400 pl-1">Debe tener al menos 6 caracteres</p>
+              <p className="text-label text-ink-3 pl-1">Debe tener al menos 6 caracteres</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
+              <label htmlFor="confirmPassword" className="text-body-sm font-semibold text-ink-2">
                 Confirmar contraseña
               </label>
               <div className="relative">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Lock className="w-5 h-5 text-gray-400" />
+                  <Lock className="w-5 h-5 text-ink-3" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -280,14 +286,14 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full h-12 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 border border-gray-200 rounded-xl focus:border-brand-300 focus:ring-2 focus:ring-brand-100 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
 
             {/* Captcha anti-spam */}
             {captchaRequired && !siteKey && (
-              <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-xl text-sm">
+              <div className="bg-warning-soft border border-warning-line text-warning p-3 rounded-control text-body-sm">
                 Falta configurar el anti-spam. Definí <code className="font-mono">NEXT_PUBLIC_TURNSTILE_SITE_KEY</code> y{' '}
                 <code className="font-mono">TURNSTILE_SECRET_KEY</code> en Vercel.
               </div>
@@ -298,7 +304,7 @@ export default function RegistroPage() {
             <button
               type="submit"
               disabled={loading || (captchaRequired && (!siteKey || !turnstileToken))}
-              className="w-full h-12 bg-brand-700 hover:bg-brand-800 text-white font-semibold text-base rounded-xl shadow-lg shadow-brand-200 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
+              className="w-full h-12 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-body rounded-control shadow-raise hover:shadow-pop transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
             >
               {loading ? (
                 <>
@@ -313,33 +319,18 @@ export default function RegistroPage() {
               )}
             </button>
 
-            <div className="text-center pt-5 border-t border-gray-100">
-              <p className="text-sm text-gray-500">
+            <div className="text-center pt-5 border-t border-line">
+              <p className="text-body-sm text-ink-2">
                 ¿Ya tenés cuenta?{' '}
-                <Link href="/login" className="text-brand-700 hover:text-brand-800 font-semibold transition">
+                <Link href="/login" className="text-primary hover:text-primary font-semibold transition">
                   Ingresá aquí
                 </Link>
               </p>
             </div>
           </form>
         </motion.div>
-
-        {/* Footer */}
-        <motion.div
-          className="text-center mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-700 transition font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al inicio
-          </Link>
-        </motion.div>
       </div>
+      </main>
     </div>
   )
 }
