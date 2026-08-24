@@ -7,7 +7,11 @@
  */
 
 // URL base para los enlaces en emails
-const BASE_URL = process.env.NEXTAUTH_URL || 'https://quieromisas.com'
+import { SITE_URL } from '@/lib/seo/site'
+
+// NEXTAUTH_URL manda; el respaldo es el dominio canónico (con www), no una
+// variante sin www que repartiría las señales entre dos orígenes.
+const BASE_URL = process.env.NEXTAUTH_URL || SITE_URL
 
 // Logo URL (hosted on the website)
 // Nota: usar versión legible sobre fondo claro (mejor compatibilidad en clientes de email)
