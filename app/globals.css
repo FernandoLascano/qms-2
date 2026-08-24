@@ -416,27 +416,27 @@ button {
   cursor: pointer;
 }
 
-/* Tipografía de los controles de formulario.
+/* Tipografía de los campos de formulario.
    ---------------------------------------------------------------------------
-   Los navegadores NO heredan la fuente en input, textarea, select ni button:
-   sin esto, cada sistema operativo dibuja lo que el usuario escribe con su
-   tipografía por defecto. Se veía como si los campos usaran otra fuente que el
-   resto del panel, porque efectivamente la usaban.
+   Los controles del panel escritos a mano llevan `text-body-sm` (13px) mientras
+   el texto de alrededor va a 15px, y ese salto se lee como un quiebre de
+   estilo. Esta regla queda FUERA de toda capa a propósito: en Tailwind v4 las
+   utilidades viven en `@layer utilities`, y una declaración sin capa le gana a
+   cualquier capa sin importar la especificidad. Eso es lo que hace que valga
+   sobre los 99 controles sin tocarlos de a uno.
 
-   El tamaño también se unifica: los campos venían a 13px mientras el texto del
-   panel va a 15px, y ese salto se leía como un quiebre de estilo. Va como capa
-   base para que valga en los 143 controles del panel, incluidos los que están
-   escritos a mano y no pasan por components/ui/input.tsx. Cualquier clase de
-   Tailwind en el elemento sigue ganando, porque los selectores de elemento
-   tienen menos peso.                                                          */
+   Por esa misma razón NO puede incluir `button` ni declarar `color`:
+   · `color: inherit` acá pisaba `text-white` y `text-on-primary`, y dejaba los
+     botones de la portada con letra oscura sobre fondo rojo.
+   · `font-size` acá pisaba la escala del componente Button, donde los tamaños
+     sm y md van a 13px por diseño.
+   Las dos cosas ya las cubre el preflight de Tailwind desde `@layer base`
+   (`font: inherit; color: inherit`), que sí deja ganar a las utilidades.      */
 input,
 textarea,
-select,
-button {
-  font-family: inherit;
+select {
   font-size: var(--text-body);
   line-height: var(--text-body--line-height);
-  color: inherit;
 }
 
 /* El select nativo no aplica line-height como el resto: se lo centra por
