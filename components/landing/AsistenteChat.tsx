@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { leerAtribucion } from '@/lib/leads/atribucion-cliente'
 import Script from 'next/script'
 import { MessageCircle, Send, X, Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -22,6 +23,41 @@ export function AsistenteChat() {
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  // Captura de contacto. Es opcional y no corta la conversación: pedirle los
+  // datos a alguien que todavía está entendiendo qué es una S.A.S. es la mejor
+  // forma de que se vaya. Hasta ahora el chat era anónimo y no había manera de
+  // responderle a nadie.
+  const [emailLead, setEmailLead] = useState('')
+  const [dejoEmail, setDejoEmail] = useState(false)
+  const [ocultarCaptura, setOcultarCaptura] = useState(false)
+  const [guardandoEmail, setGuardandoEmail] = useState(false)
+
+  const respuestas = messages.filter((m) => m.role === 'assistant').length
+  const mostrarCaptura = respuestas >= 2 && !dejoEmail && !ocultarCaptura
+
+  const guardarEmail = async () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLead)) return
+    setGuardandoEmail(true)
+    try {
+      const res = await fetch('/api/leads/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailLead,
+          consulta: messages
+            .filter((m) => m.role === 'user')
+            .map((m) => m.content)
+            .join('\n\n'),
+          atribucion: leerAtribucion(),
+        }),
+      })
+      if (res.ok) setDejoEmail(true)
+    } catch {
+      // Silencioso: es un extra, no puede arruinar la conversación.
+    } finally {
+      setGuardandoEmail(false)
+    }
+  }
 
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const captchaRequired = process.env.NODE_ENV === 'production' && !session?.user
@@ -157,6 +193,46 @@ export function AsistenteChat() {
                   </div>
                 </div>
               ))
+            )}
+
+            {mostrarCaptura && (
+              <div className="rounded-card border border-line bg-surface p-4 shadow-card">
+                <p className="text-sm font-medium text-n-800">¿Querés que te sigamos por email?</p>
+                <p className="mt-1 text-xs text-n-500">
+                  Te escribimos para despejar lo que te haya quedado dando vueltas. Podés seguir
+                  preguntando acá igual.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="email"
+                    value={emailLead}
+                    onChange={(e) => setEmailLead(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') guardarEmail() }}
+                    placeholder="tu@email.com"
+                    aria-label="Tu email"
+                    className="flex-1 rounded-control border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    onClick={guardarEmail}
+                    disabled={guardandoEmail}
+                    className="rounded-control bg-brand-700 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-800 disabled:opacity-50"
+                  >
+                    Enviar
+                  </button>
+                </div>
+                <button
+                  onClick={() => setOcultarCaptura(true)}
+                  className="mt-2 text-xs text-n-400 underline underline-offset-2 hover:text-n-600"
+                >
+                  No, gracias
+                </button>
+              </div>
+            )}
+
+            {dejoEmail && (
+              <div className="rounded-card border border-line bg-surface p-4 text-sm text-n-700 shadow-card">
+                Listo, te vamos a escribir. Seguí preguntando lo que quieras.
+              </div>
             )}
             {loading && (
               <div className="flex justify-start">
