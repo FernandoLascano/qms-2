@@ -533,7 +533,7 @@ export default function HomePage({
               </div>
 
               <a
-                href="https://martinezwehbe.com.ar/"
+                href="https://www.martinezwehbe.org/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Grupo MW — Martínez Wehbe & Asociados (se abre en una pestaña nueva)"
