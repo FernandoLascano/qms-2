@@ -25,6 +25,15 @@ const sampleData: Record<string, Record<string, unknown>> = {
   emailNotificacion: { nombre: 'Fernando', titulo: 'Novedad en tu trámite', mensaje: 'Hemos actualizado el estado de tu solicitud. Ingresá al panel para ver los detalles.', tramiteId: 'cltx123' },
   emailRecordatorioPago: { nombre: 'Fernando', concepto: 'Plan Emprendedor', monto: 320000, diasPendientes: 3, tramiteId: 'cltx123' },
   emailRecordatorioDocumento: { nombre: 'Fernando', nombreDocumento: 'DNI', observaciones: 'Subir documento de identidad', diasPendientes: 2, tramiteId: 'cltx123' },
+  emailLeadSecuencia: {
+    nombre: 'Fernando',
+    cuerpo:
+      'Te frenaste justo en el paso del domicilio, que es donde se traba casi todo el mundo.\n\n' +
+      'La sede social de tu S.A.S. tiene que estar en Córdoba o en CABA, pero eso no significa que tengas que vivir ahí ni alquilar una oficina. Si no tenés dónde fijarla, te la damos nosotros y queda resuelto.\n\n' +
+      'Tu empresa después puede operar en todo el país, sin importar dónde se constituyó.',
+    tramiteId: 'cltx123',
+    ultimo: false,
+  },
   emailRecordatorioTramiteEstancado: { nombre: 'Fernando', etapaActual: 'Pago pendiente', diasEstancado: 7, tramiteId: 'cltx123' },
   emailAlertaDenominacion: { nombre: 'Fernando', denominacion: 'Mi Empresa S.A.S.', diasParaVencer: 5, tramiteId: 'cltx123' },
   emailValidacionTramite: { nombre: 'Fernando', denominacion: 'Mi Empresa S.A.S.', validado: true, observaciones: undefined, tramiteId: 'cltx123' },

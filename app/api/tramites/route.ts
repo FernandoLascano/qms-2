@@ -136,6 +136,10 @@ export async function POST(request: Request) {
       asesoramientoContable: data.asesoramientoContable || false,
       ciudad: data.ciudad || '',
       departamento: data.departamento || '',
+      // Dónde vive la persona, que no es lo mismo que la sede de la sociedad.
+      // Es el dato que permite saber de antemano a quién se le va a trabar el
+      // paso del domicilio: hoy estaba vacío en 24 de 25 borradores.
+      provinciaResidencia: data.provinciaResidencia || '',
       sinDomicilio: data.sinDomicilio || false,
       objetoSocial: data.objetoSocial || 'PRE_APROBADO',
       objetoPersonalizado: data.objetoPersonalizado || ''

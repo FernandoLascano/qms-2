@@ -248,6 +248,26 @@ export async function enviarRecordatorioTramiteEstancado(
   })
 }
 
+/**
+ * Un toque de la secuencia de recuperación. El asunto y el cuerpo vienen de
+ * lib/leads/mensajes.ts, que los elige según en qué paso se frenó la persona.
+ */
+export async function enviarToqueLead(
+  email: string,
+  nombre: string,
+  asunto: string,
+  cuerpo: string,
+  tramiteId: string,
+  ultimo: boolean,
+) {
+  return sendEmail({
+    to: email,
+    subject: asunto,
+    template: 'emailLeadSecuencia',
+    data: { nombre, cuerpo, tramiteId, ultimo }
+  })
+}
+
 export async function enviarAlertaDenominacion(
   email: string,
   nombre: string,

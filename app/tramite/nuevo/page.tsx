@@ -20,6 +20,13 @@ import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { trackEvent } from '@/lib/analytics'
 
+const PROVINCIAS_AR = [
+  'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
+  'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones',
+  'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
+  'Santiago del Estero', 'Tierra del Fuego', 'Tucumán', 'Otro país',
+]
+
 const PASOS = [
   { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
   { id: 2, nombre: 'Nombre', descripcion: 'Marca de la sociedad', icon: Building2 },
@@ -68,6 +75,7 @@ interface FormData {
   objetoSocial: 'PREAPROBADO' | 'PERSONALIZADO'
   objetoPersonalizado: string
   sinDomicilio: boolean
+  provinciaResidencia: string
   domicilio: string
   ciudad: string
   departamento: string
@@ -150,6 +158,7 @@ export default function NuevoTramitePage() {
     objetoSocial: 'PREAPROBADO',
     objetoPersonalizado: '',
     sinDomicilio: false,
+    provinciaResidencia: '',
     domicilio: '',
     ciudad: '',
     departamento: '',
@@ -308,6 +317,7 @@ export default function NuevoTramitePage() {
                 objetoSocial: esPreAprobado ? 'PREAPROBADO' : 'PERSONALIZADO',
                 objetoPersonalizado: esPreAprobado ? '' : (draft.objetoSocial || ''),
                 sinDomicilio: draft.domicilioLegal === 'A informar' || draft.domicilioLegal === '',
+                provinciaResidencia: datosUsuario.provinciaResidencia || '',
                 domicilio: domicilioParsed,
                 ciudad: ciudadParsed,
                 departamento: departamentoParsed,
@@ -905,6 +915,29 @@ export default function NuevoTramitePage() {
                       autoComplete="email"
                     />
                   </div>
+
+                  {/* Dónde vive la persona, no dónde va la sede.
+                      Es opcional a propósito: sirve para anticipar la
+                      conversación del domicilio —el paso donde se cae casi todo
+                      el mundo— sin agregar una fricción más al formulario. */}
+                  <div className="sm:col-span-2 lg:col-span-1">
+                    <Label htmlFor="provinciaResidencia">¿En qué provincia vivís?</Label>
+                    <Select
+                      id="provinciaResidencia"
+                      name="provinciaResidencia"
+                      value={formData.provinciaResidencia}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Prefiero no decirlo</option>
+                      {PROVINCIAS_AR.map((prov) => (
+                        <option key={prov} value={prov}>{prov}</option>
+                      ))}
+                    </Select>
+                    <p className="mt-1 text-label text-ink-2">
+                      No hace falta vivir en Córdoba para constituir acá. Nos sirve para
+                      saber si vas a necesitar que te demos el domicilio.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="border-t border-line pt-6">
@@ -1110,21 +1143,63 @@ export default function NuevoTramitePage() {
                 </div>
                 <div className="border-t border-line pt-6">
                   <h3 className="font-semibold text-heading text-ink mb-2">Domicilio Social</h3>
-                  <div className="bg-primary-soft border border-primary-line rounded-control p-3 mb-4">
-                    <p className="text-body-sm text-primary">ℹ️ Jurisdicción: {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</p>
+
+                  {/* La explicación va ANTES de pedir la dirección, no escondida
+                      detrás de una casilla que hay que descubrir.
+                      Medido sobre los borradores abandonados: de 8 personas que
+                      eligen denominación, sólo 1 llega a cargar un domicilio.
+                      Es el acantilado más grande del formulario, y la causa es
+                      que alguien de otra provincia ve que le piden una dirección
+                      en Córdoba y se va creyendo que el trámite no es para él. */}
+                  <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                    <div className="space-y-1">
+                      <p className="text-body-sm text-ink">
+                        La sede social tiene que estar en{' '}
+                        <span className="font-semibold">
+                          {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}
+                        </span>
+                        , pero <span className="font-semibold">no hace falta que vivas ahí</span>.
+                      </p>
+                      <p className="text-body-sm text-ink-2">
+                        Si no tenés una dirección para fijarla, te la damos nosotros y
+                        seguís sin problema. Tu empresa después puede operar en todo el
+                        país, sin importar dónde se constituyó.
+                      </p>
+                    </div>
                   </div>
-                  <div className="mb-4">
-                    <label className="flex items-center gap-2">
-                      <input type="checkbox" name="sinDomicilio" checked={formData.sinDomicilio} onChange={handleInputChange} className="rounded" />
-                      <span className="text-body-sm font-medium text-ink">No dispongo de domicilio</span>
+
+                  <div className="mb-4 space-y-2">
+                    <p className="text-body-sm font-medium text-ink">¿Tenés una dirección para la sede?</p>
+                    <label className="flex cursor-pointer items-start gap-3 rounded-control border border-line bg-surface p-3 hover:border-primary-line">
+                      <input
+                        type="radio"
+                        name="sinDomicilio"
+                        checked={!formData.sinDomicilio}
+                        onChange={() => setFormData(prev => ({ ...prev, sinDomicilio: false }))}
+                        className="mt-0.5"
+                      />
+                      <span>
+                        <span className="block text-body-sm font-medium text-ink">Sí, tengo una</span>
+                        <span className="block text-label text-ink-2">La cargo acá abajo</span>
+                      </span>
                     </label>
-                    {formData.sinDomicilio && (
-                      <div className="mt-2 ml-6 bg-warning-soft border border-warning-line rounded-control p-3">
-                        <p className="text-body-sm text-warning">
-                          💡 Por un costo extra anual (que te será informado una vez terminado el formulario), QMS QuieroMiSAS puede proporcionarte un domicilio en Córdoba.
-                        </p>
-                      </div>
-                    )}
+                    <label className="flex cursor-pointer items-start gap-3 rounded-control border border-line bg-surface p-3 hover:border-primary-line">
+                      <input
+                        type="radio"
+                        name="sinDomicilio"
+                        checked={formData.sinDomicilio}
+                        onChange={() => setFormData(prev => ({ ...prev, sinDomicilio: true }))}
+                        className="mt-0.5"
+                      />
+                      <span>
+                        <span className="block text-body-sm font-medium text-ink">No tengo, quiero que me la den ustedes</span>
+                        <span className="block text-label text-ink-2">
+                          Es un servicio anual. Te decimos cuánto sale antes de cobrarte nada,
+                          y no te frena para terminar el formulario.
+                        </span>
+                      </span>
+                    </label>
                   </div>
                   {!formData.sinDomicilio && (
                     <div className="space-y-4">

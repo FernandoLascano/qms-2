@@ -5,8 +5,11 @@ import {
   enviarRecordatorioPago,
   enviarRecordatorioDocumento,
   enviarRecordatorioTramiteEstancado,
-  enviarAlertaDenominacion
+  enviarAlertaDenominacion,
+  enviarToqueLead
 } from '@/lib/emails/send'
+import { leerDatosUsuario, segmentoDe } from '@/lib/leads/avance'
+import { mensajeEmail, TOQUES } from '@/lib/leads/mensajes'
 
 // Verificar token de seguridad para cron jobs (timing-safe)
 function verificarAutorizacion(request: Request) {
@@ -60,6 +63,7 @@ export async function GET(request: Request) {
     documentosRechazados: 0,
     tramitesEstancados: 0,
     denominacionesPorVencer: 0,
+    toquesLeads: 0,
     errores: [] as string[]
   }
 
@@ -393,6 +397,82 @@ export async function GET(request: Request) {
         } catch {
           resultados.errores.push(`Denominación ${tramite.id}: error al enviar alerta`)
         }
+      }
+    })
+
+    // ==========================================
+    // 5. SECUENCIA DE RECUPERACIÓN DE BORRADORES
+    // ==========================================
+    //
+    // Reemplaza al recordatorio único que existía antes, que se gastaba de una
+    // sola vez por trámite: 21 de los 25 borradores ya lo habían consumido y no
+    // iban a recibir nada nunca más.
+    //
+    // Sólo entran los abandonos RECIENTES. Escribirle cuatro veces seguidas a
+    // alguien que se registró hace medio año y no volvió no es seguimiento, es
+    // molestar: esos quedan para trabajar a mano desde la pantalla de leads.
+    const VENTANA_DIAS = 30
+
+    const limiteViejo = new Date()
+    limiteViejo.setDate(limiteViejo.getDate() - VENTANA_DIAS)
+
+    const borradores = await prisma.tramite.findMany({
+      where: {
+        formularioCompleto: false,
+        leadEstado: { notIn: ['CONVERTIDO', 'DESCARTADO'] },
+        leadToquesEnviados: { lt: TOQUES.length },
+        updatedAt: { gte: limiteViejo },
+      },
+      include: { user: { select: { email: true, name: true } } },
+    })
+
+    await runWithConcurrency(borradores, EMAIL_CONCURRENCY, async (tramite) => {
+      const dias = Math.floor(
+        (Date.now() - tramite.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
+      )
+
+      const indice = tramite.leadToquesEnviados
+      const diaDelToque = TOQUES[indice]
+      if (dias < diaDelToque) return
+
+      // Además de haber vencido, tiene que haber pasado el espacio que separa a
+      // este toque del anterior. Sin esto, alguien que abandonó hace 23 días
+      // tendría los cuatro toques vencidos de entrada y recibiría los cuatro
+      // mails en cuatro días seguidos.
+      if (indice > 0) {
+        const separacion = TOQUES[indice] - TOQUES[indice - 1]
+        const desdeUltimo = tramite.leadUltimoToque
+          ? Math.floor((Date.now() - tramite.leadUltimoToque.getTime()) / (1000 * 60 * 60 * 24))
+          : separacion
+        if (desdeUltimo < separacion) return
+      }
+
+      const datos = leerDatosUsuario(tramite.datosUsuario)
+      const email = datos.email || tramite.user.email
+      if (!email) return
+
+      const nombre =
+        `${datos.nombre || ''} ${datos.apellido || ''}`.trim() || tramite.user.name || ''
+
+      const mensaje = mensajeEmail(segmentoDe(tramite), diaDelToque, nombre)
+      const ultimo = indice === TOQUES.length - 1
+
+      try {
+        await enviarToqueLead(email, nombre, mensaje.asunto, mensaje.texto, tramite.id, ultimo)
+
+        // Se registra SIEMPRE después de enviar: si algo falla el contador no
+        // avanza y el toque se reintenta mañana, en vez de perderse.
+        await prisma.tramite.update({
+          where: { id: tramite.id },
+          data: {
+            leadToquesEnviados: { increment: 1 },
+            leadUltimoToque: new Date(),
+          },
+        })
+
+        resultados.toquesLeads++
+      } catch {
+        resultados.errores.push(`Lead ${tramite.id}: error al enviar el toque ${indice + 1}`)
       }
     })
 
