@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FileInput } from '@/components/ui/file-input'
 import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X } from 'lucide-react'
+import { EmailHtml } from '@/components/admin/EmailHtml'
 
 interface EmailDetail {
   id: string
@@ -367,10 +368,7 @@ export default function EmailDetailPage() {
         {/* Email Body */}
         <div className="p-6">
           {email.bodyHtml ? (
-            <div
-              className="prose prose-sm max-w-none [&_*]:!text-ink [&_a]:!text-primary"
-              dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
-            />
+            <EmailHtml html={email.bodyHtml} />
           ) : (
             <pre className="whitespace-pre-wrap text-body-sm text-ink font-sans leading-relaxed">
               {email.bodyText || 'Sin contenido'}
