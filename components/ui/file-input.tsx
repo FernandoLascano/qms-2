@@ -94,7 +94,14 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
     }
 
     return (
-      <div className={cn('w-full', className)}>
+      /* `relative` no es decorativo: el <input> de abajo es `sr-only`, que en
+         Tailwind significa `position: absolute` SIN top ni left. Sin un ancestro
+         posicionado, su bloque contenedor pasa a ser la página entera, y el
+         input queda anclado a su posición estática en coordenadas del documento
+         —fuera del <main> que scrollea—. Eso estiraba el alto del documento
+         hasta donde cayera el input: en la pantalla de un trámite con
+         documentos, 419px de scroll en blanco por debajo del panel. */
+      <div className={cn('relative w-full', className)}>
         <input
           {...props}
           ref={(nodo) => {
