@@ -72,6 +72,14 @@ async function TramitesPage() {
               ? `/dashboard/tramites/${tramite.id}`
               : `/tramite/nuevo?tramiteId=${tramite.id}`
 
+            /* Un borrador no es un trámite, y hasta acá se veía igual: mismo
+               título, mismo capital, mismos socios, y sólo el badge los
+               distinguía. Hay clientes con dos entradas del MISMO nombre —una
+               enviada y un borrador que dejó el autoguardado— y no había forma
+               de saber cuál era cuál de un vistazo. La tarjeta del borrador
+               pasa a decir qué es y qué hacer con ella. */
+            const esBorrador = !tramite.formularioCompleto
+
             return (
               <Link key={tramite.id} href={href} className="block rounded-card">
                 <Card interactive tone={completo ? 'success' : 'default'}>
@@ -79,27 +87,43 @@ async function TramitesPage() {
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h2 className="truncate text-heading text-ink">
-                          {tramite.denominacionAprobada || tramite.denominacionSocial1}
+                          {esBorrador
+                            ? 'Formulario sin terminar'
+                            : tramite.denominacionAprobada || tramite.denominacionSocial1}
                         </h2>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-ink-2">
-                          <span className="inline-flex items-center gap-2">
-                            <Calendar className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-                            {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", {
-                              locale: es,
-                            })}
-                          </span>
-                          <span className="inline-flex items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-                            {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
-                          </span>
-                          <span className="inline-flex items-center gap-2">
-                            <Users className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-                            {socios.length} {socios.length === 1 ? 'socio' : 'socios'}
-                          </span>
-                          <span className="tnum">
-                            Capital ${tramite.capitalSocial.toLocaleString('es-AR')}
-                          </span>
-                        </div>
+
+                        {esBorrador ? (
+                          <p className="mt-1 text-body-sm text-ink-2">
+                            {tramite.denominacionSocial1 !== 'Pendiente de definir' ? (
+                              <>
+                                Para <span className="font-medium text-ink">{tramite.denominacionSocial1}</span>.{' '}
+                              </>
+                            ) : null}
+                            Lo empezaste el{' '}
+                            {format(new Date(tramite.createdAt), "d 'de' MMMM", { locale: es })} y
+                            quedó sin enviar. Tocá para continuar donde lo dejaste.
+                          </p>
+                        ) : (
+                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-ink-2">
+                            <span className="inline-flex items-center gap-2">
+                              <Calendar className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                              {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", {
+                                locale: es,
+                              })}
+                            </span>
+                            <span className="inline-flex items-center gap-2">
+                              <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                              {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+                            </span>
+                            <span className="inline-flex items-center gap-2">
+                              <Users className="h-3.5 w-3.5 text-ink-3" aria-hidden />
+                              {socios.length} {socios.length === 1 ? 'socio' : 'socios'}
+                            </span>
+                            <span className="tnum">
+                              Capital ${tramite.capitalSocial.toLocaleString('es-AR')}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex shrink-0 items-center gap-3">
@@ -110,11 +134,16 @@ async function TramitesPage() {
                       </div>
                     </div>
 
-                    <LabeledProgress
-                      value={progreso}
-                      caption={etapaActual(tramite, 'cliente')}
-                      tone={completo ? 'success' : 'primary'}
-                    />
+                    {/* En un borrador la barra medía el avance del trámite, que
+                        todavía no arrancó: marcaba 8% y parecía un trámite
+                        frenado en vez de un formulario a medio llenar. */}
+                    {!esBorrador && (
+                      <LabeledProgress
+                        value={progreso}
+                        caption={etapaActual(tramite, 'cliente')}
+                        tone={completo ? 'success' : 'primary'}
+                      />
+                    )}
                   </CardBody>
                 </Card>
               </Link>
