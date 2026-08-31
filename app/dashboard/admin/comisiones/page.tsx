@@ -36,10 +36,14 @@ type Movimiento = {
 }
 type Liquidacion = { periodo: string; beneficiario: Beneficiario; monto: number; pagado: boolean; fechaPago: string | null }
 type Distribucion = { id: string; fecha: string; beneficiario: Beneficiario; monto: number; notas: string | null }
+type Gasto = { id: string; fecha: string; concepto: string; monto: number; imputadoA: Beneficiario | null; notas: string | null }
 
 const fmt = (n: number) =>
   '$' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-const fmtFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR')
+/* Las fechas se guardan como medianoche UTC. Sin fijar la zona, el navegador
+   las pasa a hora argentina (UTC−3) y retrocede un día: un gasto cargado el 31
+   se mostraba el 30. `periodoDeISO`, acá abajo, ya leía en UTC por esto mismo. */
+const fmtFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { timeZone: 'UTC' })
 const periodoDeISO = (iso: string) => {
   const d = new Date(iso)
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
@@ -56,6 +60,7 @@ export default function ComisionesPage() {
   const [mostrarAlta, setMostrarAlta] = useState(false)
   const [liquidaciones, setLiquidaciones] = useState<Liquidacion[]>([])
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
+  const [gastos, setGastos] = useState<Gasto[]>([])
   const [porcentajes, setPorcentajes] = useState<Porcentajes>(PORCENTAJES_DEFAULT)
 
   const movimientosFiltrados = useMemo(() => {
@@ -78,6 +83,7 @@ export default function ComisionesPage() {
   const [nuevo, setNuevo] = useState({ fecha: hoy.toISOString().slice(0, 10), cliente: '', asunto: '', monto: '', originador: 'NINGUNO' as Originador, notas: '' })
   // Form distribución fondo
   const [dist, setDist] = useState({ fecha: hoy.toISOString().slice(0, 10), beneficiario: 'FERNANDO' as Beneficiario, monto: '', notas: '' })
+  const [gasto, setGasto] = useState({ fecha: hoy.toISOString().slice(0, 10), concepto: '', monto: '', imputadoA: '' as '' | Beneficiario, notas: '' })
   const [periodoSel, setPeriodoSel] = useState(periodoActual)
 
   async function cargar() {
@@ -88,6 +94,7 @@ export default function ComisionesPage() {
       setMovimientos(data.movimientos)
       setLiquidaciones(data.liquidaciones)
       setDistribuciones(data.distribucionesFondo)
+      setGastos(data.gastosFondo ?? [])
       setPorcentajes(data.porcentajes)
     } catch {
       toast.error('Error al cargar comisiones')
@@ -113,6 +120,25 @@ export default function ComisionesPage() {
 
   const distFernando = distribuciones.filter((d) => d.beneficiario === 'FERNANDO').reduce((a, d) => a + d.monto, 0)
   const distJustiniano = distribuciones.filter((d) => d.beneficiario === 'JUSTINIANO').reduce((a, d) => a + d.monto, 0)
+
+  /* Un gasto sin imputar es común a los dos y se reparte en la MISMA
+     proporción en que se formó el fondo: hoy 12 y 8, o sea 60/40. Sale de la
+     configuración y no de un número escrito a mano, así que si mañana cambian
+     los porcentajes el reparto de los gastos los sigue solo. */
+  const pctF = porcentajes.fondoFernando
+  const pctJ = porcentajes.fondoJustiniano
+  const parteF = pctF + pctJ > 0 ? pctF / (pctF + pctJ) : 0.5
+
+  const gastoDe = (b: Beneficiario) =>
+    gastos.reduce((a, g) => {
+      if (g.imputadoA === b) return a + g.monto
+      if (g.imputadoA === null) return a + g.monto * (b === 'FERNANDO' ? parteF : 1 - parteF)
+      return a
+    }, 0)
+
+  const gastoFernando = gastoDe('FERNANDO')
+  const gastoJustiniano = gastoDe('JUSTINIANO')
+  const gastosTotal = gastos.reduce((a, g) => a + g.monto, 0)
 
   async function sincronizar() {
     setSaving(true)
@@ -220,6 +246,45 @@ export default function ComisionesPage() {
       toast.error(e.message || 'Error')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function agregarGasto() {
+    if (!gasto.concepto.trim()) return toast.error('Escribí en qué se gastó')
+    if (!Number(gasto.monto)) return toast.error('Poné el monto')
+    setSaving(true)
+    try {
+      const res = await fetch('/api/admin/comisiones/gastos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fecha: gasto.fecha,
+          concepto: gasto.concepto.trim(),
+          monto: Number(gasto.monto),
+          imputadoA: gasto.imputadoA || null,
+          notas: gasto.notas.trim() || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success('Gasto registrado')
+      setGasto({ ...gasto, concepto: '', monto: '', notas: '' })
+      cargar()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo registrar el gasto')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function eliminarGasto(id: string) {
+    try {
+      const res = await fetch(`/api/admin/comisiones/gastos?id=${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('No se pudo eliminar')
+      toast.success('Gasto eliminado')
+      cargar()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo eliminar el gasto')
     }
   }
 
@@ -558,13 +623,23 @@ export default function ComisionesPage() {
             {(['FERNANDO', 'JUSTINIANO'] as Beneficiario[]).map((b) => {
               const acum = b === 'FERNANDO' ? totalesHistorico.fondoFernando : totalesHistorico.fondoJustiniano
               const distrib = b === 'FERNANDO' ? distFernando : distJustiniano
+              const gasto_ = b === 'FERNANDO' ? gastoFernando : gastoJustiniano
               return (
                 <Card key={b}>
                   <CardHeader><CardTitle variant="section">Fondo {BENEFICIARIO_LABEL[b]}</CardTitle></CardHeader>
                   <CardContent className="space-y-1 text-body-sm">
                     <div className="flex justify-between"><span className="text-ink-2">Acumulado histórico</span><span className="text-ink">{fmt(acum)}</span></div>
                     <div className="flex justify-between"><span className="text-ink-2">Distribuido</span><span className="text-ink">− {fmt(distrib)}</span></div>
-                    <div className="flex justify-between border-t border-line pt-1 font-semibold"><span className="text-ink">Saldo disponible</span><span className="text-success">{fmt(acum - distrib)}</span></div>
+                    <div className="flex justify-between">
+                      <span className="text-ink-2">Gastos del fondo</span>
+                      <span className="text-ink">− {fmt(gasto_)}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-line pt-1 font-semibold">
+                      <span className="text-ink">Saldo disponible</span>
+                      <span className={acum - distrib - gasto_ < 0 ? 'text-danger' : 'text-success'}>
+                        {fmt(acum - distrib - gasto_)}
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
               )
@@ -587,6 +662,104 @@ export default function ComisionesPage() {
                 <div className="md:col-span-1"><Label>Nota</Label><Input value={dist.notas} onChange={(e) => setDist({ ...dist, notas: e.target.value })} placeholder="Acuerdo…" /></div>
                 <div><Button onClick={agregarDistribucion} disabled={saving} className="gap-2 w-full"><Plus className="h-4 w-4" /> Registrar</Button></div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle variant="section">Registrar gasto del fondo</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-body-sm text-ink-2">
+                Algo que se pagó con plata del fondo: una suscripción, un servicio, una
+                herramienta. No es una distribución — no lo cobró ninguno de los dos, se
+                consumió.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+                <div>
+                  <Label>Fecha</Label>
+                  <Input type="date" value={gasto.fecha} onChange={(e) => setGasto({ ...gasto, fecha: e.target.value })} />
+                </div>
+                <div className="md:col-span-2">
+                  <Label>¿En qué se gastó?</Label>
+                  <Input value={gasto.concepto} onChange={(e) => setGasto({ ...gasto, concepto: e.target.value })} placeholder="Suscripción, servicio, herramienta…" />
+                </div>
+                <div>
+                  <Label>Monto</Label>
+                  <Input type="number" value={gasto.monto} onChange={(e) => setGasto({ ...gasto, monto: e.target.value })} placeholder="0" />
+                </div>
+                <div>
+                  <Label>Se le imputa a</Label>
+                  <select
+                    value={gasto.imputadoA}
+                    onChange={(e) => setGasto({ ...gasto, imputadoA: e.target.value as '' | Beneficiario })}
+                    className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink"
+                  >
+                    <option value="">Los dos ({Math.round(parteF * 100)}/{100 - Math.round(parteF * 100)})</option>
+                    <option value="FERNANDO">Solo Fernando</option>
+                    <option value="JUSTINIANO">Solo Justiniano</option>
+                  </select>
+                </div>
+                <div>
+                  <Button onClick={agregarGasto} disabled={saving} className="gap-2 w-full">
+                    <Plus className="h-4 w-4" /> Registrar
+                  </Button>
+                </div>
+              </div>
+              <p className="text-label text-ink-3">
+                «Los dos» reparte el gasto en la misma proporción en que se forma el fondo
+                ({pctF}% y {pctJ}%), que es lo normal cuando el gasto sirve para el negocio
+                y no para uno solo.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle variant="section">Gastos del fondo</CardTitle>
+            </CardHeader>
+            <CardContent className="overflow-x-auto">
+              <table className="w-full text-body-sm text-ink">
+                <thead>
+                  <tr className="text-left text-ink-2 border-b border-line">
+                    <th className="py-2 pr-3">Fecha</th>
+                    <th className="pr-3">Concepto</th>
+                    <th className="pr-3 text-right">Monto</th>
+                    <th className="pr-3">Imputado a</th>
+                    <th className="pr-3">Nota</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gastos.length === 0 && (
+                    <tr><td colSpan={6} className="py-6 text-center text-ink-2">Sin gastos registrados.</td></tr>
+                  )}
+                  {gastos.map((g) => (
+                    <tr key={g.id} className="border-b border-line last:border-0">
+                      <td className="py-2 pr-3">{fmtFecha(g.fecha)}</td>
+                      <td className="pr-3">{g.concepto}</td>
+                      <td className="pr-3 text-right">{fmt(g.monto)}</td>
+                      <td className="pr-3 text-ink-2">
+                        {g.imputadoA ? BENEFICIARIO_LABEL[g.imputadoA] : 'Los dos'}
+                      </td>
+                      <td className="pr-3 text-ink-2">{g.notas || '—'}</td>
+                      <td className="text-right">
+                        <button onClick={() => eliminarGasto(g.id)} className="text-ink-2 hover:text-danger p-1" aria-label="Eliminar gasto">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {gastos.length > 0 && (
+                    <tr className="border-t border-line-strong font-semibold">
+                      <td className="py-2 pr-3">Total</td>
+                      <td></td>
+                      <td className="pr-3 text-right">{fmt(gastosTotal)}</td>
+                      <td colSpan={3}></td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </CardContent>
           </Card>
 

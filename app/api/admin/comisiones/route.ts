@@ -17,14 +17,15 @@ export async function GET() {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const [porcentajes, movimientos, liquidaciones, distribucionesFondo] = await Promise.all([
+    const [porcentajes, movimientos, liquidaciones, distribucionesFondo, gastosFondo] = await Promise.all([
       getPorcentajes(),
       prisma.movimientoComision.findMany({ where: { excluido: false }, orderBy: { fecha: 'desc' } }),
       prisma.liquidacionPago.findMany(),
       prisma.distribucionFondo.findMany({ orderBy: { fecha: 'desc' } }),
+      prisma.gastoFondo.findMany({ orderBy: { fecha: 'desc' } }),
     ])
 
-    return NextResponse.json({ porcentajes, movimientos, liquidaciones, distribucionesFondo })
+    return NextResponse.json({ porcentajes, movimientos, liquidaciones, distribucionesFondo, gastosFondo })
   } catch {
     return NextResponse.json({ error: 'Error al cargar comisiones' }, { status: 500 })
   }
