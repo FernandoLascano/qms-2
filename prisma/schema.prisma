@@ -532,6 +532,30 @@ model LiquidacionPago {
   @@unique([periodo, beneficiario])
 }
 
+// Gastos pagados CON plata del Fondo de Desarrollo.
+//
+// No es lo mismo que una distribución. Una distribución es plata del fondo que
+// pasa al bolsillo de uno de los dos; un gasto es plata del fondo que se fue en
+// algo —una suscripción, un servicio, una herramienta— y no la recibió nadie.
+// Las dos bajan el saldo disponible, pero significan cosas distintas y mezclarlas
+// haría que el fondo pareciera repartido cuando en realidad se consumió.
+model GastoFondo {
+  id      String   @id @default(cuid())
+  fecha   DateTime
+  concepto String  // en qué se gastó (ej. "Suscripción Vercel", "Dominio")
+  monto   Float
+
+  // A quién se le imputa. NULL = se reparte entre los dos en la misma
+  // proporción en que se formó el fondo (hoy 12/8, o sea 60/40): es el caso
+  // normal, porque el fondo es común y el gasto beneficia a los dos.
+  imputadoA BeneficiarioComision?
+
+  notas     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([fecha])
+}
+
 // Distribuciones efectivas del Fondo de Desarrollo (acordadas por escrito entre las partes).
 model DistribucionFondo {
   id           String               @id @default(cuid())
