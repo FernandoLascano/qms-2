@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import {
   Mail, Phone, Calendar, Building2, MessageSquarePlus,
-  AlarmClock, History, Users
+  AlarmClock, History, Users, MessageCircle, Copy, Flame
 } from 'lucide-react'
 import { format, formatDistanceToNow, isPast, isToday } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -32,20 +32,40 @@ interface Seguimiento {
   createdAt: string
 }
 
+interface Senal {
+  texto: string
+  puntos: number
+}
+
 interface Lead {
   id: string
+  // De dónde sale este lead. Un BORRADOR es un formulario empezado y sin
+  // enviar; una CONSULTA es alguien que escribió o se registró y todavía no
+  // abrió ningún trámite. Conviven en la misma lista porque para trabajarlos
+  // son lo mismo: gente interesada a la que hay que contactar.
+  tipo: 'BORRADOR' | 'CONSULTA'
   denominacion: string | null
   nombre: string
   email: string
   telefono: string | null
   jurisdiccion: string
   plan: string
-  avance: number
+  mensaje?: string | null
+  partner?: string | null
+  avance: number | null
+  segmento: string
+  segmentoTexto: string
+  puntaje: number
+  franja: string
+  senales: Senal[]
+  mensajeSugerido: string
   creado: string
   ultimaActividad: string
   leadEstado: string
+  leadMotivoPerdida: string | null
   leadUltimoContacto: string | null
   leadProximoContacto: string | null
+  leadToquesEnviados: number
   seguimientos: Seguimiento[]
 }
 
@@ -53,8 +73,27 @@ const ESTADOS: Record<string, { texto: string; clase: string }> = {
   NUEVO: { texto: 'Nuevo', clase: 'bg-warning-soft text-warning border-warning-line' },
   CONTACTADO: { texto: 'Contactado', clase: 'bg-info-soft text-info border-info-line' },
   EN_CONVERSACION: { texto: 'En conversación', clase: 'bg-info-soft text-info border-info-line' },
-  CONVERTIDO: { texto: 'Convertido', clase: 'bg-success-soft text-success border-success-line' },
-  DESCARTADO: { texto: 'Descartado', clase: 'bg-surface-3 text-ink-2 border-line' },
+  ESPERANDO_CLIENTE: { texto: 'Esperando al cliente', clase: 'bg-info-soft text-info border-info-line' },
+  CONVERTIDO: { texto: 'Ganado', clase: 'bg-success-soft text-success border-success-line' },
+  DESCARTADO: { texto: 'Perdido', clase: 'bg-surface-3 text-ink-2 border-line' },
+}
+
+// Los motivos son los que se escuchan en los contactos reales. Los dos primeros
+// son, además, los únicos dos que se pueden atacar desde el producto.
+const MOTIVOS_PERDIDA = [
+  { valor: 'NO_ENTENDIO', texto: 'No entendió el proceso' },
+  { valor: 'SIN_DOMICILIO', texto: 'No tiene domicilio en Córdoba o CABA' },
+  { valor: 'NO_DEFINIO', texto: 'Todavía no sabe qué necesita' },
+  { valor: 'PRECIO', texto: 'Precio' },
+  { valor: 'LO_HIZO_OTRO', texto: 'Lo hizo con otro' },
+  { valor: 'NO_CONTESTA', texto: 'No contesta' },
+  { valor: 'OTRO', texto: 'Otro' },
+]
+
+const FRANJAS: Record<string, { texto: string; clase: string }> = {
+  ALTA: { texto: 'Prioridad alta', clase: 'bg-danger-soft text-danger border-danger-line' },
+  MEDIA: { texto: 'Prioridad media', clase: 'bg-warning-soft text-warning border-warning-line' },
+  BAJA: { texto: 'Prioridad baja', clase: 'bg-surface-3 text-ink-3 border-line' },
 }
 
 const CANALES = [
@@ -64,24 +103,38 @@ const CANALES = [
   { valor: 'OTRO', texto: 'Otro' },
 ]
 
-type Filtro = 'PENDIENTES' | 'A_SEGUIR' | 'TODOS' | 'CONVERTIDO' | 'DESCARTADO'
+type Filtro = 'COLA' | 'PENDIENTES' | 'A_SEGUIR' | 'TODOS' | 'CONVERTIDO' | 'DESCARTADO'
 
 export default function LeadsLista({ leads }: { leads: Lead[] }) {
   const router = useRouter()
-  const [filtro, setFiltro] = useState<Filtro>('PENDIENTES')
+  const [filtro, setFiltro] = useState<Filtro>('COLA')
   const [leadActivo, setLeadActivo] = useState<Lead | null>(null)
   const [historialDe, setHistorialDe] = useState<Lead | null>(null)
   const [canal, setCanal] = useState('LLAMADA')
   const [nota, setNota] = useState('')
   const [proximoContacto, setProximoContacto] = useState('')
   const [guardando, setGuardando] = useState(false)
+  const [perdiendo, setPerdiendo] = useState<Lead | null>(null)
+  const [motivo, setMotivo] = useState('NO_ENTENDIO')
+  const [motivoNota, setMotivoNota] = useState('')
 
   const vencido = (lead: Lead) =>
     !!lead.leadProximoContacto &&
     !['CONVERTIDO', 'DESCARTADO'].includes(lead.leadEstado) &&
     (isPast(new Date(lead.leadProximoContacto)) || isToday(new Date(lead.leadProximoContacto)))
 
+  // La cola del día: a quién hay que escribirle por WhatsApp ahora. Son los que
+  // siguen abiertos, tienen teléfono y todavía no se contactaron hoy. Es la
+  // vista por defecto porque el problema medido no es convencer sino que el
+  // contacto ocurra: con 8 seguimientos sobre 25 leads, a la mayoría nunca se
+  // los tocó.
+  const enCola = (lead: Lead) =>
+    !['CONVERTIDO', 'DESCARTADO'].includes(lead.leadEstado) &&
+    !!lead.telefono &&
+    (!lead.leadUltimoContacto || !isToday(new Date(lead.leadUltimoContacto)))
+
   const contadores = useMemo(() => ({
+    COLA: leads.filter(enCola).length,
     PENDIENTES: leads.filter((l) => !['CONVERTIDO', 'DESCARTADO'].includes(l.leadEstado)).length,
     A_SEGUIR: leads.filter(vencido).length,
     TODOS: leads.length,
@@ -89,22 +142,37 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
     DESCARTADO: leads.filter((l) => l.leadEstado === 'DESCARTADO').length,
   }), [leads])
 
-  const visibles = leads.filter((lead) => {
-    switch (filtro) {
-      case 'PENDIENTES': return !['CONVERTIDO', 'DESCARTADO'].includes(lead.leadEstado)
-      case 'A_SEGUIR': return vencido(lead)
-      case 'CONVERTIDO': return lead.leadEstado === 'CONVERTIDO'
-      case 'DESCARTADO': return lead.leadEstado === 'DESCARTADO'
-      default: return true
-    }
-  })
+  const visibles = leads
+    .filter((lead) => {
+      switch (filtro) {
+        case 'COLA': return enCola(lead)
+        case 'PENDIENTES': return !['CONVERTIDO', 'DESCARTADO'].includes(lead.leadEstado)
+        case 'A_SEGUIR': return vencido(lead)
+        case 'CONVERTIDO': return lead.leadEstado === 'CONVERTIDO'
+        case 'DESCARTADO': return lead.leadEstado === 'DESCARTADO'
+        default: return true
+      }
+    })
+    // Por puntaje, no por fecha: el que está por cerrar va primero aunque haya
+    // entrado hace más tiempo.
+    .sort((a, b) => b.puntaje - a.puntaje)
 
-  const cambiarEstado = async (leadId: string, leadEstado: string) => {
+  // Las dos fuentes viven en tablas distintas, así que cada una tiene su ruta.
+  const rutaDe = (lead: Lead) =>
+    lead.tipo === 'CONSULTA'
+      ? `/api/admin/leads/consulta/${lead.id}`
+      : `/api/admin/leads/${lead.id}`
+
+  const cambiarEstado = async (
+    lead: Lead,
+    leadEstado: string,
+    extra?: { leadMotivoPerdida?: string; leadMotivoNota?: string },
+  ) => {
     try {
-      const res = await fetch(`/api/admin/leads/${leadId}`, {
+      const res = await fetch(rutaDe(lead), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leadEstado }),
+        body: JSON.stringify({ leadEstado, ...extra }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -113,6 +181,29 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo actualizar el estado')
     }
+  }
+
+  // Perder un lead sin dejar el motivo es perderlo dos veces: no queda nada que
+  // mirar después para saber qué arreglar. Por eso el motivo se pide siempre.
+  const alCambiarEstado = (lead: Lead, valor: string) => {
+    if (valor === 'DESCARTADO') {
+      setPerdiendo(lead)
+      setMotivo('NO_ENTENDIO')
+      setMotivoNota('')
+      return
+    }
+    cambiarEstado(lead, valor)
+  }
+
+  const confirmarPerdida = async () => {
+    if (!perdiendo) return
+    setGuardando(true)
+    await cambiarEstado(perdiendo, 'DESCARTADO', {
+      leadMotivoPerdida: motivo,
+      leadMotivoNota: motivoNota.trim() || undefined,
+    })
+    setGuardando(false)
+    setPerdiendo(null)
   }
 
   const abrirRegistro = (lead: Lead) => {
@@ -130,7 +221,11 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
     setGuardando(true)
     try {
-      const res = await fetch(`/api/admin/leads/${leadActivo.id}/seguimiento`, {
+      const res = await fetch(
+        leadActivo.tipo === 'CONSULTA'
+          ? `/api/admin/leads/consulta/${leadActivo.id}`
+          : `/api/admin/leads/${leadActivo.id}/seguimiento`,
+        {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,7 +233,8 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
           nota: nota.trim(),
           leadProximoContacto: proximoContacto || undefined,
         }),
-      })
+      },
+      )
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       toast.success('Contacto registrado')
@@ -153,12 +249,22 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
   const telefonoWhatsapp = (telefono: string) => telefono.replace(/[^\d]/g, '')
 
+  const copiarMensaje = async (texto: string) => {
+    try {
+      await navigator.clipboard.writeText(texto)
+      toast.success('Mensaje copiado')
+    } catch {
+      toast.error('No se pudo copiar. Abrí WhatsApp y el mensaje va incluido en el enlace.')
+    }
+  }
+
   const filtros: { valor: Filtro; texto: string }[] = [
+    { valor: 'COLA', texto: 'Cola de hoy' },
     { valor: 'PENDIENTES', texto: 'Pendientes' },
     { valor: 'A_SEGUIR', texto: 'A seguir hoy' },
     { valor: 'TODOS', texto: 'Todos' },
-    { valor: 'CONVERTIDO', texto: 'Convertidos' },
-    { valor: 'DESCARTADO', texto: 'Descartados' },
+    { valor: 'CONVERTIDO', texto: 'Ganados' },
+    { valor: 'DESCARTADO', texto: 'Perdidos' },
   ]
 
   return (
@@ -193,6 +299,7 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
         <div className="grid gap-4">
           {visibles.map((lead) => {
             const estado = ESTADOS[lead.leadEstado] || ESTADOS.NUEVO
+            const franja = FRANJAS[lead.franja] || FRANJAS.BAJA
             const atrasado = vencido(lead)
 
             return (
@@ -205,6 +312,16 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                         <span className={`px-3 py-1 rounded-full text-label font-medium border ${estado.clase}`}>
                           {estado.texto}
                         </span>
+                        <span
+                          className={`px-3 py-1 rounded-full text-label font-medium border ${franja.clase}`}
+                          title={lead.senales.map((s) => `${s.puntos > 0 ? '+' : ''}${s.puntos} ${s.texto}`).join(' · ') || 'Sin señales'}
+                        >
+                          {lead.franja === 'ALTA' && <Flame className="h-3 w-3 inline mr-1 -mt-px" />}
+                          {franja.texto}
+                        </span>
+                        <span className="px-3 py-1 rounded-full text-label font-medium border bg-surface-3 text-ink-2 border-line">
+                          {lead.segmentoTexto}
+                        </span>
                         {atrasado && (
                           <span className="px-2 py-1 rounded-full text-label font-semibold bg-danger-solid text-on-primary flex items-center gap-1">
                             <AlarmClock className="h-3 w-3" />
@@ -213,10 +330,16 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                         )}
                       </div>
 
-                      <p className="text-body-sm text-ink-2 mb-2 flex items-center gap-1">
-                        <Building2 className="h-4 w-4" />
-                        {lead.denominacion || <span className="italic text-ink-3">Sin denominación elegida</span>}
-                      </p>
+                      {lead.tipo === 'BORRADOR' ? (
+                        <p className="text-body-sm text-ink-2 mb-2 flex items-center gap-1">
+                          <Building2 className="h-4 w-4" />
+                          {lead.denominacion || <span className="italic text-ink-3">Sin denominación elegida</span>}
+                        </p>
+                      ) : lead.mensaje ? (
+                        <p className="text-body-sm text-ink-2 mb-2 line-clamp-3 whitespace-pre-wrap border-l-2 border-line pl-3">
+                          {lead.mensaje}
+                        </p>
+                      ) : null}
 
                       <div className="flex flex-wrap items-center gap-4 text-body-sm text-ink-2">
                         <a href={`mailto:${lead.email}`} className="flex items-center gap-1 hover:text-primary">
@@ -225,7 +348,7 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                         </a>
                         {lead.telefono ? (
                           <a
-                            href={`https://wa.me/${telefonoWhatsapp(lead.telefono)}`}
+                            href={`https://wa.me/${telefonoWhatsapp(lead.telefono)}?text=${encodeURIComponent(lead.mensajeSugerido)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 hover:text-success"
@@ -249,13 +372,36 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
                     <div className="flex flex-wrap items-center gap-2">
                       <Select
                         value={lead.leadEstado}
-                        onChange={(e) => cambiarEstado(lead.id, e.target.value)}
-                        className="w-44"
+                        onChange={(e) => alCambiarEstado(lead, e.target.value)}
+                        className="w-52"
                       >
                         {Object.entries(ESTADOS).map(([valor, { texto }]) => (
                           <option key={valor} value={valor}>{texto}</option>
                         ))}
                       </Select>
+                      {lead.telefono && (
+                        <>
+                          <Button asChild variant="secondary" className="gap-2">
+                            <a
+                              href={`https://wa.me/${telefonoWhatsapp(lead.telefono)}?text=${encodeURIComponent(lead.mensajeSugerido)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                              WhatsApp
+                            </a>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Copiar el mensaje sugerido"
+                            title="Copiar el mensaje sugerido"
+                            onClick={() => copiarMensaje(lead.mensajeSugerido)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                       <Button onClick={() => abrirRegistro(lead)} className="gap-2">
                         <MessageSquarePlus className="h-4 w-4" />
                         Registrar contacto
@@ -276,8 +422,12 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
                   <div className="grid md:grid-cols-4 gap-4 text-body-sm">
                     <div className="bg-surface-2 p-3 rounded">
-                      <p className="text-ink-2 mb-1">Formulario completado</p>
-                      <p className="font-semibold text-ink">{lead.avance}%</p>
+                      <p className="text-ink-2 mb-1">
+                        {lead.avance === null ? 'Origen' : 'Formulario completado'}
+                      </p>
+                      <p className="font-semibold text-ink">
+                        {lead.avance === null ? lead.segmentoTexto : `${lead.avance}%`}
+                      </p>
                     </div>
                     <div className="bg-surface-2 p-3 rounded">
                       <p className="text-ink-2 mb-1">Última actividad</p>
@@ -398,6 +548,55 @@ export default function LeadsLista({ leads }: { leads: Lead[] }) {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setHistorialDe(null)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Marcar perdido pide el motivo. Es el único dato que después dice qué
+          arreglar: si la mayoría se pierde por el domicilio, el problema está en
+          el formulario y no en el seguimiento. */}
+      <Dialog open={!!perdiendo} onOpenChange={(abierto) => !abierto && setPerdiendo(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Por qué se perdió?</DialogTitle>
+            <DialogDescription>
+              {perdiendo?.nombre} · queda en la lista, en «Perdidos»
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="motivo-perdida">Motivo</Label>
+              <Select
+                id="motivo-perdida"
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+              >
+                {MOTIVOS_PERDIDA.map((m) => (
+                  <option key={m.valor} value={m.valor}>{m.texto}</option>
+                ))}
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="motivo-nota">Detalle (opcional)</Label>
+              <Textarea
+                id="motivo-nota"
+                value={motivoNota}
+                onChange={(e) => setMotivoNota(e.target.value)}
+                placeholder="Lo que te dijo, con sus palabras"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPerdiendo(null)} disabled={guardando}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={confirmarPerdida} loading={guardando}>
+              Marcar como perdido
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

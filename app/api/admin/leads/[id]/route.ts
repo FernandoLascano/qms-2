@@ -9,7 +9,24 @@ interface RouteParams {
   }>
 }
 
-const ESTADOS_VALIDOS = ['NUEVO', 'CONTACTADO', 'EN_CONVERSACION', 'CONVERTIDO', 'DESCARTADO'] as const
+const ESTADOS_VALIDOS = [
+  'NUEVO',
+  'CONTACTADO',
+  'EN_CONVERSACION',
+  'ESPERANDO_CLIENTE',
+  'CONVERTIDO',
+  'DESCARTADO',
+] as const
+
+const MOTIVOS_VALIDOS = [
+  'NO_ENTENDIO',
+  'SIN_DOMICILIO',
+  'NO_DEFINIO',
+  'PRECIO',
+  'LO_HIZO_OTRO',
+  'NO_CONTESTA',
+  'OTRO',
+] as const
 
 // PATCH - Actualizar el estado de seguimiento de un lead
 export async function PATCH(request: Request, { params }: RouteParams) {
@@ -25,18 +42,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const lead = await prisma.tramite.findUnique({
       where: { id },
-      select: { id: true, formularioCompleto: true }
+      select: { id: true }
     })
 
     if (!lead) {
       return NextResponse.json({ error: 'Lead no encontrado' }, { status: 404 })
-    }
-
-    if (lead.formularioCompleto) {
-      return NextResponse.json(
-        { error: 'Este trámite ya fue enviado, gestionalo desde Trámites' },
-        { status: 400 }
-      )
     }
 
     const data: Record<string, unknown> = {}
@@ -46,6 +56,29 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
       }
       data.leadEstado = body.leadEstado
+
+      // Perder sin motivo deja el dato inservible: después no hay nada que
+      // mirar para saber qué arreglar.
+      if (body.leadEstado === 'DESCARTADO') {
+        if (!MOTIVOS_VALIDOS.includes(body.leadMotivoPerdida)) {
+          return NextResponse.json(
+            { error: 'Elegí por qué se perdió el lead' },
+            { status: 400 },
+          )
+        }
+        data.leadMotivoPerdida = body.leadMotivoPerdida
+        data.leadMotivoNota =
+          typeof body.leadMotivoNota === 'string' && body.leadMotivoNota.trim()
+            ? body.leadMotivoNota.trim().slice(0, 2000)
+            : null
+      }
+
+      // Volver a abrir un lead limpia el motivo: si sigue en juego, no está
+      // perdido por nada.
+      if (body.leadEstado !== 'DESCARTADO') {
+        data.leadMotivoPerdida = null
+        data.leadMotivoNota = null
+      }
     }
 
     if (body.leadProximoContacto !== undefined) {
@@ -67,7 +100,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const actualizado = await prisma.tramite.update({
       where: { id },
       data,
-      select: { id: true, leadEstado: true, leadProximoContacto: true, leadUltimoContacto: true }
+      select: { id: true, leadEstado: true, leadMotivoPerdida: true, leadProximoContacto: true, leadUltimoContacto: true }
     })
 
     return NextResponse.json({ success: true, lead: actualizado })

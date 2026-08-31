@@ -1018,6 +1018,42 @@ export const emailRecordatorioTramiteEstancado = ({ nombre, etapaActual, diasEst
   })
 }
 
+// 10b. Secuencia de recuperación de borradores abandonados.
+//
+// El cuerpo NO se escribe acá: viene armado desde lib/leads/mensajes.ts, que es
+// donde vive el texto por segmento. La plantilla sólo lo viste, para que un
+// cambio de copy no obligue a tocar HTML de email.
+export const emailLeadSecuencia = ({ nombre, cuerpo, tramiteId, ultimo }: EmailTemplateProps) => {
+  const parrafos = String(cuerpo || '')
+    .split('\n\n')
+    .filter(Boolean)
+    .map(
+      (p: string) =>
+        `<p style="margin: 0 0 16px 0; color: ${colors.text}; ${type.body}">${p.replace(/\n/g, '<br />')}</p>`,
+    )
+    .join('')
+
+  const content = `
+    ${parrafos}
+
+    ${CTAButton('Retomar donde lo dejaste', `${BASE_URL}/tramite/nuevo`)}
+
+    <p style="margin: 24px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">
+      ${
+        ultimo
+          ? 'Es el último recordatorio que te mandamos. Tu formulario queda guardado igual.'
+          : 'Si preferís, respondé este email y lo vemos juntos.'
+      }
+    </p>
+  `
+
+  return EmailLayout({
+    children: content,
+    nombre,
+    preheader: 'Tu formulario quedó guardado, podés retomarlo cuando quieras.',
+  })
+}
+
 // 11. Alerta de denominación próxima a vencer (para admin)
 export const emailAlertaDenominacion = ({ nombre, denominacion, diasParaVencer, tramiteId }: EmailTemplateProps) => {
   const content = `

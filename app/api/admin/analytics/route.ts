@@ -437,6 +437,16 @@ export async function GET(request: Request) {
     }
 
     // Respuesta final
+    const [leadsConsulta, leadsBorrador, perdidosPorMotivo] = await Promise.all([
+      prisma.lead.count(),
+      prisma.tramite.count({ where: { formularioCompleto: false } }),
+      prisma.lead.groupBy({
+        by: ['motivoPerdida'],
+        where: { estado: 'DESCARTADO', motivoPerdida: { not: null } },
+        _count: { _all: true },
+      }),
+    ])
+
     return NextResponse.json({
       tramites: {
         totales: tramitesTotales,
@@ -457,6 +467,17 @@ export async function GET(request: Request) {
           ? Math.round((pagosPeriodo._sum.monto || 0) / tramitesCompletados) 
           : 0,
         porMes: ingresosPorMes
+      },
+      leads: {
+        // El embudo arrancaba en «registrados», o sea después de que la persona
+        // ya decidió abrir una cuenta. Todo el interés anterior quedaba fuera de
+        // la medición, que es justo donde estaba el agujero.
+        consultas: leadsConsulta,
+        borradores: leadsBorrador,
+        perdidosPorMotivo: perdidosPorMotivo.map((m: { motivoPerdida: string | null; _count: { _all: number } }) => ({
+          motivo: m.motivoPerdida,
+          cantidad: m._count._all,
+        })),
       },
       clientes: {
         registrados: usuariosRegistrados,

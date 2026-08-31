@@ -1,21 +1,33 @@
 'use client'
 
 interface ConversionFunnelProps {
+  leads: number
   registrados: number
   conTramite: number
   completados: number
 }
 
-export function ConversionFunnel({ registrados, conTramite, completados }: ConversionFunnelProps) {
-  const calcularPorcentaje = (valor: number) => {
-    return registrados > 0 ? (valor / registrados) * 100 : 0
-  }
+/**
+ * El embudo empezaba en «registrados» y por eso no servía para lo que hacía
+ * falta: medía gente que ya había decidido abrir una cuenta, o sea después del
+ * punto donde se pierde a la mayoría. Ahora arranca en el interés —consultas
+ * más borradores— que es donde realmente empieza el recorrido.
+ */
+export function ConversionFunnel({ leads, registrados, conTramite, completados }: ConversionFunnelProps) {
+  const base = Math.max(leads, registrados)
+  const calcularPorcentaje = (valor: number) => (base > 0 ? (valor / base) * 100 : 0)
 
   const etapas = [
+    {
+      nombre: 'Interesados',
+      valor: leads,
+      porcentaje: calcularPorcentaje(leads),
+      color: 'bg-primary',
+    },
     { 
       nombre: 'Registrados', 
       valor: registrados, 
-      porcentaje: 100, 
+      porcentaje: calcularPorcentaje(registrados), 
       color: 'bg-info-solid' 
     },
     { 

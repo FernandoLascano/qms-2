@@ -6,6 +6,7 @@ import { rateLimit } from "@/lib/rate-limit"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 import { buildEmailVerificationLink, createEmailVerificationToken } from "@/lib/email-verification"
 import { enviarEmailVerificacionCuenta } from "@/lib/emails/send"
+import { capturarLead } from '@/lib/leads/capturar'
 
 export async function POST(request: Request) {
   try {
@@ -86,6 +87,19 @@ export async function POST(request: Request) {
         referralSource: partnerId ? 'PARTNER_LINK' : null,
         emailVerified: autoVerifyEmail ? new Date() : null,
       }
+    })
+
+    // Registrarse no es abrir un trámite. Hay 11 usuarios que se registraron y
+    // nunca empezaron uno: existían sólo como User y no aparecían en ninguna
+    // parte del panel comercial. Desde ahora nacen como lead, y pasan a
+    // CONVERTIDO en cuanto envían el formulario.
+    await capturarLead({
+      email: user.email!,
+      nombre: user.name,
+      telefono: user.phone,
+      origen: partnerId ? 'PARTNER' : 'REGISTRO_SIN_TRAMITE',
+      userId: user.id,
+      atribucion: partnerId ? { partnerId } : (body?.atribucion ?? null),
     })
 
     // Verificación de email + bienvenida (no fallar si hay error)

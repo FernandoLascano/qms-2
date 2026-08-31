@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
+import { capturarLead } from '@/lib/leads/capturar'
 
 // Escapa HTML para evitar inyección en el email que recibe el equipo.
 function escapeHtml(value: string): string {
@@ -70,6 +71,23 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
+
+    // Queda registrado ANTES de mandar el mail.
+    //
+    // Hasta acá esta ruta sólo enviaba un email: quien escribía competía con
+    // todo lo demás que llega a esa casilla y, si nadie contestaba, no quedaba
+    // ninguna huella de que hubiera existido. Ni siquiera se puede saber cuánta
+    // gente escribió históricamente, porque nunca se guardó nada.
+    //
+    // Va primero para que un fallo del proveedor de email no se lleve puesto el
+    // lead; capturarLead nunca lanza, así que tampoco puede romper el envío.
+    await capturarLead({
+      email,
+      nombre,
+      origen: 'FORMULARIO_CONTACTO',
+      mensaje: `${asunto}\n\n${mensaje}`,
+      atribucion: body.atribucion || null,
+    })
 
     // Valores escapados para insertar en el HTML del email
     const nombreSafe = escapeHtml(nombre)

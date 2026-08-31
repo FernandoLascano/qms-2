@@ -5,6 +5,7 @@ import { useTurnstileWidget } from '@/lib/hooks/use-turnstile-widget'
 import { motion } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import Script from 'next/script'
+import { leerAtribucion, registrarAtribucion } from '@/lib/leads/atribucion-cliente'
 
 interface FormData {
   nombre: string
@@ -35,6 +36,12 @@ export function Contacto() {
     captchaRequired,
     onTokenChange: onTurnstileToken,
   })
+
+  // Guarda de dónde vino la persona la primera vez, para poder atribuir la
+  // consulta a un canal en vez de que aparezca de la nada.
+  useEffect(() => {
+    registrarAtribucion()
+  }, [])
 
   // Leer asunto desde el hash de la URL (viene de OtrosServicios)
   useEffect(() => {
@@ -71,7 +78,7 @@ export function Contacto() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, turnstileToken, website }),
+        body: JSON.stringify({ ...formData, turnstileToken, website, atribucion: leerAtribucion() }),
       })
 
       const data = await response.json()
