@@ -40,7 +40,10 @@ type Gasto = { id: string; fecha: string; concepto: string; monto: number; imput
 
 const fmt = (n: number) =>
   '$' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
-const fmtFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR')
+/* Las fechas se guardan como medianoche UTC. Sin fijar la zona, el navegador
+   las pasa a hora argentina (UTC−3) y retrocede un día: un gasto cargado el 31
+   se mostraba el 30. `periodoDeISO`, acá abajo, ya leía en UTC por esto mismo. */
+const fmtFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { timeZone: 'UTC' })
 const periodoDeISO = (iso: string) => {
   const d = new Date(iso)
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
