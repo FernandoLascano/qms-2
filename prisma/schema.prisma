@@ -1197,3 +1197,17 @@ model ConsultaChat {
 
   @@index([createdAt])
 }
+
+// MANTENIMIENTO
+// Backups diarios a S3 (GitHub Actions) y latidos del cron de Vercel para que
+// Supabase no pause la base. RLS sin políticas: ver migración maintenance_runs.
+model MaintenanceRun {
+  id        BigInt   @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  kind      String   // 'backup' | 'keepalive' (check en la base)
+  ok        Boolean
+  detail    Json?    @db.JsonB
+
+  @@index([kind, createdAt(sort: Desc)], map: "maintenance_runs_kind_created_at_idx")
+  @@map("maintenance_runs")
+}

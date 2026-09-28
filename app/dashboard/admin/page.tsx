@@ -26,6 +26,8 @@ import { EmptyState } from '@/components/ui/states'
 import { Sparkline, BarraDistribucion, Embudo } from '@/components/ui/charts'
 import { NumeroAnimado } from '@/components/ui/motion'
 import { ServiceStatus } from '@/components/dashboard/service-status'
+import { RespaldoStatus } from '@/components/dashboard/respaldo-status'
+import { getEstadoRespaldo } from '@/lib/respaldo'
 import { getEstado } from '@/lib/tramites/estado'
 import { porSemana, variacion } from '@/lib/dashboard/series'
 import { cn } from '@/lib/utils'
@@ -43,6 +45,12 @@ async function AdminDashboardPage() {
   if (!session?.user?.id || session.user.rol !== 'ADMIN') redirect('/dashboard')
 
   const desde12Semanas = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000)
+
+  // Si falla, la tarjeta muestra el error sin tirar abajo el panel entero.
+  const estadoRespaldo = await getEstadoRespaldo().catch((error) => {
+    console.error('Error al leer el estado del respaldo:', error)
+    return null
+  })
 
   const [
     totalTramites,
@@ -417,6 +425,7 @@ async function AdminDashboardPage() {
           as="h2"
         />
         <ServiceStatus />
+        <RespaldoStatus estado={estadoRespaldo} />
       </section>
     </div>
   )

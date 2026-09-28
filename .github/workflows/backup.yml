@@ -1,0 +1,94 @@
+# Respaldo diario de Supabase (plan gratis, sin backups propios) a AWS S3.
+#
+# - pg_dump completo en formato custom → s3://$BACKUP_BUCKET/db/AAAA-MM-DD.dump
+# - Espejo incremental de Storage → s3://$BACKUP_BUCKET/storage/<bucket>/<ruta>
+# - Anota cada corrida en maintenance_runs (y de paso le da actividad a la base).
+#
+# Ojo: GitHub desactiva los workflows programados si el repo pasa 60 días sin
+# commits. Si eso pasa, se reactiva desde la pestaña Actions.
+name: Respaldo diario
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC = 03:00 en Argentina
+  workflow_dispatch:
+
+concurrency:
+  group: respaldo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # pg_dump tiene que ser de la misma versión mayor que la base (hoy 17).
+      # El de Ubuntu es más viejo, así que se instala desde el repo de PGDG.
+      - name: Instalar pg_dump 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      # Los runners no tienen IPv6 y db.<ref>.supabase.co es sólo IPv6: por eso
+      # SUPABASE_DB_URL es el pooler en modo sesión (puerto 5432).
+      - name: Volcar la base
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --format=custom --no-owner --no-privileges \
+            --file "${{ github.workspace }}/db.dump"
+          ls -lh "${{ github.workspace }}/db.dump"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Sólo las dos dependencias del script, no el npm ci del proyecto entero.
+      - name: Preparar el script
+        run: |
+          mkdir -p "$RUNNER_TEMP/respaldo"
+          cp scripts/backup/respaldo.mjs "$RUNNER_TEMP/respaldo/"
+          cd "$RUNNER_TEMP/respaldo"
+          echo '{"private":true,"type":"module"}' > package.json
+          npm install --no-audit --no-fund --silent @supabase/supabase-js @aws-sdk/client-s3
+
+      - name: Subir a S3
+        working-directory: ${{ runner.temp }}/respaldo
+        env:
+          DUMP_PATH: ${{ github.workspace }}/db.dump
+          BACKUP_BUCKET: ${{ secrets.BACKUP_BUCKET }}
+          BACKUP_AWS_REGION: ${{ secrets.BACKUP_AWS_REGION }}
+          BACKUP_AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_AWS_ACCESS_KEY_ID }}
+          BACKUP_AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_AWS_SECRET_ACCESS_KEY }}
+        run: node respaldo.mjs
+
+      # Si falló antes de que el script anotara (p. ej. en pg_dump), se anota acá
+      # para que la pantalla del admin muestre el error.
+      - name: Anotar la falla
+        if: failure()
+        run: |
+          if [ -f "$RUNNER_TEMP/respaldo/.anotado" ]; then exit 0; fi
+          jq -n --arg run "$RUN_URL" \
+            '{kind: "backup", ok: false, detail: {error: "El respaldo falló antes de subir a S3 (ver el log del workflow)", run: $run}}' \
+          | curl -fsS -X POST "$SUPABASE_URL/rest/v1/maintenance_runs" \
+              -H "apikey: $SUPABASE_SERVICE_KEY" \
+              -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+              -H "Content-Type: application/json" \
+              -H "Prefer: return=minimal" \
+              --data-binary @-
