@@ -27,14 +27,20 @@ export interface SociedadCartera {
   proximoVencimiento: { que: string; fecha: string; dias: number } | null
 }
 
-type Filtro = 'TODAS' | 'VENCEN' | 'OPORTUNIDADES' | 'SIN_SERVICIOS'
-
 const pesos = (n: number) => '$' + Math.round(n).toLocaleString('es-AR')
 const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
 
-export default function CarteraLista({ sociedades }: { sociedades: SociedadCartera[] }) {
+export type Filtro = 'TODAS' | 'VENCEN' | 'OPORTUNIDADES' | 'SIN_SERVICIOS'
+
+export default function CarteraLista({
+  sociedades,
+  filtroInicial = 'TODAS',
+}: {
+  sociedades: SociedadCartera[]
+  filtroInicial?: Filtro
+}) {
   const [busqueda, setBusqueda] = useState('')
-  const [filtro, setFiltro] = useState<Filtro>('TODAS')
+  const [filtro, setFiltro] = useState<Filtro>(filtroInicial)
 
   const vence = (s: SociedadCartera) => !!s.proximoVencimiento && s.proximoVencimiento.dias <= DIAS_AVISO
   const sinServicios = (s: SociedadCartera) => s.servicios.length === 0 && s.domicilio?.estado !== 'ACTIVO'

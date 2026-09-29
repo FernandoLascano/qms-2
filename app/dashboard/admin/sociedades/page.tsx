@@ -11,9 +11,16 @@ import { diasHasta, ingresoMensual, type Modalidad } from '@/lib/cartera'
  * vence y a quién ofrecerle algo más. Antes era un listado de tarjetas con
  * CUIT y matrícula, sin nada de lo que pasa después de la inscripción.
  */
-export default async function SociedadesPage() {
+export default async function SociedadesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ filtro?: string }>
+}) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id || session.user.rol !== 'ADMIN') redirect('/dashboard')
+
+  // El panel «Hoy» enlaza acá ya filtrado (vencimientos, oportunidades).
+  const filtro = (await searchParams)?.filtro
 
   const tramites = await prisma.tramite.findMany({
     where: {
@@ -92,7 +99,10 @@ export default async function SociedadesPage() {
         description="Tu cartera de clientes: qué tiene contratado cada uno, qué vence y a quién ofrecerle algo más."
         breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Sociedades' }]}
       />
-      <CarteraLista sociedades={sociedades} />
+      <CarteraLista
+        sociedades={sociedades}
+        filtroInicial={filtro === 'vencen' ? 'VENCEN' : filtro === 'oportunidades' ? 'OPORTUNIDADES' : 'TODAS'}
+      />
     </div>
   )
 }
