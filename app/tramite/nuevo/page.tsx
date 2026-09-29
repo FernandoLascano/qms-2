@@ -1430,7 +1430,16 @@ export default function NuevoTramitePage() {
 
                   <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
                     <p className="text-body-sm text-warning">
-                      🪪 <strong>Importante:</strong> para avanzar con el trámite, todas las personas que intervengan en la Sociedad (como socias o administradoras) deberán tener <strong>Ciudadano Digital Nivel 2</strong>. Es un requisito del sistema; más adelante te vamos a pasar un instructivo para obtenerlo.
+                      🪪 <strong>Importante:</strong> para avanzar con el trámite, todas las personas que intervengan en la Sociedad (como socias o administradoras) deberán tener <strong>Ciudadano Digital Nivel 2</strong>. Es un requisito del sistema.{' '}
+                      {/* En otra pestaña: acá la persona está a mitad del formulario. */}
+                      <a
+                        href="/assets/img/CiudadanoDigital.jpeg"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold underline underline-offset-2 hover:text-ink"
+                      >
+                        Ver el instructivo para obtenerlo
+                      </a>
                     </p>
                   </div>
 
