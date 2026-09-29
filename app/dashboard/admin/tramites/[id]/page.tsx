@@ -20,6 +20,7 @@ import {
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getObjetoSocialTexto } from '@/lib/constants'
+import { esDocumentoDeQMS } from '@/lib/documentos'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 
 import { Card, CardBody } from '@/components/ui/card'
@@ -109,7 +110,10 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
   const progreso = calcularProgreso(tramite)
   const basePath = `/dashboard/admin/tramites/${tramite.id}`
 
-  const docsPendientes = tramite.documentos.filter((d) => d.estado === 'PENDIENTE').length
+  // El borrador y los documentos para firmar los revisa el cliente, no nosotros.
+  const docsPendientes = tramite.documentos.filter(
+    (d) => d.estado === 'PENDIENTE' && !esDocumentoDeQMS(d.tipo),
+  ).length
   const pagosPendientes = tramite.pagos.filter((p) => p.estado === 'PENDIENTE').length
   const mensajesSinLeer = tramite.mensajes.filter(
     (m: any) => !m.leido && m.user?.email === tramite.user.email,

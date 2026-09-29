@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { PageHeader } from '@/components/ui/page-header'
 import TramitesLista from '@/components/admin/TramitesLista'
 
@@ -16,7 +17,7 @@ async function AdminTramitesPage() {
     where: { formularioCompleto: true },
     include: {
       user: { select: { name: true, email: true, phone: true } },
-      _count: { select: { documentos: { where: { estado: 'PENDIENTE' } } } },
+      _count: { select: { documentos: { where: WHERE_DOCUMENTOS_POR_APROBAR } } },
     },
     orderBy: { updatedAt: 'desc' },
   })

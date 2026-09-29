@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
 export async function GET(request: Request) {
@@ -162,7 +163,9 @@ export async function GET(request: Request) {
       prisma.documento.count(),
       prisma.documento.count({ where: { estado: 'APROBADO' } }),
       prisma.documento.count({ where: { estado: 'RECHAZADO' } }),
-      prisma.documento.count({ where: { estado: 'PENDIENTE' } })
+      // El borrador y los papeles para firmar se crean PENDIENTE pero los
+      // revisa el cliente: no son trabajo pendiente nuestro.
+      prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR })
     ])
 
     // Documentos más rechazados por tipo

@@ -95,6 +95,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: updateData
     })
 
+    // El borrador lo aprueba el cliente: cuando la etapa queda cumplida, el
+    // documento pasa a APROBADO y deja de figurar como pendiente de revisión.
+    if (etapa === 'borradorAprobadoCliente' && valor) {
+      await prisma.documento.updateMany({
+        where: { tramiteId: id, tipo: 'BORRADOR', estado: { not: 'APROBADO' } },
+        data: { estado: 'APROBADO', fechaAprobacion: ahora }
+      })
+    }
+
     // Crear eventos automáticos según la etapa completada
     if (valor) {
       try {
