@@ -35,11 +35,13 @@ const ICONO_CANAL: Record<string, typeof Mail> = {
 
 export function LeadDetalle({
   lead,
+  firma,
   onCambio,
   onPerder,
   onEditar,
 }: {
   lead: LeadCRM
+  firma: string | null
   /** Después de registrar un contacto: la lista decide si pasa al siguiente. */
   onCambio: (tras: 'contacto' | 'otro') => void
   onPerder: () => void
@@ -214,7 +216,7 @@ export function LeadDetalle({
       {!cerrado && (
         <div className="p-card-sm sm:p-card">
           <h3 className="mb-3 text-heading text-ink">Contactar</h3>
-          <Contactar lead={lead} onHecho={() => onCambio('contacto')} />
+          <Contactar lead={lead} firma={firma} onHecho={() => onCambio('contacto')} />
         </div>
       )}
 

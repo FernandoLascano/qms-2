@@ -23,6 +23,8 @@ export interface ContextoMensaje {
   denominacion: string | null
   /** Cuántos contactos ya se registraron: decide qué plantilla sugerir. */
   contactos: number
+  /** Nombre de quien escribe (el admin conectado). */
+  firma: string | null
 }
 
 export interface Plantilla {
@@ -35,8 +37,12 @@ export interface Plantilla {
   cuerpo: string
 }
 
-const FIRMA_WA = 'Justiniano · QuieroMiSAS'
-const FIRMA_EMAIL = 'Justiniano\nQuieroMiSAS · quieromisas.com'
+/* Los mensajes los manda una persona, así que firma quien está conectado.
+   Antes decían «Soy Justiniano» los mandara quien los mandara. */
+const presentacion = (c: ContextoMensaje) =>
+  c.firma ? `Soy ${c.firma}, de QuieroMiSAS.` : 'Te escribo de QuieroMiSAS.'
+const firmaEmail = (c: ContextoMensaje) =>
+  `${c.firma ?? 'Equipo QuieroMiSAS'}\n${c.firma ? 'QuieroMiSAS · ' : ''}quieromisas.com`
 
 const primerNombre = (nombre: string) => (nombre.trim() ? nombre.trim().split(/\s+/)[0] : '')
 const hola = (nombre: string, signo = '!') => `Hola${primerNombre(nombre) ? ` ${primerNombre(nombre)}` : ''}${signo}`
@@ -45,9 +51,9 @@ const hola = (nombre: string, signo = '!') => `Hola${primerNombre(nombre) ? ` ${
 const suSociedad = (c: ContextoMensaje) => (c.denominacion ? c.denominacion : 'tu S.A.S.')
 
 function primerContactoWhatsapp(c: ContextoMensaje): string {
-  if (c.tipo === 'BORRADOR' && c.segmento) return mensajeWhatsapp(c.segmento, c.nombre)
+  if (c.tipo === 'BORRADOR' && c.segmento) return mensajeWhatsapp(c.segmento, c.nombre, presentacion(c))
   return (
-    `${hola(c.nombre)} Soy ${FIRMA_WA}. Te escribo por la consulta que nos dejaste. ` +
+    `${hola(c.nombre)} ${presentacion(c)} Te escribo por la consulta que nos dejaste. ` +
     `Estoy para ayudarte con la constitución de tu empresa o para despejarte cualquier duda: ` +
     `contame en qué estás y te digo cómo seguimos.`
   )
@@ -55,7 +61,7 @@ function primerContactoWhatsapp(c: ContextoMensaje): string {
 
 function primerContactoEmail(c: ContextoMensaje): { asunto: string; cuerpo: string } {
   const saludo = `${hola(c.nombre, ',')}\n\n`
-  const cierre = `\n\nSaludos,\n${FIRMA_EMAIL}`
+  const cierre = `\n\nSaludos,\n${firmaEmail(c)}`
 
   if (c.tipo === 'CONSULTA') {
     return {
@@ -168,7 +174,7 @@ export function plantillasPara(c: ContextoMensaje): Plantilla[] {
   ]
 
   const saludo = `${hola(c.nombre, ',')}\n\n`
-  const cierre = `\n\nSaludos,\n${FIRMA_EMAIL}`
+  const cierre = `\n\nSaludos,\n${firmaEmail(c)}`
 
   const email: Plantilla[] = [
     {

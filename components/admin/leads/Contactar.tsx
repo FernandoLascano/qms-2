@@ -21,7 +21,7 @@ type Modo = CanalMensaje | 'NOTA'
  * el registro casi nunca se hacía: en los datos reales había 10 contactos
  * anotados para 48 leads.
  */
-export function Contactar({ lead, onHecho }: { lead: LeadCRM; onHecho: () => void }) {
+export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: string | null; onHecho: () => void }) {
   const [modo, setModo] = useState<Modo>(lead.telefono ? 'WHATSAPP' : 'EMAIL')
   const plantillas = useMemo(
     () =>
@@ -31,8 +31,9 @@ export function Contactar({ lead, onHecho }: { lead: LeadCRM; onHecho: () => voi
         segmento: lead.segmento,
         denominacion: lead.denominacion,
         contactos: lead.actividad.length,
+        firma,
       }),
-    [lead],
+    [lead, firma],
   )
   const delCanal = plantillas.filter((p) => p.canal === modo)
 

@@ -57,16 +57,3 @@ export function calcularPuntajeConsulta(
 
 /** Alias corto, que es como se usa desde la pantalla. */
 export const puntajeConsulta = calcularPuntajeConsulta
-
-/**
- * Lo que se le escribe por WhatsApp a alguien que consultó pero nunca empezó
- * el formulario. No hay paso en el que se haya frenado: se retoma la consulta.
- */
-export function mensajeConsulta(nombre: string): string {
-  const hola = `Hola${nombre ? ` ${nombre.split(' ')[0]}` : ''}!`
-  return (
-    `${hola} Soy Justiniano · QuieroMiSAS. Te escribo por la consulta que nos dejaste. ` +
-    `Estoy para ayudarte con la constitución de tu empresa o para despejarte cualquier duda: ` +
-    `contame en qué estás y te digo cómo seguimos.`
-  )
-}

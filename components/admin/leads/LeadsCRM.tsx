@@ -34,7 +34,7 @@ const ETAPAS_ABIERTAS = ESTADOS.filter((e) => !['CONVERTIDO', 'DESCARTADO'].incl
 const DIA_MS = 86_400_000
 const diasEntre = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / DIA_MS)
 
-export default function LeadsCRM({ leads }: { leads: LeadCRM[] }) {
+export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: string | null }) {
   const router = useRouter()
   const hoy = hoyClave()
   const [vista, setVista] = useState<Vista>('HOY')
@@ -158,6 +158,7 @@ export default function LeadsCRM({ leads }: { leads: LeadCRM[] }) {
     <LeadDetalle
       key={seleccionado.id}
       lead={seleccionado}
+      firma={firma}
       onCambio={trasCambio}
       onPerder={() => setPerdiendo(seleccionado)}
       onEditar={() => setEditando(seleccionado)}

@@ -153,5 +153,8 @@ export default async function AdminLeadsPage() {
     }
   })
 
-  return <LeadsCRM leads={[...desdeBorradores, ...desdeConsultas]} />
+  // Los mensajes se firman con el nombre de pila de quien está conectado.
+  const firma = session.user.name?.trim().split(/\s+/)[0] || null
+
+  return <LeadsCRM leads={[...desdeBorradores, ...desdeConsultas]} firma={firma} />
 }
