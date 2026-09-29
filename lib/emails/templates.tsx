@@ -1005,8 +1005,12 @@ export interface OpcionesNotificacion {
   pasos?: { titulo: string; detalle: string }[]
   /** Advertencia en recuadro, después de los datos. */
   aviso?: string
-  /** Texto del botón y ancla dentro de la página del trámite. */
-  cta?: { texto: string; ancla?: string }
+  /**
+   * Texto del botón y a qué parte del trámite lleva: `ancla` en la página
+   * del cliente, `tab` en la ficha del admin (que va por pestañas: un ancla
+   * ahí abre la pestaña «Gestión» y no la sección buscada).
+   */
+  cta?: { texto: string; ancla?: string; tab?: 'pagos' | 'documentos' | 'comunicacion' | 'datos' | 'cierre' }
   /** El aviso va al equipo: el botón abre el panel de administración. */
   paraAdmin?: boolean
 }
@@ -1039,7 +1043,10 @@ export const emailNotificacion = ({
     : `<h1 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${escapar(titulo)}</h1>`
 
   const base = o.paraAdmin ? `${BASE_URL}/dashboard/admin/tramites` : `${BASE_URL}/dashboard/tramites`
-  const url = tramiteId ? `${base}/${tramiteId}${o.cta?.ancla ? `#${o.cta.ancla}` : ''}` : null
+  const destino = o.paraAdmin
+    ? o.cta?.tab ? `?tab=${o.cta.tab}` : ''
+    : o.cta?.ancla ? `#${o.cta.ancla}` : ''
+  const url = tramiteId ? `${base}/${tramiteId}${destino}` : null
 
   const content = `
     ${apertura}

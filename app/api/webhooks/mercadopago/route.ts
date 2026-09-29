@@ -145,13 +145,14 @@ export async function POST(request: Request) {
               tipo: 'ALERTA' as const,
               titulo: tituloAlerta,
               mensaje: mensajeAlerta,
+              link: `/dashboard/admin/tramites/${tramiteId}?tab=pagos`,
             })),
           })
           // Email a los admins (crítico: posible manipulación de pago)
           await Promise.all(admins.map(async (admin) => {
             if (!admin.email) return
             try {
-              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAlerta, mensajeAlerta, tramiteId, { paraAdmin: true, tono: 'aviso' })
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAlerta, mensajeAlerta, tramiteId, { paraAdmin: true, tono: 'aviso', cta: { texto: 'Ver los pagos', tab: 'pagos' } })
             } catch {
               // Email no crítico para la respuesta del webhook
             }
@@ -217,14 +218,15 @@ export async function POST(request: Request) {
               tramiteId: tramiteId,
               tipo: 'EXITO',
               titulo: tituloAdmin,
-              mensaje: mensajeAdmin
+              mensaje: mensajeAdmin,
+              link: `/dashboard/admin/tramites/${tramiteId}?tab=pagos`
             }
           })
 
           // Enviar email al admin
           if (admin.email) {
             try {
-              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAdmin, mensajeAdmin, tramiteId, { paraAdmin: true, tono: 'exito' })
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAdmin, mensajeAdmin, tramiteId, { paraAdmin: true, tono: 'exito', cta: { texto: 'Ver los pagos', tab: 'pagos' } })
             } catch {
               // Email no crítico
             }

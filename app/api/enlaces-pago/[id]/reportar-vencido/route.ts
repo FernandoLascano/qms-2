@@ -66,7 +66,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           tramiteId: enlace.tramiteId,
           tipo: 'ALERTA',
           titulo: '⚠️ Enlace de Pago Reportado como Vencido',
-          mensaje: mensajeAviso
+          mensaje: mensajeAviso,
+          link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`
         }
       })
 
@@ -79,7 +80,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             '⚠️ Enlace de Pago Reportado como Vencido',
             mensajeAviso,
             enlace.tramiteId,
-            { paraAdmin: true, tono: 'aviso', cta: { texto: 'Generar un enlace nuevo' } }
+            { paraAdmin: true, tono: 'aviso', cta: { texto: 'Generar un enlace nuevo', tab: 'pagos' } }
           )
         } catch {
           // Email no crítico

@@ -144,7 +144,7 @@ export async function POST(request: Request, { params }: RouteParams) {
             tipo: 'ACCION_REQUERIDA',
             titulo: 'Comprobante de Transferencia Recibido',
             mensaje: `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.`,
-            link: `/dashboard/admin/tramites/${pago.tramiteId}`
+            link: `/dashboard/admin/tramites/${pago.tramiteId}?tab=pagos`
           }
         })
 
@@ -161,7 +161,7 @@ export async function POST(request: Request, { params }: RouteParams) {
               'Comprobante de Transferencia Recibido',
               mensajeEmail,
               pago.tramiteId,
-              { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante' } }
+              { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante', tab: 'pagos' } }
             )
           } catch {
             // Email sending failed (non-critical)
