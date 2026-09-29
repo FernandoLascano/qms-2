@@ -144,7 +144,7 @@ export async function POST(
               userId: admin.id,
               tramiteId: id,
               leida: false,
-              link: `/dashboard/admin/tramites/${id}`,
+              link: `/dashboard/admin/tramites/${id}?tab=comunicacion`,
             },
           })
 
@@ -157,7 +157,7 @@ export async function POST(
                 titulo,
                 mensajeAviso,
                 id,
-                { paraAdmin: true, tono: 'info', cta: { texto: 'Responder en el panel' } }
+                { paraAdmin: true, tono: 'info', cta: { texto: 'Responder en el panel', tab: 'comunicacion' } }
               )
             } catch {
               // Email no crítico

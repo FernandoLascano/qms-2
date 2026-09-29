@@ -140,20 +140,20 @@ export async function POST(request: Request) {
     if (nombre?.includes('DEPOSITO_CAPITAL') || tipo === 'COMPROBANTE_DEPOSITO') {
       notifTitulo = 'Comprobante de Depósito Recibido'
       notifMensaje = `El cliente ha subido un comprobante de depósito del 25% del capital. Revisar y aprobar.`
-      notifLink = `/dashboard/admin/tramites/${tramiteId}#comprobantes`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}?tab=pagos`
     } else if (tipo === 'DOCUMENTO_FIRMADO' || nombre?.toLowerCase().includes('firmado')) {
       notifTitulo = 'Documento Firmado Recibido'
       notifMensaje = `El cliente ha subido el documento firmado "${nombre}". Revisar y aprobar.`
-      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}?tab=documentos`
     } else if (tipo === 'DNI_FRENTE' || tipo === 'DNI_DORSO' || tipo === 'CONSTANCIA_CUIL') {
       notifTitulo = 'Documentación Personal Recibida'
       notifMensaje = `El cliente ha subido documentación personal: "${nombre}". Revisar.`
-      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}?tab=documentos`
     } else {
       // Cualquier otro documento también debe notificarse al admin
       notifTitulo = 'Nuevo Documento Recibido'
       notifMensaje = `El cliente ha subido un documento: "${nombre}". Revisar.`
-      notifLink = `/dashboard/admin/tramites/${tramiteId}#documentos`
+      notifLink = `/dashboard/admin/tramites/${tramiteId}?tab=documentos`
     }
 
     // Crear notificación y enviar email para todos los admins
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
             notifTitulo,
             mensajeEmail,
             tramiteId,
-            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar en el panel' } }
+            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar en el panel', tab: notifLink.includes('tab=pagos') ? 'pagos' : 'documentos' } }
           )
         } catch {
           // Non-critical: email sending failed

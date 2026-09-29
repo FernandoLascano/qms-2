@@ -120,7 +120,7 @@ export async function PATCH(
           mensaje: `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.`,
           userId: admin.id,
           tramiteId: enlace.tramiteId,
-          link: `/dashboard/admin/tramites/${enlace.tramiteId}#comprobantes`,
+          link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`,
           leida: false
         }
       })
@@ -138,7 +138,7 @@ export async function PATCH(
             'Comprobante de Pago Recibido',
             mensajeEmail,
             enlace.tramiteId,
-            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante' } }
+            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante', tab: 'pagos' } }
           )
         } catch {
           // Email no crítico
