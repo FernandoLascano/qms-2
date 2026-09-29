@@ -18,6 +18,7 @@ import type { LucideIcon } from 'lucide-react'
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { PageHeader, SectionHeader } from '@/components/ui/page-header'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -75,7 +76,7 @@ async function AdminDashboardPage() {
     prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
     prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
     prisma.user.count(),
-    prisma.documento.count({ where: { estado: 'PENDIENTE' } }),
+    prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
     prisma.tramite.count({
       where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' },
     }),

@@ -59,6 +59,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     })
 
+    // Con la aprobación del cliente la etapa queda cerrada: el borrador pasa a
+    // APROBADO para que no vuelva a figurar como documento pendiente de nadie.
+    if (accion === 'aprobar_borrador') {
+      await prisma.documento.updateMany({
+        where: { tramiteId: id, tipo: 'BORRADOR', estado: { not: 'APROBADO' } },
+        data: { estado: 'APROBADO', fechaAprobacion: new Date() }
+      })
+    }
+
     // Avisar al equipo (notificación interna + email para admins)
     try {
       const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { id: true, email: true, name: true } })

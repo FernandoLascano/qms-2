@@ -7,6 +7,7 @@ import { FileText, Upload, Download, CheckCircle, Clock, XCircle, AlertCircle } 
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { esDocumentoDeQMS } from '@/lib/documentos'
 
 async function DocumentosPage() {
   const session = await getServerSession(authOptions)
@@ -15,7 +16,7 @@ async function DocumentosPage() {
     return null
   }
 
-  const documentos = await prisma.documento.findMany({
+  const todos = await prisma.documento.findMany({
     where: {
       userId: session.user.id
     },
@@ -23,7 +24,8 @@ async function DocumentosPage() {
       tramite: {
         select: {
           denominacionSocial1: true,
-          denominacionAprobada: true
+          denominacionAprobada: true,
+          borradorAprobadoCliente: true
         }
       }
     },
@@ -31,6 +33,21 @@ async function DocumentosPage() {
       createdAt: 'desc'
     }
   })
+
+  // El borrador y los papeles para firmar se guardan a nombre del cliente,
+  // pero no los subió él ni los revisamos nosotros: se los mandamos para que
+  // los revise o los firme. Mezclados con lo suyo figuraban «por revisar».
+  const enviados = todos.filter((d) => esDocumentoDeQMS(d.tipo))
+  const documentos = todos.filter((d) => !esDocumentoDeQMS(d.tipo))
+
+  const estadoEnviado = (d: (typeof todos)[number]) =>
+    d.tipo === 'BORRADOR'
+      ? // Los aprobados antes de que el documento pasara a APROBADO solo
+        // quedaron registrados en el trámite.
+        d.estado === 'APROBADO' || d.tramite.borradorAprobadoCliente
+        ? { texto: 'Lo aprobaste', clase: 'bg-success-soft text-success border-success-line' }
+        : { texto: 'Para que lo revises', clase: 'bg-warning-soft text-warning border-warning-line' }
+      : { texto: 'Para firmar', clase: 'bg-info-soft text-info border-info-line' }
 
   const getEstadoIcon = (estado: string) => {
     switch (estado) {
@@ -163,6 +180,56 @@ async function DocumentosPage() {
           </CardContent>
         </Card>
       </div>
+
+      {enviados.length > 0 && (
+        <Card className="shadow-raise">
+          <CardHeader className="border-b border-line">
+            <CardTitle className="text-title font-semibold text-ink">Te enviamos</CardTitle>
+            <CardDescription>El borrador y los documentos de tu Sociedad para revisar o firmar</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              {enviados.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex flex-wrap items-center justify-between gap-3 p-card border-2 border-line rounded-card"
+                >
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="h-12 w-12 rounded-control bg-surface-3 flex items-center justify-center flex-shrink-0">
+                      <FileText className="h-5 w-5 text-ink-2" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
+                        <h4 className="font-semibold text-ink">{doc.nombre}</h4>
+                        <span className={`px-3 py-1 rounded-control text-label font-medium border ${estadoEnviado(doc).clase}`}>
+                          {estadoEnviado(doc).texto}
+                        </span>
+                      </div>
+                      <p className="text-body-sm text-ink-2">
+                        {doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1} ·{' '}
+                        {format(new Date(doc.fechaSubida), "d 'de' MMMM, yyyy", { locale: es })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/dashboard/tramites/${doc.tramiteId}${doc.tipo === 'BORRADOR' ? '' : '#documentos-para-firmar'}`}>
+                        {doc.tipo === 'BORRADOR' ? 'Ver en el trámite' : 'Ir a firmar'}
+                      </Link>
+                    </Button>
+                    <a href={`/api/documentos/${doc.id}/view?download=1`} target="_blank" rel="noopener noreferrer">
+                      <Button variant="ghost" size="sm" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Descargar
+                      </Button>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Lista de Documentos */}
       {documentos.length === 0 ? (

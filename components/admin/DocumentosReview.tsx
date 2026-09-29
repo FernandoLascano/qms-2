@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { esDocumentoDeQMS } from '@/lib/documentos'
 
 interface Documento {
   id: string
@@ -30,11 +31,10 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
   const router = useRouter()
   const [procesando, setProcesando] = useState<string | null>(null)
 
-  // Filtrar solo documentos que el CLIENTE subió (excluir los que el admin envió para firmar)
-  const tiposDeAdmin = ['DOCUMENTO_PARA_FIRMAR', 'ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR']
+  // Filtrar solo documentos que el CLIENTE subió (excluir los que le mandamos nosotros)
   const documentosDelCliente = documentos.filter(doc => {
-    // Excluir documentos que el admin envió para firmar (por tipo)
-    if (tiposDeAdmin.includes(doc.tipo || '')) {
+    // Excluir el borrador y los documentos que el admin envió para firmar (por tipo)
+    if (esDocumentoDeQMS(doc.tipo)) {
       return false
     }
     // Excluir documentos subidos por usuarios ADMIN (aunque no tengan el tipo correcto)
