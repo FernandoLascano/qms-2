@@ -78,7 +78,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             admin.name || 'Administrador',
             '⚠️ Enlace de Pago Reportado como Vencido',
             mensajeAviso,
-            enlace.tramiteId
+            enlace.tramiteId,
+            { paraAdmin: true, tono: 'aviso', cta: { texto: 'Generar un enlace nuevo' } }
           )
         } catch {
           // Email no crítico

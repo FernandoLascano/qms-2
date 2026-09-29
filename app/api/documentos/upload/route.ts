@@ -186,7 +186,8 @@ export async function POST(request: Request) {
             adminUser.name || 'Administrador',
             notifTitulo,
             mensajeEmail,
-            tramiteId
+            tramiteId,
+            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar en el panel' } }
           )
         } catch {
           // Non-critical: email sending failed

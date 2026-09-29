@@ -128,12 +128,35 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Enviar email al usuario
     if (tramite.user) {
       try {
+        // El mail no reusa el texto de la notificación: los datos bancarios
+        // van en tabla, para que el CBU y el alias se lean y se copien bien.
         await enviarEmailNotificacion(
           tramite.user.email,
           tramite.user.name || 'Usuario',
-          'Datos para Depósito del 25% del Capital',
-          mensajeNotificacion,
-          id
+          'Datos para el depósito del 25% del capital',
+          'Ya podés hacer el depósito en garantía del 25% del capital social. Es un requisito obligatorio del trámite: ' +
+            'el dinero queda en una cuenta abierta especialmente para tu Sociedad y se te reintegra a los CBU ' +
+            'informados una vez inscripta.',
+          id,
+          {
+            tono: 'accion',
+            destacado: { etiqueta: 'Monto a depositar', valor: `$${monto.toLocaleString('es-AR')}` },
+            datos: [
+              { etiqueta: 'Banco', valor: banco },
+              { etiqueta: 'CBU', valor: cbu, mono: true },
+              ...(alias ? [{ etiqueta: 'Alias', valor: alias, mono: true }] : []),
+              { etiqueta: 'Titular', valor: titular },
+            ],
+            aviso: mensajeAdvertencia
+              ? mensajeAdvertencia.replace('⚠️ IMPORTANTE: ', '').trim()
+              : undefined,
+            pasos: [
+              { titulo: 'Transferí el monto exacto', detalle: 'Desde cualquier cuenta, a los datos de arriba.' },
+              { titulo: 'Subí el comprobante', detalle: 'Desde tu panel, en la sección del depósito.' },
+              { titulo: 'Lo verificamos', detalle: 'Te avisamos apenas esté acreditado y seguimos con la inscripción.' },
+            ],
+            cta: { texto: 'Subir el comprobante', ancla: 'deposito-capital' },
+          }
         )
       } catch {
         // Email sending failed (non-critical)

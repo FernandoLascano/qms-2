@@ -87,7 +87,8 @@ export async function marcarEtapaPagada(tramiteId: string, etapa: EtapaPago): Pr
         tramite.user.name || 'Usuario',
         'Requisito: Ciudadano Digital Nivel 2',
         `Para avanzar con el trámite necesitamos que todas las personas que integren la Sociedad (como socias o administradoras) tengan Ciudadano Digital Nivel 2. Es un requisito del sistema.\n\nPodés ver el instructivo para obtenerlo acá: ${BASE_URL}/assets/img/CiudadanoDigital.jpeg\n\nCuando lo tengas listo, confirmalo desde tu panel. Ante cualquier duda, escribinos por WhatsApp.`,
-        tramiteId
+        tramiteId,
+        { tono: 'accion' }
       )
     } catch {
       // Email no crítico

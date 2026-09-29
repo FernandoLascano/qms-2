@@ -151,7 +151,7 @@ export async function POST(request: Request) {
           await Promise.all(admins.map(async (admin) => {
             if (!admin.email) return
             try {
-              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAlerta, mensajeAlerta, tramiteId)
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAlerta, mensajeAlerta, tramiteId, { paraAdmin: true, tono: 'aviso' })
             } catch {
               // Email no crítico para la respuesta del webhook
             }
@@ -224,7 +224,7 @@ export async function POST(request: Request) {
           // Enviar email al admin
           if (admin.email) {
             try {
-              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAdmin, mensajeAdmin, tramiteId)
+              await enviarEmailNotificacion(admin.email, admin.name || 'Administrador', tituloAdmin, mensajeAdmin, tramiteId, { paraAdmin: true, tono: 'exito' })
             } catch {
               // Email no crítico
             }

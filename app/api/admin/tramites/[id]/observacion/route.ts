@@ -60,7 +60,8 @@ export async function POST(request: Request, { params }: RouteParams) {
           usuario.name,
           'Nuevo mensaje del equipo',
           mensaje,
-          id
+          id,
+          { tono: 'info', cta: { texto: 'Ver el mensaje en tu panel' } }
         )
       } catch {
         // Error al enviar email de notificación (no crítico)

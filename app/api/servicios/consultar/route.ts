@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       await Promise.allSettled(
         admins
           .filter((a) => a.email)
-          .map((a) => enviarEmailNotificacion(a.email, a.name || 'Equipo', titulo, mensaje))
+          .map((a) => enviarEmailNotificacion(a.email, a.name || 'Equipo', titulo, mensaje, undefined, { paraAdmin: true, tono: 'info' }))
       )
     }
 

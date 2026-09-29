@@ -83,7 +83,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 a.name || 'Equipo',
                 config.tituloAdmin,
                 `El cliente avanzó un paso en el trámite "${tramite.denominacionSocial1}".`,
-                id
+                id,
+                { paraAdmin: true, tono: 'info' }
               )
             )
         )

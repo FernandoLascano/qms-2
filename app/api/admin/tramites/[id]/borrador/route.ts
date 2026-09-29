@@ -77,7 +77,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         }
       })
       if (tramite.user?.email) {
-        await enviarEmailNotificacion(tramite.user.email, tramite.user.name || 'Usuario', 'Borrador listo para revisar', mensaje, id)
+        await enviarEmailNotificacion(tramite.user.email, tramite.user.name || 'Usuario', 'Borrador listo para revisar', mensaje, id, { tono: 'accion', cta: { texto: 'Revisar el borrador' } })
       }
     } catch {
       // Aviso no crítico

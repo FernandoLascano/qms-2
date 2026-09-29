@@ -160,7 +160,8 @@ export async function POST(request: Request, { params }: RouteParams) {
               admin.name || 'Administrador',
               'Comprobante de Transferencia Recibido',
               mensajeEmail,
-              pago.tramiteId
+              pago.tramiteId,
+              { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante' } }
             )
           } catch {
             // Email sending failed (non-critical)

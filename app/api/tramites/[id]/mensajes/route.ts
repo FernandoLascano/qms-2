@@ -156,7 +156,8 @@ export async function POST(
                 admin.name || 'Administrador',
                 titulo,
                 mensajeAviso,
-                id
+                id,
+                { paraAdmin: true, tono: 'info', cta: { texto: 'Responder en el panel' } }
               )
             } catch {
               // Email no crítico

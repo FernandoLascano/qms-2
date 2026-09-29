@@ -73,7 +73,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           usuario.name || 'Usuario',
           'Denominación Sugerida para tu Sociedad',
           `Después de realizar el examen de homonimia, sugerimos utilizar la denominación: "${denominacion}" para tu sociedad. Te contactaremos para coordinar el pago de la tasa de reserva de nombre.`,
-          id
+          id,
+          { tono: 'info', destacado: { etiqueta: 'Denominación sugerida', valor: denominacion } }
         )
       } catch {
         // Error al enviar email de denominación sugerida (no crítico)
