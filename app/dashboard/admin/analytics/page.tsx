@@ -25,6 +25,8 @@ import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface ErrorData {
   error: string
@@ -186,32 +188,25 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-display text-ink">
-            Dashboard de Analytics
-          </h1>
-          <p className="mt-1 text-body text-ink-2">
-            Última actualización: {format(new Date(), "d 'de' MMMM, HH:mm", { locale: es })}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {data && (
-            <ExportButton 
-              data={data} 
-              filename={`analytics-${periodo}-${jurisdiccion || 'todas'}`}
-            />
-          )}
-          <button
-            onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)}
-            className="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-control hover:bg-primary-hover transition cursor-pointer shadow-raise font-semibold"
-          >
-            <Download className="w-5 h-5" />
-            Exportar PDF Completo
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Analytics"
+        description={`Última actualización: ${format(new Date(), "d 'de' MMMM, HH:mm", { locale: es })}`}
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Analytics' }]}
+        actions={
+          <>
+            {data && (
+              <ExportButton
+                data={data}
+                filename={`analytics-${periodo}-${jurisdiccion || 'todas'}`}
+              />
+            )}
+            <Button onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)} disabled={!data}>
+              <Download className="h-4 w-4" aria-hidden />
+              Exportar PDF
+            </Button>
+          </>
+        }
+      />
 
       {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 bg-surface p-6 rounded-card shadow-raise border border-line">

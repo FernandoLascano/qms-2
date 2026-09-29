@@ -5,6 +5,8 @@ import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface Post {
   id: string
@@ -105,24 +107,19 @@ export default function AdminBlogPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-display text-ink">
-            Gestión de Blog
-          </h1>
-          <p className="mt-1 text-body text-ink-2">
-            Administra las notas y artículos del sitio
-          </p>
-        </div>
-        <Link
-          href="/dashboard/admin/blog/nuevo"
-          className="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-control hover:bg-primary-hover transition-all shadow-raise font-semibold"
-        >
-          <Plus className="w-5 h-5" />
-          Crear Nota
-        </Link>
-      </div>
+      <PageHeader
+        title="Blog"
+        description="Las notas y artículos del sitio."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Blog' }]}
+        actions={
+          <Button asChild>
+            <Link href="/dashboard/admin/blog/nuevo">
+              <Plus className="h-4 w-4" aria-hidden />
+              Nueva nota
+            </Link>
+          </Button>
+        }
+      />
 
       {/* Filtros y búsqueda */}
       <div className="bg-surface rounded-card shadow-raise border border-line p-6">
