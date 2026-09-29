@@ -17,6 +17,7 @@ import {
   type TotalesLiquidacion,
 } from '@/lib/comisiones'
 import { cn } from '@/lib/utils'
+import { CargaMW } from './CargaMW'
 import {
   BENEFICIARIOS,
   COLOR_DE,
@@ -171,6 +172,12 @@ export function LiquidacionTab({
             <span className="text-title text-primary tnum">{fmt(totales.subtotalPagable)}</span>
           </div>
         </Card>
+
+        <CargaMW
+          movimientos={movimientos.filter((m) => periodoDeISO(m.fecha) === periodo)}
+          porcentajes={porcentajes}
+          periodo={periodo}
+        />
 
         <Card>
           <CardBody>
