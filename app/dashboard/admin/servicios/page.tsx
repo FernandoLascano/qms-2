@@ -9,11 +9,12 @@
  */
 
 import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Plus, RefreshCw, Loader2, Save, EyeOff, Eye } from 'lucide-react'
+import { Plus, RefreshCw, Loader2, Save, EyeOff, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { controlBase } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 type Modalidad = 'UNICO' | 'MENSUAL' | 'ANUAL' | 'SIN_COSTO' | 'A_CONSULTAR'
 
@@ -122,42 +123,27 @@ export default function ServiciosAdminPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <Link
-        href="/dashboard/admin/configuracion"
-        className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a configuración
-      </Link>
-
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <span className="text-body-sm font-semibold text-primary">Post-venta</span>
-          <h1 className="text-title font-semibold text-ink mt-1">Catálogo de servicios</h1>
-          <p className="text-ink-2 text-body-sm mt-1 max-w-2xl">
-            Lo que ve el cliente en <strong>Servicios</strong> después de constituir. Sin precio
-            cargado, la tarjeta dice «Consultar».
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={cargar}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Actualizar
-          </button>
-          <button
-            type="button"
-            onClick={crear}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:bg-primary-hover"
-          >
-            <Plus className="w-4 h-4" />
-            Nuevo servicio
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Catálogo de servicios"
+        description="Lo que ve el cliente en Servicios después de constituir. Sin precio cargado, la tarjeta dice «Consultar». Lo que contrata cada uno se anota en Sociedades."
+        breadcrumbs={[
+          { label: 'Hoy', href: '/dashboard/admin' },
+          { label: 'Configuración', href: '/dashboard/admin/configuracion' },
+          { label: 'Catálogo de servicios' },
+        ]}
+        actions={
+          <>
+            <Button variant="ghost" onClick={cargar}>
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              Actualizar
+            </Button>
+            <Button onClick={crear}>
+              <Plus className="h-4 w-4" aria-hidden />
+              Nuevo servicio
+            </Button>
+          </>
+        }
+      />
 
       <div className="space-y-3">
         {servicios.map((s) => (
