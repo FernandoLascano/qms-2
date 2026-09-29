@@ -35,12 +35,20 @@ export function renovar(vencimientoActual: Date | null, modalidad: Modalidad, ho
   return sumarPeriodo(base, modalidad)
 }
 
-/** Cuánto aporta por mes: lo mensual tal cual, lo anual dividido 12, el resto nada. */
+/*
+ * Lo mensual y lo anual se suman por separado. El domicilio en sede, por
+ * ejemplo, se cobra una vez al año: dividirlo por 12 mostraba un ingreso
+ * mensual que no entra ningún mes.
+ */
+
+/** Lo que entra todos los meses. */
 export function ingresoMensual(monto: number | null | undefined, modalidad: Modalidad): number {
-  if (!monto) return 0
-  if (modalidad === 'MENSUAL') return monto
-  if (modalidad === 'ANUAL') return monto / 12
-  return 0
+  return monto && modalidad === 'MENSUAL' ? monto : 0
+}
+
+/** Lo que entra una vez por año (renovaciones anuales). */
+export function ingresoAnual(monto: number | null | undefined, modalidad: Modalidad): number {
+  return monto && modalidad === 'ANUAL' ? monto : 0
 }
 
 /**

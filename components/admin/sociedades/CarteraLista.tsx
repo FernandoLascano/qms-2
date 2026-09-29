@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Building2, CalendarClock, Lightbulb, Search, Wallet } from 'lucide-react'
+import { Building2, CalendarClock, CalendarRange, Lightbulb, Search, Wallet } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { StatCard } from '@/components/ui/stat-card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/states'
 import { cn } from '@/lib/utils'
 import { DIAS_AVISO } from '@/lib/cartera'
+import { PlanBadge } from '@/components/ui/plan-badge'
 
 export interface SociedadCartera {
   id: string
@@ -24,6 +25,7 @@ export interface SociedadCartera {
   servicios: { id: string; nombre: string }[]
   oportunidades: { id: string; nombre: string }[]
   ingresoMensual: number
+  ingresoAnual: number
   proximoVencimiento: { que: string; fecha: string; dias: number } | null
 }
 
@@ -46,7 +48,8 @@ export default function CarteraLista({
   const sinServicios = (s: SociedadCartera) => s.servicios.length === 0 && s.domicilio?.estado !== 'ACTIVO'
 
   const kpi = useMemo(() => ({
-    ingreso: sociedades.reduce((a, s) => a + s.ingresoMensual, 0),
+    mensual: sociedades.reduce((a, s) => a + s.ingresoMensual, 0),
+    anual: sociedades.reduce((a, s) => a + s.ingresoAnual, 0),
     vencen: sociedades.filter(vence).length,
     vencidos: sociedades.filter((s) => s.proximoVencimiento && s.proximoVencimiento.dias < 0).length,
     oportunidades: sociedades.reduce((a, s) => a + s.oportunidades.length, 0),
@@ -76,14 +79,21 @@ export default function CarteraLista({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Sociedades" value={sociedades.length} icon={Building2} acento="a3" hint="Inscriptas" />
         <StatCard
-          label="Ingreso recurrente"
-          value={pesos(kpi.ingreso)}
+          label="Ingresos mensuales"
+          value={pesos(kpi.mensual)}
           tamano="compacto"
           icon={Wallet}
           acento="a2"
-          hint="Por mes, servicios activos y domicilios"
+          hint="Servicios que se cobran todos los meses"
+        />
+        <StatCard
+          label="Ingresos anuales"
+          value={pesos(kpi.anual)}
+          tamano="compacto"
+          icon={CalendarRange}
+          acento="a3"
+          hint="Domicilios y servicios que se renuevan por año"
         />
         <StatCard
           label="Vencen en 30 días"
@@ -146,23 +156,23 @@ export default function CarteraLista({
                   <th className="py-2.5 pr-4 font-semibold">Domicilio</th>
                   <th className="py-2.5 pr-4 font-semibold">Servicios</th>
                   <th className="py-2.5 pr-4 font-semibold">Próximo vencimiento</th>
-                  <th className="px-card-sm py-2.5 text-right font-semibold">Por mes</th>
+                  <th className="px-card-sm py-2.5 text-right font-semibold">Ingreso</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {visibles.map((s) => (
                   <tr key={s.id} className="relative align-top transition-colors hover:bg-surface-2">
                     <td className="min-w-56 px-card-sm py-3">
-                      <Link href={`/dashboard/admin/sociedades/${s.id}`} className="font-medium text-ink after:absolute after:inset-0 hover:text-primary">
-                        {s.denominacion}
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link href={`/dashboard/admin/sociedades/${s.id}`} className="font-medium text-ink after:absolute after:inset-0 hover:text-primary">
+                          {s.denominacion}
+                        </Link>
+                        <PlanBadge plan={s.plan} />
+                      </div>
                       <p className="text-label text-ink-2">
                         {s.cliente} · inscripta {fecha(s.inscripta)}
                       </p>
-                      <p className="text-label text-ink-3">
-                        {s.plan.charAt(0) + s.plan.slice(1).toLowerCase()}
-                        {s.partner && ` · por ${s.partner}`}
-                      </p>
+                      {s.partner && <p className="text-label text-ink-3">Vino por {s.partner}</p>}
                     </td>
                     <td className="py-3 pr-4">
                       {!s.domicilio ? (
@@ -208,7 +218,15 @@ export default function CarteraLista({
                       )}
                     </td>
                     <td className="whitespace-nowrap px-card-sm py-3 text-right tnum">
-                      {s.ingresoMensual > 0 ? <span className="font-semibold text-ink">{pesos(s.ingresoMensual)}</span> : <span className="text-ink-3">—</span>}
+                      {s.ingresoMensual > 0 && (
+                        <p className="font-semibold text-ink">{pesos(s.ingresoMensual)}<span className="font-normal text-ink-3">/mes</span></p>
+                      )}
+                      {s.ingresoAnual > 0 && (
+                        <p className={s.ingresoMensual > 0 ? 'text-label text-ink-2' : 'font-semibold text-ink'}>
+                          {pesos(s.ingresoAnual)}<span className="font-normal text-ink-3">/año</span>
+                        </p>
+                      )}
+                      {s.ingresoMensual === 0 && s.ingresoAnual === 0 && <span className="text-ink-3">—</span>}
                     </td>
                   </tr>
                 ))}

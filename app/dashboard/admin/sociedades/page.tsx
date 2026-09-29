@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { PageHeader } from '@/components/ui/page-header'
 import CarteraLista, { type SociedadCartera } from '@/components/admin/sociedades/CarteraLista'
-import { diasHasta, ingresoMensual, type Modalidad } from '@/lib/cartera'
+import { diasHasta, ingresoAnual, ingresoMensual, type Modalidad } from '@/lib/cartera'
 
 /*
  * Sociedades como cartera de clientes: qué tiene contratado cada una, qué
@@ -85,9 +85,11 @@ export default async function SociedadesPage({
       oportunidades: t.serviciosContratados
         .filter((s) => s.estado === 'INTERESADO')
         .map((s) => ({ id: s.id, nombre: s.servicio.nombre })),
-      ingresoMensual:
-        activos.reduce((a, s) => a + ingresoMensual(s.monto, s.servicio.modalidad as Modalidad), 0) +
-        ingresoMensual(domicilioActivo?.montoAnual, 'ANUAL'),
+      ingresoMensual: activos.reduce((a, s) => a + ingresoMensual(s.monto, s.servicio.modalidad as Modalidad), 0),
+      // El domicilio en sede se cobra por año.
+      ingresoAnual:
+        activos.reduce((a, s) => a + ingresoAnual(s.monto, s.servicio.modalidad as Modalidad), 0) +
+        ingresoAnual(domicilioActivo?.montoAnual, 'ANUAL'),
       proximoVencimiento: proximo ? { que: proximo.que, fecha: proximo.fecha.toISOString(), dias: diasHasta(proximo.fecha) } : null,
     }
   })
@@ -96,7 +98,7 @@ export default async function SociedadesPage({
     <div className="space-y-section">
       <PageHeader
         title="Sociedades"
-        description="Tu cartera de clientes: qué tiene contratado cada uno, qué vence y a quién ofrecerle algo más."
+        description={`${sociedades.length} sociedades inscriptas: qué tiene contratado cada una, qué vence y a quién ofrecerle algo más.`}
         breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Sociedades' }]}
       />
       <CarteraLista
