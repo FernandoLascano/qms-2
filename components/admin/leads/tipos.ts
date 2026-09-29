@@ -39,6 +39,10 @@ export interface LeadCRM {
   /** Secuencia de emails automáticos del cron. */
   toques: { enviados: number; total: number; ultimo: string | null } | null
 
+  /** Quién lo trajo (cláusula 4.2 b), registrado antes del primer cobro. */
+  originador: string
+  originadorRegistradoEn: string | null
+
   // Consulta
   mensaje: string | null
   partner: string | null

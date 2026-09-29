@@ -141,7 +141,7 @@ export function MovimientoDialog({
               invalid={!!errores.monto} onChange={(e) => setF({ ...f, monto: e.target.value })} placeholder="0" />
           </Field>
           <Field label="Originado por" htmlFor="mov-orig" className="sm:col-span-2"
-            hint={`Si alguien trajo al cliente, se lleva el ${porcentajes.originacion}% antes del reparto.`}>
+            hint={`Si alguien trajo al cliente, se lleva el ${porcentajes.originacion}% antes del reparto. Sólo cuenta si se registró antes del cobro (contrato, 4.2 b).`}>
             <Select id="mov-orig" value={f.originador} onChange={(e) => setF({ ...f, originador: e.target.value as Originador })}>
               {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
             </Select>

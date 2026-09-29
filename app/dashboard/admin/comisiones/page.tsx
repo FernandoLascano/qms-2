@@ -64,6 +64,7 @@ export default function ComisionesPage() {
   const [distribuciones, setDistribuciones] = useState<Distribucion[]>([])
   const [gastos, setGastos] = useState<Gasto[]>([])
   const [porcentajes, setPorcentajes] = useState<Porcentajes>(PORCENTAJES_DEFAULT)
+  const [bonos, setBonos] = useState<Record<string, number>>({})
 
   const [editando, setEditando] = useState<Movimiento | null | undefined>(undefined)
   const [fondoDialog, setFondoDialog] = useState<'distribucion' | 'gasto' | null>(null)
@@ -79,6 +80,7 @@ export default function ComisionesPage() {
       setDistribuciones(data.distribucionesFondo)
       setGastos(data.gastosFondo ?? [])
       setPorcentajes(data.porcentajes)
+      setBonos(Object.fromEntries((data.bonos ?? []).map((b: { periodo: string; porcentaje: number }) => [b.periodo, b.porcentaje])))
       if (data.importados > 0) toast.success(`${data.importados} cobro(s) nuevo(s) importado(s) del sistema`)
       setEstado('listo')
     } catch {
@@ -286,6 +288,9 @@ export default function ComisionesPage() {
           porcentajes={porcentajes}
           liquidaciones={liquidaciones}
           movimientos={movimientos}
+          bonoPct={bonos[periodo] ?? 0}
+          saldoFondo={fondo.FERNANDO.saldo + fondo.JUSTINIANO.saldo}
+          gastosFondoMes={gastos.filter((g) => periodoDeISO(g.fecha) === periodo)}
           recargar={cargar}
         />
       )}

@@ -28,16 +28,18 @@ export async function GET() {
       console.error('[comisiones] no se pudieron importar los pagos', e)
     }
 
-    const [porcentajes, movimientos, excluidos, liquidaciones, distribucionesFondo, gastosFondo] = await Promise.all([
+    const [porcentajes, movimientos, excluidos, liquidaciones, distribucionesFondo, gastosFondo, bonos] = await Promise.all([
       getPorcentajes(),
       prisma.movimientoComision.findMany({ where: { excluido: false }, orderBy: { fecha: 'desc' } }),
       prisma.movimientoComision.findMany({ where: { excluido: true }, orderBy: { fecha: 'desc' } }),
       prisma.liquidacionPago.findMany(),
       prisma.distribucionFondo.findMany({ orderBy: { fecha: 'desc' } }),
       prisma.gastoFondo.findMany({ orderBy: { fecha: 'desc' } }),
+      // Tabla nueva: si la migración no corrió, la pantalla sigue andando sin bono.
+      prisma.bonoComercialMes.findMany().catch(() => []),
     ])
 
-    return NextResponse.json({ porcentajes, movimientos, excluidos, liquidaciones, distribucionesFondo, gastosFondo, importados })
+    return NextResponse.json({ porcentajes, movimientos, excluidos, liquidaciones, distribucionesFondo, gastosFondo, bonos, importados })
   } catch {
     return NextResponse.json({ error: 'Error al cargar comisiones' }, { status: 500 })
   }

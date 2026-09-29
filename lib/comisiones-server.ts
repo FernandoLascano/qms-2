@@ -4,6 +4,7 @@ import {
   diaArgentino,
   montoCobrado,
   PORCENTAJES_DEFAULT,
+  type Originador,
   type Porcentajes,
 } from './comisiones'
 
@@ -18,6 +19,31 @@ export async function getPorcentajes(): Promise<Porcentajes> {
     fondoJustiniano: c.comisionFondoJustinianoPct,
     originacion: c.comisionOriginacionPct,
   }
+}
+
+/**
+ * Originador que corresponde a un cobro, según la cláusula 4.2 b del contrato:
+ * la originación sólo se reconoce si quedó registrada ANTES del primer cobro.
+ * Se busca en el trámite y, si ahí no hay, en el lead de la misma persona (una
+ * consulta que después abrió el trámite). Registrado tarde = sin originador.
+ */
+export async function originadorDelCobro(tramiteId: string | null, fechaCobro: Date): Promise<Originador> {
+  if (!tramiteId) return 'NINGUNO'
+  const tramite = await prisma.tramite.findUnique({
+    where: { id: tramiteId },
+    select: { originador: true, originadorRegistradoEn: true, userId: true },
+  })
+  if (!tramite) return 'NINGUNO'
+
+  const aTiempo = (o: { originador: Originador; originadorRegistradoEn: Date | null } | null) =>
+    !!o && o.originador !== 'NINGUNO' && !!o.originadorRegistradoEn && o.originadorRegistradoEn <= fechaCobro
+
+  if (aTiempo(tramite)) return tramite.originador
+  const lead = await prisma.lead.findFirst({
+    where: { userId: tramite.userId, originador: { not: 'NINGUNO' } },
+    select: { originador: true, originadorRegistradoEn: true },
+  })
+  return aTiempo(lead) ? lead!.originador : 'NINGUNO'
 }
 
 // Importa los pagos de honorarios APROBADOS que todavía no tienen un movimiento
@@ -41,16 +67,17 @@ export async function sincronizarMovimientos(): Promise<{ creados: number }> {
   let creados = 0
   for (const pago of pagos) {
     const cliente = pago.tramite?.user?.name?.trim() || 'Cliente'
+    const cobradoEl = pago.fechaPago ?? pago.updatedAt
     try {
       await prisma.movimientoComision.create({
         data: {
           // Día calendario argentino: un pago de las 22 h del 31 es de ese
           // mes, no del siguiente (en UTC ya sería el día 1).
-          fecha: diaArgentino(pago.fechaPago ?? pago.updatedAt),
+          fecha: diaArgentino(cobradoEl),
           cliente,
           asunto: 'Constitución SAS (honorarios)',
           monto: montoCobrado(pago),
-          originador: 'NINGUNO',
+          originador: await originadorDelCobro(pago.tramiteId, cobradoEl),
           origen: 'PAGO',
           pagoId: pago.id,
           tramiteId: pago.tramiteId,
