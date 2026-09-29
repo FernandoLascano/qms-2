@@ -220,6 +220,7 @@ export default function ComisionesPage() {
             value={fmtRedondo(totales.ingresoBruto)}
             hint={`${movsPeriodo.length} ${movsPeriodo.length === 1 ? 'cobro' : 'cobros'}`}
             icon={Wallet}
+            tamano="compacto"
             acento="a2"
           />
           <StatCard
@@ -233,6 +234,7 @@ export default function ComisionesPage() {
                   : 'Nada que pagar'
             }
             icon={HandCoins}
+            tamano="compacto"
             acento="a3"
             alert={esPasado && pendiente > 0.005}
           />
@@ -241,6 +243,7 @@ export default function ComisionesPage() {
             value={fmtRedondo(totales.subtotalFondo)}
             hint={`${porcentajes.fondoFernando + porcentajes.fondoJustiniano}% del esquema`}
             icon={PiggyBank}
+            tamano="compacto"
             acento="a4"
           />
           <StatCard
@@ -248,6 +251,7 @@ export default function ComisionesPage() {
             value={fmtRedondo(fondo.FERNANDO.saldo + fondo.JUSTINIANO.saldo)}
             hint="Acumulado menos lo usado, a hoy"
             icon={Landmark}
+            tamano="compacto"
             acento="a6"
           />
         </div>

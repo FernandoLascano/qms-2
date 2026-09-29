@@ -34,6 +34,12 @@ interface StatCardProps {
   acento?: keyof typeof ACENTOS
   /** true → la tarjeta se pinta para reclamar atención. */
   alert?: boolean
+  /**
+   * `compacto` baja la cifra a tamaño de título. El tamaño por defecto está
+   * pensado para conteos cortos ("12"); un importe como "$1.234.567" a 40px
+   * domina la pantalla y en cuatro columnas ni entra.
+   */
+  tamano?: 'grande' | 'compacto'
   href?: string
   className?: string
 }
@@ -45,6 +51,7 @@ export function StatCard({
   icon: Icon,
   acento = 'neutro',
   alert = false,
+  tamano = 'grande',
   href,
   className,
 }: StatCardProps) {
@@ -56,7 +63,8 @@ export function StatCard({
         <div className="min-w-0">
           <div
             className={cn(
-              'text-hero tnum leading-none',
+              tamano === 'grande' ? 'text-hero leading-none' : 'text-title',
+              'tnum',
               alert ? 'text-warning' : 'text-ink',
             )}
           >

@@ -123,7 +123,7 @@ export function LiquidacionTab({
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-right">
-                        <p className={cn('text-title tnum', monto > 0 || pagado ? 'text-ink' : 'text-ink-3')}>
+                        <p className={cn('text-heading font-bold tnum', monto > 0 || pagado ? 'text-ink' : 'text-ink-3')}>
                           {fmt(pagado ? liq!.monto : monto)}
                         </p>
                         {pagado ? (

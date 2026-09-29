@@ -88,7 +88,7 @@ export function FondoTab({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-body-sm font-semibold text-ink">Fondo {BENEFICIARIO_LABEL[b]}</p>
-                    <p className={cn('mt-1 text-hero leading-none tnum', s.saldo < 0 ? 'text-danger' : 'text-ink')}>
+                    <p className={cn('mt-1 text-title tnum', s.saldo < 0 ? 'text-danger' : 'text-ink')}>
                       {fmt(s.saldo)}
                     </p>
                     <p className="mt-1.5 text-label text-ink-2">disponible</p>
