@@ -38,6 +38,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data.originador = body.originador
     }
     if (body.notas !== undefined) data.notas = body.notas ? String(body.notas).trim() : null
+    // Sólo se permite volver a incluir: excluir se hace con DELETE.
+    if (body.excluido === false) data.excluido = false
 
     // Campos editables solo para movimientos manuales
     if (actual.origen === 'MANUAL') {
@@ -71,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE - Eliminar un movimiento manual. Los importados de un Pago no se borran
-// (se recrean al sincronizar); para excluirlos, cambiá el monto en el pago o el originador.
+// (la sincronización los recrearía): se excluyen del reparto y se pueden restaurar.
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     if (!(await requireAdmin())) {
