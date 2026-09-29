@@ -788,8 +788,9 @@ enum ModalidadServicio {
 model Lead {
   id String @id @default(cuid())
 
-  // Puede existir con nada más que un email. Esa es toda la gracia.
-  email    String
+  // Puede existir con nada más que un email o un teléfono: quien escribe por
+  // WhatsApp muchas veces no deja email, y cargarlo igual es la gracia.
+  email    String?
   nombre   String?
   telefono String?
 

@@ -69,7 +69,10 @@ export async function POST(request: Request, { params }: RouteParams) {
           // Solo avanza NUEVO -> CONTACTADO. Si ya está más adelante (en conversación,
           // convertido, descartado) registrar un contacto no lo hace retroceder.
           ...(lead.leadEstado === 'NUEVO' ? { leadEstado: 'CONTACTADO' as const } : {}),
-          ...(proximoContacto ? { leadProximoContacto: proximoContacto } : {})
+          // El contacto cumple el seguimiento que estaba agendado: si no se
+          // agenda uno nuevo, queda «sin próximo paso» y la agenda lo marca.
+          // Antes la fecha vieja seguía ahí y el lead figuraba vencido igual.
+          leadProximoContacto: proximoContacto ?? null
         }
       })
     ])

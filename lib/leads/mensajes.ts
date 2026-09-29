@@ -19,28 +19,35 @@ export interface Mensaje {
   texto: string
 }
 
-const FIRMA = 'Justiniano · QuieroMiSAS'
-
-export function mensajeWhatsapp(segmento: SegmentoLead, nombre: string): string {
+/**
+ * `presentacion` es la frase con la que se presenta quien escribe ("Soy
+ * Fernando, de QuieroMiSAS."): la arma la pantalla con el admin conectado,
+ * porque el mensaje lo manda una persona y no la empresa.
+ */
+export function mensajeWhatsapp(
+  segmento: SegmentoLead,
+  nombre: string,
+  presentacion = 'Te escribo de QuieroMiSAS.',
+): string {
   const hola = `Hola${nombre ? ` ${nombre.split(' ')[0]}` : ''}!`
 
   switch (segmento) {
     case 'NO_ARRANCO':
       return (
-        `${hola} Soy ${FIRMA}. Vi que empezaste a armar tu S.A.S. y quedó a mitad de camino. ` +
+        `${hola} ${presentacion} Vi que empezaste a armar tu S.A.S. y quedó a mitad de camino. ` +
         `Te escribo por si te quedó alguna duda: te puedo explicar en dos minutos qué incluye, ` +
         `cuánto tarda y qué necesitás tener a mano. ¿Te sirve que lo veamos?`
       )
     case 'TRABADO_DOMICILIO':
       return (
-        `${hola} Soy ${FIRMA}. Vi que te frenaste en el paso del domicilio, que es donde se traba ` +
+        `${hola} ${presentacion} Vi que te frenaste en el paso del domicilio, que es donde se traba ` +
         `casi todo el mundo, así que te lo aclaro: la sede social tiene que estar en Córdoba o en ` +
         `CABA, pero no hace falta que vivas ahí ni que tengas una oficina. Si no tenés dónde ` +
         `fijarla, te la resolvemos nosotros. ¿Querés que lo veamos?`
       )
     case 'CASI_LISTO':
       return (
-        `${hola} Soy ${FIRMA}. Tenés el formulario casi terminado, te falta muy poco. ` +
+        `${hola} ${presentacion} Tenés el formulario casi terminado, te falta muy poco. ` +
         `¿Querés que lo repasemos juntos y lo dejamos listo hoy?`
       )
   }

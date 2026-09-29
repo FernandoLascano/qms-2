@@ -87,8 +87,23 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       }
     }
 
+    // Datos de contacto: se corrigen o completan a medida que se habla.
+    for (const campo of ['nombre', 'telefono', 'email'] as const) {
+      if (body[campo] === undefined) continue
+      const valor = typeof body[campo] === 'string' ? body[campo].trim() : ''
+      if (campo === 'email' && valor && !valor.includes('@')) {
+        return NextResponse.json({ error: 'El email no es válido' }, { status: 400 })
+      }
+      data[campo] = valor ? (campo === 'email' ? valor.toLowerCase() : valor).slice(0, 200) : null
+    }
+
     if (Object.keys(data).length === 0) {
       return NextResponse.json({ error: 'Nada para actualizar' }, { status: 400 })
+    }
+
+    if (typeof data.email === 'string') {
+      const otro = await prisma.lead.findFirst({ where: { email: data.email, NOT: { id } }, select: { id: true } })
+      if (otro) return NextResponse.json({ error: 'Ya hay otro lead con ese email' }, { status: 409 })
     }
 
     const actualizado = await prisma.lead.update({
