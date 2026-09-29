@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save } from 'lucide-react'
+import { Loader2, Save } from 'lucide-react'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/ui/page-header'
 
 const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
 
@@ -48,20 +48,12 @@ export default function NuevaPlantillaPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <Link
-        href="/dashboard/admin/emails/plantillas"
-        className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a plantillas
-      </Link>
 
-      <div>
-        <h1 className="text-title font-semibold text-ink">Nueva plantilla</h1>
-        <p className="text-body-sm text-ink-2 mt-1">
-          Clave interna única (minúsculas, números, guiones; debe empezar con letra).
-        </p>
-      </div>
+      <PageHeader
+        title="Nueva plantilla"
+        description="Clave interna única: minúsculas, números y guiones; empieza con una letra."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Emails', href: '/dashboard/admin/emails' }, { label: 'Plantillas', href: '/dashboard/admin/emails/plantillas' }, { label: 'Nueva' }]}
+      />
 
       <div className="bg-surface rounded-card border border-line shadow-raise p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">

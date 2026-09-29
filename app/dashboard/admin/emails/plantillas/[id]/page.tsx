@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Loader2, Save, Shield, Code2, Eye } from 'lucide-react'
+import { Loader2, Save, Shield, Code2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/ui/page-header'
 
 const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
 
@@ -132,26 +132,20 @@ export default function EditarPlantillaPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <Link
-        href="/dashboard/admin/emails/plantillas"
-        className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a plantillas
-      </Link>
 
-      <div className="flex items-start gap-3">
-        <div>
-          <h1 className="text-title font-semibold text-ink">Editar plantilla</h1>
-          <p className="text-body-sm text-ink-2 mt-1">{tpl.displayName}</p>
-        </div>
-        {tpl.isSystem && (
-          <span className="inline-flex items-center gap-1 text-label font-semibold text-warning bg-warning-soft px-2 py-1 rounded-control">
-            <Shield className="w-3.5 h-3.5" />
-            Sistema (no se puede eliminar ni cambiar la clave)
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title="Editar plantilla"
+        description={tpl.displayName}
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Emails', href: '/dashboard/admin/emails' }, { label: 'Plantillas', href: '/dashboard/admin/emails/plantillas' }, { label: tpl.displayName }]}
+        badge={
+          tpl.isSystem ? (
+            <span className="inline-flex items-center gap-1 rounded-control bg-warning-soft px-2 py-1 text-label font-semibold text-warning">
+              <Shield className="h-3.5 w-3.5" aria-hidden />
+              Del sistema: no se puede eliminar
+            </span>
+          ) : undefined
+        }
+      />
 
       <div className="bg-surface rounded-card border border-line shadow-raise p-6 space-y-4">
         <div className="grid sm:grid-cols-2 gap-4">

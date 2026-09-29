@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { emailManual } from '@/lib/emails/templates'
+import { contactosDe, contraparteDe } from '@/lib/emails/contactos'
 import { Prisma } from '@prisma/client'
 import { EmailDirection, EmailStatus } from '@prisma/client'
 
@@ -22,6 +23,21 @@ function normalizeRecipients(input: unknown): string[] {
   return unique.filter((email) => EMAIL_REGEX.test(email))
 }
 
+/*
+ * Vistas de la bandeja. Antes «Todos» mezclaba lo que escriben los clientes
+ * con los mails automáticos del sistema (bienvenida, avance de etapa…), que
+ * son la mayoría y tapaban lo que hay que responder.
+ *
+ * Los automáticos se reconocen porque se guardan sólo en HTML: los que se
+ * escriben a mano desde el panel siempre llevan también el texto plano.
+ */
+const VISTAS: Record<string, Prisma.EmailWhereInput> = {
+  recibidos: { direction: 'INBOUND', status: { not: 'ARCHIVED' } },
+  enviados: { direction: 'OUTBOUND', bodyText: { not: null }, status: { not: 'ARCHIVED' } },
+  automaticos: { direction: 'OUTBOUND', bodyText: null },
+  archivados: { status: 'ARCHIVED' },
+}
+
 // GET - Listar emails con filtros y paginación
 export async function GET(request: NextRequest) {
   try {
@@ -31,14 +47,15 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
+    const vista = searchParams.get('vista')
     const direction = searchParams.get('direction') // INBOUND, OUTBOUND
     const status = searchParams.get('status') // UNREAD, READ, REPLIED, ARCHIVED
-    const search = searchParams.get('search') || ''
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const search = (searchParams.get('search') || '').trim()
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20') || 20))
     const skip = (page - 1) * limit
 
-    const where: Prisma.EmailWhereInput = {}
+    const where: Prisma.EmailWhereInput = { ...(vista && VISTAS[vista] ? VISTAS[vista] : {}) }
 
     if (direction && Object.values(EmailDirection).includes(direction as EmailDirection)) {
       where.direction = direction as EmailDirection
@@ -47,22 +64,37 @@ export async function GET(request: NextRequest) {
       where.status = status as EmailStatus
     }
     if (search) {
+      // Sin buscar en el HTML: es lento y encuentra nombres de estilos.
       where.OR = [
         { subject: { contains: search, mode: 'insensitive' } },
         { from: { contains: search, mode: 'insensitive' } },
         { fromName: { contains: search, mode: 'insensitive' } },
+        { to: { has: search.toLowerCase() } },
         { bodyText: { contains: search, mode: 'insensitive' } },
-        { bodyHtml: { contains: search, mode: 'insensitive' } },
       ]
     }
 
-    const [emails, total, unreadCount] = await Promise.all([
+    const [filas, total, unreadCount, conteos] = await Promise.all([
       prisma.email.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
-        include: {
+        // Sin bodyHtml: cada uno puede pesar cientos de KB y la lista sólo
+        // muestra una línea de vista previa.
+        select: {
+          id: true,
+          from: true,
+          fromName: true,
+          to: true,
+          subject: true,
+          bodyText: true,
+          direction: true,
+          status: true,
+          spamVerdict: true,
+          isForwarded: true,
+          parentEmailId: true,
+          createdAt: true,
           attachments: { select: { id: true, fileName: true, mimeType: true, size: true } },
           tramite: { select: { id: true, denominacionSocial1: true } },
           _count: { select: { replies: true } },
@@ -70,16 +102,27 @@ export async function GET(request: NextRequest) {
       }),
       prisma.email.count({ where }),
       prisma.email.count({ where: { status: 'UNREAD', direction: 'INBOUND' } }),
+      // Los números de las pestañas: antes contaban sólo la página visible.
+      Promise.all(Object.entries(VISTAS).map(async ([k, w]) => [k, await prisma.email.count({ where: w })] as const)),
     ])
+
+    const contactos = await contactosDe(filas.map(contraparteDe))
+    const emails = filas.map(({ bodyText, ...e }) => ({
+      ...e,
+      bodyText: bodyText ? bodyText.slice(0, 240) : null,
+      contacto: contactos[contraparteDe(e)] ?? null,
+    }))
 
     return NextResponse.json({
       emails,
       total,
       unreadCount,
-      pages: Math.ceil(total / limit),
+      conteos: Object.fromEntries(conteos),
+      pages: Math.max(1, Math.ceil(total / limit)),
       page,
     })
-  } catch {
+  } catch (error) {
+    console.error('Error al listar emails:', error)
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
