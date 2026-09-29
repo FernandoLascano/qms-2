@@ -288,6 +288,7 @@ model Tramite {
   cuentasBancarias CuentaBancaria[]
   emails           Email[]
   leadSeguimientos LeadSeguimiento[]
+  serviciosContratados ServicioContratado[]
   domicilioSede    DomicilioSede?
 
   @@index([userId])
@@ -765,6 +766,8 @@ model ServicioCatalogo {
   updatedAt DateTime @updatedAt
 
   @@index([activo, orden])
+
+  contrataciones ServicioContratado[]
 }
 
 enum ModalidadServicio {
@@ -773,6 +776,45 @@ enum ModalidadServicio {
   ANUAL // abono anual (ej. domicilio en sede)
   SIN_COSTO // no se le cobra al cliente
   A_CONSULTAR // depende del caso, se cotiza
+}
+
+// SERVICIO CONTRATADO — qué tiene cada cliente después de la inscripción.
+//
+// Hasta ahora no había dónde anotarlo: el catálogo existía, pero no quién
+// contrató qué ni cuándo vence. «Me interesa» sólo mandaba un aviso y el
+// interés se perdía. El domicilio en sede NO va acá: tiene su propia tabla
+// (DomicilioSede) y su pantalla, y la cartera lo lee de ahí.
+enum EstadoServicioCliente {
+  INTERESADO // pidió info desde su panel o se le ofreció: es una oportunidad
+  ACTIVO
+  FINALIZADO
+}
+
+model ServicioContratado {
+  id String @id @default(cuid())
+
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  servicioId String
+  servicio   ServicioCatalogo @relation(fields: [servicioId], references: [id], onDelete: Restrict)
+
+  estado EstadoServicioCliente @default(ACTIVO)
+
+  // Lo pactado con este cliente, por período según la modalidad del servicio
+  // (por mes si es MENSUAL, por año si es ANUAL, total si es UNICO).
+  monto Float?
+
+  fechaInicio        DateTime?
+  // Próxima renovación o cobro. Es lo que alimenta los vencimientos.
+  proximoVencimiento DateTime?
+  notas              String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tramiteId])
+  @@index([estado, proximoVencimiento])
 }
 
 // LEAD — interés comercial que todavía no es un trámite.

@@ -4,11 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2, FileText, Tag, Briefcase, MapPin, Users, User, CheckCircle, Calendar, DollarSign, Download } from 'lucide-react'
+import { Building2, FileText, Tag, Briefcase, MapPin, Users, User, CheckCircle, Calendar, DollarSign, Download } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
+import { diasHasta, type Modalidad } from '@/lib/cartera'
+import ServiciosCliente, { type ServicioCatalogoOpcion } from '@/components/admin/sociedades/ServiciosCliente'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface PageProps {
   params: Promise<{
@@ -48,6 +51,11 @@ async function SociedadDetallePage({ params }: PageProps) {
         },
         orderBy: { createdAt: 'desc' },
         take: 1
+      },
+      domicilioSede: { select: { estado: true, fechaVencimiento: true, montoAnual: true } },
+      serviciosContratados: {
+        include: { servicio: { select: { nombre: true, modalidad: true } } },
+        orderBy: [{ estado: 'asc' }, { createdAt: 'desc' }]
       }
     }
   })
@@ -56,29 +64,32 @@ async function SociedadDetallePage({ params }: PageProps) {
     notFound()
   }
 
+  // El domicilio en sede tiene su propia pantalla: no se ofrece acá.
+  const catalogo = await prisma.servicioCatalogo.findMany({
+    where: { activo: true, slug: { not: 'domicilio-sede' } },
+    orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+    select: { id: true, nombre: true, modalidad: true, precioDesde: true }
+  })
+
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/dashboard/admin/sociedades">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Volver a Sociedades
-            </Link>
+      <PageHeader
+        title={tramite.denominacionAprobada || tramite.denominacionSocial1}
+        description={`${tramite.user.name || tramite.user.email} · sociedad inscripta`}
+        breadcrumbs={[
+          { label: 'Hoy', href: '/dashboard/admin' },
+          { label: 'Sociedades', href: '/dashboard/admin/sociedades' },
+          { label: tramite.denominacionAprobada || tramite.denominacionSocial1 },
+        ]}
+        actions={
+          <Button asChild variant="secondary">
+            <Link href={`/dashboard/admin/tramites/${tramite.id}`}>Ver el trámite</Link>
           </Button>
-          <div>
-            <h1 className="text-display font-semibold text-ink flex items-center gap-3">
-              <Building2 className="h-8 w-8 text-primary" />
-              {tramite.denominacionAprobada || tramite.denominacionSocial1}
-            </h1>
-            <p className="text-ink-2 mt-1">Sociedad Constituida</p>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Información Principal de la Sociedad */}
       <Card className="border-2 border-success-line bg-success-soft shadow-raise">
@@ -162,6 +173,30 @@ async function SociedadDetallePage({ params }: PageProps) {
           </div>
         </CardContent>
       </Card>
+
+      <ServiciosCliente
+        tramiteId={tramite.id}
+        catalogo={catalogo as ServicioCatalogoOpcion[]}
+        domicilio={
+          tramite.domicilioSede
+            ? {
+                estado: tramite.domicilioSede.estado,
+                vence: tramite.domicilioSede.fechaVencimiento?.toISOString() ?? null,
+                montoAnual: tramite.domicilioSede.montoAnual,
+              }
+            : null
+        }
+        servicios={tramite.serviciosContratados.map((s) => ({
+          id: s.id,
+          estado: s.estado,
+          monto: s.monto,
+          fechaInicio: s.fechaInicio?.toISOString() ?? null,
+          proximoVencimiento: s.proximoVencimiento?.toISOString() ?? null,
+          diasParaVencer: s.proximoVencimiento ? diasHasta(s.proximoVencimiento) : null,
+          notas: s.notas,
+          servicio: { nombre: s.servicio.nombre, modalidad: s.servicio.modalidad as Modalidad },
+        }))}
+      />
 
       {/* Divisor */}
       <div className="border-t-2 border-line my-8">
