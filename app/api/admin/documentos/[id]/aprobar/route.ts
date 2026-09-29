@@ -99,7 +99,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               usuario.name || 'Usuario',
               'Pago Aprobado',
               `Tu comprobante de transferencia ha sido aprobado. El pago de $${pagoActualizado.monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
-              documento.tramiteId || undefined
+              documento.tramiteId || undefined,
+              { tono: 'exito', destacado: { etiqueta: 'Pago registrado', valor: `$${pagoActualizado.monto.toLocaleString('es-AR')}` } }
             )
           } catch {
             // Email no crítico
@@ -260,7 +261,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                   usuario.name || 'Usuario',
                   'Pago Aprobado',
                   `Tu comprobante de ${conceptoTexto} ha sido aprobado. El pago de $${monto.toLocaleString('es-AR')} ha sido registrado correctamente.`,
-                  documento.tramiteId || undefined
+                  documento.tramiteId || undefined,
+                  { tono: 'exito', destacado: { etiqueta: 'Pago registrado', valor: `$${monto.toLocaleString('es-AR')}` } }
                 )
               } catch {
                 // Email no crítico

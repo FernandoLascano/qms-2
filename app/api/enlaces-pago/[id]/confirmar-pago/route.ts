@@ -137,7 +137,8 @@ export async function PATCH(
             admin.name || 'Administrador',
             'Comprobante de Pago Recibido',
             mensajeEmail,
-            enlace.tramiteId
+            enlace.tramiteId,
+            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante' } }
           )
         } catch {
           // Email no crítico

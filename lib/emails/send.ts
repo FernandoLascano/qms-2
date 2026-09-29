@@ -1,8 +1,9 @@
 import { sendEmail as sendEmailNodemailer } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
 import { interpolar } from './render-template'
+import { detalleEtapas } from '@/lib/tramites/estado'
 import * as templates from './templates'
-import { EmailLayout } from './templates'
+import { EmailLayout, type OpcionesNotificacion } from './templates'
 
 interface SendEmailParams {
   to: string
@@ -157,11 +158,28 @@ export async function enviarEmailEtapaCompletada(
   etapa: string,
   tramiteId: string
 ) {
+  // En qué punto del proceso quedó y qué sigue. Best-effort: si la consulta
+  // falla, el mail sale igual sin la línea de etapas.
+  let avance: { etapas: { label: string; completada: boolean }[]; proximo: string | null } | undefined
+  try {
+    const tramite = await prisma.tramite.findUnique({ where: { id: tramiteId } })
+    if (tramite) {
+      const etapas = detalleEtapas(tramite as unknown as Record<string, unknown>)
+      const pendiente = etapas.find((e) => !e.completada)
+      avance = {
+        etapas: etapas.map((e) => ({ label: e.label, completada: e.completada })),
+        proximo: pendiente ? pendiente.esperandoCliente + '.' : null,
+      }
+    }
+  } catch {
+    avance = undefined
+  }
+
   return sendEmail({
     to: email,
     subject: '🎯 Progreso en tu trámite - ' + etapa,
     template: 'emailEtapaCompletada',
-    data: { nombre, etapa, tramiteId }
+    data: { nombre, etapa, tramiteId, avance }
   })
 }
 
@@ -182,18 +200,24 @@ export async function enviarEmailSociedadInscripta(
   })
 }
 
+/**
+ * Aviso de uso general. `opciones` suma los bloques que el aviso necesita
+ * (monto destacado, datos bancarios, pasos, botón); sin ellas sale como
+ * título y texto. Ver `OpcionesNotificacion` en templates.tsx.
+ */
 export async function enviarEmailNotificacion(
   email: string,
   nombre: string,
   titulo: string,
   mensaje: string,
-  tramiteId?: string
+  tramiteId?: string,
+  opciones?: OpcionesNotificacion
 ) {
   return sendEmail({
     to: email,
     subject: titulo,
     template: 'emailNotificacion',
-    data: { nombre, titulo, mensaje, tramiteId }
+    data: { nombre, titulo, mensaje, tramiteId, opciones }
   })
 }
 

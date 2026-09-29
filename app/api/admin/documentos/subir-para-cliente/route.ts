@@ -93,7 +93,7 @@ export async function POST(request: Request) {
       })
       const usuario = await prisma.user.findUnique({ where: { id: userId } })
       if (usuario) {
-        await enviarEmailNotificacion(usuario.email, usuario.name || 'Usuario', 'Documentos listos para firmar', mensaje, tramiteId)
+        await enviarEmailNotificacion(usuario.email, usuario.name || 'Usuario', 'Documentos listos para firmar', mensaje, tramiteId, { tono: 'accion', cta: { texto: 'Ir a firmar', ancla: 'documentos-para-firmar' } })
       }
     } catch {
       // Aviso no crítico

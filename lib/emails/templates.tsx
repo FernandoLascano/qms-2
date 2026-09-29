@@ -91,7 +91,18 @@ const type = {
 const radius = { chip: '8px', control: '12px', card: '16px' }
 
 // Template base con estilos modernos
-export const EmailLayout = ({ children, nombre, preheader = '' }: { children: string; nombre: string; preheader?: string }) => {
+export const EmailLayout = ({
+  children,
+  nombre,
+  preheader = '',
+  saludo = true,
+}: {
+  children: string
+  nombre: string
+  preheader?: string
+  /** false cuando el cuerpo ya trae su propio saludo (los mails escritos a mano). */
+  saludo?: boolean
+}) => {
   return `
     <!DOCTYPE html>
     <html lang="es" data-qms-signature="true">
@@ -164,18 +175,18 @@ export const EmailLayout = ({ children, nombre, preheader = '' }: { children: st
                   </td>
                 </tr>
 
-                <!-- Saludo -->
+                ${saludo ? `<!-- Saludo -->
                 <tr>
                   <td style="padding: 40px 40px 0 40px;">
                     <p style="margin: 0; color: ${colors.textMuted}; ${type.body}">
                       Hola <strong style="color: ${colors.dark}; font-weight: 700;">${nombre}</strong>
                     </p>
                   </td>
-                </tr>
+                </tr>` : ''}
 
                 <!-- Content -->
                 <tr>
-                  <td style="padding: 24px 40px 40px 40px;">
+                  <td style="padding: ${saludo ? '24px' : '40px'} 40px 40px 40px;">
                     ${children}
                   </td>
                 </tr>
@@ -736,10 +747,44 @@ export const emailDocumentoRechazado = ({ nombre, nombreDocumento, observaciones
 }
 
 // 5. Email cuando una etapa se completa
-export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplateProps) => {
+/** Barra de avance: dos celdas de tabla, porque los clientes de correo no dibujan <progress>. */
+const BarraAvance = (hechas: number, total: number) => {
+  const pct = Math.round((hechas / total) * 100)
+  return `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 6px 0;">
+    <tr>
+      <td style="${type.bodySm} color: ${colors.dark}; font-weight: 700;">Tu avance</td>
+      <td style="${type.bodySm} color: ${colors.textMuted}; text-align: right;">${hechas} de ${total} etapas</td>
+    </tr>
+  </table>
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 4px 0; border-radius: 6px; overflow: hidden; background-color: ${colors.background};">
+    <tr>
+      ${pct > 0 ? `<td width="${pct}%" style="height: 8px; line-height: 8px; font-size: 0; background-color: ${colors.successSolid};">&nbsp;</td>` : ''}
+      ${pct < 100 ? `<td style="height: 8px; line-height: 8px; font-size: 0;">&nbsp;</td>` : ''}
+    </tr>
+  </table>`
+}
+
+export const emailEtapaCompletada = ({ nombre, etapa, tramiteId, avance }: EmailTemplateProps) => {
+  /* `avance` lo arma send.ts con el estado real del trámite. Si no viene (la
+     consulta falló), el mail sale igual, sin la línea de etapas. */
+  const a = avance as
+    | { etapas: { label: string; completada: boolean }[]; proximo: string | null }
+    | undefined
+  const hechas = a ? a.etapas.filter((e) => e.completada).length : 0
+
+  const bloqueAvance = a
+    ? `
+    <div style="margin: 0 0 8px 0;">${BarraAvance(hechas, a.etapas.length)}</div>
+    ${StepIndicator(a.etapas.map((e, i) => ({ number: String(i + 1), title: e.label, done: e.completada })))}
+    ${a.proximo ? InfoCard(`<p style="margin: 0; color: ${colors.text}; ${type.body}">${a.proximo}</p>`, 'info', 'Lo próximo') : ''}`
+    : `<p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
+      Seguimos trabajando en tu trámite. Te mantendremos informado de cada avance.
+    </p>`
+
   const content = `
     <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
-      ¡Buenas noticias! Hemos completado una etapa importante de tu trámite.
+      ¡Buenas noticias! Tu trámite dio un paso más.
     </p>
 
     ${Hero(
@@ -753,9 +798,7 @@ export const emailEtapaCompletada = ({ nombre, etapa, tramiteId }: EmailTemplate
       ),
     )}
 
-    <p style="margin: 0 0 24px 0; color: ${colors.textMuted}; ${type.bodySm}">
-      Seguimos trabajando en tu trámite. Te mantendremos informado de cada avance.
-    </p>
+    ${bloqueAvance}
 
     ${CTAButton('Ver progreso completo', `${BASE_URL}/dashboard/tramites/${tramiteId}`)}
   `
@@ -879,27 +922,138 @@ export const emailSociedadInscripta = ({ nombre, denominacion, cuit, matricula, 
 }
 
 // 7. Email genérico para notificaciones
-export const emailNotificacion = ({ nombre, titulo, mensaje, tramiteId }: EmailTemplateProps) => {
+/* ─────────────────────────── Notificación ───────────────────────────
+   La usan unos 18 avisos distintos (datos del depósito, documentos para
+   firmar, pago aprobado, avisos al equipo…). Antes era un título y un
+   párrafo: el texto llegaba con saltos de línea y viñetas, pero en HTML esos
+   saltos se pierden, y los datos bancarios del depósito quedaban pegados en
+   una sola tira. Ahora el texto se respeta y cada aviso puede sumar los
+   bloques que necesita. */
+
+const escapar = (v: string) =>
+  v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * Texto plano → HTML: párrafos por línea en blanco, viñetas («• » o «- ») como
+ * lista y saltos simples como <br>. Escapa todo: parte del texto lo escribe
+ * el cliente (el chat del trámite) y no puede colar HTML en el mail.
+ */
+export function textoAHtml(texto: string, estilo = `color: ${colors.text}; ${type.body}`): string {
+  return texto
+    .trim()
+    .split(/\n\s*\n/)
+    .map((bloque) => {
+      const lineas = bloque.split('\n').map((l) => l.trim()).filter(Boolean)
+      const esViñeta = (l: string) => /^[•\-–]\s+/.test(l)
+      const partes: string[] = []
+      let lista: string[] = []
+      let texto_: string[] = []
+      const cerrarTexto = () => {
+        if (texto_.length) partes.push(`<p style="margin: 0 0 12px 0; ${estilo}">${texto_.map(escapar).join('<br>')}</p>`)
+        texto_ = []
+      }
+      const cerrarLista = () => {
+        if (lista.length)
+          partes.push(
+            `<ul style="margin: 0 0 12px 0; padding-left: 20px; ${estilo}">${lista
+              .map((l) => `<li style="margin: 0 0 4px 0;">${escapar(l)}</li>`)
+              .join('')}</ul>`,
+          )
+        lista = []
+      }
+      for (const l of lineas) {
+        if (esViñeta(l)) { cerrarTexto(); lista.push(l.replace(/^[•\-–]\s+/, '')) }
+        else { cerrarLista(); texto_.push(l) }
+      }
+      cerrarTexto()
+      cerrarLista()
+      return partes.join('')
+    })
+    .join('')
+}
+
+/** Filas etiqueta / valor, para datos que se copian (CBU, alias, CUIT). */
+const TablaDatos = (datos: { etiqueta: string; valor: string; mono?: boolean }[]) => `
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0; border: 1px solid ${colors.border}; border-radius: ${radius.card}; border-collapse: separate; overflow: hidden;">
+    ${datos
+      .map(
+        (d, i) => `
+    <tr>
+      <td style="padding: 12px 18px; ${i ? `border-top: 1px solid ${colors.border};` : ''} background-color: ${colors.surface2}; color: ${colors.textMuted}; ${type.bodySm} width: 34%; vertical-align: top;">${escapar(d.etiqueta)}</td>
+      <td style="padding: 12px 18px; ${i ? `border-top: 1px solid ${colors.border};` : ''} color: ${colors.dark}; ${type.body} font-weight: 600; word-break: break-all; ${d.mono ? "font-family: 'SF Mono', Menlo, Consolas, monospace; letter-spacing: 0.3px;" : ''}">${escapar(d.valor)}</td>
+    </tr>`,
+      )
+      .join('')}
+  </table>
+`
+
+export type TonoNotificacion = 'accion' | 'exito' | 'aviso' | 'info'
+
+const TONO_NOTIFICACION: Record<TonoNotificacion, { tono: Tono; etiqueta: string; icono: IconoEmail }> = {
+  accion: { tono: 'warning', etiqueta: 'Acción requerida', icono: 'clock-warning' },
+  exito: { tono: 'success', etiqueta: 'Listo', icono: 'circle-check-success' },
+  aviso: { tono: 'danger', etiqueta: 'Atención', icono: 'circle-alert-danger' },
+  info: { tono: 'info', etiqueta: 'Novedad', icono: 'info-info' },
+}
+
+export interface OpcionesNotificacion {
+  /** Pinta la apertura con el color del estado. Sin tono: título y texto. */
+  tono?: TonoNotificacion
+  /** El dato central, grande, dentro de la apertura (un monto, un nombre). */
+  destacado?: { etiqueta: string; valor: string; detalle?: string }
+  datos?: { etiqueta: string; valor: string; mono?: boolean }[]
+  pasos?: { titulo: string; detalle: string }[]
+  /** Advertencia en recuadro, después de los datos. */
+  aviso?: string
+  /** Texto del botón y ancla dentro de la página del trámite. */
+  cta?: { texto: string; ancla?: string }
+  /** El aviso va al equipo: el botón abre el panel de administración. */
+  paraAdmin?: boolean
+}
+
+export const emailNotificacion = ({
+  nombre,
+  titulo,
+  mensaje,
+  tramiteId,
+  opciones = {},
+}: EmailTemplateProps & { titulo: string; mensaje: string; opciones?: OpcionesNotificacion }) => {
+  const o: OpcionesNotificacion = opciones
+  const tono = o.tono ? TONO_NOTIFICACION[o.tono] : null
+
+  const apertura = tono
+    ? Hero(
+        escapar(titulo),
+        tono.etiqueta,
+        tono.tono,
+        o.destacado
+          ? HeroDato(
+              `<p style="margin: 0 0 4px 0; color: ${colors.textMuted}; ${type.label}">${escapar(o.destacado.etiqueta)}</p>
+               <p style="margin: 0; color: ${colors.dark}; ${o.destacado.valor.length > 14 ? type.title : type.metric}">${escapar(o.destacado.valor)}</p>
+               ${o.destacado.detalle ? `<p style="margin: 6px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">${escapar(o.destacado.detalle)}</p>` : ''}`,
+              tono.tono,
+            )
+          : '',
+        tono.icono,
+      )
+    : `<h1 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${escapar(titulo)}</h1>`
+
+  const base = o.paraAdmin ? `${BASE_URL}/dashboard/admin/tramites` : `${BASE_URL}/dashboard/tramites`
+  const url = tramiteId ? `${base}/${tramiteId}${o.cta?.ancla ? `#${o.cta.ancla}` : ''}` : null
+
   const content = `
-    <!--
-      Notificación genérica: el título y el mensaje son variables, así que no
-      hay un dato que destacar. Va como título y párrafo, sin el bloque de
-      apertura de color: encerrar sólo un título en una caja dejaba un banner
-      vacío.
-    -->
-    <h1 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">${titulo}</h1>
-
-    <p style="margin: 0; color: ${colors.text}; ${type.body}">
-      ${mensaje}
-    </p>
-
-    ${tramiteId ? CTAButton('Ver trámite', `${BASE_URL}/dashboard/tramites/${tramiteId}`) : ''}
+    ${apertura}
+    ${textoAHtml(mensaje)}
+    ${o.datos?.length ? TablaDatos(o.datos) : ''}
+    ${o.aviso ? InfoCard(textoAHtml(o.aviso, `color: ${colors.text}; ${type.bodySm}`), 'warning', 'Importante') : ''}
+    ${o.pasos?.length ? `<p style="margin: 24px 0 12px 0; color: ${colors.dark}; ${type.heading}">Cómo seguir</p>${ListaPasos(o.pasos.map((p) => ({ title: escapar(p.titulo), detalle: escapar(p.detalle) })))}` : ''}
+    ${url ? CTAButton(o.cta?.texto ?? (o.paraAdmin ? 'Abrir en el panel' : 'Ver trámite'), url) : ''}
   `
 
   return EmailLayout({
     children: content,
     nombre,
-    preheader: mensaje.substring(0, 100)
+    preheader: escapar(mensaje.replace(/\s+/g, ' ').substring(0, 100)),
   })
 }
 
@@ -1200,9 +1354,14 @@ export const emailManual = ({ texto, nombre }: { texto: string; nombre: string }
     )
     .join('')
 
+  // Quien escribe a mano casi siempre arranca con «Hola Martina,»: con el
+  // saludo automático del sobre, el mail decía hola dos veces.
+  const yaSaluda = /^\s*(hola|buen[oa]s|buen d[ií]a|estimad[oa]s?|querid[oa]s?)\b/i.test(texto)
+
   return EmailLayout({
     children: parrafos,
     nombre,
     preheader: texto.replace(/\s+/g, ' ').trim().slice(0, 120),
+    saludo: !yaSaluda,
   })
 }
