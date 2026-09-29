@@ -29,6 +29,7 @@ import TramitesFiltros, {
 } from './TramitesFiltros'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 import { cn } from '@/lib/utils'
+import { PlanBadge } from '@/components/ui/plan-badge'
 
 /** Trámites que no se pueden borrar desde la interfaz. */
 const PROTEGIDOS = [
@@ -199,7 +200,7 @@ export default function TramitesLista({ tramites }: { tramites: any[] }) {
                         <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                         {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}
                       </span>
-                      <span className="hidden sm:inline">Plan {tramite.plan}</span>
+                      <PlanBadge plan={tramite.plan} className="hidden sm:inline-flex" />
                       <span className="text-ink-3">{etapaActual(tramite, 'admin')}</span>
                     </div>
                   </div>

@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { redirect, notFound } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Building2, FileText, Tag, Briefcase, MapPin, Users, User, CheckCircle, Calendar, DollarSign, Download } from 'lucide-react'
+import { Building2, FileText, Tag, Briefcase, MapPin, Users, User, CheckCircle, Calendar, Download } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -12,6 +12,7 @@ import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import { diasHasta, type Modalidad } from '@/lib/cartera'
 import ServiciosCliente, { type ServicioCatalogoOpcion } from '@/components/admin/sociedades/ServiciosCliente'
 import { PageHeader } from '@/components/ui/page-header'
+import { PlanBadge } from '@/components/ui/plan-badge'
 
 interface PageProps {
   params: Promise<{
@@ -229,10 +230,7 @@ async function SociedadDetallePage({ params }: PageProps) {
           </div>
           <div>
             <p className="text-body-sm text-ink-2 mb-1">Plan Contratado</p>
-            <p className="font-semibold text-ink flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              {tramite.plan}
-            </p>
+            <PlanBadge plan={tramite.plan} size="md" />
           </div>
           <div>
             <p className="text-body-sm text-ink-2 mb-1">Capital Social</p>

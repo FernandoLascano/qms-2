@@ -18,6 +18,7 @@ import { SelectorProximo } from './SelectorProximo'
 import {
   ESTADOS, MOTIVOS_PERDIDA, canalTexto, copiar, estadoTexto, pedir, rutaLead, type LeadCRM,
 } from './tipos'
+import { PlanBadge } from '@/components/ui/plan-badge'
 
 const ABIERTOS = ESTADOS.filter((e) => !['CONVERTIDO', 'DESCARTADO'].includes(e.valor))
 
@@ -229,7 +230,7 @@ export function LeadDetalle({
             <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-body-sm">
               <Dato label="Denominación" valor={lead.denominacion ?? 'Sin elegir'} />
               <Dato label="Jurisdicción" valor={lead.jurisdiccion ?? '—'} />
-              <Dato label="Plan" valor={lead.plan ? lead.plan.charAt(0) + lead.plan.slice(1).toLowerCase() : '—'} />
+              <Dato label="Plan" valor={lead.plan ? <PlanBadge plan={lead.plan} /> : '—'} />
               <Dato label="Última actividad" valor={hace(lead.ultimaActividad)} />
             </dl>
             {lead.hitos && (
@@ -336,7 +337,7 @@ function DatoContacto({
   )
 }
 
-function Dato({ label, valor }: { label: string; valor: string }) {
+function Dato({ label, valor }: { label: string; valor: ReactNode }) {
   return (
     <div className="min-w-0">
       <dt className="text-label text-ink-2">{label}</dt>
