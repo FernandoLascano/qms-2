@@ -25,9 +25,11 @@ import {
   fmtFecha,
   pedir,
   periodoDeISO,
+  type Gasto,
   type Liquidacion as LiquidacionT,
   type Movimiento,
 } from './tipos'
+import { ReporteMensual } from './ReporteMensual'
 
 const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
@@ -54,6 +56,9 @@ export function LiquidacionTab({
   porcentajes,
   liquidaciones,
   movimientos,
+  bonoPct,
+  saldoFondo,
+  gastosFondoMes,
   recargar,
 }: {
   periodo: string
@@ -61,8 +66,13 @@ export function LiquidacionTab({
   porcentajes: Porcentajes
   liquidaciones: LiquidacionT[]
   movimientos: Movimiento[]
+  /** Bono comercial de Fernando ese mes (acuerdo aparte con MW). 0 = no hubo. */
+  bonoPct: number
+  saldoFondo: number
+  gastosFondoMes: Gasto[]
   recargar: () => Promise<void>
 }) {
+  const movsMes = movimientos.filter((m) => periodoDeISO(m.fecha) === periodo)
   const [ocupado, setOcupado] = useState<Beneficiario | null>(null)
 
   async function marcar(b: Beneficiario, monto: number, pagado: boolean) {
@@ -174,9 +184,20 @@ export function LiquidacionTab({
         </Card>
 
         <CargaMW
-          movimientos={movimientos.filter((m) => periodoDeISO(m.fecha) === periodo)}
+          movimientos={movsMes}
           porcentajes={porcentajes}
           periodo={periodo}
+          bonoPct={bonoPct}
+          recargar={recargar}
+        />
+
+        <ReporteMensual
+          periodo={periodo}
+          movimientos={movsMes}
+          totales={totales}
+          porcentajes={porcentajes}
+          saldoFondo={saldoFondo}
+          gastosFondoMes={gastosFondoMes}
         />
 
         <Card>

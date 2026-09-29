@@ -1,14 +1,18 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Info } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   BENEFICIARIO_LABEL,
   calcularReparto,
   etiquetaPeriodo,
   type Porcentajes,
 } from '@/lib/comisiones'
-import { fmt, fmtFecha, type Movimiento } from './tipos'
+import { fmt, fmtFecha, pedir, type Movimiento } from './tipos'
 
 /**
  * Cómo cargar cada cobro en el sistema de liquidación de MW.
@@ -26,18 +30,42 @@ import { fmt, fmtFecha, type Movimiento } from './tipos'
  *    los custodia). Cliente de la web: 30% originación + 40% operadores =
  *    el mismo 70% del contrato (50% suyo + 20% de fondo).
  *  · MW: su parte del esquema. El bono comercial de Fernando es un acuerdo
- *    aparte con el estudio y sale de acá, no de lo de QMS.
+ *    aparte con el estudio y sale de acá, no de lo de QMS. Varía de mes a
+ *    mes (y puede no haberlo): se carga por mes y, si hay, la línea de MW se
+ *    parte en «Bono» y «MW neto».
  */
 export function CargaMW({
   movimientos,
   porcentajes,
   periodo,
+  bonoPct,
+  recargar,
 }: {
   movimientos: Movimiento[]
   porcentajes: Porcentajes
   periodo: string
+  bonoPct: number
+  recargar: () => Promise<void>
 }) {
+  const [bono, setBono] = useState(bonoPct ? String(bonoPct) : '')
+  const [guardando, setGuardando] = useState(false)
+  useEffect(() => setBono(bonoPct ? String(bonoPct) : ''), [bonoPct, periodo])
+
+  async function guardarBono() {
+    setGuardando(true)
+    try {
+      await pedir('/api/admin/comisiones/bono', { method: 'PUT', json: { periodo, porcentaje: bono } })
+      toast.success(Number(bono) > 0 ? 'Bono del mes guardado' : 'Sin bono este mes')
+      await recargar()
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo guardar')
+    } finally {
+      setGuardando(false)
+    }
+  }
+
   if (movimientos.length === 0) return null
+  const hayBono = bonoPct > 0
 
   const filas = movimientos.map((m) => {
     const r = calcularReparto(m.monto, m.originador, porcentajes)
@@ -52,6 +80,8 @@ export function CargaMW({
       originacion,
       operadores: web ? deFernando - originacion : deFernando,
       mw: r.mw,
+      // El bono se calcula sobre lo cobrado y sale de la parte de MW.
+      bono: Math.min(m.monto * (bonoPct / 100), r.mw),
     }
   })
   const total = filas.reduce(
@@ -60,8 +90,9 @@ export function CargaMW({
       originacion: a.originacion + f.originacion,
       operadores: a.operadores + f.operadores,
       mw: a.mw + f.mw,
+      bono: a.bono + f.bono,
     }),
-    { cobrado: 0, originacion: 0, operadores: 0, mw: 0 },
+    { cobrado: 0, originacion: 0, operadores: 0, mw: 0, bono: 0 },
   )
 
   const pct = (valor: number, base: number) => (base ? `${Math.round((valor / base) * 1000) / 10}%` : '')
@@ -73,6 +104,36 @@ export function CargaMW({
         <p className="mt-0.5 text-body-sm text-ink-2">
           Los montos de cada línea para liquidar {etiquetaPeriodo(periodo).toLowerCase()} en el sistema de MW, según el contrato QMS.
         </p>
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <label className="text-body-sm text-ink-2" htmlFor="bono-mes">
+            Tu bono comercial de este mes
+            <span className="block text-label text-ink-3">Acuerdo aparte con MW, sale de su parte. Vacío = no hubo.</span>
+          </label>
+          <div className="relative w-28">
+            <Input
+              id="bono-mes"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={porcentajes.mw}
+              step="0.1"
+              value={bono}
+              onChange={(e) => setBono(e.target.value)}
+              placeholder="0"
+              className="pr-7 text-right"
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body-sm text-ink-3">%</span>
+          </div>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={guardarBono}
+            loading={guardando}
+            disabled={(Number(bono) || 0) === bonoPct}
+          >
+            Guardar
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -83,11 +144,18 @@ export function CargaMW({
               <th className="py-2.5 pr-4 text-right font-semibold">Cobrado</th>
               <th className="py-2.5 pr-4 text-right font-semibold">Originación</th>
               <th className="py-2.5 pr-4 text-right font-semibold" title="Parte de Fernando + los dos fondos, que él custodia">Operadores</th>
-              <th className="px-card-sm py-2.5 text-right font-semibold sm:pr-card" title="Incluye el bono comercial, que MW paga de su parte">MW</th>
+              {hayBono ? (
+                <>
+                  <th className="py-2.5 pr-4 text-right font-semibold">Bono (vos)</th>
+                  <th className="px-card-sm py-2.5 text-right font-semibold sm:pr-card">MW neto</th>
+                </>
+              ) : (
+                <th className="px-card-sm py-2.5 text-right font-semibold sm:pr-card">MW</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
-            {filas.map(({ m, web, originacion, operadores, mw }) => (
+            {filas.map(({ m, web, originacion, operadores, mw, bono: bonoFila }) => (
               <tr key={m.id} className="align-top">
                 <td className="px-card-sm py-3 sm:pl-card">
                   <p className="font-medium text-ink">{m.cliente}</p>
@@ -104,9 +172,15 @@ export function CargaMW({
                   <p className="font-semibold text-ink">{fmt(operadores)}</p>
                   <p className="text-label text-ink-3">{pct(operadores, m.monto)}</p>
                 </td>
+                {hayBono && (
+                  <td className="whitespace-nowrap py-3 pr-4 text-right tnum">
+                    <p className="font-semibold text-ink">{fmt(bonoFila)}</p>
+                    <p className="text-label text-ink-3">{pct(bonoFila, m.monto)}</p>
+                  </td>
+                )}
                 <td className="whitespace-nowrap px-card-sm py-3 text-right tnum sm:pr-card">
-                  <p className="font-semibold text-ink">{fmt(mw)}</p>
-                  <p className="text-label text-ink-3">{pct(mw, m.monto)}</p>
+                  <p className="font-semibold text-ink">{fmt(mw - bonoFila)}</p>
+                  <p className="text-label text-ink-3">{pct(mw - bonoFila, m.monto)}</p>
                 </td>
               </tr>
             ))}
@@ -118,7 +192,8 @@ export function CargaMW({
                 <td className="whitespace-nowrap py-3 pr-4 text-right tnum">{fmt(total.cobrado)}</td>
                 <td className="whitespace-nowrap py-3 pr-4 text-right tnum">{fmt(total.originacion)}</td>
                 <td className="whitespace-nowrap py-3 pr-4 text-right tnum">{fmt(total.operadores)}</td>
-                <td className="whitespace-nowrap px-card-sm py-3 text-right tnum sm:pr-card">{fmt(total.mw)}</td>
+                {hayBono && <td className="whitespace-nowrap py-3 pr-4 text-right tnum">{fmt(total.bono)}</td>}
+                <td className="whitespace-nowrap px-card-sm py-3 text-right tnum sm:pr-card">{fmt(total.mw - total.bono)}</td>
               </tr>
             </tfoot>
           )}

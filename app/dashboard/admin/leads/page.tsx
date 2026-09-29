@@ -102,6 +102,8 @@ export default async function AdminLeadsPage() {
       segmentoTexto: SEGMENTO_TEXTO[segmento],
       hitos: HITOS.map((h) => ({ texto: HITO_TEXTO[h], ok: hitos[h] })),
       toques: { enviados: t.leadToquesEnviados, total: TOQUES.length, ultimo: iso(t.leadUltimoToque) },
+      originador: t.originador,
+      originadorRegistradoEn: iso(t.originadorRegistradoEn),
       mensaje: null,
       partner: null,
       actividad: t.leadSeguimientos.map((s) => ({
@@ -141,6 +143,8 @@ export default async function AdminLeadsPage() {
       segmentoTexto: null,
       hitos: null,
       toques: null,
+      originador: l.originador,
+      originadorRegistradoEn: iso(l.originadorRegistradoEn),
       mensaje: l.mensaje,
       partner: l.partner?.nombre ?? null,
       actividad: l.contactos.map((c) => ({

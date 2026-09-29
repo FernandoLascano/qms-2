@@ -242,6 +242,12 @@ model Tramite {
   leadToquesEnviados  Int                @default(0)
   leadUltimoToque     DateTime?
 
+  // Quién trajo al cliente (cláusula 4.2 b del contrato asociativo). Tiene que
+  // quedar registrado ANTES del primer cobro: por eso se guarda la fecha, y el
+  // cobro sólo toma el originador si se registró antes de pagar.
+  originador             Originador @default(NINGUNO)
+  originadorRegistradoEn DateTime?
+
   // Fechas importantes
   fechaReservaNombre   DateTime?
   fechaDepositoCapital DateTime?
@@ -564,6 +570,16 @@ model LiquidacionPago {
   @@unique([periodo, beneficiario])
 }
 
+// Bono comercial de Fernando en un mes. Es un acuerdo aparte con MW, por
+// objetivos, que NO forma parte del contrato QMS: sale de la parte de MW y sólo
+// sirve para cargar la liquidación en el sistema de MW. Varía de mes a mes y
+// puede no haberlo.
+model BonoComercialMes {
+  periodo    String   @id // "YYYY-MM"
+  porcentaje Float // sobre el total cobrado en el mes (10.5 = 10,5%)
+  updatedAt  DateTime @updatedAt
+}
+
 // Gastos pagados CON plata del Fondo de Desarrollo.
 //
 // No es lo mismo que una distribución. Una distribución es plata del fondo que
@@ -857,6 +873,12 @@ model Lead {
   ultimoContacto  DateTime?
   proximoContacto DateTime?
   ganadoAt        DateTime?
+
+  // Quién trajo al cliente (cláusula 4.2 b del contrato asociativo). Tiene que
+  // quedar registrado ANTES del primer cobro: por eso se guarda la fecha, y el
+  // cobro sólo toma el originador si se registró antes de pagar.
+  originador             Originador @default(NINGUNO)
+  originadorRegistradoEn DateTime?
 
   // Se completan cuando la persona se registra o abre un trámite. Que sean
   // opcionales es el punto: el lead existe antes que la cuenta.

@@ -19,6 +19,7 @@ import {
   ESTADOS, MOTIVOS_PERDIDA, canalTexto, copiar, estadoTexto, pedir, rutaLead, type LeadCRM,
 } from './tipos'
 import { PlanBadge } from '@/components/ui/plan-badge'
+import { OriginadorSelector } from '@/components/admin/OriginadorSelector'
 
 const ABIERTOS = ESTADOS.filter((e) => !['CONVERTIDO', 'DESCARTADO'].includes(e.valor))
 
@@ -111,6 +112,15 @@ export function LeadDetalle({
             </Button>
           )}
         </div>
+
+        <OriginadorSelector
+          key={lead.id}
+          tipo={lead.tipo === 'BORRADOR' ? 'TRAMITE' : 'LEAD'}
+          id={lead.id}
+          originador={lead.originador}
+          registradoEn={lead.originadorRegistradoEn}
+          className="max-w-sm"
+        />
       </header>
 
       {/* ── Etapa y próximo paso ── */}

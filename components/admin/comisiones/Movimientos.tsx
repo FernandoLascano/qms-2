@@ -54,6 +54,9 @@ export function MovimientosTab({
   const [verExcluidos, setVerExcluidos] = useState(false)
   const [aQuitar, setAQuitar] = useState<Movimiento | null>(null)
   const [quitando, setQuitando] = useState(false)
+  // Cambio de originador en un cobro que ya existe: se confirma antes, porque
+  // la originación sólo cuenta si se registró antes del cobro (contrato, 4.2 b).
+  const [aOriginar, setAOriginar] = useState<{ m: Movimiento; originador: Originador } | null>(null)
 
   const q = busqueda.trim().toLowerCase()
   const buscando = q.length > 0
@@ -205,7 +208,11 @@ export function MovimientosTab({
                         ) : (
                           <Select
                             value={m.originador}
-                            onChange={(e) => cambiarOriginador(m, e.target.value as Originador)}
+                            onChange={(e) => {
+                              const o = e.target.value as Originador
+                              if (o === 'NINGUNO') cambiarOriginador(m, o)
+                              else setAOriginar({ m, originador: o })
+                            }}
                             aria-label={`Originador de ${m.cliente}`}
                             className={cn('h-8 w-auto min-w-36 text-body-sm', m.originador === 'NINGUNO' && 'text-ink-2')}
                           >
@@ -265,6 +272,24 @@ export function MovimientosTab({
           </div>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={!!aOriginar}
+        onOpenChange={(o) => !o && setAOriginar(null)}
+        destructive={false}
+        confirmLabel="Sí, estaba registrada"
+        onConfirm={() => {
+          if (aOriginar) cambiarOriginador(aOriginar.m, aOriginar.originador)
+          setAOriginar(null)
+        }}
+        title="¿La originación se registró antes de este cobro?"
+        description={
+          aOriginar &&
+          `Según el contrato (cláusula 4.2 b), la comisión de originación sólo se reconoce si quedó registrada antes del primer cobro. ` +
+            `Si recién ahora se sabe que ${ORIGINADOR_LABEL[aOriginar.originador]} trajo a ${aOriginar.m.cliente}, este cobro va sin originación; ` +
+            `registralo en el trámite o el lead para los cobros que vengan.`
+        }
+      />
 
       <ConfirmDialog
         open={!!aQuitar}

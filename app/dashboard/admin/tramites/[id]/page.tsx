@@ -60,6 +60,7 @@ import {
   EditAdministradores,
 } from '@/components/admin/EditableSections'
 import { PlanBadge } from '@/components/ui/plan-badge'
+import { OriginadorSelector } from '@/components/admin/OriginadorSelector'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -242,6 +243,17 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
             estadoValidacion={tramite.estadoValidacion}
             observacionesValidacion={tramite.observacionesValidacion}
           />
+
+          <Card>
+            <CardBody className="max-w-md">
+              <OriginadorSelector
+                tipo="TRAMITE"
+                id={tramite.id}
+                originador={tramite.originador}
+                registradoEn={tramite.originadorRegistradoEn?.toISOString() ?? null}
+              />
+            </CardBody>
+          </Card>
 
           <EstadoManager
             tramiteId={tramite.id}
