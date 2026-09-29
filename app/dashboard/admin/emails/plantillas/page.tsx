@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback } from 'react'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import Link from 'next/link'
-import { ArrowLeft, Plus, Pencil, Trash2, RefreshCw, Shield } from 'lucide-react'
+import { Plus, Pencil, Trash2, RefreshCw, Shield } from 'lucide-react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface EmailTpl {
   id: string
@@ -80,41 +82,26 @@ export default function EmailPlantillasPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/dashboard/admin/emails"
-        className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink-2"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a la bandeja
-      </Link>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <span className="text-body-sm font-semibold text-primary">Correo</span>
-          <h1 className="text-title font-semibold text-ink mt-1">Plantillas de correo</h1>
-          <p className="text-ink-2 text-body-sm mt-1">
-            Editá el HTML y el asunto; usalas al redactar desde la bandeja. Podés usar variables tipo{' '}
-            <code className="text-label bg-surface-3 px-1 rounded">{'{{nombre}}'}</code> en el cuerpo.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={load}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Actualizar
-          </button>
-          <Link
-            href="/dashboard/admin/emails/plantillas/nuevo"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:bg-primary-hover"
-          >
-            <Plus className="w-4 h-4" />
-            Nueva plantilla
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Plantillas de correo"
+        description="Para usar al redactar o responder desde la bandeja. En el cuerpo podés usar variables como {{nombre}}."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Emails', href: '/dashboard/admin/emails' }, { label: 'Plantillas' }]}
+        actions={
+          <>
+            <Button variant="ghost" onClick={load} loading={loading}>
+              {!loading && <RefreshCw className="h-4 w-4" aria-hidden />}
+              Actualizar
+            </Button>
+            <Button asChild>
+              <Link href="/dashboard/admin/emails/plantillas/nuevo">
+                <Plus className="h-4 w-4" aria-hidden />
+                Nueva plantilla
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
       <div className="bg-surface rounded-card border border-line shadow-raise overflow-hidden">
         {loading ? (

@@ -13,6 +13,9 @@ import {
   TrendingUp,
   UserSearch,
   Users,
+  CalendarClock,
+  Mail,
+  Lightbulb,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -32,6 +35,8 @@ import { getEstadoRespaldo } from '@/lib/respaldo'
 import { getEstado } from '@/lib/tramites/estado'
 import { porSemana, variacion } from '@/lib/dashboard/series'
 import { cn } from '@/lib/utils'
+import { contarAgendaLeads } from '@/lib/leads/agenda-servidor'
+import { DIAS_AVISO, diasHasta, hoyArgentina } from '@/lib/cartera'
 
 interface Tarea {
   icono: LucideIcon
@@ -62,8 +67,6 @@ async function AdminDashboardPage() {
     documentosPendientes,
     pendientesValidacion,
     tramitesRecientes,
-    leadsSinContactar,
-    leadsASeguir,
     totalBorradores,
     conDenominacion,
     fechasTramites,
@@ -101,21 +104,6 @@ async function AdminDashboardPage() {
         user: { select: { name: true, email: true } },
       },
     }),
-    prisma.tramite.count({
-      where: {
-        formularioCompleto: false,
-        leadEstado: 'NUEVO',
-        user: { tramites: { none: { formularioCompleto: true } } },
-      },
-    }),
-    prisma.tramite.count({
-      where: {
-        formularioCompleto: false,
-        leadEstado: { notIn: ['CONVERTIDO', 'DESCARTADO'] },
-        leadProximoContacto: { lte: new Date() },
-        user: { tramites: { none: { formularioCompleto: true } } },
-      },
-    }),
     prisma.tramite.count({ where: { formularioCompleto: false } }),
     // Etapa intermedia del embudo. Incluye las inscriptas a propósito: sin eso
     // el paso daría menos que el siguiente y el embudo se leería al revés.
@@ -142,6 +130,35 @@ async function AdminDashboardPage() {
     }),
   ])
 
+  /*
+   * La agenda del día junta lo que antes había que ir a buscar a cada
+   * sección: leads (con el mismo criterio que «Para hoy» del CRM), mails sin
+   * leer, vencimientos de clientes y oportunidades de venta.
+   *
+   * Los servicios contratados son una tabla nueva: si todavía no se corrió su
+   * migración, esos contadores dan cero en vez de tirar abajo el panel.
+   */
+  const hoyAR = hoyArgentina()
+  const limiteAviso = new Date(hoyAR.getTime() + DIAS_AVISO * 86_400_000)
+  const [agendaLeads, emailsSinLeer, serviciosPorVencer, domiciliosPorVencer, oportunidades] = await Promise.all([
+    contarAgendaLeads(hoyAR.toISOString().slice(0, 10)),
+    prisma.email.count({ where: { direction: 'INBOUND', status: 'UNREAD' } }),
+    prisma.servicioContratado
+      .findMany({ where: { estado: 'ACTIVO', proximoVencimiento: { lte: limiteAviso } }, select: { proximoVencimiento: true } })
+      .catch(() => [] as { proximoVencimiento: Date | null }[]),
+    prisma.domicilioSede.findMany({
+      where: { estado: 'ACTIVO', fechaVencimiento: { lte: limiteAviso } },
+      select: { fechaVencimiento: true },
+    }),
+    prisma.servicioContratado.count({ where: { estado: 'INTERESADO' } }).catch(() => 0),
+  ])
+  const fechasPorVencer = [
+    ...serviciosPorVencer.map((s) => s.proximoVencimiento),
+    ...domiciliosPorVencer.map((d) => d.fechaVencimiento),
+  ].filter((f): f is Date => !!f)
+  const vencidos = fechasPorVencer.filter((f) => diasHasta(f, hoyAR) < 0).length
+  const leadsContactar = agendaLeads.NUEVO + agendaLeads.HOY + agendaLeads.SIN_PASO
+
   const serieTramites = porSemana(fechasTramites.map((t) => t.createdAt))
   const serieUsuarios = porSemana(fechasUsuarios.map((u) => u.createdAt))
   const serieInscriptas = porSemana(fechasInscripciones.map((t) => t.fechaInscripcion))
@@ -167,16 +184,42 @@ async function AdminDashboardPage() {
       urgente: true,
     },
     {
-      icono: UserSearch,
-      cantidad: leadsSinContactar,
-      titulo: 'Contactar leads nuevos',
-      href: '/dashboard/admin/leads',
+      icono: CalendarClock,
+      cantidad: vencidos,
+      titulo: vencidos === 1 ? 'Servicio o domicilio vencido' : 'Servicios o domicilios vencidos',
+      href: '/dashboard/admin/sociedades?filtro=vencen',
+      urgente: true,
     },
     {
       icono: Clock,
-      cantidad: leadsASeguir,
-      titulo: 'Seguimientos vencidos',
+      cantidad: agendaLeads.VENCIDO,
+      titulo: 'Seguimientos de leads vencidos',
       href: '/dashboard/admin/leads',
+      urgente: true,
+    },
+    {
+      icono: Mail,
+      cantidad: emailsSinLeer,
+      titulo: emailsSinLeer === 1 ? 'Mail sin leer' : 'Mails sin leer',
+      href: '/dashboard/admin/emails',
+    },
+    {
+      icono: UserSearch,
+      cantidad: leadsContactar,
+      titulo: 'Leads para contactar hoy',
+      href: '/dashboard/admin/leads',
+    },
+    {
+      icono: CalendarClock,
+      cantidad: fechasPorVencer.length - vencidos,
+      titulo: `Renovaciones en los próximos ${DIAS_AVISO} días`,
+      href: '/dashboard/admin/sociedades?filtro=vencen',
+    },
+    {
+      icono: Lightbulb,
+      cantidad: oportunidades,
+      titulo: oportunidades === 1 ? 'Cliente pidió info de un servicio' : 'Clientes pidieron info de servicios',
+      href: '/dashboard/admin/sociedades?filtro=oportunidades',
     },
     {
       icono: Users,
@@ -221,7 +264,7 @@ async function AdminDashboardPage() {
               <EmptyState
                 icon={CheckCircle}
                 title="Bandeja vacía"
-                description="No hay formularios por validar, documentos por aprobar ni leads sin contactar."
+                description="No hay formularios por validar, documentos por aprobar, mails sin leer, leads para hoy ni vencimientos."
               />
             </Card>
           ) : (

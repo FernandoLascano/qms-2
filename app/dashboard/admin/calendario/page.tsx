@@ -2,9 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import CalendarioEventos from '@/components/admin/CalendarioEventos'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default async function CalendarioPage() {
   const session = await getServerSession(authOptions)
@@ -15,21 +13,11 @@ export default async function CalendarioPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Button asChild variant="ghost" size="icon" aria-label="Volver al panel" className="rounded-control hover:bg-surface-3">
-            <Link href="/dashboard/admin">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          </Button>
-        <div>
-          <h1 className="text-display text-ink">
-            Calendario de Eventos
-          </h1>
-          <p className="mt-1 text-body text-ink-2">
-            Gestiona reuniones, vencimientos y fechas importantes
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Calendario"
+        description="Reuniones, vencimientos y fechas importantes."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Calendario' }]}
+      />
 
       <CalendarioEventos />
     </div>

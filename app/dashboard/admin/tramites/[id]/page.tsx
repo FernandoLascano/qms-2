@@ -59,6 +59,7 @@ import {
   EditSocios,
   EditAdministradores,
 } from '@/components/admin/EditableSections'
+import { PlanBadge } from '@/components/ui/plan-badge'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -210,7 +211,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
                 <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                 {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
               </span>
-              <span>Plan {tramite.plan}</span>
+              <PlanBadge plan={tramite.plan} />
             </div>
           </div>
 
@@ -388,7 +389,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
                 value={tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
                 icon={Building2}
               />
-              <DataItem label="Plan contratado" value={tramite.plan} />
+              <DataItem label="Plan contratado" value={<PlanBadge plan={tramite.plan} size="md" />} />
               <DataItem
                 label="Capital social"
                 value={`$${tramite.capitalSocial.toLocaleString('es-AR')}`}

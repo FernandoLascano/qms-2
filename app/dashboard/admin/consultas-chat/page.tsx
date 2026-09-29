@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { MessageCircle, Search, Sparkles, Loader2, ChevronLeft, ChevronRight, Clock, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface Consulta {
   id: string
@@ -75,22 +77,17 @@ export default function ConsultasChatPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <span className="text-body-sm font-semibold text-primary">Analytics</span>
-          <h1 className="text-title font-semibold text-ink mt-1">Consultas del Asistente</h1>
-          <p className="text-ink-2 mt-1">Preguntas que hacen los visitantes en el chat del sitio</p>
-        </div>
-        <button
-          onClick={handleAnalyze}
-          disabled={analyzing || total === 0}
-          className="flex items-center gap-2 px-5 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:from-purple-700 hover:to-indigo-700 transition disabled:opacity-50 cursor-pointer shadow-raise"
-        >
-          {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Analizar con IA
-        </button>
-      </div>
+      <PageHeader
+        title="Consultas del asistente"
+        description="Preguntas que hacen los visitantes en el chat del sitio."
+        breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Consultas del asistente' }]}
+        actions={
+          <Button onClick={handleAnalyze} disabled={total === 0} loading={analyzing}>
+            {!analyzing && <Sparkles className="h-4 w-4" aria-hidden />}
+            Analizar con IA
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { contactosDe, contraparteDe } from '@/lib/emails/contactos'
 
 // GET - Obtener un email específico
 export async function GET(
@@ -41,7 +42,10 @@ export async function GET(
       })
     }
 
-    return NextResponse.json(email)
+    // Quién es la otra parte: cliente (con su trámite), lead o desconocido.
+    const contactos = await contactosDe([contraparteDe(email)])
+
+    return NextResponse.json({ ...email, contacto: contactos[contraparteDe(email)] ?? null })
   } catch {
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
@@ -61,8 +65,13 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
-    const updateData: any = {}
-    if (body.status) updateData.status = body.status
+    const updateData: { status?: 'UNREAD' | 'READ' | 'REPLIED' | 'ARCHIVED'; tramiteId?: string | null } = {}
+    if (body.status !== undefined) {
+      if (!['UNREAD', 'READ', 'REPLIED', 'ARCHIVED'].includes(body.status)) {
+        return NextResponse.json({ error: 'Estado inválido' }, { status: 400 })
+      }
+      updateData.status = body.status
+    }
     if (body.tramiteId !== undefined) updateData.tramiteId = body.tramiteId || null
 
     const email = await prisma.email.update({

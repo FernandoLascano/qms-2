@@ -10,8 +10,8 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import Link from 'next/link'
-import { ArrowLeft, Monitor, Smartphone, RefreshCw } from 'lucide-react'
+import { Monitor, Smartphone, RefreshCw } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 
 /** Agrupadas por el momento en que se disparan, que es como se piensan. */
 const GRUPOS = [
@@ -79,27 +79,13 @@ export default function PreviewMailsPage() {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/dashboard/admin/emails"
-        className="inline-flex items-center gap-2 text-body-sm text-ink-2 hover:text-ink"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a la bandeja
-      </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <span className="text-body-sm font-semibold text-primary">Correo</span>
-          <h1 className="text-title font-semibold text-ink mt-1">Mails automáticos</h1>
-          <p className="text-ink-2 text-body-sm mt-1 max-w-2xl">
-            Los que salen solos cuando pasa algo en un trámite. Se editan en el código, no desde acá:
-            para las plantillas que usás al redactar a mano andá a{' '}
-            <Link href="/dashboard/admin/emails/plantillas" className="text-primary font-semibold hover:underline">
-              Plantillas
-            </Link>
-            .
-          </p>
-        </div>
+        <PageHeader
+          title="Mails automáticos"
+          description="Los que salen solos cuando pasa algo en un trámite. Se editan en el código; las plantillas para escribir a mano están en Plantillas."
+          breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Emails', href: '/dashboard/admin/emails' }, { label: 'Mails automáticos' }]}
+        />
 
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-control border border-line p-0.5">

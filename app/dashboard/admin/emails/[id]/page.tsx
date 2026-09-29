@@ -6,6 +6,12 @@ import Link from 'next/link'
 import { FileInput } from '@/components/ui/file-input'
 import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X } from 'lucide-react'
 import { EmailHtml } from '@/components/admin/EmailHtml'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
+import { Select } from '@/components/ui/select'
+import { InlineLoading } from '@/components/ui/states'
+import type { ContactoEmail } from '@/lib/emails/contactos'
+import { TEMPLATES, personalizar, textoDePlantilla, type DbTemplate } from '@/lib/emails/respuestas-rapidas'
 
 interface EmailDetail {
   id: string
@@ -27,6 +33,7 @@ interface EmailDetail {
   tramite: { id: string; denominacionSocial1: string; estadoGeneral: string } | null
   parentEmail: { id: string; subject: string; from: string; createdAt: string } | null
   replies: { id: string; subject: string; from: string; to: string[]; createdAt: string; direction: string }[]
+  contacto: ContactoEmail | null
   createdAt: string
 }
 
@@ -45,6 +52,52 @@ export default function EmailDetailPage() {
   const [replyBcc, setReplyBcc] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<File[]>([])
   const [sending, setSending] = useState(false)
+  const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
+  const [cargandoLead, setCargandoLead] = useState(false)
+
+  // Las plantillas se piden la primera vez que se abre el editor.
+  useEffect(() => {
+    if (!showReply || dbTemplates.length) return
+    fetch('/api/admin/email-templates?scope=compose')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && Array.isArray(d.templates) && setDbTemplates(d.templates))
+      .catch(() => {})
+  }, [showReply, dbTemplates.length])
+
+  function usarPlantilla(clave: string) {
+    if (!email || !clave) return
+    const nombre = email.contacto?.nombre ?? email.fromName
+    const texto = clave.startsWith('db:')
+      ? textoDePlantilla(dbTemplates.find((t) => t.id === clave.slice(3))?.bodyHtml ?? '')
+      : TEMPLATES.find((t) => t.key === clave)?.body ?? ''
+    setReplyText(personalizar(texto, nombre))
+  }
+
+  // Alguien que escribe y no es cliente ni lead: se carga al CRM de un clic,
+  // con su consulta como mensaje, y se abre su ficha.
+  async function cargarComoLead() {
+    if (!email) return
+    setCargandoLead(true)
+    try {
+      const res = await fetch('/api/admin/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: email.fromName || email.from.split('@')[0],
+          email: email.from,
+          mensaje: `Escribió por mail: «${email.subject}»\n\n${(email.bodyText || '').slice(0, 1500)}`,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok && res.status !== 409) throw new Error(data.error)
+      toast.success(res.status === 409 ? 'Ya estaba cargado como lead' : 'Cargado como lead')
+      router.push(`/dashboard/admin/leads?lead=${data.id}`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo cargar el lead')
+    } finally {
+      setCargandoLead(false)
+    }
+  }
 
   useEffect(() => {
     if (id) fetchEmail()
@@ -76,11 +129,15 @@ export default function EmailDetailPage() {
   const handleArchive = async () => {
     if (!email) return
     const newStatus = email.status === 'ARCHIVED' ? 'READ' : 'ARCHIVED'
-    await fetch(`/api/admin/emails/${id}`, {
+    const res = await fetch(`/api/admin/emails/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
-    })
+    }).catch(() => null)
+    if (!res?.ok) {
+      toast.error('No se pudo actualizar el mail')
+      return
+    }
     setEmail({ ...email, status: newStatus })
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
@@ -91,11 +148,15 @@ export default function EmailDetailPage() {
     if (!email) return
     if (email.status !== 'UNREAD' && email.status !== 'READ') return
     const newStatus = email.status === 'UNREAD' ? 'READ' : 'UNREAD'
-    await fetch(`/api/admin/emails/${id}`, {
+    const res = await fetch(`/api/admin/emails/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
-    })
+    }).catch(() => null)
+    if (!res?.ok) {
+      toast.error('No se pudo actualizar el mail')
+      return
+    }
     setEmail({ ...email, status: newStatus })
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
@@ -150,17 +211,21 @@ export default function EmailDetailPage() {
         body: JSON.stringify(payload),
       })
 
-      if (res.ok) {
-        setShowReply(false)
-        setComposerMode('reply')
-        setReplyText('')
-        setReplyCc('')
-        setReplyBcc('')
-        setReplyAttachments([])
-        fetchEmail()
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'No se pudo enviar')
       }
-    } catch {
-      // error
+      toast.success(composerMode === 'forward' ? 'Mail reenviado' : 'Respuesta enviada')
+      setShowReply(false)
+      setComposerMode('reply')
+      setReplyText('')
+      setReplyCc('')
+      setReplyBcc('')
+      setReplyAttachments([])
+      fetchEmail()
+    } catch (e) {
+      // Antes el error se tragaba y parecía que el mail había salido.
+      toast.error(e instanceof Error ? e.message : 'No se pudo enviar')
     } finally {
       setSending(false)
     }
@@ -181,9 +246,7 @@ export default function EmailDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-line" />
-      </div>
+      <InlineLoading label="Cargando mail…" />
     )
   }
 
@@ -297,6 +360,8 @@ export default function EmailDetailPage() {
             </div>
           </div>
         </div>
+
+        <BandaContacto email={email} onCargarLead={cargarComoLead} cargando={cargandoLead} />
 
         {/* Sender/Recipient info */}
         <div className="px-6 py-4 bg-surface-2 border-b border-line">
@@ -434,6 +499,24 @@ export default function EmailDetailPage() {
                 className="w-full p-3 mb-3 border border-line rounded-control text-body-sm font-medium bg-surface text-ink placeholder:text-ink-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
               />
             )}
+            {composerMode === 'reply' && (
+              <Select
+                value=""
+                onChange={(e) => usarPlantilla(e.target.value)}
+                aria-label="Usar una plantilla"
+                className="mb-3 h-9 w-full text-body-sm sm:w-80"
+              >
+                <option value="">Usar una plantilla…</option>
+                {dbTemplates.length > 0 && (
+                  <optgroup label="Mis plantillas">
+                    {dbTemplates.map((t) => <option key={t.id} value={`db:${t.id}`}>{t.displayName}</option>)}
+                  </optgroup>
+                )}
+                <optgroup label="Respuestas rápidas">
+                  {TEMPLATES.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
+                </optgroup>
+              </Select>
+            )}
             <textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
@@ -516,6 +599,56 @@ export default function EmailDetailPage() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/** Quién es el que escribe y qué hacer con eso. */
+function BandaContacto({
+  email,
+  onCargarLead,
+  cargando,
+}: {
+  email: EmailDetail
+  onCargarLead: () => void
+  cargando: boolean
+}) {
+  const c = email.contacto
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-6 py-3 text-body-sm">
+      {c?.tipo === 'CLIENTE' ? (
+        <>
+          <span className="text-ink-2">Cliente</span>
+          <span className="font-semibold text-ink">{c.tramite.denominacion}</span>
+          <span className="text-ink-3">{c.tramite.inscripta ? '· inscripta' : '· trámite en curso'}</span>
+          <Button asChild variant="secondary" size="sm" className="ml-auto">
+            <Link href={`/dashboard/admin/tramites/${c.tramite.id}`}>Ver su trámite</Link>
+          </Button>
+        </>
+      ) : c?.tipo === 'LEAD' ? (
+        <>
+          <span className="text-ink-2">Lead</span>
+          <span className="font-semibold text-ink">{c.nombre}</span>
+          <span className="text-ink-3">· {c.origen === 'BORRADOR' ? 'formulario sin terminar' : 'consulta'}</span>
+          <Button asChild variant="secondary" size="sm" className="ml-auto">
+            <Link href={`/dashboard/admin/leads?lead=${c.leadId}`}>Abrir en Leads</Link>
+          </Button>
+        </>
+      ) : email.direction === 'INBOUND' ? (
+        <>
+          <span className="text-ink-2">No es cliente ni lead.</span>
+          <Button variant="secondary" size="sm" className="ml-auto" onClick={onCargarLead} loading={cargando}>
+            Cargar como lead
+          </Button>
+        </>
+      ) : (
+        <span className="text-ink-3">El destinatario no es cliente ni lead.</span>
+      )}
+      {email.parentEmail && (
+        <Link href={`/dashboard/admin/emails/${email.parentEmail.id}`} className="basis-full text-primary underline-offset-4 hover:underline">
+          En respuesta a «{email.parentEmail.subject}»
+        </Link>
+      )}
     </div>
   )
 }

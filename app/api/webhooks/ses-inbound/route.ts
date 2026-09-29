@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { esCorreoAutomatico } from '@/lib/emails/automaticos'
 import { prisma } from '@/lib/prisma'
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3'
 import { simpleParser } from 'mailparser'
@@ -196,6 +197,7 @@ export async function POST(request: NextRequest) {
       let totalAttachmentsBytes = 0
       const sourceLower = String(mail.source || '').toLowerCase()
       let parsedFromS3 = false
+      let encabezados: Map<string, unknown> | undefined
       let rawBytes = 0
 
       try {
@@ -209,6 +211,7 @@ export async function POST(request: NextRequest) {
           rawBytes = rawEmail.byteLength
           const parsed = await simpleParser(Buffer.from(rawEmail))
           parsedFromS3 = true
+          encabezados = parsed.headers as Map<string, unknown>
 
           bodyText = parsed.text || ''
           bodyHtml = parsed.html || parsed.textAsHtml || ''
@@ -262,6 +265,18 @@ export async function POST(request: NextRequest) {
         bodyText = `Email recibido de ${fromAddress}. No se pudo procesar el contenido completo.`
       }
 
+      // Respuestas automáticas («fuera de oficina», avisos masivos, nuestros
+      // propios reenvíos que vuelven): no se reenvían nunca —así se cortó el
+      // bucle de julio— y, si la señal es segura, entran archivadas para no
+      // tapar lo que escriben las personas.
+      const configReenvio = await prisma.config.findFirst({ select: { emailForwardingAddress: true } }).catch(() => null)
+      const automatico = esCorreoAutomatico({
+        encabezados,
+        asunto: subject,
+        remitente: fromAddress,
+        casillaDeReenvio: configReenvio?.emailForwardingAddress,
+      })
+
       // Guardar en base de datos. El check de duplicado anterior es best-effort:
       // dos entregas concurrentes de SNS pueden pasarlo a la vez, así que también
       // capturamos la violación de unicidad (P2002) y respondemos 200 para evitar
@@ -281,7 +296,7 @@ export async function POST(request: NextRequest) {
             bodyHtml: bodyHtml.substring(0, 200000),
             s3Key,
             direction: 'INBOUND',
-            status: 'UNREAD',
+            status: automatico.seguro ? 'ARCHIVED' : 'UNREAD',
             spamVerdict,
             virusVerdict,
             attachments: {
@@ -323,6 +338,11 @@ export async function POST(request: NextRequest) {
           /\bdelivery status notification\b/i.test(subject)
 
         if (forwardingEnabled && forwardingAddress) {
+          if (automatico.automatico) {
+            logInboundDone(`auto_no_forward:${automatico.motivo}`)
+            return NextResponse.json({ status: 'processed_auto_no_forward', emailId: email.id })
+          }
+
           // Evita loops de reportes de entrega (DSN) que se auto-rebotan.
           if (isDeliveryReport) {
             logInboundDone('dsn_no_forward')
