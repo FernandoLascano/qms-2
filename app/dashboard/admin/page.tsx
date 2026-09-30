@@ -53,82 +53,10 @@ async function AdminDashboardPage() {
   const desde12Semanas = new Date(Date.now() - 12 * 7 * 24 * 60 * 60 * 1000)
 
   // Si falla, la tarjeta muestra el error sin tirar abajo el panel entero.
-  const estadoRespaldo = await getEstadoRespaldo().catch((error) => {
+  const respaldoP = getEstadoRespaldo().catch((error) => {
     console.error('Error al leer el estado del respaldo:', error)
     return null
   })
-
-  const [
-    totalTramites,
-    completados,
-    enProceso,
-    esperandoCliente,
-    totalUsuarios,
-    documentosPendientes,
-    pendientesValidacion,
-    tramitesRecientes,
-    totalBorradores,
-    conDenominacion,
-    fechasTramites,
-    fechasUsuarios,
-    fechasInscripciones,
-  ] = await Promise.all([
-    // Los borradores sin enviar no son trámites: se cuentan aparte, como leads.
-    prisma.tramite.count({ where: { formularioCompleto: true } }),
-    prisma.tramite.count({ where: { sociedadInscripta: true } }),
-    prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
-    prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
-    prisma.user.count(),
-    prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
-    prisma.tramite.count({
-      where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' },
-    }),
-    prisma.tramite.findMany({
-      take: 7,
-      where: { formularioCompleto: true },
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        id: true,
-        denominacionSocial1: true,
-        denominacionAprobada: true,
-        estadoGeneral: true,
-        estadoValidacion: true,
-        formularioCompleto: true,
-        sociedadInscripta: true,
-        denominacionReservada: true,
-        capitalDepositado: true,
-        tasaPagada: true,
-        documentosFirmados: true,
-        tramiteIngresado: true,
-        updatedAt: true,
-        user: { select: { name: true, email: true } },
-      },
-    }),
-    prisma.tramite.count({ where: { formularioCompleto: false } }),
-    // Etapa intermedia del embudo. Incluye las inscriptas a propósito: sin eso
-    // el paso daría menos que el siguiente y el embudo se leería al revés.
-    // (`honorariosPagados` no sirve para esto: los trámites viejos nunca lo
-    // tuvieron seteado y mostraba 2 sobre 10 inscriptas.)
-    prisma.tramite.count({
-      where: {
-        formularioCompleto: true,
-        OR: [{ denominacionReservada: true }, { sociedadInscripta: true }],
-      },
-    }),
-    // Series de tendencia: sólo las fechas, que son pocas filas.
-    prisma.tramite.findMany({
-      where: { formularioCompleto: true, createdAt: { gte: desde12Semanas } },
-      select: { createdAt: true },
-    }),
-    prisma.user.findMany({
-      where: { createdAt: { gte: desde12Semanas } },
-      select: { createdAt: true },
-    }),
-    prisma.tramite.findMany({
-      where: { sociedadInscripta: true, fechaInscripcion: { gte: desde12Semanas } },
-      select: { fechaInscripcion: true },
-    }),
-  ])
 
   /*
    * La agenda del día junta lo que antes había que ir a buscar a cada
@@ -140,7 +68,7 @@ async function AdminDashboardPage() {
    */
   const hoyAR = hoyArgentina()
   const limiteAviso = new Date(hoyAR.getTime() + DIAS_AVISO * 86_400_000)
-  const [agendaLeads, emailsSinLeer, serviciosPorVencer, domiciliosPorVencer, oportunidades] = await Promise.all([
+  const agendaP = Promise.all([
     contarAgendaLeads(hoyAR.toISOString().slice(0, 10)),
     prisma.email.count({ where: { direction: 'INBOUND', status: 'UNREAD' } }),
     prisma.servicioContratado
@@ -152,6 +80,89 @@ async function AdminDashboardPage() {
     }),
     prisma.servicioContratado.count({ where: { estado: 'INTERESADO' } }).catch(() => 0),
   ])
+
+  // Las tres tandas (contadores, estado del respaldo y agenda) salen juntas:
+  // antes iban una detrás de otra, y cada tanda es un viaje a la base.
+  const [
+    [
+      totalTramites,
+      completados,
+      enProceso,
+      esperandoCliente,
+      totalUsuarios,
+      documentosPendientes,
+      pendientesValidacion,
+      tramitesRecientes,
+      totalBorradores,
+      conDenominacion,
+      fechasTramites,
+      fechasUsuarios,
+      fechasInscripciones,
+    ],
+    estadoRespaldo,
+    [agendaLeads, emailsSinLeer, serviciosPorVencer, domiciliosPorVencer, oportunidades],
+  ] = await Promise.all([
+    Promise.all([
+      // Los borradores sin enviar no son trámites: se cuentan aparte, como leads.
+      prisma.tramite.count({ where: { formularioCompleto: true } }),
+      prisma.tramite.count({ where: { sociedadInscripta: true } }),
+      prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
+      prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
+      prisma.user.count(),
+      prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
+      prisma.tramite.count({
+        where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' },
+      }),
+      prisma.tramite.findMany({
+        take: 7,
+        where: { formularioCompleto: true },
+        orderBy: { updatedAt: 'desc' },
+        select: {
+          id: true,
+          denominacionSocial1: true,
+          denominacionAprobada: true,
+          estadoGeneral: true,
+          estadoValidacion: true,
+          formularioCompleto: true,
+          sociedadInscripta: true,
+          denominacionReservada: true,
+          capitalDepositado: true,
+          tasaPagada: true,
+          documentosFirmados: true,
+          tramiteIngresado: true,
+          updatedAt: true,
+          user: { select: { name: true, email: true } },
+        },
+      }),
+      prisma.tramite.count({ where: { formularioCompleto: false } }),
+      // Etapa intermedia del embudo. Incluye las inscriptas a propósito: sin eso
+      // el paso daría menos que el siguiente y el embudo se leería al revés.
+      // (`honorariosPagados` no sirve para esto: los trámites viejos nunca lo
+      // tuvieron seteado y mostraba 2 sobre 10 inscriptas.)
+      prisma.tramite.count({
+        where: {
+          formularioCompleto: true,
+          OR: [{ denominacionReservada: true }, { sociedadInscripta: true }],
+        },
+      }),
+      // Series de tendencia: sólo las fechas, que son pocas filas.
+      prisma.tramite.findMany({
+        where: { formularioCompleto: true, createdAt: { gte: desde12Semanas } },
+        select: { createdAt: true },
+      }),
+      prisma.user.findMany({
+        where: { createdAt: { gte: desde12Semanas } },
+        select: { createdAt: true },
+      }),
+      prisma.tramite.findMany({
+        where: { sociedadInscripta: true, fechaInscripcion: { gte: desde12Semanas } },
+        select: { fechaInscripcion: true },
+      }),
+    ]),
+    respaldoP,
+    agendaP,
+  ])
+
   const fechasPorVencer = [
     ...serviciosPorVencer.map((s) => s.proximoVencimiento),
     ...domiciliosPorVencer.map((d) => d.fechaVencimiento),
