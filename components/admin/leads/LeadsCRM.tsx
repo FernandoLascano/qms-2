@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { EmptyState } from '@/components/ui/states'
 import { CountBadge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -34,12 +35,27 @@ const ETAPAS_ABIERTAS = ESTADOS.filter((e) => !['CONVERTIDO', 'DESCARTADO'].incl
 const DIA_MS = 86_400_000
 const diasEntre = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / DIA_MS)
 
+/** Cuándo entró el lead, en el día local: «Entró hoy», «Ayer», «Hace 3 días», «12 sep». */
+function entroTexto(creado: string, hoy: string): string {
+  const fecha = new Date(creado)
+  const d = diasEntre(hoyClave(fecha), hoy)
+  if (d <= 0) return 'Entró hoy'
+  if (d === 1) return 'Entró ayer'
+  if (d < 7) return `Hace ${d} días`
+  return fecha.toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'short',
+    ...(hoy.slice(0, 4) !== String(fecha.getFullYear()) && { year: 'numeric' }),
+  })
+}
+
 export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: string | null }) {
   const router = useRouter()
   const hoy = hoyClave()
   const [vista, setVista] = useState<Vista>('HOY')
   const [etapa, setEtapa] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
+  const [orden, setOrden] = useState<'PRIORIDAD' | 'RECIENTES'>('PRIORIDAD')
   const [seleccionId, setSeleccionId] = useState<string | null>(null)
   const [nuevo, setNuevo] = useState(false)
   const [perdiendo, setPerdiendo] = useState<LeadCRM | null>(null)
@@ -89,13 +105,15 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
 
   // Lista visible, ya agrupada. Con búsqueda se mira todo, sin importar la vista.
   const grupos = useMemo(() => {
-    const porPuntaje = (a: { lead: LeadCRM }, b: { lead: LeadCRM }) => b.lead.puntaje - a.lead.puntaje
+    // «Prioridad» por puntaje; «Más recientes» por fecha de entrada.
+    const porOrden = (a: { lead: LeadCRM }, b: { lead: LeadCRM }) =>
+      orden === 'RECIENTES' ? b.lead.creado.localeCompare(a.lead.creado) : b.lead.puntaje - a.lead.puntaje
 
     if (q) {
       const r = conSituacion.filter(({ lead }) =>
         [lead.nombre, lead.email, lead.telefono, lead.denominacion].some((v) => v?.toLowerCase().includes(q)),
       )
-      return [{ titulo: `Resultados en todos los leads`, items: r.sort(porPuntaje) }]
+      return [{ titulo: `Resultados en todos los leads`, items: r.sort(porOrden) }]
     }
 
     if (vista === 'HOY') {
@@ -106,7 +124,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
           .filter((x) => x.situacion === s)
           .sort((a, b) =>
             // Los vencidos, del más atrasado al menos; el resto, por prioridad.
-            s === 'VENCIDO' ? diaDe(a.lead.proximoContacto!).localeCompare(diaDe(b.lead.proximoContacto!)) : porPuntaje(a, b),
+            s === 'VENCIDO' ? diaDe(a.lead.proximoContacto!).localeCompare(diaDe(b.lead.proximoContacto!)) : porOrden(a, b),
           ),
       })).filter((g) => g.items.length > 0)
     }
@@ -115,7 +133,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
       const abiertos = conSituacion.filter(
         (x) => x.situacion !== 'GANADO' && x.situacion !== 'PERDIDO' && (!etapa || x.lead.estado === etapa),
       )
-      return [{ titulo: etapa ? ESTADOS.find((e) => e.valor === etapa)!.texto : 'Todos los abiertos', items: abiertos.sort(porPuntaje) }]
+      return [{ titulo: etapa ? ESTADOS.find((e) => e.valor === etapa)!.texto : 'Todos los abiertos', items: abiertos.sort(porOrden) }]
     }
 
     const cerrado = vista === 'GANADOS' ? 'GANADO' : 'PERDIDO'
@@ -125,7 +143,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
         .filter((x) => x.situacion === cerrado)
         .sort((a, b) => b.lead.ultimaActividad.localeCompare(a.lead.ultimaActividad)),
     }]
-  }, [conSituacion, vista, etapa, q])
+  }, [conSituacion, vista, etapa, q, orden])
 
   const ordenVisible = grupos.flatMap((g) => g.items.map((x) => x.lead.id))
   const seleccionado = leads.find((l) => l.id === seleccionId) ?? null
@@ -246,7 +264,8 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
             </ul>
           </nav>
 
-          <div className="relative">
+          <div className="flex gap-2">
+          <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" aria-hidden />
             <Input
               type="search"
@@ -256,6 +275,16 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
               aria-label="Buscar leads"
               className="pl-9"
             />
+          </div>
+          <Select
+            value={orden}
+            onChange={(e) => setOrden(e.target.value as 'PRIORIDAD' | 'RECIENTES')}
+            aria-label="Ordenar leads"
+            className="w-auto shrink-0"
+          >
+            <option value="PRIORIDAD">Prioridad</option>
+            <option value="RECIENTES">Más recientes</option>
+          </Select>
           </div>
 
           {ordenVisible.length === 0 ? (
@@ -392,6 +421,14 @@ function FilaLead({
         </span>
         <span className="block truncate text-body-sm text-ink-2">{contexto}</span>
         <span className="mt-1 flex items-center gap-2 text-label text-ink-3">
+          <time
+            dateTime={lead.creado}
+            title={`Entró el ${new Date(lead.creado).toLocaleString('es-AR', { dateStyle: 'long', timeStyle: 'short' })}`}
+            className={cn('tnum', diasEntre(hoyClave(new Date(lead.creado)), hoy) < 2 && 'font-medium text-ink-2')}
+          >
+            {entroTexto(lead.creado, hoy)}
+          </time>
+          <span aria-hidden>·</span>
           <span>{ESTADOS.find((e) => e.valor === lead.estado)?.texto}</span>
           <span aria-hidden>·</span>
           <Phone className={cn('h-3 w-3', lead.telefono ? 'text-ink-2' : 'opacity-40')} aria-label={lead.telefono ? 'Tiene teléfono' : 'Sin teléfono'} />
