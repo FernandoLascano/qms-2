@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Check, Copy, Mail, MessageCircle, PhoneCall } from 'lucide-react'
+import { Check, Copy, Mail, MessageCircle, PhoneCall, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -45,6 +45,7 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
   const [nota, setNota] = useState('')
   const [proximo, setProximo] = useState<string | null>(diaMas(3))
   const [guardando, setGuardando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   // Al cambiar de lead todo vuelve a empezar.
   useEffect(() => {
@@ -94,6 +95,35 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
     } finally {
       setGuardando(false)
     }
+  }
+
+  // El email sale desde QMS (misma vía que la bandeja: queda guardado ahí y,
+  // si es un formulario, en el trámite) y el contacto se registra solo.
+  async function enviarEmail() {
+    if (!lead.email) return
+    if (!asunto.trim() || !cuerpo.trim()) {
+      toast.error('Completá el asunto y el texto')
+      return
+    }
+    setEnviando(true)
+    try {
+      await pedir('/api/admin/emails', 'POST', {
+        to: lead.email,
+        subject: asunto.trim(),
+        text: cuerpo,
+        destinatario: lead.nombre,
+        tramiteId: lead.tipo === 'BORRADOR' ? lead.id : undefined,
+      })
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo enviar el email')
+      setEnviando(false)
+      return
+    }
+    setEnviando(false)
+    toast.success(`Email enviado a ${lead.email}`)
+    // Si el registro falla, el mail ya salió: no hay que reenviarlo, sólo
+    // registrarlo con «Lo mandé por fuera».
+    await registrarMensaje()
   }
 
   const registrarMensaje = () =>
@@ -182,7 +212,14 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
           />
 
           <div className="flex flex-wrap items-center gap-2">
+            {modo === 'EMAIL' && lead.email && (
+              <Button onClick={enviarEmail} loading={enviando} disabled={guardando}>
+                {!enviando && <Send className="h-4 w-4" aria-hidden />}
+                Enviar a {lead.email}
+              </Button>
+            )}
             <Button
+              variant={modo === 'EMAIL' && lead.email ? 'ghost' : 'primary'}
               onClick={async () => {
                 if (await copiar(cuerpo, modo === 'EMAIL' ? 'Cuerpo del email copiado' : 'Mensaje copiado')) setCopiado(true)
               }}
@@ -211,12 +248,14 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
             )}
           >
             <p className="text-body-sm font-medium text-ink">
-              {copiado ? '¿Ya lo mandaste? Dejalo registrado' : 'Cuando lo mandes, registralo'}
+              {modo === 'EMAIL' && lead.email && !copiado
+                ? 'Al enviarlo queda registrado con este próximo seguimiento'
+                : copiado ? '¿Ya lo mandaste? Dejalo registrado' : 'Cuando lo mandes, registralo'}
             </p>
             <SelectorProximo valor={proximo} onChange={setProximo} />
-            <Button onClick={registrarMensaje} loading={guardando} variant={copiado ? 'primary' : 'secondary'}>
+            <Button onClick={registrarMensaje} loading={guardando && !enviando} disabled={enviando} variant={copiado ? 'primary' : 'secondary'}>
               {!guardando && <Check className="h-4 w-4" aria-hidden />}
-              Lo mandé
+              {modo === 'EMAIL' && lead.email ? 'Lo mandé por fuera' : 'Lo mandé'}
             </Button>
           </div>
         </>
