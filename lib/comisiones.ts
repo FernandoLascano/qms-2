@@ -111,6 +111,19 @@ export function calcularReparto(
   }
 }
 
+// Bono comercial de Fernando sobre un cobro: acuerdo aparte con MW, fuera del
+// contrato QMS. Se calcula sobre lo cobrado y sale de la parte de MW, así que
+// no puede superarla. No entra en totalizar().
+export function bonoComercial(
+  monto: number,
+  originador: Originador,
+  bonoPct: number,
+  p: Porcentajes = PORCENTAJES_DEFAULT
+): number {
+  if (!(bonoPct > 0)) return 0
+  return Math.min(monto * (bonoPct / 100), calcularReparto(monto, originador, p).mw)
+}
+
 export type TotalesLiquidacion = {
   ingresoBruto: number
   // A pagar por beneficiario

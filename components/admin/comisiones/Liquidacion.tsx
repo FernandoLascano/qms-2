@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { BarraDistribucion, BarrasMensuales } from '@/components/ui/charts'
 import {
   BENEFICIARIO_LABEL,
+  bonoComercial,
   etiquetaPeriodo,
   moverPeriodo,
   type Beneficiario,
@@ -96,6 +97,9 @@ export function LiquidacionTab({
     return { label: MESES_CORTOS[Number(clave.slice(5)) - 1], valor }
   })
 
+  // Informativo: el bono lo paga MW de su parte, no entra en el total del contrato.
+  const bonoMes = movsMes.reduce((a, m) => a + bonoComercial(m.monto, m.originador, bonoPct, porcentajes), 0)
+
   const comisiones = totales.comisionFernando + totales.comisionJustiniano + totales.comisionMw
 
   return (
@@ -181,6 +185,16 @@ export function LiquidacionTab({
             <span className="text-body-sm font-semibold text-ink">Total a pagar</span>
             <span className="text-title text-primary tnum">{fmt(totales.subtotalPagable)}</span>
           </div>
+
+          {bonoMes > 0 && (
+            <div className="flex items-baseline justify-between gap-3 border-t border-line px-card-sm py-2.5 sm:px-card">
+              <span className="text-body-sm text-ink-2">
+                + Bono comercial {bonoPct}% · {BENEFICIARIO_LABEL.FERNANDO}{' '}
+                <span className="text-ink-3">(lo paga MW de su parte, no suma al total)</span>
+              </span>
+              <span className="text-body-sm font-semibold text-ink tnum">{fmt(bonoMes)}</span>
+            </div>
+          )}
         </Card>
 
         <CargaMW
