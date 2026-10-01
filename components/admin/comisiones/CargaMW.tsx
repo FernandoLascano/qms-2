@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   BENEFICIARIO_LABEL,
+  bonoComercial,
   calcularReparto,
   etiquetaPeriodo,
   type Porcentajes,
@@ -80,8 +81,7 @@ export function CargaMW({
       originacion,
       operadores: web ? deFernando - originacion : deFernando,
       mw: r.mw,
-      // El bono se calcula sobre lo cobrado y sale de la parte de MW.
-      bono: Math.min(m.monto * (bonoPct / 100), r.mw),
+      bono: bonoComercial(m.monto, m.originador, bonoPct, porcentajes),
     }
   })
   const total = filas.reduce(
