@@ -14,6 +14,11 @@ import { SelectorProximo } from './SelectorProximo'
 
 type Modo = CanalMensaje | 'NOTA'
 
+/* Con teléfono y email no se da por sentado el canal: se elige cada vez.
+   Antes arrancaba siempre en WhatsApp y el email quedaba escondido. */
+const modoInicial = (l: Pick<LeadCRM, 'telefono' | 'email'>): Modo | null =>
+  l.telefono && l.email ? null : l.telefono ? 'WHATSAPP' : 'EMAIL'
+
 /**
  * Contactar = elegir qué decir, copiarlo, mandarlo por fuera y dejarlo
  * registrado con la fecha del próximo seguimiento. Antes eran cuatro lugares
@@ -22,7 +27,7 @@ type Modo = CanalMensaje | 'NOTA'
  * anotados para 48 leads.
  */
 export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: string | null; onHecho: () => void }) {
-  const [modo, setModo] = useState<Modo>(lead.telefono ? 'WHATSAPP' : 'EMAIL')
+  const [modo, setModo] = useState<Modo | null>(modoInicial(lead))
   const plantillas = useMemo(
     () =>
       plantillasPara({
@@ -49,14 +54,15 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
 
   // Al cambiar de lead todo vuelve a empezar.
   useEffect(() => {
-    setModo(lead.telefono ? 'WHATSAPP' : 'EMAIL')
+    setModo(modoInicial(lead))
     setNota('')
     setProximo(diaMas(3))
-  }, [lead.id, lead.telefono])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lead.id, lead.telefono, lead.email])
 
   // Al cambiar de canal se elige la plantilla sugerida (la primera).
   useEffect(() => {
-    if (modo === 'NOTA') return
+    if (!modo || modo === 'NOTA') return
     const p = delCanal[0]
     if (p) {
       setPlantillaId(p.id)
@@ -128,7 +134,7 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
 
   const registrarMensaje = () =>
     registrar(
-      modo,
+      modo ?? 'OTRO',
       (
         `Mensaje «${plantilla?.titulo ?? 'personalizado'}» por ${modo === 'WHATSAPP' ? 'WhatsApp' : 'email'}` +
         (modo === 'EMAIL' && asunto ? `\nAsunto: ${asunto}` : '') +
@@ -141,6 +147,35 @@ export function Contactar({ lead, firma, onHecho }: { lead: LeadCRM; firma: stri
     { id: 'EMAIL', texto: 'Email', icono: Mail, deshabilitado: lead.email ? undefined : 'Sin email' },
     { id: 'NOTA', texto: 'Llamada o nota', icono: PhoneCall },
   ]
+
+  if (!modo) {
+    return (
+      <section aria-label="Contactar" className="space-y-3">
+        <p className="text-body-sm text-ink-2">¿Por dónde le escribís?</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {modos.slice(0, 2).map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setModo(m.id)}
+              className="flex items-center gap-3 rounded-control border border-line bg-surface px-4 py-3 text-left transition-colors hover:border-primary-line hover:bg-primary-soft"
+            >
+              <m.icono className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+              <span className="min-w-0">
+                <span className="block text-body font-medium text-ink">{m.texto}</span>
+                <span className="block truncate text-body-sm text-ink-3">
+                  {m.id === 'WHATSAPP' ? lead.telefono : lead.email}
+                </span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <Button variant="link" size="sm" onClick={() => setModo('NOTA')}>
+          Registrar una llamada o nota
+        </Button>
+      </section>
+    )
+  }
 
   return (
     <section aria-label="Contactar" className="space-y-4">
