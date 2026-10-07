@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Link as LinkIcon, Clock, Send, CheckCircle, XCircle } from 'lucide-react'
+import { Select } from '@/components/ui/select'
 
 interface EnlacePago {
   id: string
@@ -169,17 +170,16 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
           <div className="space-y-3 bg-surface p-4 rounded-control border border-line">
             <div>
               <Label htmlFor="conceptoEnlace">Concepto *</Label>
-              <select
+              <Select
                 id="conceptoEnlace"
                 value={nuevoEnlace.concepto}
                 onChange={(e) => setNuevoEnlace(prev => ({ ...prev, concepto: e.target.value }))}
-                className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
                 disabled={enviando}
               >
                 {conceptosDisponibles.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
-              </select>
+              </Select>
             </div>
 
             <div>

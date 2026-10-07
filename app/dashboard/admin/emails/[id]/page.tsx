@@ -504,7 +504,8 @@ export default function EmailDetailPage() {
                 value=""
                 onChange={(e) => usarPlantilla(e.target.value)}
                 aria-label="Usar una plantilla"
-                className="mb-3 h-9 w-full text-body-sm sm:w-80"
+                size="sm"
+                className="mb-3 h-9 w-full sm:w-80"
               >
                 <option value="">Usar una plantilla…</option>
                 {dbTemplates.length > 0 && (

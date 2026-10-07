@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { Select } from '@/components/ui/select'
 
 const localizer = momentLocalizer(moment)
 
@@ -220,10 +221,9 @@ export default function CalendarioEventos() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Tipo *</Label>
-                    <select
+                    <Select
                       value={nuevoEvento.tipo}
                       onChange={(e) => setNuevoEvento(prev => ({ ...prev, tipo: e.target.value }))}
-                      className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
                     >
                       <option value="REUNION_CLIENTE">Reunión con Cliente</option>
                       <option value="VENCIMIENTO_DENOMINACION">Vencimiento de Denominación</option>
@@ -232,7 +232,7 @@ export default function CalendarioEventos() {
                       <option value="FECHA_LIMITE_TRAMITE">Fecha Límite de Trámite</option>
                       <option value="RECORDATORIO">Recordatorio</option>
                       <option value="OTRO">Otro</option>
-                    </select>
+                    </Select>
                   </div>
                   <div>
                     <Label>Fecha y Hora Inicio *</Label>

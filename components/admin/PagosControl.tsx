@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DollarSign, CheckCircle, XCircle } from 'lucide-react'
 import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
+import { Select } from '@/components/ui/select'
 
 interface Pago {
   id: string
@@ -139,17 +140,16 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
           <div className="space-y-3">
             <div>
               <Label htmlFor="concepto">Concepto</Label>
-              <select
+              <Select
                 id="concepto"
                 value={nuevoPago.concepto}
                 onChange={(e) => setNuevoPago(prev => ({ ...prev, concepto: e.target.value }))}
-                className="flex h-10 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-info-solid"
                 disabled={registrando}
               >
                 {conceptosDisponibles.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
-              </select>
+              </Select>
               <p className="mt-1 text-label text-ink-2">
                 {nuevoPago.concepto === 'DOMICILIO_SEDE'
                   ? 'Pasa solo a Comisiones y deja el domicilio activo un año (si ya estaba, lo renueva) con este monto como abono.'

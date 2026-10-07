@@ -7,6 +7,7 @@ import { FileInput } from '@/components/ui/file-input'
 import { TEMPLATES, textoDePlantilla, type DbTemplate } from '@/lib/emails/respuestas-rapidas'
 import { Send, Loader2, Eye, EyeOff, X, FileText, User } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
+import { Select } from '@/components/ui/select'
 
 interface Tramite {
   id: string
@@ -329,10 +330,9 @@ export default function ComposeEmailPage() {
             {/* Template selector */}
             <div>
               <label className="block text-body-sm font-semibold text-ink mb-1.5">Plantilla</label>
-              <select
+              <Select
                 value={selectedTemplate}
                 onChange={(e) => handleTemplateChange(e.target.value)}
-                className="w-full px-4 py-2 border border-line-strong rounded-control text-body-sm text-ink bg-surface focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent cursor-pointer"
               >
                 <option value="">Escribir desde cero</option>
                 <optgroup label="Plantillas rápidas">
@@ -347,7 +347,7 @@ export default function ComposeEmailPage() {
                     ))}
                   </optgroup>
                 )}
-              </select>
+              </Select>
               <p className="text-label text-ink-2 mt-1">
                 Gestioná plantillas en{' '}
                 <Link href="/dashboard/admin/emails/plantillas" className="text-primary font-semibold hover:underline">

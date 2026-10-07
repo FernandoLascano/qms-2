@@ -29,6 +29,7 @@ import {
 , X } from 'lucide-react'
 import { toast } from 'sonner'
 import { RECARGO_TARJETA, precioRegular, ahorroTransferencia, formatARS } from '@/lib/precios'
+import { Select } from '@/components/ui/select'
 
 interface ConfigData {
   // Notificaciones
@@ -479,11 +480,10 @@ export default function ConfiguracionAdminPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="testEmailType">Tipo de template</Label>
-                    <select
+                    <Select
                       id="testEmailType"
                       value={testEmailType}
                       onChange={(e) => setTestEmailType(e.target.value)}
-                      className="w-full px-3 py-2 border border-line-strong rounded-control focus:outline-none focus:ring-2 focus:ring-ring bg-surface text-ink"
                     >
                       <option value="welcome">Bienvenida (Registro)</option>
                       <option value="nuevoTramite">Nuevo Trámite Iniciado</option>
@@ -491,7 +491,7 @@ export default function ConfiguracionAdminPage() {
                       <option value="accionRequerida">Acción Requerida</option>
                       <option value="tramiteCompletado">Trámite Completado</option>
                       <option value="recordatorioPago">Recordatorio de Pago</option>
-                    </select>
+                    </Select>
                   </div>
                 </div>
                 <Button

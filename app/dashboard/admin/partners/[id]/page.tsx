@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import { Select } from '@/components/ui/select'
 
 type PartnerData = {
   id: string
@@ -354,17 +355,16 @@ export default function PartnerDetailPage() {
               <div className="grid gap-4 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
                 <div className="space-y-2">
                   <Label htmlFor="descuento-tipo">Tipo</Label>
-                  <select
+                  <Select
                     id="descuento-tipo"
                     value={partner.descuentoTipo || 'PORCENTAJE'}
                     onChange={(e) =>
                       setPartner({ ...partner, descuentoTipo: e.target.value as 'MONTO' | 'PORCENTAJE' })
                     }
-                    className="w-full rounded-control border border-line-strong px-3 py-2 text-ink"
                   >
                     <option value="PORCENTAJE">Porcentaje</option>
                     <option value="MONTO">Monto fijo</option>
-                  </select>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="descuento-valor">Valor</Label>

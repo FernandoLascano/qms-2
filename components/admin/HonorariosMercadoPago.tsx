@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DollarSign, Send, CheckCircle } from 'lucide-react'
+import { Select } from '@/components/ui/select'
 
 interface Pago {
   id: string
@@ -283,7 +284,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
             {/* Selector de Plan */}
             <div>
               <Label htmlFor="planHonorarios">Plan *</Label>
-              <select
+              <Select
                 id="planHonorarios"
                 value={planSeleccionado}
                 onChange={(e) => {
@@ -293,13 +294,12 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                   setMonto(montos.mercadoPago.toString())
                   setMontoTransferencia(montos.transferencia.toString())
                 }}
-                className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                 disabled={generando}
               >
                 <option value="BASICO">Básico - ${precios.precioPlanBasico.toLocaleString('es-AR')}</option>
                 <option value="EMPRENDEDOR">Emprendedor - ${precios.precioPlanEmprendedor.toLocaleString('es-AR')}</option>
                 <option value="PREMIUM">Premium - ${precios.precioPlanPremium.toLocaleString('es-AR')}</option>
-              </select>
+              </Select>
               <p className="text-label text-ink-2 mt-1">Los montos se cargarán automáticamente según el plan seleccionado</p>
             </div>
 
@@ -340,11 +340,10 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                 {cuentasPreConfiguradas.length > 0 && (
                   <div>
                     <Label htmlFor="cuentaPreConfigurada">Seleccionar Cuenta Pre-configurada</Label>
-                    <select
+                    <Select
                       id="cuentaPreConfigurada"
                       value={cuentaSeleccionada}
                       onChange={(e) => setCuentaSeleccionada(e.target.value)}
-                      className="flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink focus:outline-none focus:ring-2 focus:ring-ring"
                       disabled={generando}
                     >
                       <option value="">-- Seleccionar cuenta --</option>
@@ -353,7 +352,7 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                           {cuenta.nombre} - {cuenta.banco}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                     <p className="text-label text-ink-2 mt-1">O completa los datos manualmente abajo</p>
                   </div>
                 )}
