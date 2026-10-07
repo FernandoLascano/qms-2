@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Download, FileText, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { FileSpreadsheet, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface ExportButtonProps {
@@ -11,26 +11,7 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data, filename = 'reporte' }: ExportButtonProps) {
-  const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
-
-  const exportToPDF = async () => {
-    setExporting('pdf')
-    try {
-      // Usar la librería de generación de PDFs existente
-      const { generarReporteProfesional } = await import('@/lib/analytics/reportGenerator')
-      // Extraer periodo y jurisdiccion del filename si están disponibles
-      const partes = filename.split('-')
-      const periodo = partes.length > 1 ? partes[1] : 'mes'
-      const jurisdiccion = partes.length > 2 ? partes[2] : 'todas'
-      generarReporteProfesional(data, periodo, jurisdiccion)
-      toast.success('Reporte PDF generado exitosamente')
-    } catch (error) {
-      console.error('Error al exportar PDF:', error)
-      toast.error('Error al generar el reporte PDF')
-    } finally {
-      setExporting(null)
-    }
-  }
+  const [exporting, setExporting] = useState<'excel' | null>(null)
 
   const exportToExcel = async () => {
     setExporting('excel')
@@ -115,20 +96,6 @@ export function ExportButton({ data, filename = 'reporte' }: ExportButtonProps) 
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={exportToPDF}
-        disabled={!!exporting}
-        className="gap-2"
-      >
-        {exporting === 'pdf' ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <FileText className="h-4 w-4" />
-        )}
-        Exportar PDF
-      </Button>
       <Button
         variant="outline"
         size="sm"

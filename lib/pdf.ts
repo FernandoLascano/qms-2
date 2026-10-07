@@ -20,6 +20,10 @@ const WIF_PROVIDER =
 const CUENTA_SERVICIO =
   process.env.GCP_PDF_SERVICE_ACCOUNT || 'qms-pdf@project-4ca27e64-983d-4143-889.iam.gserviceaccount.com'
 
+// El servicio se apaga cuando no se usa y el primer pedido lo despierta
+// (Chromium incluido): puede tardar bastante más que los siguientes.
+const ESPERA_MS = 50_000
+
 /** Sólo se puede convertir corriendo en Vercel (o con un token de prueba local). */
 export function conversorPdfConfigurado(): boolean {
   return !!process.env.VERCEL || !!process.env.GOTENBERG_ID_TOKEN
@@ -71,7 +75,26 @@ export async function htmlAPdf(html: string, pie?: string): Promise<Buffer> {
     method: 'POST',
     body: form,
     headers: { Authorization: `Bearer ${await tokenParaGotenberg()}` },
-    signal: AbortSignal.timeout(45_000),
+    signal: AbortSignal.timeout(ESPERA_MS),
+  })
+  if (!res.ok) {
+    throw new Error(`Gotenberg respondió ${res.status}: ${(await res.text()).slice(0, 200)}`)
+  }
+  return Buffer.from(await res.arrayBuffer())
+}
+
+/** Une varios PDF en uno, en el orden recibido (motor de PDF de Gotenberg). */
+export async function unirPdfs(pdfs: Buffer[]): Promise<Buffer> {
+  const form = new FormData()
+  // Gotenberg une por orden alfabético del nombre de archivo.
+  pdfs.forEach((pdf, i) =>
+    form.append('files', new Blob([new Uint8Array(pdf)], { type: 'application/pdf' }), `${String(i).padStart(3, '0')}.pdf`),
+  )
+  const res = await fetch(`${GOTENBERG_URL}/forms/pdfengines/merge`, {
+    method: 'POST',
+    body: form,
+    headers: { Authorization: `Bearer ${await tokenParaGotenberg()}` },
+    signal: AbortSignal.timeout(ESPERA_MS),
   })
   if (!res.ok) {
     throw new Error(`Gotenberg respondió ${res.status}: ${(await res.text()).slice(0, 200)}`)
