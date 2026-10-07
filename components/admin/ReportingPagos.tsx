@@ -26,6 +26,7 @@ export default function ReportingPagos({ pagos }: ReportingPagosProps) {
       TASA_RETRIBUTIVA: 'Tasa Retributiva (Final)',
       PUBLICACION_BOLETIN: 'Publicación en Boletín',
       CERTIFICACION_FIRMA: 'Certificación de Firma',
+      DOMICILIO_SEDE: 'Domicilio en sede',
       OTROS: 'Otros'
     }
     return mapa[concepto] || concepto

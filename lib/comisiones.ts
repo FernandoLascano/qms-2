@@ -45,6 +45,17 @@ export function esHonorario(concepto: string): boolean {
   return (CONCEPTOS_HONORARIOS as readonly string[]).includes(concepto)
 }
 
+// Conceptos de Pago que pasan solos a comisiones, con el asunto con que se
+// importan. Además de los honorarios, el domicilio en sede (ingreso de QMS).
+// OTROS no entra: puede ser un gasto; si es un ingreso, se carga a mano.
+export const ASUNTO_DE_CONCEPTO: Record<string, string> = {
+  HONORARIOS_BASICO: 'Constitución SAS (honorarios)',
+  HONORARIOS_EMPRENDEDOR: 'Constitución SAS (honorarios)',
+  HONORARIOS_PREMIUM: 'Constitución SAS (honorarios)',
+  DOMICILIO_SEDE: 'Domicilio en sede',
+}
+export const CONCEPTOS_COMISIONABLES = Object.keys(ASUNTO_DE_CONCEPTO)
+
 // Monto efectivamente cobrado de un Pago: si se pagó por transferencia y hay
 // monto con descuento, ése es el ingreso real; si no, el monto de lista.
 export function montoCobrado(pago: {

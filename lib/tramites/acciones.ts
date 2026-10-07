@@ -49,6 +49,7 @@ const CONCEPTOS: Record<string, string> = {
   TASA_RETRIBUTIVA: 'la tasa retributiva final',
   PUBLICACION_BOLETIN: 'la publicación en el Boletín',
   CERTIFICACION_FIRMA: 'la certificación de firma',
+  DOMICILIO_SEDE: 'el domicilio en sede',
   OTROS: 'el concepto pendiente',
 }
 

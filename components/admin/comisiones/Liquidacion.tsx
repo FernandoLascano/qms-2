@@ -122,6 +122,8 @@ export function LiquidacionTab({
               // del mes, el cálculo actual ya no coincide y hay que avisarlo.
               const diferencia = pagado ? monto - liq!.monto : 0
               const desfasado = Math.abs(diferencia) >= 0.01
+              // Lo más común: se pagó a mitad de mes y después entraron cobros.
+              const falta = desfasado && diferencia > 0
 
               return (
                 <li key={b} className="px-card-sm py-4 sm:px-card">
@@ -139,9 +141,11 @@ export function LiquidacionTab({
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <p className={cn('text-heading font-bold tnum', monto > 0 || pagado ? 'text-ink' : 'text-ink-3')}>
-                          {fmt(pagado ? liq!.monto : monto)}
+                          {fmt(pagado && !falta ? liq!.monto : monto)}
                         </p>
-                        {pagado ? (
+                        {falta ? (
+                          <Badge tone="warning" dot size="sm">Falta {fmt(diferencia)}</Badge>
+                        ) : pagado ? (
                           <Badge tone="success" dot size="sm">
                             Pagado{liq?.fechaPago ? ` el ${fmtFecha(liq.fechaPago)}` : ''}
                           </Badge>
@@ -167,12 +171,22 @@ export function LiquidacionTab({
                     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-control border border-warning-line bg-warning-soft px-3 py-2.5 text-body-sm text-ink sm:ml-14">
                       <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden />
                       <span className="min-w-0 flex-1">
-                        Los movimientos del mes cambiaron después del pago: hoy corresponden{' '}
-                        <strong className="tnum">{fmt(monto)}</strong> ({diferencia > 0 ? 'faltan' : 'sobran'}{' '}
-                        <strong className="tnum">{fmt(Math.abs(diferencia))}</strong>).
+                        {falta ? (
+                          <>
+                            Ya se pagaron <strong className="tnum">{fmt(liq!.monto)}</strong>
+                            {liq?.fechaPago ? ` el ${fmtFecha(liq.fechaPago)}` : ''}, pero después entraron cobros nuevos
+                            este mes: falta pagar <strong className="tnum">{fmt(diferencia)}</strong>.
+                          </>
+                        ) : (
+                          <>
+                            Se pagaron <strong className="tnum">{fmt(liq!.monto)}</strong>, pero después se borró o bajó
+                            un cobro del mes: hoy corresponden <strong className="tnum">{fmt(monto)}</strong>
+                            {' '}(<strong className="tnum">{fmt(-diferencia)}</strong> de más).
+                          </>
+                        )}
                       </span>
                       <Button variant="secondary" size="sm" loading={ocupado === b} onClick={() => marcar(b, monto, true)}>
-                        Ajustar a {fmt(monto)}
+                        {falta ? `Ya pagué los ${fmt(diferencia)}` : `Corregir a ${fmt(monto)}`}
                       </Button>
                     </div>
                   )}
