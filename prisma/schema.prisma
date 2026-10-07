@@ -296,6 +296,7 @@ model Tramite {
   leadSeguimientos LeadSeguimiento[]
   serviciosContratados ServicioContratado[]
   domicilioSede    DomicilioSede?
+  contratosDomicilio ContratoDomicilioVersion[]
 
   @@index([userId])
   @@index([estadoGeneral])
@@ -645,6 +646,23 @@ model DomicilioSede {
 
   @@index([estado])
   @@index([fechaVencimiento])
+}
+
+// Cada contrato de domicilio generado para un trámite, con los datos con que
+// se armó (lib/contrato-domicilio.ts, tipo DatosContrato). Sirve de historial
+// y para volver a abrir el formulario con lo último que se usó.
+model ContratoDomicilioVersion {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  version   Int // 1, 2, 3… por trámite
+  datos     Json
+  formato   String // "pdf" | "docx": el de la primera descarga de esta versión
+  generadoPor String? // nombre del admin
+
+  createdAt DateTime @default(now())
+
+  @@unique([tramiteId, version])
 }
 
 // CUENTAS BANCARIAS POR TRÁMITE (por ejemplo, depósito de capital)

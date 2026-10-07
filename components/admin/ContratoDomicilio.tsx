@@ -12,8 +12,17 @@ import { Field } from '@/components/ui/field'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { DatosContrato, PersonaContrato } from '@/lib/contrato-domicilio'
 
-type Precarga = {
+type Version = {
+  version: number
+  fecha: string
+  generadoPor: string | null
+  formato: string
   datos: DatosContrato
+}
+
+type Precarga = {
+  datosDelTramite: DatosContrato
+  versiones: Version[] // de la más nueva a la más vieja
   personas: PersonaContrato[]
   representanteClave: string | null
   direccionDomicilio: string | null
@@ -32,17 +41,37 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
   const [datos, setDatos] = useState<DatosContrato | null>(null)
   const [representante, setRepresentante] = useState('')
   const [coobligado, setCoobligado] = useState('')
+  // De dónde salen los datos del formulario: una versión guardada o el trámite.
+  const [origen, setOrigen] = useState<string>('tramite')
+
+  const fmtFecha = (iso: string) =>
+    new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+  function cargarDatos(p: Precarga, desde: string) {
+    const v = p.versiones.find((x) => String(x.version) === desde)
+    const d = v ? v.datos : p.datosDelTramite
+    setOrigen(v ? desde : 'tramite')
+    setDatos(d)
+    // Los selectores quedan en la persona que coincide con lo guardado (si no, a mano).
+    const clave = (nombre: string, soloAdm: boolean) =>
+      p.personas.find((x) => x.nombre === nombre && (!soloAdm || x.clave.startsWith('adm-')))?.clave ?? ''
+    setRepresentante(v ? clave(d.representante_nombre, true) : (p.representanteClave ?? ''))
+    setCoobligado(v ? clave(d.coobligado_nombre, false) : (p.representanteClave ?? ''))
+  }
+
+  async function traerPrecarga(): Promise<Precarga> {
+    const res = await fetch(`/api/admin/tramites/${tramiteId}/contrato-domicilio`)
+    if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'No se pudieron cargar los datos')
+    return res.json()
+  }
 
   async function abrir() {
     setCargando(true)
     try {
-      const res = await fetch(`/api/admin/tramites/${tramiteId}/contrato-domicilio`)
-      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'No se pudieron cargar los datos')
-      const p: Precarga = await res.json()
+      const p = await traerPrecarga()
       setPrecarga(p)
-      setDatos(p.datos)
-      setRepresentante(p.representanteClave ?? '')
-      setCoobligado(p.representanteClave ?? '')
+      // Se abre con la última versión guardada; si no hay, con los datos del trámite.
+      cargarDatos(p, p.versiones[0] ? String(p.versiones[0].version) : 'tramite')
       setAbierto(true)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No se pudieron cargar los datos')
@@ -86,6 +115,15 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
       a.download = `Contrato de domicilio - ${datos.sociedad_denominacion || 'Sociedad'}.${formato}`
       a.click()
       URL.revokeObjectURL(url)
+
+      // Cada juego de datos distinto queda guardado como una versión.
+      const version = res.headers.get('X-Contrato-Version')
+      if (version) {
+        const anterior = precarga?.versiones[0]?.version ?? 0
+        if (Number(version) > anterior) toast.success(`Guardado como versión ${version}`)
+        setOrigen(version)
+        traerPrecarga().then(setPrecarga).catch(() => {})
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No se pudo generar el contrato')
     } finally {
@@ -132,8 +170,26 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
             </DialogDescription>
           </DialogHeader>
 
-          {datos && (
+          {datos && precarga && (
             <div className="space-y-6">
+              {precarga.versiones.length > 0 && (
+                <Field
+                  label="Datos"
+                  htmlFor="cd-origen"
+                  hint="Cada descarga con datos distintos queda guardada como una versión nueva."
+                >
+                  <Select id="cd-origen" value={origen} onChange={(e) => cargarDatos(precarga, e.target.value)}>
+                    {precarga.versiones.map((v) => (
+                      <option key={v.version} value={String(v.version)}>
+                        Versión {v.version} · {fmtFecha(v.fecha)}
+                        {v.generadoPor ? ` · ${v.generadoPor}` : ''}
+                      </option>
+                    ))}
+                    <option value="tramite">Empezar de nuevo con los datos del trámite</option>
+                  </Select>
+                </Field>
+              )}
+
               {direccionDistinta && (
                 <div className="flex gap-2 rounded-control border border-warning-line bg-warning-soft px-3 py-2.5 text-body-sm text-ink">
                   <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" aria-hidden />
@@ -150,6 +206,14 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
                   {texto('sociedad_cuit', 'CUIT')}
                   {texto('sociedad_matricula', 'Matrícula', { hint: 'Con matrícula sale como "Inscripta"; sin ella, "En trámite".' })}
                   {texto('fecha_inicio', 'Fecha de inicio', { placeholder: 'DD/MM/AAAA' })}
+                  <Field label="Fecha de firma" htmlFor="cd-fecha_firma" hint="La del cierre del contrato: «a los … días del mes de …».">
+                    <Input
+                      id="cd-fecha_firma"
+                      type="date"
+                      value={datos.fecha_firma}
+                      onChange={(e) => set('fecha_firma', e.target.value)}
+                    />
+                  </Field>
                 </div>
                 <Field label="Administración real" htmlFor="cd-administracion_real" hint="Dónde funciona de verdad la administración (no es el domicilio en sede).">
                   <Input

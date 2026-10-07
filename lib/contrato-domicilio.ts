@@ -35,6 +35,7 @@ export type DatosContrato = {
   fiscal_rentas: boolean
   precio_y_condiciones: string
   fecha_inicio: string // DD/MM/AAAA
+  fecha_firma: string // AAAA-MM-DD (input de fecha); vacía = el día en que se genera
   multa_diaria: string
   fianza_monto_maximo: string
   prestador_representante: string
@@ -77,11 +78,13 @@ export function precioYCondiciones(montoAnual: number | null | undefined): strin
   return `${monto} por año, pagadero por adelantado al inicio de cada período anual.`
 }
 
-/** Valores de la plantilla a partir del formulario. La firma es la fecha de generación. */
+/** Valores de la plantilla a partir del formulario. Sin fecha de firma, va la del día. */
 export function camposPlantilla(d: DatosContrato, generadoEl: Date = new Date()) {
-  const [dia, mes, anio] = fechaDDMMAAAA(generadoEl).split('/')
+  const firma = /^\d{4}-\d{2}-\d{2}$/.test(d.fecha_firma ?? '') ? d.fecha_firma.split('-') : null
+  const [dia, mes, anio] = firma ? [firma[2], firma[1], firma[0]] : fechaDDMMAAAA(generadoEl).split('/')
   const inscripta = d.sociedad_matricula.trim() !== ''
-  const { fiscal_arca, fiscal_rentas, ...texto } = d
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { fiscal_arca, fiscal_rentas, fecha_firma, ...texto } = d
   return {
     ...Object.fromEntries(Object.entries(texto).map(([k, v]) => [k, String(v ?? '').trim()])),
     sociedad_denominacion: sinTipoSocietario(d.sociedad_denominacion),
