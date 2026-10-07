@@ -151,7 +151,9 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
                 ))}
               </select>
               <p className="mt-1 text-label text-ink-2">
-                {CONCEPTOS_COMISIONABLES.includes(nuevoPago.concepto)
+                {nuevoPago.concepto === 'DOMICILIO_SEDE'
+                  ? 'Pasa solo a Comisiones y deja el domicilio activo un año (si ya estaba, lo renueva) con este monto como abono.'
+                  : CONCEPTOS_COMISIONABLES.includes(nuevoPago.concepto)
                   ? 'Es ingreso de QMS: pasa solo a Comisiones.'
                   : nuevoPago.concepto === 'OTROS'
                     ? 'No pasa a Comisiones. Si es un ingreso de QMS, cargalo a mano en Comisiones.'
