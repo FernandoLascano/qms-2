@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
+import type { ConceptoPago } from '@prisma/client'
 import {
-  CONCEPTOS_HONORARIOS,
+  ASUNTO_DE_CONCEPTO,
+  CONCEPTOS_COMISIONABLES,
   diaArgentino,
   montoCobrado,
   PORCENTAJES_DEFAULT,
@@ -46,7 +48,7 @@ export async function originadorDelCobro(tramiteId: string | null, fechaCobro: D
   return aTiempo(lead) ? lead!.originador : 'NINGUNO'
 }
 
-// Importa los pagos de honorarios APROBADOS que todavía no tienen un movimiento
+// Importa los pagos de honorarios y domicilio APROBADOS que todavía no tienen un movimiento
 // de comisión asociado. Idempotente: el link se hace por pagoId (único).
 //
 // Corre sola cada vez que se abre el módulo, así que dos pestañas pueden
@@ -56,7 +58,7 @@ export async function sincronizarMovimientos(): Promise<{ creados: number }> {
   const pagos = await prisma.pago.findMany({
     where: {
       estado: 'APROBADO',
-      concepto: { in: [...CONCEPTOS_HONORARIOS] as any },
+      concepto: { in: CONCEPTOS_COMISIONABLES as ConceptoPago[] },
       movimientoComision: { is: null },
     },
     include: {
@@ -75,7 +77,7 @@ export async function sincronizarMovimientos(): Promise<{ creados: number }> {
           // mes, no del siguiente (en UTC ya sería el día 1).
           fecha: diaArgentino(cobradoEl),
           cliente,
-          asunto: 'Constitución SAS (honorarios)',
+          asunto: ASUNTO_DE_CONCEPTO[pago.concepto],
           monto: montoCobrado(pago),
           originador: await originadorDelCobro(pago.tramiteId, cobradoEl),
           origen: 'PAGO',

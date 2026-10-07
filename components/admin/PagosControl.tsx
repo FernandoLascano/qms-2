@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DollarSign, CheckCircle, XCircle } from 'lucide-react'
+import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
 
 interface Pago {
   id: string
@@ -41,6 +42,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
       TASA_RETRIBUTIVA: 'Tasa Retributiva (Final)',
       PUBLICACION_BOLETIN: 'Publicación en Boletín',
       CERTIFICACION_FIRMA: 'Certificación de Firma',
+      DOMICILIO_SEDE: 'Domicilio en sede',
       OTROS: 'Otros'
     }
 
@@ -67,7 +69,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
 
       if (response.ok) {
         toast.success('Pago registrado')
-        setNuevoPago({ concepto: 'HONORARIOS_EMPRENDEDOR', monto: '' })
+        setNuevoPago(prev => ({ ...prev, monto: '' }))
         router.refresh()
       } else {
         toast.error('Error al registrar pago')
@@ -88,6 +90,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
     { value: 'TASA_RETRIBUTIVA', label: 'Tasa Retributiva (Final)' },
     { value: 'PUBLICACION_BOLETIN', label: 'Publicación en Boletín' },
     { value: 'CERTIFICACION_FIRMA', label: 'Certificación de Firma' },
+    { value: 'DOMICILIO_SEDE', label: 'Domicilio en sede' },
     { value: 'OTROS', label: 'Otros' },
   ]
 
@@ -147,6 +150,15 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
               </select>
+              <p className="mt-1 text-label text-ink-2">
+                {nuevoPago.concepto === 'DOMICILIO_SEDE'
+                  ? 'Pasa solo a Comisiones y deja el domicilio activo un año (si ya estaba, lo renueva) con este monto como abono.'
+                  : CONCEPTOS_COMISIONABLES.includes(nuevoPago.concepto)
+                  ? 'Es ingreso de QMS: pasa solo a Comisiones.'
+                  : nuevoPago.concepto === 'OTROS'
+                    ? 'No pasa a Comisiones. Si es un ingreso de QMS, cargalo a mano en Comisiones.'
+                    : 'Es un gasto del trámite: no pasa a Comisiones.'}
+              </p>
             </div>
             <div>
               <Label htmlFor="monto">Monto (ARS)</Label>

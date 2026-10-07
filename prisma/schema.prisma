@@ -489,6 +489,7 @@ enum ConceptoPago {
   TASA_RESERVA_NOMBRE
   PUBLICACION_BOLETIN
   CERTIFICACION_FIRMA
+  DOMICILIO_SEDE // abono del domicilio legal en la sede: es ingreso de QMS (entra en comisiones)
   OTROS
 }
 

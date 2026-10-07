@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { sincronizarMovimientos } from '@/lib/comisiones-server'
 
-// POST - Importa a movimientos los pagos de honorarios APROBADOS que aún no lo estén.
+// POST - Importa a movimientos los pagos de honorarios y domicilio APROBADOS que aún no lo estén.
 export async function POST() {
   try {
     const session = await getServerSession(authOptions)

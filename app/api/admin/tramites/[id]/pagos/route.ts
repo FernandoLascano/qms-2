@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { registerPartnerConversion } from '@/lib/partners'
+import { registrarCobroDomicilio } from '@/lib/domicilio-sede'
 
 interface RouteParams {
   params: Promise<{
@@ -49,6 +50,10 @@ export async function POST(request: Request, { params }: RouteParams) {
         fechaPago: new Date()
       }
     })
+
+    if (concepto === 'DOMICILIO_SEDE') {
+      await registrarCobroDomicilio(id, pago.monto, pago.fechaPago ?? new Date())
+    }
 
     await registerPartnerConversion({
       userId: tramite.userId,
