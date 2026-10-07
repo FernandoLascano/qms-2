@@ -83,6 +83,11 @@ export async function PUT(request: NextRequest) {
             : undefined,
           domicilioSedePrecioAnual: body.domicilioSedePrecioAnual,
           domicilioSedeDiasAlerta: body.domicilioSedeDiasAlerta,
+          contratoDomicilioMultaDiaria: body.contratoDomicilioMultaDiaria,
+          contratoDomicilioFianzaMaxima: body.contratoDomicilioFianzaMaxima,
+          prestadorRepresentante: body.prestadorRepresentante,
+          prestadorDni: body.prestadorDni,
+          prestadorCaracter: body.prestadorCaracter,
           mantenimientoMode: body.mantenimientoMode,
           emailForwardingEnabled: body.emailForwardingEnabled,
           emailForwardingAddress: body.emailForwardingAddress

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Contrato de servicio de domicilio</title>
+<!--
+  Versión PDF del contrato de domicilio (se convierte con Chromium en Gotenberg).
+  El texto legal es el mismo de contrato-domicilio.docx: si cambia el Word,
+  hay que cambiar también este archivo. Los campos entre llaves dobles se reemplazan en
+  lib/contrato-domicilio.ts; FUENTES y LOGO se reemplazan por los archivos
+  de esta carpeta.
+-->
+<style>
+  @font-face { font-family: 'Montserrat'; font-weight: 800; src: url(data:font/woff2;base64,{{FUENTE_MONTSERRAT}}) format('woff2'); }
+  @font-face { font-family: 'Open Sans'; font-weight: 300 800; font-style: normal; src: url(data:font/woff2;base64,{{FUENTE_OPENSANS}}) format('woff2'); }
+  @font-face { font-family: 'Open Sans'; font-weight: 300 800; font-style: italic; src: url(data:font/woff2;base64,{{FUENTE_OPENSANS_ITALIC}}) format('woff2'); }
+
+  :root {
+    --rojo: #a51c1c;
+    --negro: #1c1c1c;
+    --texto: #2b2b2b;
+    --gris: #6b6b6b;
+    --linea: #e3dfdc;
+    --fondo-etiqueta: #f4f1ef;
+  }
+  @page { size: A4; margin: 14mm 0 18mm 0; }
+  @page :first { margin-top: 0; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: 'Open Sans', sans-serif; font-size: 8.9pt; line-height: 1.55; color: var(--texto); }
+  .pagina { padding: 0 19mm; }
+
+  /* Encabezado */
+  .marca { display: flex; justify-content: space-between; align-items: center; padding: 10mm 19mm 7mm; }
+  .marca img { height: 17mm; }
+  .marca .plan { text-align: right; font-size: 8.6pt; line-height: 1.4; color: var(--gris); }
+  .marca .plan strong { display: block; color: var(--rojo); letter-spacing: 0.12em; font-weight: 700; }
+  .banda { background: var(--negro); border-bottom: 1.2mm solid var(--rojo); padding: 7mm 19mm 6.5mm; color: #fff; }
+  .banda h1 { margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 17pt; letter-spacing: 0.01em; line-height: 1.2; }
+  .banda h1 span { background: var(--rojo); padding: 0.5mm 2.2mm; margin-left: 1mm; }
+  .banda p { margin: 2.5mm 0 0; font-size: 9.6pt; color: #d9d9d9; }
+
+  /* Carátula */
+  .rotulo { margin: 7mm 0 2.5mm; font-size: 8.6pt; font-weight: 700; letter-spacing: 0.22em; color: var(--rojo); }
+  table.caratula { width: 100%; border-collapse: collapse; border-left: 0.9mm solid var(--rojo); border-top: 1px solid var(--linea); }
+  table.caratula tr { break-inside: avoid; }
+  table.caratula th, table.caratula td { border-bottom: 1px solid var(--linea); padding: 2mm 3.4mm; vertical-align: top; text-align: left; }
+  table.caratula th { width: 31%; background: var(--fondo-etiqueta); font-weight: 700; color: var(--negro); }
+  table.caratula th span { display: block; font-weight: 400; color: var(--gris); }
+  .checks { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5mm 4mm; }
+  .opcion { white-space: nowrap; }
+  .opcion .box { margin-left: 0; margin-right: 0.6mm; }
+  .box { display: inline-block; width: 3.1mm; height: 3.1mm; border: 0.35mm solid var(--negro); border-radius: 0.4mm; vertical-align: -0.4mm; margin-left: 2.4mm; }
+  .checks .box:first-child { margin-left: 0; }
+  .box.on, .box.fija { background: var(--rojo); border-color: var(--rojo); }
+
+  /* Cuerpo */
+  p { margin: 0 0 2mm; text-align: justify; }
+  .intro { margin-top: 6mm; }
+  .clausula { margin-top: 4mm; }
+  .clausula h2 { margin: 0 0 2mm; font-size: 10pt; font-weight: 700; color: var(--negro); break-after: avoid; }
+  .clausula h2 .num { display: inline-block; background: var(--rojo); color: #fff; font-size: 8.4pt; letter-spacing: 0.14em; padding: 0.6mm 2.6mm; margin-right: 1.6mm; vertical-align: 0.3mm; }
+  .cierre { margin-top: 6mm; font-weight: 600; }
+
+  /* Firmas */
+  .firmas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8mm; margin-top: 16mm; break-inside: avoid; }
+  .firma p { margin: 0; text-align: left; font-size: 8.8pt; line-height: 1.5; }
+  .firma .linea { border-top: 1px solid var(--negro); margin-bottom: 2mm; }
+  .firma .quien { font-weight: 700; color: var(--negro); margin-bottom: 0.8mm; }
+
+  /* Anexo */
+  .anexo { break-before: page; }
+  .anexo h2 { margin: 0 0 5mm; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13pt; color: var(--negro); }
+  .anexo h2 span { color: var(--rojo); }
+  .anexo ol { margin: 0 0 5mm; padding-left: 5mm; }
+  .anexo li { margin-bottom: 4mm; }
+  .anexo .firma-anexo { margin-top: 14mm; }
+</style>
+</head>
+<body>
+  <header class="marca">
+    <img src="data:image/png;base64,{{LOGO}}" alt="QuieroMiSAS">
+    <div class="plan"><strong>PLAN DOMICILIO SAS</strong></div>
+  </header>
+  <div class="banda">
+    <h1>CONTRATO DE SERVICIO DE DOMICILIO PARA <span>SAS</span></h1>
+    <p>Ancalan Consulting S.A. · operando bajo la marca QuieroMiSAS</p>
+  </div>
+
+  <main class="pagina">
+    <div class="rotulo">CARÁTULA</div>
+    <table class="caratula">
+      <tr><th>Prestador</th><td>ANCALAN CONSULTING S.A., CUIT 30-71771824-7 ("EL PRESTADOR"), operando bajo la marca QuieroMiSAS</td></tr>
+      <tr><th>Domicilio del servicio</th><td>Pasaje Chagas 6043, Barrio Villa Belgrano, ciudad de Córdoba, Provincia de Córdoba ("EL DOMICILIO")</td></tr>
+      <tr><th>Sociedad</th><td>{{sociedad_denominacion}} S.A.S., CUIT {{sociedad_cuit}} ("LA SOCIEDAD")<div class="checks"><span class="opcion">{{check_inscripta}} Inscripta, Matrícula {{sociedad_matricula}}</span><span class="opcion">{{check_en_tramite}} En trámite</span></div></td></tr>
+      <tr><th>Administración real</th><td>{{administracion_real}}</td></tr>
+      <tr><th>Representante</th><td>{{representante_nombre}}, DNI {{representante_dni}}, {{representante_caracter}}</td></tr>
+      <tr><th>Coobligado solidario</th><td>{{coobligado_nombre}}, DNI {{coobligado_dni}}, domicilio real {{coobligado_domicilio}} ("EL COOBLIGADO")</td></tr>
+      <tr><th>Canales de LA SOCIEDAD</th><td>Email {{email}} · Email alternativo {{email_alternativo}} · WhatsApp {{whatsapp}}</td></tr>
+      <tr><th>Usos autorizados</th><td><div class="checks"><span class="opcion"><span class="box fija"></span> Sede social</span><span class="opcion">{{check_fiscal_arca}} Domicilio fiscal ARCA</span><span class="opcion">{{check_fiscal_rentas}} Domicilio fiscal Rentas Córdoba</span></div></td></tr>
+      <tr><th>Servicio incluido por mes<span>(no acumulable)</span></th><td>Recepción de hasta 20 piezas; digitalización de todas las notificaciones legales y de hasta 15 piezas más; hasta 2 paquetes documentales pequeños (hasta 1 kg, tamaño A4, sin mercadería); guarda física de 30 días corridos desde el aviso</td></tr>
+      <tr><th>Precio y condiciones de pago</th><td>{{precio_y_condiciones}}</td></tr>
+      <tr><th>Excedentes</th><td>Según lista de precios vigente al momento de la prestación</td></tr>
+      <tr><th>Fecha de inicio</th><td>{{fecha_inicio}}</td></tr>
+    </table>
+
+<p class="intro">Entre ANCALAN CONSULTING S.A., representada por {{prestador_representante}}, DNI {{prestador_dni}}, en su carácter de {{prestador_caracter}}; {{sociedad_denominacion}} S.A.S., representada por {{representante_nombre}}, DNI {{representante_dni}}, en su carácter de {{representante_caracter}}, con facultades suficientes; y {{coobligado_nombre}}, DNI {{coobligado_dni}}, por derecho propio, todos con los datos de la carátula, convienen el siguiente contrato:</p>
+<section class="clausula"><h2><span class="num">PRIMERA</span> Objeto y naturaleza</h2>
+<p>EL PRESTADOR autoriza a LA SOCIEDAD a fijar su sede social en EL DOMICILIO y a declararlo para los usos marcados en la carátula, y le presta el servicio de recepción, aviso, digitalización y guarda temporal de correspondencia con los límites de la carátula. Es un contrato de servicios (arts. 1251 y ss. del Código Civil y Comercial, en adelante "CCCN") y las obligaciones de EL PRESTADOR son de medios.</p>
+<p>El contrato no implica locación, comodato, tenencia ni derecho de ingreso o uso físico del inmueble, ni representación, mandato o patrocinio. La autorización es solo para LA SOCIEDAD y no se extiende a socios, administradores, otras sociedades ni terceros. Tampoco incluye asesoramiento legal, contable o fiscal, trámites ante organismos, la inscripción de la sede ni la atención o respuesta de la correspondencia recibida, aun cuando LA SOCIEDAD haya contratado otros servicios de QuieroMiSAS.</p>
+</section>
+<section class="clausula"><h2><span class="num">SEGUNDA</span> Precio y pago</h2>
+<p>LA SOCIEDAD pagará el precio en las condiciones de la carátula, por transferencia a la cuenta que EL PRESTADOR informe por sus canales oficiales. Los excedentes y adicionales se pagarán dentro de los cinco (5) días corridos de facturados. Salvo lo previsto en las cláusulas TERCERA y DÉCIMA, no habrá reintegro por períodos no utilizados.</p>
+</section>
+<section class="clausula"><h2><span class="num">TERCERA</span> Activación y sociedades en trámite</h2>
+<p>El servicio se activa con la aceptación de este contrato, la aprobación de la documentación y la acreditación del pago. EL PRESTADOR puede rechazar la solicitud sin expresar causa antes de la activación, reintegrando lo pagado.</p>
+<p>Si LA SOCIEDAD está en trámite de constitución, el representante y EL COOBLIGADO responden personal y solidariamente hasta su inscripción, sin perjuicio de los arts. 183 y 184 de la Ley General de Sociedades N° 19.550 ("LGS"); inscripta, el uso de la sede importa ratificación. Si la sociedad ya está inscripta, la inscripción del cambio de sede corre por su cuenta y deberá acreditarse dentro de los treinta (30) días.</p>
+</section>
+<section class="clausula"><h2><span class="num">CUARTA</span> Documentación y declaraciones</h2>
+<p>LA SOCIEDAD entregará la documentación que EL PRESTADOR le requiera (DNI de administradores, socios y beneficiarios finales, constancia de CUIT, instrumento constitutivo, inscripción y descripción de la actividad) y suscribe la declaración jurada del Anexo I. Toda la información debe ser veraz y mantenerse actualizada: cualquier cambio de autoridades, socios, actividad, administración real o canales de contacto se informará dentro de los cinco (5) días hábiles. La falsedad o la negativa a actualizar la información es incumplimiento esencial.</p>
+</section>
+<section class="clausula"><h2><span class="num">QUINTA</span> Usos prohibidos</h2>
+<p>Queda prohibido: (a) usar EL DOMICILIO para personas o sociedades distintas de LA SOCIEDAD; (b) constituirlo como domicilio procesal o especial en juicios, trámites o contratos sin autorización escrita; (c) presentarlo como oficina, local, sucursal o lugar de atención al público, incluso en webs, redes, mapas digitales o marketplaces; (d) declararlo como lugar de trabajo de empleados, establecimiento ante ART o local habilitado; (e) recibir mercadería, dinero, valores u objetos no documentales; (f) usarlo para actividades ilícitas, no declaradas o para ocultar la administración real o a los beneficiarios finales; y (g) cederlo o permitir su uso a terceros.</p>
+</section>
+<section class="clausula"><h2><span class="num">SEXTA</span> Domicilio fiscal</h2>
+<p>LA SOCIEDAD reconoce que, según el art. 3 de la Ley N° 11.683, el domicilio fiscal de las personas jurídicas es el lugar de su dirección o administración principal y efectiva. Declarar EL DOMICILIO como domicilio fiscal es decisión exclusiva de LA SOCIEDAD y sus asesores, que asumen sus consecuencias. EL PRESTADOR no garantiza su aceptación por ningún organismo o entidad. Ante cualquier constatación o requerimiento de autoridad, EL PRESTADOR podrá informar con veracidad la naturaleza del servicio y la administración real declarada. Los domicilios fiscales electrónicos y las claves son responsabilidad exclusiva de LA SOCIEDAD.</p>
+</section>
+<section class="clausula"><h2><span class="num">SÉPTIMA</span> Notificaciones y avisos</h2>
+<p>LA SOCIEDAD reconoce que las notificaciones efectuadas en su sede inscripta son válidas y vinculantes (art. 11, inc. 2, LGS) y asume ese riesgo. El personal de EL PRESTADOR las recibe como mero receptor material, sin representación.</p>
+<p>EL PRESTADOR avisará a los canales de LA SOCIEDAD, con la digitalización correspondiente, dentro de un (1) día hábil las cédulas, cartas documento, telegramas e intimaciones de organismos, y dentro de dos (2) días hábiles la demás correspondencia. El aviso se tiene por cumplido con su envío, sin necesidad de confirmación de lectura. Enviado el aviso, el cómputo de plazos, la respuesta y sus consecuencias son responsabilidad exclusiva de LA SOCIEDAD. EL PRESTADOR no responde por piezas que no llegaron efectivamente a su poder, dejadas fuera del horario o sin intervención de su personal, ni por errores del correo o del notificador.</p>
+</section>
+<section class="clausula"><h2><span class="num">OCTAVA</span> Correspondencia y guarda</h2>
+<p>EL PRESTADOR podrá rechazar envíos dirigidos a terceros, no documentales, que excedan el plan o que presenten riesgos. La documentación física se guarda durante 30 días corridos desde el aviso; vencido ese plazo, EL PRESTADOR podrá cobrar guarda adicional, enviarla a costa de LA SOCIEDAD o, previa intimación con diez (10) días de anticipación, destruirla. Puede retener la entrega física mientras existan sumas impagas.</p>
+</section>
+<section class="clausula"><h2><span class="num">NOVENA</span> Vigencia y renovación</h2>
+<p>El contrato dura doce (12) meses desde la fecha de inicio. Treinta (30) días antes del vencimiento, EL PRESTADOR informará el precio y las condiciones de renovación, que se perfecciona con su pago antes del vencimiento. Sin pago, el contrato se extingue al vencimiento sin necesidad de interpelación. Mantener la sede en EL DOMICILIO después del vencimiento no implica renovación ni tácita reconducción.</p>
+</section>
+<section class="clausula"><h2><span class="num">DÉCIMA</span> Mora, suspensión y extinción</h2>
+<p>La mora es automática (art. 886 CCCN). Las sumas adeudadas devengan un interés equivalente a la tasa activa cartera general nominal anual vencida a treinta (30) días del Banco de la Nación Argentina, incrementada en un veinte por ciento (20%), más gastos de cobranza y honorarios.</p>
+<p>Ante mora, uso indebido, información inconsistente o requerimientos de autoridad, EL PRESTADOR podrá suspender el servicio sin que ello sea incumplimiento; durante la suspensión solo seguirá avisando las notificaciones legales que reciba.</p>
+<p>EL PRESTADOR podrá resolver el contrato por comunicación a los canales de LA SOCIEDAD (art. 1086 CCCN) ante mora mayor a diez (10) días, uso prohibido, información falsa o requerimientos o denuncias vinculados con EL DOMICILIO, sin reintegro alguno. LA SOCIEDAD podrá rescindir en cualquier momento con treinta (30) días de preaviso, sin reintegro. EL PRESTADOR podrá rescindir sin causa con sesenta (60) días de preaviso, reintegrando la parte proporcional no utilizada.</p>
+</section>
+<section class="clausula"><h2><span class="num">UNDÉCIMA</span> Cambio de sede al terminar el contrato</h2>
+<p>Extinguido el contrato por cualquier causa, LA SOCIEDAD deberá, dentro de los treinta (30) días corridos: (a) resolver el cambio de su sede social y presentar su inscripción ante el registro competente; (b) modificar los domicilios declarados ante ARCA, Rentas, bancos y terceros; (c) retirar la documentación pendiente y cesar todo uso de EL DOMICILIO; y (d) acreditarlo ante EL PRESTADOR. Durante ese plazo EL PRESTADOR seguirá avisando las notificaciones legales que reciba, sin cargo.</p>
+<p>Vencido el plazo sin acreditar el cambio, LA SOCIEDAD y EL COOBLIGADO pagarán, como cláusula penal (art. 790 CCCN), una multa diaria de {{multa_diaria}} hasta su acreditación, sin perjuicio de los daños mayores. Además, LA SOCIEDAD autoriza irrevocablemente a EL PRESTADOR a informar a IPJ, ARCA, Rentas y a cualquier tercero que carece de autorización para usar EL DOMICILIO, a rechazar toda correspondencia dirigida a ella y a informar al correo o al notificador que no se encuentra allí. Las notificaciones posteriores dirigidas a EL DOMICILIO quedan a exclusivo riesgo de LA SOCIEDAD.</p>
+</section>
+<section class="clausula"><h2><span class="num">DUODÉCIMA</span> Coobligado solidario</h2>
+<p>EL COOBLIGADO se constituye en fiador solidario y principal pagador de todas las obligaciones de LA SOCIEDAD bajo este contrato (art. 1591 CCCN), con renuncia a los beneficios de excusión y división, hasta un monto máximo de {{fianza_monto_maximo}} (art. 1578 CCCN). La garantía alcanza las renovaciones y subsiste hasta el cumplimiento de la cláusula UNDÉCIMA, aunque deje de ser socio o administrador.</p>
+</section>
+<section class="clausula"><h2><span class="num">DECIMOTERCERA</span> Indemnidad y responsabilidad</h2>
+<p>LA SOCIEDAD y EL COOBLIGADO mantendrán indemne a EL PRESTADOR, sus socios, dependientes y a los titulares del inmueble frente a todo reclamo, sanción, embargo o gasto (incluidos honorarios) derivado de la actividad de LA SOCIEDAD, del uso de EL DOMICILIO o del incumplimiento de este contrato.</p>
+<p>EL PRESTADOR solo responde por daños directos derivados de su incumplimiento, hasta un monto equivalente a tres (3) meses del precio, y no responde por lucro cesante, pérdida de chance, caso fortuito o fuerza mayor (art. 1730 CCCN). Estas limitaciones no rigen en caso de dolo o culpa grave (art. 1743 CCCN).</p>
+</section>
+<section class="clausula"><h2><span class="num">DECIMOCUARTA</span> Comunicaciones y datos personales</h2>
+<p>LA SOCIEDAD constituye domicilio especial (art. 75 CCCN) en su domicilio de administración real, nunca en EL DOMICILIO. Las comunicaciones entre las partes son válidas por email o WhatsApp a los canales de la carátula, y este contrato puede aceptarse por firma ológrafa, digital, electrónica o por el formulario de QuieroMiSAS (Ley N° 25.506). LA SOCIEDAD presta consentimiento para el tratamiento de los datos personales necesarios para el servicio, la cobranza y el cumplimiento de obligaciones legales (Ley N° 25.326). EL PRESTADOR guardará confidencialidad sobre la correspondencia recibida, salvo requerimiento de autoridad o lo previsto en las cláusulas SEXTA y UNDÉCIMA.</p>
+</section>
+<section class="clausula"><h2><span class="num">DECIMOQUINTA</span> Disposiciones generales</h2>
+<p>LA SOCIEDAD no puede ceder este contrato; el cambio de control debe informarse dentro de los cinco (5) días hábiles. EL PRESTADOR podrá trasladar EL DOMICILIO dentro de la ciudad de Córdoba con sesenta (60) días de preaviso; en ese caso LA SOCIEDAD podrá cambiar su sede al nuevo domicilio o rescindir con reintegro proporcional. El impuesto de sellos, si correspondiera, está a cargo de LA SOCIEDAD. Las partes se someten a los Tribunales Ordinarios de la ciudad de Córdoba, con renuncia a cualquier otro fuero. La nulidad de una cláusula no afecta a las demás.</p>
+</section>
+
+    <p class="cierre">LA SOCIEDAD y EL COOBLIGADO declaran haber leído íntegramente este contrato y comprender en especial las cláusulas SEXTA, SÉPTIMA, UNDÉCIMA, DUODÉCIMA y DECIMOTERCERA.</p>
+    <p>En la ciudad de Córdoba, a los {{firma_dia}} días del mes de {{firma_mes}} de {{firma_anio}}.</p>
+
+    <div class="firmas">
+      <div class="firma">
+        <div class="linea"></div>
+        <p class="quien">Por EL PRESTADOR</p>
+        <p>Aclaración: {{prestador_representante}}</p>
+        <p>Carácter: {{prestador_caracter}}</p>
+        <p>DNI/CUIT: {{prestador_dni}}</p>
+      </div>
+      <div class="firma">
+        <div class="linea"></div>
+        <p class="quien">Por LA SOCIEDAD</p>
+        <p>Aclaración: {{representante_nombre}}</p>
+        <p>Carácter: {{representante_caracter}}</p>
+        <p>DNI/CUIT: {{representante_dni}}</p>
+      </div>
+      <div class="firma">
+        <div class="linea"></div>
+        <p class="quien">EL COOBLIGADO</p>
+        <p>Aclaración: {{coobligado_nombre}}</p>
+        <p>Carácter: por derecho propio</p>
+        <p>DNI/CUIT: {{coobligado_dni}}</p>
+      </div>
+    </div>
+
+    <section class="anexo">
+      <h2><span>ANEXO I</span> · DECLARACIÓN JURADA</h2>
+      <p>LA SOCIEDAD, por su representante, declara bajo juramento:</p>
+      <ol>
+        <li>Actividad real: ______________________________________________</li>
+        <li>Beneficiario/s final/es (nombre, DNI, participación): ______________________________</li>
+        <li>Actúa por cuenta propia: <span class="box"></span> SÍ <span class="box"></span> NO. En su caso, tercero: ________________</li>
+        <li>Persona Expuesta Políticamente (representante o beneficiario final): <span class="box"></span> NO <span class="box"></span> SÍ: ________________</li>
+        <li>Sujeto Obligado ante la UIF: <span class="box"></span> NO <span class="box"></span> SÍ: ________________</li>
+      </ol>
+      <p>Declara que la información es veraz y completa, que no usará el servicio para ocultar beneficiarios finales ni el origen de fondos, y que informará cualquier cambio dentro de los cinco (5) días hábiles.</p>
+      <div class="firmas firma-anexo">
+        <div class="firma"><div class="linea"></div><p class="quien">Firma</p></div>
+        <div class="firma"><div class="linea"></div><p class="quien">Aclaración</p></div>
+        <div class="firma"><div class="linea"></div><p class="quien">Fecha</p></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
