@@ -1136,6 +1136,15 @@ model Config {
   domicilioSedePrecioAnual Float    @default(0) // Precio anual del servicio
   domicilioSedeDiasAlerta  Int      @default(30) // Días antes del vencimiento para alertar
 
+  // Contrato de domicilio (plantilla lib/plantillas/contrato-domicilio.docx).
+  // Texto libre: se imprime tal cual en el contrato (ej. "$ 20.000 (pesos veinte mil)").
+  contratoDomicilioMultaDiaria  String @default("")
+  contratoDomicilioFianzaMaxima String @default("")
+  // Quién firma por Ancalan Consulting S.A. (EL PRESTADOR)
+  prestadorRepresentante String @default("")
+  prestadorDni           String @default("")
+  prestadorCaracter      String @default("")
+
   // General
   mantenimientoMode Boolean @default(false)
 

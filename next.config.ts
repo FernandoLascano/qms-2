@@ -15,6 +15,10 @@ const cspReportOnly = [
 const nextConfig: NextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
+  // La plantilla Word se lee del disco en la función: hay que incluirla en el deploy.
+  outputFileTracingIncludes: {
+    "/api/admin/tramites/[id]/contrato-domicilio": ["./lib/plantillas/**"],
+  },
   images: {
     remotePatterns: [
       {

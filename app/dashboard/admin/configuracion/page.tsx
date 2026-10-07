@@ -68,6 +68,11 @@ interface ConfigData {
   domicilioSedeDirecciones: string[]
   domicilioSedePrecioAnual: number
   domicilioSedeDiasAlerta: number
+  contratoDomicilioMultaDiaria: string
+  contratoDomicilioFianzaMaxima: string
+  prestadorRepresentante: string
+  prestadorDni: string
+  prestadorCaracter: string
 
   // General
   mantenimientoMode: boolean
@@ -110,6 +115,11 @@ export default function ConfiguracionAdminPage() {
     domicilioSedeDirecciones: [],
     domicilioSedePrecioAnual: 0,
     domicilioSedeDiasAlerta: 30,
+    contratoDomicilioMultaDiaria: '',
+    contratoDomicilioFianzaMaxima: '',
+    prestadorRepresentante: '',
+    prestadorDni: '',
+    prestadorCaracter: '',
     mantenimientoMode: false
   })
 
@@ -827,6 +837,59 @@ export default function ConfiguracionAdminPage() {
                       min={0}
                       step={1}
                     />
+                  </div>
+                </div>
+
+                <div className="space-y-2 border-t border-line pt-4">
+                  <Label>Contrato de domicilio</Label>
+                  <p className="text-body-sm text-ink-2">
+                    Valores que se precargan al generar el contrato desde un trámite (se pueden cambiar en cada uno). Se imprimen tal cual: escribilos como querés que salgan.
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="contratoDomicilioMultaDiaria">Multa diaria (cláusula undécima)</Label>
+                      <Input
+                        id="contratoDomicilioMultaDiaria"
+                        value={config.contratoDomicilioMultaDiaria}
+                        onChange={(e) => setConfig({ ...config, contratoDomicilioMultaDiaria: e.target.value })}
+                        placeholder="Ej: $ 20.000 (pesos veinte mil)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contratoDomicilioFianzaMaxima">Monto máximo de la fianza (cláusula duodécima)</Label>
+                      <Input
+                        id="contratoDomicilioFianzaMaxima"
+                        value={config.contratoDomicilioFianzaMaxima}
+                        onChange={(e) => setConfig({ ...config, contratoDomicilioFianzaMaxima: e.target.value })}
+                        placeholder="Ej: $ 5.000.000 (pesos cinco millones)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="prestadorRepresentante">Firma por Ancalan Consulting S.A.</Label>
+                      <Input
+                        id="prestadorRepresentante"
+                        value={config.prestadorRepresentante}
+                        onChange={(e) => setConfig({ ...config, prestadorRepresentante: e.target.value })}
+                        placeholder="Nombre y apellido"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="prestadorDni">DNI de quien firma</Label>
+                      <Input
+                        id="prestadorDni"
+                        value={config.prestadorDni}
+                        onChange={(e) => setConfig({ ...config, prestadorDni: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="prestadorCaracter">Carácter</Label>
+                      <Input
+                        id="prestadorCaracter"
+                        value={config.prestadorCaracter}
+                        onChange={(e) => setConfig({ ...config, prestadorCaracter: e.target.value })}
+                        placeholder="Ej: Presidente"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
