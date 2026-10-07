@@ -27,6 +27,7 @@ import { es } from 'date-fns/locale'
 import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
+import { Select } from '@/components/ui/select'
 
 interface ErrorData {
   error: string
@@ -212,29 +213,27 @@ export default function AnalyticsPage() {
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 bg-surface p-6 rounded-card shadow-raise border border-line">
           <div className="flex-1">
             <label className="block text-body-sm font-medium text-ink-2 mb-1">Período</label>
-            <select
+            <Select
               value={periodo}
               onChange={(e) => setPeriodo(e.target.value)}
-              className="w-full border border-line rounded-control px-4 py-2 text-ink focus:ring-2 focus:ring-ring focus:border-primary-line transition-all"
             >
               <option value="dia">Hoy</option>
               <option value="semana">Última semana</option>
               <option value="mes">Este mes</option>
               <option value="año">Este año</option>
-            </select>
+            </Select>
           </div>
           
           <div className="flex-1">
             <label className="block text-body-sm font-medium text-ink-2 mb-1">Jurisdicción</label>
-            <select
+            <Select
               value={jurisdiccion}
               onChange={(e) => setJurisdiccion(e.target.value)}
-              className="w-full border border-line rounded-control px-4 py-2 text-ink focus:ring-2 focus:ring-ring focus:border-primary-line transition-all"
             >
               <option value="todas">Todas</option>
               <option value="cordoba">Córdoba</option>
               <option value="caba">CABA</option>
-            </select>
+            </Select>
           </div>
 
           <div className="flex items-end">

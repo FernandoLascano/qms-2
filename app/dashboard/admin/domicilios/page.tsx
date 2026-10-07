@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock } from 'lucide-react'
+import { Select } from '@/components/ui/select'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -155,27 +156,27 @@ export default function DomiciliosPage() {
           <div className="grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
             <div className="md:col-span-2">
               <label className="text-body-sm font-medium text-ink">Sociedad</label>
-              <select
+              <Select
                 value={nuevo.tramiteId}
                 onChange={(e) => setNuevo({ ...nuevo, tramiteId: e.target.value })}
-                className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink"
+                className="mt-1"
               >
                 <option value="">— Elegí una sociedad —</option>
                 {disponibles.map((d) => (
                   <option key={d.id} value={d.id}>{d.denominacion} — {d.cliente}{d.inscripta ? ' (inscripta)' : ''}</option>
                 ))}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="text-body-sm font-medium text-ink">Dirección</label>
-              <select
+              <Select
                 value={nuevo.direccion}
                 onChange={(e) => setNuevo({ ...nuevo, direccion: e.target.value })}
-                className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink"
+                className="mt-1"
               >
                 <option value="">{config.direcciones[0] ? `(default: ${config.direcciones[0]})` : '— elegí —'}</option>
                 {config.direcciones.map((d, i) => <option key={i} value={d}>{d}</option>)}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="text-body-sm font-medium text-ink">Monto anual</label>
@@ -221,12 +222,12 @@ export default function DomiciliosPage() {
                     <td className="text-right">
                       {activando?.id === i.id ? (
                         <div className="flex items-center gap-2 justify-end flex-wrap">
-                          <select value={activando.direccion} onChange={(e) => setActivando({ ...activando, direccion: e.target.value })} className="h-8 rounded-chip border border-line-strong bg-surface px-2 text-label text-ink">
+                          <Select value={activando.direccion} onChange={(e) => setActivando({ ...activando, direccion: e.target.value })} size="sm" className="w-auto">
                             <option value="">Dirección…</option>
                             {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
-                          </select>
+                          </Select>
                           <span className="text-ink-2 text-label">$</span>
-                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ ...activando, monto: e.target.value })} className="h-8 w-28 text-ink" />
+                          <Input type="number" value={activando.monto} onChange={(e) => setActivando({ ...activando, monto: e.target.value })} size="sm" className="w-28" />
                           <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: Number(activando.monto), direccion: activando.direccion || undefined }, 'Servicio activado')} className="gap-1"><CheckCircle2 className="h-4 w-4" /> Confirmar</Button>
                           <Button size="sm" variant="outline" onClick={() => setActivando(null)}>Cancelar</Button>
                         </div>
@@ -262,10 +263,10 @@ export default function DomiciliosPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                           <label className="text-label font-medium text-ink-2">Dirección</label>
-                          <select value={editando.direccion} onChange={(e) => setEditando({ ...editando, direccion: e.target.value })} className="mt-1 flex h-10 w-full rounded-chip border border-line-strong bg-surface px-3 text-body-sm text-ink">
+                          <Select value={editando.direccion} onChange={(e) => setEditando({ ...editando, direccion: e.target.value })} className="mt-1">
                             <option value="">— sin dirección —</option>
                             {config.direcciones.map((d, idx) => <option key={idx} value={d}>{d}</option>)}
-                          </select>
+                          </Select>
                         </div>
                         <div>
                           <label className="text-label font-medium text-ink-2">Monto anual</label>

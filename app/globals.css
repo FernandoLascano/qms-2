@@ -431,8 +431,11 @@ button {
    · `font-size` acá pisaba la escala del componente Button, donde los tamaños
      sm y md van a 13px por diseño.
    Las dos cosas ya las cubre el preflight de Tailwind desde `@layer base`
-   (`font: inherit; color: inherit`), que sí deja ganar a las utilidades.      */
-input,
+   (`font: inherit; color: inherit`), que sí deja ganar a las utilidades.
+
+   La excepción son los controles con data-size="sm" (Input y Select con
+   size="sm"): van dentro de tablas y filas densas, donde el texto es de 13px. */
+input:not([data-size="sm"]),
 textarea,
 select:not([data-size="sm"]) {
   font-size: var(--text-body);

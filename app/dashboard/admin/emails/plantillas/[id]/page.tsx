@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Loader2, Save, Shield, Code2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
+import { Select } from '@/components/ui/select'
 
 const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
 
@@ -180,17 +181,16 @@ export default function EditarPlantillaPage() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-label font-semibold text-ink-2 mb-1">Categoría</label>
-            <select
+            <Select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-control text-body-sm bg-surface"
             >
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div className="flex items-end pb-2">
             <label className="flex items-center gap-2 text-body-sm font-medium text-ink-2 cursor-pointer">

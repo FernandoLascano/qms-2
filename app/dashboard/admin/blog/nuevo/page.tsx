@@ -7,6 +7,7 @@ import { ArrowLeft, Save, Eye, Plus, Trash2, Sparkles, Wand2, RefreshCw } from '
 import Link from 'next/link'
 import { BlogHeroImageField } from '@/components/dashboard/blog-hero-image-field'
 import { normalizeBlogSectionsForEditor, sectionEditorText } from '@/lib/blog-sections'
+import { Select } from '@/components/ui/select'
 
 interface Section {
   type: 'h2' | 'p' | 'list' | 'quote'
@@ -417,11 +418,10 @@ export default function NuevoPostPage() {
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-body-sm font-medium text-ink-2 mb-1">Categoría</label>
-                <select
+                <Select
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleInputChange}
-                  className="w-full border border-line-strong rounded-control px-4 py-2 text-ink focus:ring-2 focus:ring-ring focus:border-transparent"
                 >
                   <option value="Emprendimiento">Emprendimiento</option>
                   <option value="Guías">Guías</option>
@@ -429,7 +429,7 @@ export default function NuevoPostPage() {
                   <option value="Comparativas">Comparativas</option>
                   <option value="Legal">Legal</option>
                   <option value="Noticias">Noticias</option>
-                </select>
+                </Select>
               </div>
 
               <div>

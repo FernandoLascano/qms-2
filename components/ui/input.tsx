@@ -26,19 +26,22 @@ export const controlBase =
   "aria-[invalid=true]:border-danger-solid aria-[invalid=true]:ring-danger-solid/25"
 
 export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   invalid?: boolean
+  /** `sm` para campos dentro de tablas y filas densas (13px, h-8). */
+  size?: "md" | "sm"
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, invalid, ...props }, ref) => (
+  ({ className, type, invalid, size = "md", ...props }, ref) => (
     <input
       type={type}
       ref={ref}
       aria-invalid={invalid || undefined}
+      data-size={size}
       className={cn(
         controlBase,
-        "h-10 px-3",
+        size === "sm" ? "h-8 px-2.5 text-body-sm" : "h-10 px-3",
         // Los números en cifras tabulares: así no bailan las columnas al
         // escribir un importe.
         (type === "number" || type === "tel") && "tnum",

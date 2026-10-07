@@ -12,6 +12,7 @@ import {
   ChevronDown, ChevronUp, X, Check
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Select } from '@/components/ui/select'
 
 interface Usuario {
   id: string
@@ -274,15 +275,15 @@ export default function UsuariosAdminPage() {
                 className="pl-10 rounded-control border-line focus:ring-2 focus:ring-ring focus:border-primary-line"
               />
             </div>
-            <select
+            <Select
               value={filtroRol}
               onChange={(e) => setFiltroRol(e.target.value)}
-              className="px-4 py-2 border border-line rounded-control bg-surface text-body-sm font-medium focus:ring-2 focus:ring-ring focus:border-primary-line"
+              className="w-auto font-medium"
             >
               <option value="TODOS">Todos los roles</option>
               <option value="CLIENTE">Clientes</option>
               <option value="ADMIN">Administradores</option>
-            </select>
+            </Select>
           </div>
         </CardContent>
       </Card>

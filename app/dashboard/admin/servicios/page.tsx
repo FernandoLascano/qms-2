@@ -15,6 +15,7 @@ import { controlBase } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
+import { Select } from '@/components/ui/select'
 
 type Modalidad = 'UNICO' | 'MENSUAL' | 'ANUAL' | 'SIN_COSTO' | 'A_CONSULTAR'
 
@@ -192,17 +193,16 @@ export default function ServiciosAdminPage() {
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-label font-semibold text-ink-2 mb-1">Modalidad</label>
-                <select
+                <Select
                   value={s.modalidad}
                   onChange={(e) => editar(s.id, { modalidad: e.target.value as Modalidad })}
-                  className={cn(controlBase, 'h-10 px-3 bg-surface')}
                 >
                   {MODALIDADES.map((m) => (
                     <option key={m.valor} value={m.valor}>
                       {m.label} — {m.ayuda}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-label font-semibold text-ink-2 mb-1">

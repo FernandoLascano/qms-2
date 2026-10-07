@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Select } from '@/components/ui/select'
 
 export default function NuevoPartnerPage() {
   const router = useRouter()
@@ -138,10 +139,10 @@ export default function NuevoPartnerPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <label className="text-body-sm text-ink-2">
                 Tipo de descuento
-                <select value={descuentoTipo} onChange={(e) => setDescuentoTipo(e.target.value as 'MONTO' | 'PORCENTAJE')} className="mt-1 w-full rounded-control border border-line-strong px-3 py-2 text-ink">
+                <Select value={descuentoTipo} onChange={(e) => setDescuentoTipo(e.target.value as 'MONTO' | 'PORCENTAJE')} className="mt-1">
                   <option value="PORCENTAJE">Porcentaje</option>
                   <option value="MONTO">Monto fijo</option>
-                </select>
+                </Select>
               </label>
               <label className="text-body-sm text-ink-2">
                 Valor
