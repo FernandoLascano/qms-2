@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { uploadToSupabase } from '@/lib/supabase-storage'
-import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { conversorPdfConfigurado, docxAPdf } from '@/lib/pdf'
 import {
   fechaDDMMAAAA,
   generarContratoDomicilio,
@@ -12,6 +11,8 @@ import {
   type DatosContrato,
   type PersonaContrato,
 } from '@/lib/contrato-domicilio'
+
+const MIME_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -116,93 +117,48 @@ export async function GET(_request: Request, { params }: RouteParams) {
     // La dirección del contrato está fija en la plantilla (Pasaje Chagas 6043):
     // si el domicilio del trámite es otro, el formulario lo avisa.
     direccionDomicilio: domicilio?.direccion ?? null,
+    pdfDisponible: conversorPdfConfigurado(),
   })
 }
 
-// POST - Genera el contrato, lo guarda en el trámite y avisa al cliente
+// POST - Genera el contrato y lo devuelve para descargar, en Word o en PDF.
+// No lo guarda en el trámite ni avisa al cliente: la firma se hace afuera
+// (Adobe Sign u otra plataforma).
 export async function POST(request: Request, { params }: RouteParams) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
   const { id } = await params
-  const tramite = await prisma.tramite.findUnique({
-    where: { id },
-    select: { id: true, userId: true, user: { select: { email: true, name: true } } },
-  })
+  const tramite = await prisma.tramite.findUnique({ where: { id }, select: { id: true } })
   if (!tramite) {
     return NextResponse.json({ error: 'Trámite no encontrado' }, { status: 404 })
   }
 
-  const body = (await request.json()) as { datos: DatosContrato; enviar?: boolean }
-  const datos = body.datos
+  const body = (await request.json()) as { datos: DatosContrato; formato?: 'docx' | 'pdf' }
+  const formato = body.formato === 'pdf' ? 'pdf' : 'docx'
+  if (formato === 'pdf' && !conversorPdfConfigurado()) {
+    return NextResponse.json({ error: 'Todavía no está configurado el conversor a PDF. Descargalo en Word.' }, { status: 501 })
+  }
 
-  let buffer: Buffer
+  const denominacion = sinTipoSocietario(body.datos.sociedad_denominacion) || 'Sociedad'
+  const nombre = `Contrato de domicilio - ${denominacion}`
+
+  let archivo: Buffer
   try {
-    buffer = await generarContratoDomicilio(datos)
+    archivo = await generarContratoDomicilio(body.datos)
+    if (formato === 'pdf') archivo = await docxAPdf(archivo, `${nombre}.docx`)
   } catch (e) {
     console.error('Error al generar el contrato de domicilio:', e)
-    return NextResponse.json({ error: 'No se pudo generar el contrato' }, { status: 500 })
+    return NextResponse.json(
+      { error: formato === 'pdf' ? 'No se pudo convertir el contrato a PDF' : 'No se pudo generar el contrato' },
+      { status: 500 },
+    )
   }
 
-  const denominacion = sinTipoSocietario(datos.sociedad_denominacion) || 'Sociedad'
-  const archivo = `Contrato de domicilio - ${denominacion}.docx`
-  const mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-
-  // Sin enviar: sólo se descarga para revisarlo.
-  if (!body.enviar) {
-    return new NextResponse(new Uint8Array(buffer), {
-      headers: {
-        'Content-Type': mime,
-        'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(archivo)}`,
-      },
-    })
-  }
-
-  const subido = await uploadToSupabase(buffer, `documentos-admin/${id}`, archivo, mime)
-  if (!subido?.url) {
-    return NextResponse.json({ error: 'No se pudo guardar el contrato. Intentá de nuevo.' }, { status: 500 })
-  }
-
-  const nombre = 'Contrato de domicilio'
-  await prisma.documento.create({
-    data: {
-      tramiteId: id,
-      userId: tramite.userId,
-      nombre,
-      descripcion:
-        'Leelo completo. Lo firman el representante de la sociedad y el coobligado: imprimilo, firmá donde corresponde, completá la declaración jurada del Anexo I y subilo escaneado (en PDF, no fotos).',
-      url: subido.url,
-      tamanio: buffer.length,
-      mimeType: mime,
-      tipo: 'DOCUMENTO_PARA_FIRMAR',
-      estado: 'PENDIENTE',
+  return new NextResponse(new Uint8Array(archivo), {
+    headers: {
+      'Content-Type': formato === 'pdf' ? 'application/pdf' : MIME_DOCX,
+      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(`${nombre}.${formato}`)}`,
     },
   })
-
-  // Mismo aviso que el envío manual de documentos para firmar.
-  const mensaje = `El contrato de domicilio de tu Sociedad ya está listo para firmar:\n• ${nombre}\n\nIngresá a tu panel: ahí tenés las instrucciones de firma.`
-  try {
-    await prisma.notificacion.create({
-      data: {
-        userId: tramite.userId,
-        tramiteId: id,
-        tipo: 'ACCION_REQUERIDA',
-        titulo: 'Contrato de domicilio para firmar',
-        mensaje,
-        link: `/dashboard/tramites/${id}#documentos-para-firmar`,
-      },
-    })
-    await enviarEmailNotificacion(
-      tramite.user.email,
-      tramite.user.name || 'Usuario',
-      'Contrato de domicilio para firmar',
-      mensaje,
-      id,
-      { tono: 'accion', cta: { texto: 'Ir a firmar', ancla: 'documentos-para-firmar' } },
-    )
-  } catch {
-    // Aviso no crítico: el contrato ya quedó en el trámite.
-  }
-
-  return NextResponse.json({ success: true })
 }

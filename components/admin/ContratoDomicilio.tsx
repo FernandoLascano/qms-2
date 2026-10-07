@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { AlertTriangle, Download, FileSignature, Send } from 'lucide-react'
+import { AlertTriangle, FileSignature, FileText, FileType } from 'lucide-react'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,6 +17,7 @@ type Precarga = {
   personas: PersonaContrato[]
   representanteClave: string | null
   direccionDomicilio: string | null
+  pdfDisponible: boolean
 }
 
 // La dirección del servicio está escrita en la plantilla del contrato.
@@ -25,10 +25,9 @@ const DIRECCION_PLANTILLA = 'Pasaje Chagas 6043'
 
 /** Genera el contrato de domicilio desde la plantilla Word, con los datos del trámite. */
 export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) {
-  const router = useRouter()
   const [abierto, setAbierto] = useState(false)
   const [cargando, setCargando] = useState(false)
-  const [ocupado, setOcupado] = useState<'descargar' | 'enviar' | null>(null)
+  const [ocupado, setOcupado] = useState<'docx' | 'pdf' | null>(null)
   const [precarga, setPrecarga] = useState<Precarga | null>(null)
   const [datos, setDatos] = useState<DatosContrato | null>(null)
   const [representante, setRepresentante] = useState('')
@@ -71,28 +70,22 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
     }
   }
 
-  async function generar(enviar: boolean) {
+  async function generar(formato: 'docx' | 'pdf') {
     if (!datos) return
-    setOcupado(enviar ? 'enviar' : 'descargar')
+    setOcupado(formato)
     try {
       const res = await fetch(`/api/admin/tramites/${tramiteId}/contrato-domicilio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ datos, enviar }),
+        body: JSON.stringify({ datos, formato }),
       })
       if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'No se pudo generar el contrato')
-      if (enviar) {
-        toast.success('Contrato enviado al cliente para firmar')
-        setAbierto(false)
-        router.refresh()
-      } else {
-        const url = URL.createObjectURL(await res.blob())
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `Contrato de domicilio - ${datos.sociedad_denominacion || 'Sociedad'}.docx`
-        a.click()
-        URL.revokeObjectURL(url)
-      }
+      const url = URL.createObjectURL(await res.blob())
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `Contrato de domicilio - ${datos.sociedad_denominacion || 'Sociedad'}.${formato}`
+      a.click()
+      URL.revokeObjectURL(url)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'No se pudo generar el contrato')
     } finally {
@@ -121,7 +114,7 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
         <div className="min-w-0">
           <h3 className="text-heading text-ink">Contrato de domicilio</h3>
           <p className="text-body-sm text-ink-2">
-            Arma el contrato de domicilio en sede desde la plantilla Word, con los datos del trámite. Lo podés descargar para revisarlo o mandárselo al cliente para firmar.
+            Arma el contrato de domicilio en sede desde la plantilla Word, con los datos del trámite, y lo descarga en Word o PDF para firmarlo en Adobe Sign u otra plataforma. No se le manda nada al cliente.
           </p>
         </div>
         <Button onClick={abrir} loading={cargando}>
@@ -250,13 +243,20 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
           )}
 
           <DialogFooter className="gap-2">
-            <Button variant="secondary" onClick={() => generar(false)} loading={ocupado === 'descargar'} disabled={!!ocupado}>
-              {ocupado !== 'descargar' && <Download className="h-4 w-4" aria-hidden />}
-              Descargar para revisar
+            {precarga && !precarga.pdfDisponible && (
+              <p className="mr-auto self-center text-label text-ink-2">El PDF todavía no está configurado.</p>
+            )}
+            <Button variant="secondary" onClick={() => generar('docx')} loading={ocupado === 'docx'} disabled={!!ocupado}>
+              {ocupado !== 'docx' && <FileText className="h-4 w-4" aria-hidden />}
+              Descargar Word
             </Button>
-            <Button onClick={() => generar(true)} loading={ocupado === 'enviar'} disabled={!!ocupado}>
-              {ocupado !== 'enviar' && <Send className="h-4 w-4" aria-hidden />}
-              Enviar al cliente para firmar
+            <Button
+              onClick={() => generar('pdf')}
+              loading={ocupado === 'pdf'}
+              disabled={!!ocupado || !precarga?.pdfDisponible}
+            >
+              {ocupado !== 'pdf' && <FileType className="h-4 w-4" aria-hidden />}
+              Descargar PDF
             </Button>
           </DialogFooter>
         </DialogContent>
