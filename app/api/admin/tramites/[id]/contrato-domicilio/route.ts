@@ -12,6 +12,9 @@ import {
   type PersonaContrato,
 } from '@/lib/contrato-domicilio'
 
+// El conversor a PDF se apaga cuando no se usa: el primer pedido puede tardar.
+export const maxDuration = 60
+
 const MIME_DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
 interface RouteParams {
