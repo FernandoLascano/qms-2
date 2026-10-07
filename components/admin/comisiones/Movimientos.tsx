@@ -214,7 +214,8 @@ export function MovimientosTab({
                               else setAOriginar({ m, originador: o })
                             }}
                             aria-label={`Originador de ${m.cliente}`}
-                            className={cn('h-8 w-auto min-w-36 text-body-sm', m.originador === 'NINGUNO' && 'text-ink-2')}
+                            size="sm"
+                            className={cn('w-auto min-w-36', m.originador === 'NINGUNO' && 'text-ink-2')}
                           >
                             {ORIGINADORES.map((o) => <option key={o} value={o}>{ORIGINADOR_LABEL[o]}</option>)}
                           </Select>

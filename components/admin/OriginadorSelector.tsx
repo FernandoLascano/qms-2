@@ -73,7 +73,8 @@ export function OriginadorSelector({
         value={valor}
         disabled={guardando}
         onChange={(e) => cambiar(e.target.value)}
-        className="h-9 text-body-sm"
+        size="sm"
+        className="h-9"
       >
         {OPCIONES.map((o) => <option key={o.valor} value={o.valor}>{o.texto}</option>)}
       </Select>
