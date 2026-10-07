@@ -95,6 +95,56 @@ export function camposPlantilla(d: DatosContrato, generadoEl: Date = new Date())
   }
 }
 
+const VACIO = '________'
+const DIR = path.join(process.cwd(), 'lib/plantillas')
+
+const escaparHtml = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * Versión HTML del contrato, para el PDF: se ve como el diseño de QuieroMiSAS
+ * (la conversión del Word con LibreOffice no lo respeta). El texto legal es el
+ * mismo de la plantilla Word.
+ */
+export async function contratoDomicilioHtml(d: DatosContrato, generadoEl: Date = new Date()): Promise<string> {
+  const [plantilla, logo, montserrat, openSans, openSansItalic] = await Promise.all([
+    readFile(path.join(DIR, 'contrato-domicilio.html'), 'utf8'),
+    readFile(path.join(DIR, 'logo-qms.png')),
+    readFile(path.join(DIR, 'fuentes/montserrat-800.woff2')),
+    readFile(path.join(DIR, 'fuentes/opensans.woff2')),
+    readFile(path.join(DIR, 'fuentes/opensans-italic.woff2')),
+  ])
+  const archivos: Record<string, string> = {
+    LOGO: logo.toString('base64'),
+    FUENTE_MONTSERRAT: montserrat.toString('base64'),
+    FUENTE_OPENSANS: openSans.toString('base64'),
+    FUENTE_OPENSANS_ITALIC: openSansItalic.toString('base64'),
+  }
+  const campos: Record<string, string> = camposPlantilla(d, generadoEl)
+
+  return plantilla.replace(/\{\{([A-Za-z_]+)\}\}/g, (todo, clave: string) => {
+    if (clave in archivos) return archivos[clave]
+    if (!(clave in campos)) return VACIO
+    const valor = campos[clave]
+    // Las casillas se dibujan: ☒ marcada (roja), ☐ vacía.
+    if (clave.startsWith('check_')) return `<span class="box${valor === '☒' ? ' on' : ''}"></span>`
+    return valor ? escaparHtml(valor).replace(/\n/g, '<br>') : VACIO
+  })
+}
+
+/** Pie de página del PDF (Chromium lo dibuja en el margen inferior de cada hoja). */
+export const PIE_CONTRATO_HTML = `<!doctype html><html><head><meta charset="utf-8"><style>
+  html { -webkit-print-color-adjust: exact; }
+  body { margin: 0; font-family: 'Open Sans', Arial, sans-serif; font-size: 7.5pt; color: #8a8a8a; }
+  table { width: calc(100% - 38mm); margin: 0 19mm; border-collapse: collapse; border-top: 1px solid #d6d2cf; }
+  td { padding-top: 2.5mm; }
+  td + td { text-align: right; }
+  strong { color: #a51c1c; }
+</style></head><body><table><tr>
+  <td><strong>QuieroMiSAS</strong> · quieromisas.com</td>
+  <td>Contrato de servicio de domicilio · Página <span class="pageNumber"></span> de <span class="totalPages"></span></td>
+</tr></table></body></html>`
+
 export async function generarContratoDomicilio(d: DatosContrato, generadoEl: Date = new Date()): Promise<Buffer> {
   const zip = new PizZip(await readFile(PLANTILLA))
   const doc = new Docxtemplater(zip, {

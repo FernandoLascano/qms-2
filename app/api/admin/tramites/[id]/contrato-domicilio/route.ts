@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { conversorPdfConfigurado, docxAPdf } from '@/lib/pdf'
+import { conversorPdfConfigurado, htmlAPdf } from '@/lib/pdf'
 import {
   fechaDDMMAAAA,
+  contratoDomicilioHtml,
   generarContratoDomicilio,
+  PIE_CONTRATO_HTML,
   precioYCondiciones,
   sinTipoSocietario,
   type DatosContrato,
@@ -148,8 +150,11 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   let archivo: Buffer
   try {
-    archivo = await generarContratoDomicilio(body.datos)
-    if (formato === 'pdf') archivo = await docxAPdf(archivo, `${nombre}.docx`)
+    // El PDF sale de la versión HTML (con el diseño de QuieroMiSAS); el Word, de la plantilla .docx.
+    archivo =
+      formato === 'pdf'
+        ? await htmlAPdf(await contratoDomicilioHtml(body.datos), PIE_CONTRATO_HTML)
+        : await generarContratoDomicilio(body.datos)
   } catch (e) {
     console.error('Error al generar el contrato de domicilio:', e)
     return NextResponse.json(

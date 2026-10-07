@@ -1,9 +1,9 @@
 import { getVercelOidcToken } from '@vercel/functions/oidc'
 
 /**
- * Conversión de Word a PDF con Gotenberg (LibreOffice en un contenedor:
- * https://gotenberg.dev). Vercel no puede correr LibreOffice, así que el
- * servicio vive en Google Cloud Run (proyecto "My First Project", San Pablo).
+ * Conversión a PDF con Gotenberg (Chromium y LibreOffice en un contenedor:
+ * https://gotenberg.dev). Vercel no puede correrlos, así que el servicio vive
+ * en Google Cloud Run (proyecto "My First Project", San Pablo).
  *
  * El servicio es privado: sólo acepta pedidos con un token de Google. No hay
  * claves guardadas: Vercel entrega un token OIDC propio del equipo
@@ -56,19 +56,21 @@ async function tokenParaGotenberg(): Promise<string> {
   return ((await id.json()) as { token: string }).token
 }
 
-export async function docxAPdf(docx: Buffer, nombre = 'documento.docx'): Promise<Buffer> {
+/**
+ * HTML a PDF con el Chromium de Gotenberg. El tamaño y los márgenes salen del
+ * @page del propio HTML; el pie se dibuja en el margen inferior de cada hoja.
+ */
+export async function htmlAPdf(html: string, pie?: string): Promise<Buffer> {
   const form = new FormData()
-  form.append(
-    'files',
-    new Blob([new Uint8Array(docx)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }),
-    nombre,
-  )
+  form.append('files', new Blob([html], { type: 'text/html' }), 'index.html')
+  if (pie) form.append('files', new Blob([pie], { type: 'text/html' }), 'footer.html')
+  form.append('preferCssPageSize', 'true')
+  form.append('printBackground', 'true')
 
-  const res = await fetch(`${GOTENBERG_URL}/forms/libreoffice/convert`, {
+  const res = await fetch(`${GOTENBERG_URL}/forms/chromium/convert/html`, {
     method: 'POST',
     body: form,
     headers: { Authorization: `Bearer ${await tokenParaGotenberg()}` },
-    // El servicio se apaga cuando no se usa: el primer pedido tarda más.
     signal: AbortSignal.timeout(45_000),
   })
   if (!res.ok) {
