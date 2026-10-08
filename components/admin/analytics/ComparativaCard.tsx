@@ -35,9 +35,11 @@ export function ComparativaCard({
   return (
     <div className="bg-surface rounded-control shadow-raise p-6 hover:shadow-raise transition">
       <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <p className="text-body-sm font-medium text-ink-2 mb-1">{titulo}</p>
-          <h3 className="text-display font-semibold text-ink">
+          <h3
+            className={`${String(formatearValor(valorActual)).length > 8 ? 'text-title' : 'text-display'} whitespace-nowrap tnum font-semibold text-ink`}
+          >
             {formatearValor(valorActual)}
           </h3>
         </div>
