@@ -16,6 +16,7 @@ import {
   CalendarClock,
   Mail,
   Lightbulb,
+  FileSignature,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -79,6 +80,10 @@ async function AdminDashboardPage() {
       select: { fechaVencimiento: true },
     }),
     prisma.servicioContratado.count({ where: { estado: 'INTERESADO' } }).catch(() => 0),
+    // Domicilios activos sin contrato firmado cargado (tabla nueva: cero si no se migró).
+    prisma.domicilioSede
+      .count({ where: { estado: 'ACTIVO', tramite: { contratosDomicilioFirmados: { none: {} } } } })
+      .catch(() => 0),
   ])
 
   // Las tres tandas (contadores, estado del respaldo y agenda) salen juntas:
@@ -100,7 +105,7 @@ async function AdminDashboardPage() {
       fechasInscripciones,
     ],
     estadoRespaldo,
-    [agendaLeads, emailsSinLeer, serviciosPorVencer, domiciliosPorVencer, oportunidades],
+    [agendaLeads, emailsSinLeer, serviciosPorVencer, domiciliosPorVencer, oportunidades, domiciliosSinContrato],
   ] = await Promise.all([
     Promise.all([
       // Los borradores sin enviar no son trámites: se cuentan aparte, como leads.
@@ -237,6 +242,12 @@ async function AdminDashboardPage() {
       cantidad: oportunidades,
       titulo: oportunidades === 1 ? 'Cliente pidió info de un servicio' : 'Clientes pidieron info de servicios',
       href: '/dashboard/admin/sociedades?filtro=oportunidades',
+    },
+    {
+      icono: FileSignature,
+      cantidad: domiciliosSinContrato,
+      titulo: domiciliosSinContrato === 1 ? 'Domicilio activo sin contrato firmado' : 'Domicilios activos sin contrato firmado',
+      href: '/dashboard/admin/domicilios?contrato=sin-firmar',
     },
     {
       icono: Users,

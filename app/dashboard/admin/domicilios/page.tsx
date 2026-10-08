@@ -8,9 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock } from 'lucide-react'
+import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock, Upload } from 'lucide-react'
 import { Select } from '@/components/ui/select'
 import { fechaParaInput, formatearFecha, hoyParaInput, sumarAniosInput } from '@/lib/fechas'
+import { EstadoContratoBadge, SubirContratoFirmadoDialog, VerContratoFirmado, detalleContrato } from '@/components/admin/ContratoFirmado'
+import type { EstadoContrato, ResumenContrato } from '@/lib/contrato-domicilio-firmado'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -23,10 +25,20 @@ type Item = {
   notas: string | null
   createdAt: string
   direccion: string | null
+  /** null si todavía no existe la tabla de contratos firmados. */
+  contrato: ResumenContrato | null
   tramite: { id: string; denominacion: string; cliente: string; email: string | null }
 }
 type ConfigDom = { direcciones: string[]; precioAnual: number; diasAlerta: number }
 type Disponible = { id: string; denominacion: string; cliente: string; inscripta: boolean }
+/** Filtro por contrato: '' = todos; SIN_FIRMAR junta «generado sin firmar» y «sin contrato». */
+type FiltroContrato = '' | EstadoContrato | 'SIN_FIRMAR'
+
+const pasaFiltro = (i: Item, f: FiltroContrato) => {
+  if (!f || !i.contrato) return true
+  if (f === 'SIN_FIRMAR') return i.contrato.estado !== 'FIRMADO'
+  return i.contrato.estado === f
+}
 
 // Día de hoy en Argentina: en UTC, después de las 21 h proponía el día siguiente.
 const hoyISO = hoyParaInput
@@ -45,6 +57,9 @@ export default function DomiciliosPage() {
   const [disponibles, setDisponibles] = useState<Disponible[]>([])
   const [activando, setActivando] = useState<{ id: string; monto: string; direccion: string } | null>(null)
   const [editando, setEditando] = useState<{ id: string; direccion: string; monto: string; fechaVencimiento: string; notas: string } | null>(null)
+  const [contratosDisponibles, setContratosDisponibles] = useState(false)
+  const [filtroContrato, setFiltroContrato] = useState<FiltroContrato>('')
+  const [subirPara, setSubirPara] = useState<Item | null>(null)
   const [nuevo, setNuevo] = useState({ tramiteId: '', direccion: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
 
   async function cargar() {
@@ -55,6 +70,7 @@ export default function DomiciliosPage() {
       setItems(data.items)
       setConfig(data.config)
       setDisponibles(data.disponibles || [])
+      setContratosDisponibles(!!data.contratosDisponibles)
     } catch {
       toast.error('Error al cargar domicilios')
     } finally {
@@ -62,6 +78,13 @@ export default function DomiciliosPage() {
     }
   }
   useEffect(() => { cargar() }, [])
+
+  // «Hoy» linkea con ?contrato=sin-firmar para llegar ya filtrado.
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get('contrato')
+    if (c === 'sin-firmar') setFiltroContrato('SIN_FIRMAR')
+    else if (c === 'firmado') setFiltroContrato('FIRMADO')
+  }, [])
 
   async function agregarExistente() {
     if (!nuevo.tramiteId) { toast.error('Elegí una sociedad'); return }
@@ -89,8 +112,12 @@ export default function DomiciliosPage() {
     }
   }
 
-  const pendientes = useMemo(() => items.filter((i) => i.estado === 'PENDIENTE_CONTACTO'), [items])
-  const activos = useMemo(() => items.filter((i) => i.estado === 'ACTIVO'), [items])
+  const pendientesTodos = useMemo(() => items.filter((i) => i.estado === 'PENDIENTE_CONTACTO'), [items])
+  const activosTodos = useMemo(() => items.filter((i) => i.estado === 'ACTIVO'), [items])
+  // El filtro de contrato sólo aplica a pendientes y activos; los cancelados se ven siempre.
+  const pendientes = useMemo(() => pendientesTodos.filter((i) => pasaFiltro(i, filtroContrato)), [pendientesTodos, filtroContrato])
+  const activos = useMemo(() => activosTodos.filter((i) => pasaFiltro(i, filtroContrato)), [activosTodos, filtroContrato])
+  const activosFirmados = activosTodos.filter((i) => i.contrato?.estado === 'FIRMADO').length
   const cancelados = useMemo(() => items.filter((i) => i.estado === 'CANCELADO'), [items])
 
   async function accion(id: string, body: any, okMsg: string) {
@@ -144,7 +171,35 @@ export default function DomiciliosPage() {
         breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Domicilios' }]}
       />
 
-      <ResumenDomicilios activos={activos} config={config} />
+      <ResumenDomicilios activos={activosTodos} config={config} />
+
+      {contratosDisponibles && activosTodos.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line-card bg-surface p-card shadow-card">
+          <p className="text-body-sm text-ink">
+            <span className="font-semibold tnum">{activosFirmados} de {activosTodos.length}</span>{' '}
+            {activosTodos.length === 1 ? 'domicilio activo' : 'domicilios activos'} con contrato firmado
+            {activosFirmados < activosTodos.length && (
+              <span className="text-ink-2"> · faltan {activosTodos.length - activosFirmados}</span>
+            )}
+          </p>
+          <div className="flex items-center gap-2">
+            <label htmlFor="filtro-contrato" className="text-body-sm text-ink-2">Contrato</label>
+            <Select
+              id="filtro-contrato"
+              size="sm"
+              className="w-auto"
+              value={filtroContrato}
+              onChange={(e) => setFiltroContrato(e.target.value as FiltroContrato)}
+            >
+              <option value="">Todos</option>
+              <option value="FIRMADO">Firmado</option>
+              <option value="SIN_FIRMAR">Sin firmar (todos)</option>
+              <option value="GENERADO">Generado sin firmar</option>
+              <option value="SIN_CONTRATO">Sin contrato</option>
+            </Select>
+          </div>
+        </div>
+      )}
 
       {/* Cargar sociedad existente */}
       <Card className="mb-6">
@@ -197,13 +252,13 @@ export default function DomiciliosPage() {
 
       {/* Pendientes de contactar */}
       <Card className="mb-6">
-        <CardHeader><CardTitle variant="section">Pendientes de contactar ({pendientes.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle variant="section">Pendientes de contactar ({filtroContrato ? `${pendientes.length} de ${pendientesTodos.length}` : pendientes.length})</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           {pendientes.length === 0 ? (
-            <p className="text-body-sm text-ink-2 py-2">No hay solicitudes pendientes.</p>
+            <p className="text-body-sm text-ink-2 py-2">{filtroContrato && pendientesTodos.length > 0 ? 'Ninguna con ese estado de contrato.' : 'No hay solicitudes pendientes.'}</p>
           ) : (
             <table className="w-full text-body-sm text-ink">
-              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th></th></tr></thead>
+              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th>{contratosDisponibles && <th className="pr-3">Contrato</th>}<th></th></tr></thead>
               <tbody>
                 {pendientes.map((i) => (
                   <tr key={i.id} className="border-b border-line last:border-0 align-top">
@@ -217,6 +272,16 @@ export default function DomiciliosPage() {
                       </Link>
                     </td>
                     <td className="pr-3 text-ink-2 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
+                    {contratosDisponibles && (
+                      <td className="pr-3">
+                        {i.contrato && (
+                          <div className="space-y-0.5">
+                            <EstadoContratoBadge resumen={i.contrato} />
+                            <p className="text-label text-ink-2 whitespace-nowrap">{detalleContrato(i.contrato)}</p>
+                          </div>
+                        )}
+                      </td>
+                    )}
                     <td className="text-right">
                       {activando?.id === i.id ? (
                         <div className="flex items-center gap-2 justify-end flex-wrap">
@@ -246,10 +311,10 @@ export default function DomiciliosPage() {
 
       {/* Activos */}
       <Card className="mb-6">
-        <CardHeader><CardTitle variant="section">Activos ({activos.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle variant="section">Activos ({filtroContrato ? `${activos.length} de ${activosTodos.length}` : activos.length})</CardTitle></CardHeader>
         <CardContent>
           {activos.length === 0 ? (
-            <p className="text-body-sm text-ink-2 py-2">No hay servicios activos.</p>
+            <p className="text-body-sm text-ink-2 py-2">{filtroContrato && activosTodos.length > 0 ? 'Ninguno con ese estado de contrato.' : 'No hay servicios activos.'}</p>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {activos.map((i) => (
@@ -319,6 +384,21 @@ export default function DomiciliosPage() {
                         </div>
                       </div>
 
+                      {i.contrato && (
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-control border border-line p-3">
+                          <div className="min-w-0 space-y-0.5">
+                            <EstadoContratoBadge resumen={i.contrato} />
+                            <p className="text-label text-ink-2">{detalleContrato(i.contrato)}</p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {i.contrato.firmado && <VerContratoFirmado tramiteId={i.tramite.id} firmado={i.contrato.firmado} />}
+                            <Button size="sm" variant={i.contrato.firmado ? 'ghost' : 'secondary'} onClick={() => setSubirPara(i)} className="gap-1">
+                              <Upload className="h-4 w-4" /> {i.contrato.firmado ? 'Reemplazar' : 'Subir firmado'}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'renovar' }, 'Renovado 1 año')} className="gap-1"><RefreshCw className="h-4 w-4" /> Renovar 1 año</Button>
                         <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-ink-2" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
@@ -334,18 +414,42 @@ export default function DomiciliosPage() {
         </CardContent>
       </Card>
 
+      {subirPara && (
+        <SubirContratoFirmadoDialog
+          tramiteId={subirPara.tramite.id}
+          denominacion={subirPara.tramite.denominacion}
+          open={!!subirPara}
+          onOpenChange={(o) => !o && setSubirPara(null)}
+          reemplaza={!!subirPara.contrato?.firmado}
+          onSubido={cargar}
+        />
+      )}
+
       {/* Cancelados / no contrataron */}
       {cancelados.length > 0 && (
         <Card>
           <CardHeader><CardTitle variant="section">Cancelados / no contrataron ({cancelados.length})</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
             <table className="w-full text-body-sm text-ink">
-              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th></th></tr></thead>
+              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th>{contratosDisponibles && <th className="pr-3">Contrato</th>}<th></th></tr></thead>
               <tbody>
                 {cancelados.map((i) => (
                   <tr key={i.id} className="border-b border-line last:border-0">
                     <td className="py-2 pr-3 text-ink">{i.tramite.cliente}</td>
                     <td className="pr-3"><Link href={`/dashboard/admin/tramites/${i.tramite.id}`} className="text-primary hover:underline">{i.tramite.denominacion}</Link></td>
+                    {contratosDisponibles && (
+                      <td className="pr-3">
+                        {/* De baja no se sube nada; si llegó a firmar, el PDF queda a mano. */}
+                        {i.contrato?.firmado ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-label text-ink-2 whitespace-nowrap">{detalleContrato(i.contrato)}</span>
+                            <VerContratoFirmado tramiteId={i.tramite.id} firmado={i.contrato.firmado} />
+                          </div>
+                        ) : (
+                          <span className="text-ink-3">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="text-right"><Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'activar', montoAnual: config.precioAnual, direccion: config.direcciones[0] || undefined }, 'Reactivado')} className="text-ink-2">Reactivar</Button></td>
                   </tr>
                 ))}
