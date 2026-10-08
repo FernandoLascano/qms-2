@@ -137,6 +137,28 @@ export async function deleteFromSupabase(
   }
 }
 
+/** Descarga un objeto (con su tipo) desde el servidor, sin exponer URL firmada. */
+export async function downloadFromSupabase(
+  path: string,
+  bucket: string = DOCUMENTS_BUCKET
+): Promise<{ buffer: Buffer; contentType: string } | null> {
+  try {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase.storage.from(bucket).download(path)
+
+    if (error || !data) {
+      return null
+    }
+
+    return {
+      buffer: Buffer.from(await data.arrayBuffer()),
+      contentType: data.type || 'application/octet-stream',
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getSignedUrlSupabase(
   path: string,
   expiresIn: number = 3600,

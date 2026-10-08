@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { PageSkeleton } from '@/components/ui/states'
 import { useEffect, useState } from 'react'
+import { urlLogoPartner } from '@/lib/partner-logo'
 
 interface PartnerItem {
   id: string
@@ -89,7 +90,7 @@ export default function AdminPartnersPage() {
                 {partner.logoUrl ? (
                   <div className="flex h-12 w-24 items-center justify-center rounded-control border border-line bg-surface p-1">
                     <img
-                      src={partner.logoUrl}
+                      src={urlLogoPartner(partner.logoUrl) ?? undefined}
                       alt={partner.nombre}
                       className="max-h-full max-w-full object-contain"
                     />
