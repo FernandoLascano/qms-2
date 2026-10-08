@@ -21,7 +21,7 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
       <h3 className="text-heading font-semibold text-ink mb-4">Tendencias</h3>
       
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-info-soft rounded-control border border-info-line">
+        <div className="flex items-center justify-between p-4 bg-surface-2 rounded-control border border-line">
           <div>
             <p className="text-body-sm font-medium text-ink-2">Trámites</p>
             <p className="text-label text-ink-2">Últimos 6 meses</p>
@@ -44,7 +44,7 @@ export function TendenciasChart({ tramites, ingresos }: TendenciasChartProps) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-success-soft rounded-control border border-success-line">
+        <div className="flex items-center justify-between p-4 bg-surface-2 rounded-control border border-line">
           <div>
             <p className="text-body-sm font-medium text-ink-2">Ingresos</p>
             <p className="text-label text-ink-2">Últimos 6 meses</p>

@@ -1,5 +1,7 @@
 'use client'
 
+import { TEMA } from './tema'
+
 interface ConversionFunnelProps {
   leads: number
   registrados: number
@@ -22,31 +24,27 @@ export function ConversionFunnel({ leads, registrados, conTramite, completados }
       nombre: 'Interesados',
       valor: leads,
       porcentaje: calcularPorcentaje(leads),
-      color: 'bg-primary',
     },
     { 
       nombre: 'Registrados', 
       valor: registrados, 
       porcentaje: calcularPorcentaje(registrados), 
-      color: 'bg-info-solid' 
     },
     { 
       nombre: 'Iniciaron Trámite', 
       valor: conTramite, 
       porcentaje: calcularPorcentaje(conTramite), 
-      color: 'bg-warning-solid' 
     },
     { 
       nombre: 'Completados', 
       valor: completados, 
       porcentaje: calcularPorcentaje(completados), 
-      color: 'bg-success-solid' 
     }
   ]
 
   return (
     <div className="bg-surface rounded-control shadow-raise p-6">
-      <h3 className="text-heading font-semibold text-ink mb-6">Embudo de Conversión</h3>
+      <h3 className="text-heading font-semibold text-ink mb-6">Embudo de conversión</h3>
       <div className="space-y-4">
         {etapas.map((etapa, index) => (
           <div key={index} className="space-y-2">
@@ -56,10 +54,11 @@ export function ConversionFunnel({ leads, registrados, conTramite, completados }
                 {etapa.valor} ({etapa.porcentaje.toFixed(0)}%)
               </span>
             </div>
-            <div className="w-full bg-n-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-surface-3 rounded-full h-2.5 overflow-hidden">
               <div
-                className={`h-full ${etapa.color} transition-all duration-500 ease-out`}
-                style={{ width: `${etapa.porcentaje}%` }}
+                className="h-full rounded-full transition-all duration-500 ease-out"
+                // Un solo color; el último paso (el resultado) en rojo.
+                style={{ width: `${etapa.porcentaje}%`, background: index === etapas.length - 1 ? TEMA.rojo : TEMA.gris }}
               />
             </div>
           </div>
@@ -69,7 +68,7 @@ export function ConversionFunnel({ leads, registrados, conTramite, completados }
       <div className="mt-6 pt-4 border-t border-line">
         <div className="flex justify-between text-body-sm">
           <span className="text-ink-2">Tasa Conversión Total:</span>
-          <span className="font-semibold text-success">
+          <span className="font-semibold text-ink">
             {calcularPorcentaje(completados).toFixed(1)}%
           </span>
         </div>
