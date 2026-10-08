@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import {
+  motivoNoEliminable,
+  WHERE_ENLACES_PAGADOS,
+  WHERE_PAGOS_APROBADOS,
+} from '@/lib/tramites/eliminacion'
 
 interface RouteParams {
   params: Promise<{
@@ -29,6 +34,12 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       include: {
         user: {
           select: { email: true, name: true }
+        },
+        _count: {
+          select: {
+            pagos: { where: WHERE_PAGOS_APROBADOS },
+            enlacesPago: { where: WHERE_ENLACES_PAGADOS }
+          }
         }
       }
     })
@@ -40,22 +51,16 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       )
     }
 
-    // Proteger trámites específicos que no se pueden eliminar
-    const tramitesProtegidos = [
-      'DRIX SAS',
-      'SPEED AI SOFTWARE',
-      'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
-      'Drixs SAS',
-      'Speed AI Software',
-      'Adocor Servicios de Construccion SAS'
-    ]
-
-    const denominacion = tramite.denominacionAprobada || tramite.denominacionSocial1 || ''
-    if (tramitesProtegidos.some(protegido => denominacion.toUpperCase().includes(protegido.toUpperCase()))) {
-      return NextResponse.json(
-        { error: 'Este trámite está protegido y no puede ser eliminado' },
-        { status: 403 }
-      )
+    // Regla única (lib/tramites/eliminacion): no se borra una sociedad
+    // inscripta ni un trámite con cobros. Se chequea ANTES de borrar nada.
+    const motivo = motivoNoEliminable({
+      sociedadInscripta: tramite.sociedadInscripta,
+      estadoGeneral: tramite.estadoGeneral,
+      pagosAprobados: tramite._count.pagos,
+      enlacesPagados: tramite._count.enlacesPago
+    })
+    if (motivo) {
+      return NextResponse.json({ error: motivo }, { status: 403 })
     }
 
     // Eliminar todos los datos relacionados

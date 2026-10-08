@@ -28,18 +28,22 @@ import TramitesFiltros, {
   type FiltroTipo,
 } from './TramitesFiltros'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { puedeEliminarse } from '@/lib/tramites/eliminacion'
 import { cn } from '@/lib/utils'
 import { PlanBadge } from '@/components/ui/plan-badge'
 
-/** Trámites que no se pueden borrar desde la interfaz. */
-const PROTEGIDOS = [
-  'DRIX SAS',
-  'SPEED AI SOFTWARE',
-  'ADOCOR SERVICIOS DE CONSTRUCCION SAS',
-]
-
-const esProtegido = (denominacion: string) =>
-  PROTEGIDOS.some((p) => denominacion.toUpperCase().includes(p.toUpperCase()))
+/** Misma regla que la API de borrado: inscriptas y trámites con cobros no se borran. */
+const sePuedeEliminar = (tramite: {
+  sociedadInscripta?: boolean
+  estadoGeneral?: string
+  _count?: { pagos?: number; enlacesPago?: number }
+}) =>
+  puedeEliminarse({
+    sociedadInscripta: tramite.sociedadInscripta,
+    estadoGeneral: tramite.estadoGeneral,
+    pagosAprobados: tramite._count?.pagos ?? 0,
+    enlacesPagados: tramite._count?.enlacesPago ?? 0,
+  })
 
 const coincideFiltro = (tramite: any, filtro: FiltroTipo) => {
   switch (filtro) {
@@ -225,7 +229,7 @@ export default function TramitesLista({ tramites }: { tramites: any[] }) {
                     })}
                   </time>
 
-                  {!esProtegido(nombre) && (
+                  {sePuedeEliminar(tramite) && (
                     <Button
                       variant="ghost"
                       size="icon-sm"

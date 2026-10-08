@@ -11,9 +11,11 @@ import { toast } from 'sonner'
 interface EliminarTramiteProps {
   tramiteId: string
   denominacion: string
+  /** Motivo por el que no se puede borrar (lib/tramites/eliminacion), o null. */
+  motivoBloqueo?: string | null
 }
 
-export default function EliminarTramite({ tramiteId, denominacion }: EliminarTramiteProps) {
+export default function EliminarTramite({ tramiteId, denominacion, motivoBloqueo = null }: EliminarTramiteProps) {
   const router = useRouter()
   const [mostrarModal, setMostrarModal] = useState(false)
   const [confirmacion, setConfirmacion] = useState('')
@@ -68,20 +70,24 @@ export default function EliminarTramite({ tramiteId, denominacion }: EliminarTra
                 Se eliminarán permanentemente todos los datos asociados: documentos, pagos, notificaciones y mensajes.
               </p>
             </div>
-            <Button
-              variant="destructive"
-              onClick={() => setMostrarModal(true)}
-              className="gap-2 whitespace-nowrap"
-            >
-              <Trash2 className="h-4 w-4" />
-              Eliminar Trámite
-            </Button>
+            {motivoBloqueo ? (
+              <p className="text-body-sm font-medium text-ink-2 sm:max-w-xs">{motivoBloqueo}</p>
+            ) : (
+              <Button
+                variant="destructive"
+                onClick={() => setMostrarModal(true)}
+                className="gap-2 whitespace-nowrap"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar Trámite
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Modal de Confirmación */}
-      {mostrarModal && (
+      {mostrarModal && !motivoBloqueo && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-lg">
             <CardHeader>

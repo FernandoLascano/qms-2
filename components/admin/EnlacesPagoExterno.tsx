@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Link as LinkIcon, Clock, Send, CheckCircle, XCircle } from 'lucide-react'
 import { Select } from '@/components/ui/select'
+import { formatearFecha } from '@/lib/fechas'
 
 interface EnlacePago {
   id: string
@@ -130,9 +131,9 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                       )}
                     </div>
                     <p className="text-label text-ink-2 mb-2">
-                      Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}
+                      Enviado: {formatearFecha(enlace.fechaEnvio)}
                       {enlace.fechaVencimiento && (
-                        <> • Vence: {new Date(enlace.fechaVencimiento).toLocaleDateString('es-AR')}</>
+                        <> • Vence: {formatearFecha(enlace.fechaVencimiento)}</>
                       )}
                     </p>
                     {enlace.reportadoVencido && (

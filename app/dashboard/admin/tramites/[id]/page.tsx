@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { redirect, notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import {
   ArrowLeft,
   Briefcase,
@@ -22,6 +20,8 @@ import { prisma } from '@/lib/prisma'
 import { getObjetoSocialTexto } from '@/lib/constants'
 import { esObjetoPreAprobado } from '@/lib/objeto-social'
 import { esDocumentoDeQMS } from '@/lib/documentos'
+import { fechaLarga, fechaParaInput } from '@/lib/fechas'
+import { motivoNoEliminable } from '@/lib/tramites/eliminacion'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 
 import { Card, CardBody } from '@/components/ui/card'
@@ -398,7 +398,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
             <DataList columns={4}>
               <DataItem
                 label="Fecha de inicio"
-                value={format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+                value={fechaLarga(tramite.createdAt)}
               />
               <DataItem
                 label="Jurisdicción"
@@ -536,15 +536,20 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
             matriculaActual={tramite.matricula}
             numeroResolucionActual={tramite.numeroResolucion}
             fechaInscripcionActual={
-              tramite.fechaSociedadInscripta
-                ? new Date(tramite.fechaSociedadInscripta).toISOString().split('T')[0]
-                : tramite.fechaInscripcion
-                  ? new Date(tramite.fechaInscripcion).toISOString().split('T')[0]
-                  : null
+              fechaParaInput(tramite.fechaSociedadInscripta || tramite.fechaInscripcion) || null
             }
           />
 
-          <EliminarTramite tramiteId={tramite.id} denominacion={nombre} />
+          <EliminarTramite
+            tramiteId={tramite.id}
+            denominacion={nombre}
+            motivoBloqueo={motivoNoEliminable({
+              sociedadInscripta: tramite.sociedadInscripta,
+              estadoGeneral: tramite.estadoGeneral,
+              pagosAprobados: tramite.pagos.filter((p) => p.estado === 'APROBADO').length,
+              enlacesPagados: tramite.enlacesPago.filter((e) => e.estado === 'PAGADO').length,
+            })}
+          />
         </div>
       )}
     </div>

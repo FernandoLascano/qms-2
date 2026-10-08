@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/states'
 import { cn } from '@/lib/utils'
 import { DIAS_AVISO } from '@/lib/cartera'
+import { fechaCorta } from '@/lib/fechas'
 import { PlanBadge } from '@/components/ui/plan-badge'
 
 export interface SociedadCartera {
@@ -30,7 +31,7 @@ export interface SociedadCartera {
 }
 
 const pesos = (n: number) => '$' + Math.round(n).toLocaleString('es-AR')
-const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+const fecha = (iso: string) => fechaCorta(iso)
 
 export type Filtro = 'TODAS' | 'VENCEN' | 'OPORTUNIDADES' | 'SIN_SERVICIOS'
 

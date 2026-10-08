@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DollarSign, Send, CheckCircle } from 'lucide-react'
 import { Select } from '@/components/ui/select'
+import { cbuValido, validarCbu } from '@/lib/validaciones'
 
 interface Pago {
   id: string
@@ -152,6 +153,12 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
 
     if (!datosBancarios.cbu || !datosBancarios.banco || !datosBancarios.titular) {
       toast.error('Completa todos los datos bancarios')
+      return
+    }
+
+    const errorCbu = validarCbu(datosBancarios.cbu)
+    if (errorCbu) {
+      toast.error(errorCbu)
       return
     }
 
@@ -347,11 +354,16 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
                       disabled={generando}
                     >
                       <option value="">-- Seleccionar cuenta --</option>
-                      {cuentasPreConfiguradas.map((cuenta) => (
-                        <option key={cuenta.id} value={cuenta.id}>
-                          {cuenta.nombre} - {cuenta.banco}
-                        </option>
-                      ))}
+                      {cuentasPreConfiguradas.map((cuenta) => {
+                        // Una cuenta con CBU inválido no se ofrece: el cliente no podría transferir.
+                        const invalida = !cbuValido(cuenta.cbu)
+                        return (
+                          <option key={cuenta.id} value={cuenta.id} disabled={invalida}>
+                            {cuenta.nombre} - {cuenta.banco}
+                            {invalida ? ' (CBU inválido, corregilo en Cuentas bancarias)' : ''}
+                          </option>
+                        )
+                      })}
                     </Select>
                     <p className="text-label text-ink-2 mt-1">O completa los datos manualmente abajo</p>
                   </div>

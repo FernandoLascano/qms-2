@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailPagoPendiente } from '@/lib/emails/send'
+import { validarCbu } from '@/lib/validaciones'
 
 interface RouteParams {
   params: Promise<{
@@ -31,6 +32,14 @@ export async function POST(request: Request, { params }: RouteParams) {
         { error: 'El monto debe ser un número válido mayor a 0' },
         { status: 400 }
       )
+    }
+
+    // El CBU para la transferencia se le muestra al cliente: no puede ser inválido.
+    if (datosBancarios) {
+      const errorCbu = validarCbu(datosBancarios.cbu)
+      if (errorCbu) {
+        return NextResponse.json({ error: errorCbu }, { status: 400 })
+      }
     }
 
     // Obtener trámite
