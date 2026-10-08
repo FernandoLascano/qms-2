@@ -135,6 +135,42 @@ export function bonoComercial(
   return Math.min(monto * (bonoPct / 100), calcularReparto(monto, originador, p).mw)
 }
 
+/**
+ * Cómo se carga un cobro en el sistema de liquidación de MW (líneas
+ * Originación / Operadores / MW). NO es el reparto de QMS: eso es
+ * `calcularReparto`, que usan Movimientos, «A pagar» y los reportes.
+ *
+ * La única diferencia es de forma, para clientes orgánicos (entraron solos por
+ * la web, originador NINGUNO): en QMS no tienen originación (contrato 4.2 a),
+ * pero en MW lo de Fernando (operador + los dos fondos, que él custodia) se
+ * carga partido en «Originación» (30% del cobro, a Fernando) y «Operadores»
+ * (el resto). Lo que cobra cada uno no cambia.
+ */
+export type CargaMW = {
+  /** Línea «Originación» de MW. */
+  originacion: number
+  /** true si es la regla de carga de MW para un cliente orgánico (en QMS no hay originación). */
+  originacionSoloEnMW: boolean
+  /** Línea «Operadores» de MW: lo de Fernando + los dos fondos, menos lo cargado como originación. */
+  operadores: number
+  /** Línea «MW»: la parte de MW del esquema (antes de restar el bono). */
+  mw: number
+}
+
+export function cargaEnMW(
+  monto: number,
+  originador: Originador,
+  p: Porcentajes = PORCENTAJES_DEFAULT
+): CargaMW {
+  const r = calcularReparto(monto, originador, p)
+  const deFernando = r.operadorFernando + r.fondoFernando + r.fondoJustiniano
+  if (originador !== 'NINGUNO') {
+    return { originacion: r.comisionOriginacion, originacionSoloEnMW: false, operadores: deFernando, mw: r.mw }
+  }
+  const originacion = Math.min(monto * (p.originacion / 100), deFernando)
+  return { originacion, originacionSoloEnMW: true, operadores: deFernando - originacion, mw: r.mw }
+}
+
 export type TotalesLiquidacion = {
   ingresoBruto: number
   // A pagar por beneficiario
