@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,9 +20,8 @@ interface Tramite {
 export default function SubirDocumentoPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { data: session } = useSession()
   const [tramites, setTramites] = useState<Tramite[]>([])
-  const [cargando, setCargando] = useState(false)
+  const [cargando, setCargando] = useState(true)
   const [subiendo, setSubiendo] = useState(false)
   const [archivo, setArchivo] = useState<File | null>(null)
   
@@ -38,25 +36,24 @@ export default function SubirDocumentoPage() {
   })
 
   useEffect(() => {
-    // Cargar trámites del usuario
+    // Cargar trámites del usuario. La API ya devuelve sólo los del cliente
+    // logueado (filtra por sesión), así que no hay que filtrar acá: antes se
+    // filtraba por t.userId, que la API no manda, y la lista quedaba vacía.
+    setCargando(true)
     fetch('/api/tramites')
       .then(res => res.json())
       .then(data => {
-        if (data.tramites) {
-          const tramitesUsuario = data.tramites.filter((t: any) => t.userId === session?.user?.id)
-          setTramites(tramitesUsuario)
-          
-          // Si hay tramiteId en la URL y no está seleccionado, pre-seleccionarlo
-          if (tramiteIdFromUrl && !formData.tramiteId && tramitesUsuario.length > 0) {
-            const tramiteEncontrado = tramitesUsuario.find((t: Tramite) => t.id === tramiteIdFromUrl)
-            if (tramiteEncontrado) {
-              setFormData(prev => ({ ...prev, tramiteId: tramiteIdFromUrl }))
-            }
-          }
+        const lista: Tramite[] = Array.isArray(data.tramites) ? data.tramites : []
+        setTramites(lista)
+
+        // Preseleccionar el trámite de la URL sólo si es uno de los suyos
+        if (tramiteIdFromUrl && !lista.some(t => t.id === tramiteIdFromUrl)) {
+          setFormData(prev => ({ ...prev, tramiteId: '' }))
         }
       })
       .catch(err => console.error('Error al cargar trámites:', err))
-  }, [session, tramiteIdFromUrl])
+      .finally(() => setCargando(false))
+  }, [tramiteIdFromUrl])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -170,9 +167,9 @@ export default function SubirDocumentoPage() {
                   </option>
                 ))}
               </Select>
-              {tramites.length === 0 && (
+              {!cargando && tramites.length === 0 && (
                 <p className="text-body-sm text-ink-2 mt-1">
-                  No tienes trámites activos.{' '}
+                  Todavía no tenés trámites.{' '}
                   <Link href="/tramite/nuevo" className="text-info hover:underline">
                     Crear uno ahora
                   </Link>
