@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getPublicConfig } from '@/lib/config'
+import { reemplazarPreciosBlog } from '@/lib/blog-precios'
 import BlogPostContent from './BlogPostContent'
 
 interface Props {
@@ -20,7 +22,7 @@ export async function generateStaticParams() {
 // Generar metadata dinámica para SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const post = await prisma.post.findUnique({
+  const postGuardado = await prisma.post.findUnique({
     where: { slug, publicado: true },
     select: {
       titulo: true,
@@ -37,11 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   })
 
-  if (!post) {
+  if (!postGuardado) {
     return {
       title: 'Artículo no encontrado | QuieroMiSAS',
     }
   }
+
+  const post = reemplazarPreciosBlog(postGuardado, await getPublicConfig())
 
   const title = post.metaTitle || `${post.titulo} | QuieroMiSAS`
   const description = post.metaDescription || post.descripcion
@@ -77,12 +81,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params
-  const post = await prisma.post.findUnique({
+  const postGuardado = await prisma.post.findUnique({
     where: { slug, publicado: true },
   })
 
-  if (!post) {
+  if (!postGuardado) {
     notFound()
+  }
+
+  // Marcadores {{precio_*}} → precios de la config (la misma fuente que la home).
+  const post = {
+    ...postGuardado,
+    ...reemplazarPreciosBlog(
+      {
+        titulo: postGuardado.titulo,
+        descripcion: postGuardado.descripcion,
+        metaTitle: postGuardado.metaTitle,
+        metaDescription: postGuardado.metaDescription,
+        contenido: postGuardado.contenido,
+      },
+      await getPublicConfig()
+    ),
   }
 
   // Nota: el conteo de vistas se hace del lado del cliente (ver BlogPostContent),
