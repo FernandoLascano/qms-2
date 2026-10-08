@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: post.imagenHero ? [post.imagenHero] : undefined,
     },
     alternates: {
-      canonical: post.canonical || `https://www.quieromisas.com/blog/${slug}`,
+      canonical: post.canonical || `/blog/${slug}`,
     },
   }
 }

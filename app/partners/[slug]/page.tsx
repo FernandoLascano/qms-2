@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${partner.nombre} | QuieroMiSAS`,
+    alternates: { canonical: `/partners/${slug}` },
     description: partner.aplicaDescuento && partner.descuentoValor
       ? `Conseguí beneficios exclusivos y ahorro en planes de constitución con ${partner.nombre}.`
       : `Beneficios exclusivos de ${partner.nombre} para constituir tu SAS.`,

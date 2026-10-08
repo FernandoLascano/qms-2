@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Iniciar Sesión | QuieroMiSAS',
+  alternates: { canonical: '/login' },
   robots: {
     index: false,
     follow: false,

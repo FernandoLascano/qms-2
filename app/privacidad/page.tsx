@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
 export const metadata = {
+  alternates: { canonical: '/privacidad' },
   title: 'Política de Privacidad | QuieroMiSAS',
   description: 'Política de privacidad y protección de datos personales. Cumplimiento de la Ley 25.326 de la República Argentina.',
 }

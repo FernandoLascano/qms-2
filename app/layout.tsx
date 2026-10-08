@@ -73,10 +73,10 @@ export async function generateMetadata(): Promise<Metadata> {
     description: `Constituí tu SAS 100% online en Córdoba. Desde ${desde}. CUIT y matrícula en 5 días hábiles.`,
     images: ['/opengraph-image'],
   },
+  // Sin `alternates.canonical` acá: el layout lo heredan todas las páginas y
+  // fijarlo marcaba la home como canónica de todo el sitio. Cada página pública
+  // declara el suyo (relativo; se absolutiza contra `metadataBase`).
   metadataBase: new URL(SITE_URL),
-  alternates: {
-    canonical: SITE_URL,
-  },
   verification: {
     google: 'Fb9746BUHbwNsQqEI8c6ELfh6ekKpop4tvtpMZ8IEto',
   },

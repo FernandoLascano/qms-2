@@ -2,6 +2,11 @@ import HomePage from '@/components/landing/HomePage'
 import { prisma } from '@/lib/prisma'
 import { getPublicConfig } from '@/lib/config'
 import type { NotaCard } from '@/components/landing/NotasClient'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
 
 // ISR: regenerar la home cada 5 min para reflejar cambios en notas destacadas
 // (igual que /blog y /blog/[slug]). Sin esto la home queda estática desde el build.
