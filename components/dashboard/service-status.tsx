@@ -69,6 +69,7 @@ export function ServiceStatus() {
   const [error, setError] = useState<string | null>(null)
   const [secondsAgo, setSecondsAgo] = useState(0)
   const lastFetch = useRef<number>(0)
+  const contenedor = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -86,22 +87,38 @@ export function ServiceStatus() {
   }, [])
 
   useEffect(() => {
-    // El chequeo tarda segundos (SMTP, GA4, MercadoPago…): arranca cuando el
-    // navegador terminó de pintar el resto de Hoy, no compitiendo con él.
-    const arranque =
-      typeof window.requestIdleCallback === 'function'
-        ? window.requestIdleCallback(() => load(), { timeout: 1500 })
-        : window.setTimeout(() => load(), 200)
+    // El chequeo tarda 2-3 s (SMTP, GA4, MercadoPago…) y la tarjeta está al
+    // pie de Hoy: se pide recién cuando la tarjeta se acerca a la pantalla, así
+    // no demora la carga del resto ni corre si nadie la mira.
+    let arrancado = false
+    const arrancar = () => {
+      if (arrancado) return
+      arrancado = true
+      load()
+    }
+    const observador =
+      typeof IntersectionObserver === 'function' && contenedor.current
+        ? new IntersectionObserver(
+            (entradas) => {
+              if (entradas.some((e) => e.isIntersecting)) {
+                observador?.disconnect()
+                arrancar()
+              }
+            },
+            { rootMargin: '200px' },
+          )
+        : null
+    if (observador && contenedor.current) observador.observe(contenedor.current)
+    else arrancar()
     // Solo refresca automáticamente si la pestaña está visible.
     const refresh = setInterval(() => {
-      if (document.visibilityState === 'visible') load()
+      if (arrancado && document.visibilityState === 'visible') load()
     }, REFRESH_MS)
     const tick = setInterval(() => {
       if (lastFetch.current) setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
     }, 1000)
     return () => {
-      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(arranque)
-      else window.clearTimeout(arranque)
+      observador?.disconnect()
       clearInterval(refresh)
       clearInterval(tick)
     }
@@ -112,6 +129,7 @@ export function ServiceStatus() {
   const downCount = services.filter((s) => s.status === 'down').length
 
   return (
+    <div ref={contenedor}>
     <Card className={degraded ? 'border-2 border-danger-line' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <div className="flex items-center gap-2">
@@ -204,6 +222,7 @@ export function ServiceStatus() {
         )}
       </CardContent>
     </Card>
+    </div>
   )
 }
 
