@@ -8,7 +8,7 @@ import { es } from 'date-fns/locale'
 import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
 // Mismo formato de pesos que las tarjetas y los gráficos de Analytics.
 import { pesos } from '@/components/admin/analytics/tema'
-import type { ConceptoPago } from '@prisma/client'
+import type { ConceptoPago, EstadoTramite } from '@prisma/client'
 
 /** "oct" → "Oct": etiqueta corta del mes, en castellano. */
 const mesCorto = (d: Date) => {
@@ -56,166 +56,238 @@ export async function GET(request: Request) {
       ? { jurisdiccion: jurisdiccion.toUpperCase() as 'CORDOBA' | 'CABA' }
       : {}
 
-    // 1. MÉTRICAS DE TRÁMITES
-    const [
-      tramitesTotales,
-      tramitesEnCurso,
-      tramitesCompletados,
-      tramitesCancelados,
-      tramitesPeriodo
-    ] = await Promise.all([
-      prisma.tramite.count({ where: jurisdiccionFilter }),
-      prisma.tramite.count({ 
-        where: { 
-          estadoGeneral: { in: ['INICIADO', 'EN_PROCESO', 'ESPERANDO_CLIENTE', 'ESPERANDO_APROBACION'] },
-          ...jurisdiccionFilter 
-        } 
-      }),
-      prisma.tramite.count({ 
-        where: { estadoGeneral: 'COMPLETADO', ...jurisdiccionFilter } 
-      }),
-      prisma.tramite.count({ 
-        where: { estadoGeneral: 'CANCELADO', ...jurisdiccionFilter } 
-      }),
-      prisma.tramite.count({ 
-        where: { 
-          createdAt: { gte: fechaInicio, lte: fechaFin },
-          ...jurisdiccionFilter 
-        } 
-      })
-    ])
+    // Todas las consultas van en una sola tanda. Antes eran ~17 tandas
+    // secuenciales y cada una pagaba la ida y vuelta a la base (~6-7 s en
+    // total); ahora el tiempo es el de la consulta más lenta más, a lo sumo,
+    // una dependencia encadenada.
+    const ahora = new Date()
+    const filtroEnCurso = { in: ['INICIADO', 'EN_PROCESO', 'ESPERANDO_CLIENTE', 'ESPERANDO_APROBACION'] as EstadoTramite[] }
+    const filtroTramitePorJurisdiccion = jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
+    const conceptosIngreso = { in: CONCEPTOS_COMISIONABLES as ConceptoPago[] }
 
-    // Trámites por mes (últimos 6 meses) - queries paralelas con count
-    const seismesesAtras = startOfMonth(subMonths(new Date(), 5))
-    const mesesPromises = []
-    for (let i = 5; i >= 0; i--) {
-      const mes = subMonths(new Date(), i)
-      const inicio = startOfMonth(mes)
-      const fin = endOfMonth(mes)
-      mesesPromises.push(
-        prisma.tramite.count({
-          where: {
-            createdAt: { gte: inicio, lte: fin },
-            ...jurisdiccionFilter
-          }
-        }).then(count => ({ mes: mesCorto(mes), cantidad: count }))
-      )
-    }
-    const tramitesPorMes = await Promise.all(mesesPromises)
-
-    // 2. MÉTRICAS DE INGRESOS
     // Ingresos computables = lo mismo que se liquida a las partes y lo que dice
     // el reporte mensual: los movimientos de comisiones (honorarios y domicilio).
     // Antes se sumaban todos los pagos aprobados, incluidas tasas y depósitos de
     // capital que el cliente paga a terceros, y el número no coincidía.
-    const idsJurisdiccion = jurisdiccionFilter.jurisdiccion
-      ? (await prisma.tramite.findMany({ where: jurisdiccionFilter, select: { id: true } })).map((t) => t.id)
-      : null
+    // MovimientoComision no tiene relación con Tramite: con jurisdicción se
+    // filtra por los ids (la única consulta de la que dependen los movimientos).
+    const idsJurisdiccionP = jurisdiccionFilter.jurisdiccion
+      ? prisma.tramite.findMany({ where: jurisdiccionFilter, select: { id: true } }).then(ts => ts.map(t => t.id))
+      : Promise.resolve(null)
     // Los movimientos se fechan a la medianoche UTC del día calendario: se
     // compara contra el día calendario del inicio del rango.
-    const filtroMovimientos = (desde: Date, hasta: Date) => ({
-      excluido: false,
-      fecha: { gte: new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), desde.getDate())), lte: hasta },
-      ...(idsJurisdiccion ? { tramiteId: { in: idsJurisdiccion } } : {}),
-    })
-    const conceptosIngreso = { in: CONCEPTOS_COMISIONABLES as ConceptoPago[] }
+    const sumaMovimientos = (desde: Date, hasta: Date) =>
+      idsJurisdiccionP.then(ids =>
+        prisma.movimientoComision.aggregate({
+          where: {
+            excluido: false,
+            fecha: { gte: new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), desde.getDate())), lte: hasta },
+            ...(ids ? { tramiteId: { in: ids } } : {}),
+          },
+          _sum: { monto: true },
+          _count: true
+        })
+      )
 
-    const pagosPeriodo = await prisma.movimientoComision.aggregate({
-      where: filtroMovimientos(fechaInicio, fechaFin),
-      _sum: { monto: true },
-      _count: true
+    // Últimos 6 meses (para los gráficos por mes)
+    const ultimosSeisMeses = [5, 4, 3, 2, 1, 0].map(i => {
+      const mes = subMonths(ahora, i)
+      return { mes, inicio: startOfMonth(mes), fin: endOfMonth(mes) }
     })
 
-    const pagosPendientes = await prisma.pago.aggregate({
+    const cincoDiasAtras = new Date()
+    cincoDiasAtras.setDate(cincoDiasAtras.getDate() - 5)
+
+    const mesAnteriorInicio = startOfMonth(subMonths(ahora, 1))
+    const mesAnteriorFin = endOfMonth(subMonths(ahora, 1))
+
+    // 10. TIEMPO PROMEDIO POR ETAPA: los trámites completados y, encadenado,
+    // la primera vez que cada uno pasó a EN_PROCESO (= formulario validado).
+    const tiemposP = prisma.tramite.findMany({
       where: {
-        estado: 'PENDIENTE',
-        concepto: conceptosIngreso,
-        tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
+        estadoGeneral: 'COMPLETADO',
+        sociedadInscripta: true,
+        fechaSociedadInscripta: { not: null },
+        ...jurisdiccionFilter
       },
-      _sum: { monto: true },
-      _count: true
-    })
-
-    // Ingresos por plan (estimado basado en concepto del pago)
-    const ingresosPorPlan = await prisma.pago.groupBy({
-      by: ['concepto'],
-      where: {
-        estado: 'APROBADO',
-        concepto: conceptosIngreso,
-        fechaPago: { gte: fechaInicio, lte: fechaFin },
-        tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
+      select: {
+        id: true,
+        fechaFormularioCompleto: true,
+        fechaDenominacionReservada: true,
+        fechaCapitalDepositado: true,
+        fechaDocumentosFirmados: true,
+        fechaSociedadInscripta: true
       },
-      _sum: { monto: true },
-      _count: true
-    })
+      take: 50, // Últimos 50 trámites completados
+      orderBy: { fechaSociedadInscripta: 'desc' }
+    }).then(async tramites => ({
+      tramites,
+      historiales: tramites.length > 0
+        ? await prisma.historialEstado.findMany({
+            where: {
+              tramiteId: { in: tramites.map(t => t.id) },
+              estadoNuevo: 'EN_PROCESO'
+            },
+            select: { tramiteId: true, createdAt: true },
+            orderBy: { createdAt: 'asc' }
+          })
+        : []
+    }))
 
-    // 3. MÉTRICAS DE CLIENTES
+    // Embudo: leads que nunca abrieron cuenta (sin usuario vinculado ni uno
+    // con su email). Encadenado: primero los leads, después los emails.
+    const leadsSinCuentaP = prisma.lead.findMany({ where: { userId: null }, select: { email: true } })
+      .then(async leadsSinUsuario => {
+        const emailsLeads = leadsSinUsuario.map(l => l.email?.toLowerCase()).filter((e): e is string => !!e)
+        const emailsConCuenta = emailsLeads.length > 0
+          ? new Set(
+              (await prisma.user.findMany({
+                where: { email: { in: emailsLeads, mode: 'insensitive' } },
+                select: { email: true }
+              })).map(u => u.email.toLowerCase())
+            )
+          : new Set<string>()
+        return leadsSinUsuario.filter(l => !l.email || !emailsConCuenta.has(l.email.toLowerCase())).length
+      })
+
     const [
+      // 1. Trámites
+      tramitesTotales,
+      tramitesEnCurso,
+      tramitesCompletados,
+      tramitesCancelados,
+      tramitesPeriodo,
+      tramitesPorMes,
+      tramitesPorJurisdiccion,
+      // 2. Ingresos
+      pagosPeriodo,
+      pagosPendientes,
+      ingresosPorPlan,
+      ingresosPorMes,
+      // 3. Clientes
       usuariosRegistrados,
       usuariosActivos,
-      usuariosNuevos
-    ] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.count({
-        where: {
-          tramites: {
-            some: {
-              estadoGeneral: { in: ['INICIADO', 'EN_PROCESO', 'ESPERANDO_CLIENTE', 'ESPERANDO_APROBACION'] }
-            }
-          }
-        }
-      }),
-      prisma.user.count({
-        where: {
-          createdAt: { gte: fechaInicio, lte: fechaFin }
-        }
-      })
-    ])
-
-    // Por jurisdicción
-    const tramitesPorJurisdiccion = await prisma.tramite.groupBy({
-      by: ['jurisdiccion'],
-      _count: true
-    })
-
-    // 4. MÉTRICAS DE DOCUMENTOS
-    const [
+      usuariosNuevos,
+      usuariosConTramite,
+      usuariosConSociedad,
+      // 4. Documentos
       documentosTotales,
       documentosAprobados,
       documentosRechazados,
-      documentosPendientes
+      documentosPendientes,
+      documentosRechazadosPorTipo,
+      // 5. Alertas
+      tramitesEstancados,
+      // 6. Últimos trámites
+      ultimosTramites,
+      // 9. Comparativas vs mes anterior
+      tramitesMesAnterior,
+      ingresosMesAnterior,
+      clientesMesAnterior,
+      // 10. Tiempos
+      tiempos,
+      // Embudo
+      leadsConsulta,
+      leadsBorrador,
+      perdidosPorMotivo,
+      leadsSinCuenta,
     ] = await Promise.all([
+      prisma.tramite.count({ where: jurisdiccionFilter }),
+      prisma.tramite.count({ where: { estadoGeneral: filtroEnCurso, ...jurisdiccionFilter } }),
+      prisma.tramite.count({ where: { estadoGeneral: 'COMPLETADO', ...jurisdiccionFilter } }),
+      prisma.tramite.count({ where: { estadoGeneral: 'CANCELADO', ...jurisdiccionFilter } }),
+      prisma.tramite.count({ where: { createdAt: { gte: fechaInicio, lte: fechaFin }, ...jurisdiccionFilter } }),
+      Promise.all(ultimosSeisMeses.map(({ mes, inicio, fin }) =>
+        prisma.tramite.count({ where: { createdAt: { gte: inicio, lte: fin }, ...jurisdiccionFilter } })
+          .then(cantidad => ({ mes: mesCorto(mes), cantidad }))
+      )),
+      prisma.tramite.groupBy({ by: ['jurisdiccion'], _count: true }),
+
+      sumaMovimientos(fechaInicio, fechaFin),
+      prisma.pago.aggregate({
+        where: { estado: 'PENDIENTE', concepto: conceptosIngreso, tramite: filtroTramitePorJurisdiccion },
+        _sum: { monto: true },
+        _count: true
+      }),
+      // Ingresos por plan (estimado basado en concepto del pago)
+      prisma.pago.groupBy({
+        by: ['concepto'],
+        where: {
+          estado: 'APROBADO',
+          concepto: conceptosIngreso,
+          fechaPago: { gte: fechaInicio, lte: fechaFin },
+          tramite: filtroTramitePorJurisdiccion
+        },
+        _sum: { monto: true },
+        _count: true
+      }),
+      Promise.all(ultimosSeisMeses.map(({ mes, inicio, fin }) =>
+        sumaMovimientos(inicio, fin).then(r => ({ mes: mesCorto(mes), ingresos: r._sum.monto || 0 }))
+      )),
+
+      prisma.user.count(),
+      prisma.user.count({ where: { tramites: { some: { estadoGeneral: filtroEnCurso } } } }),
+      prisma.user.count({ where: { createdAt: { gte: fechaInicio, lte: fechaFin } } }),
+      prisma.user.count({ where: { tramites: { some: {} } } }),
+      prisma.user.count({ where: { tramites: { some: { estadoGeneral: 'COMPLETADO' } } } }),
+
       prisma.documento.count(),
       prisma.documento.count({ where: { estado: 'APROBADO' } }),
       prisma.documento.count({ where: { estado: 'RECHAZADO' } }),
       // El borrador y los papeles para firmar se crean PENDIENTE pero los
       // revisa el cliente: no son trabajo pendiente nuestro.
-      prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR })
-    ])
+      prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
+      // Documentos más rechazados por tipo
+      prisma.documento.groupBy({
+        by: ['tipo'],
+        where: { estado: 'RECHAZADO' },
+        _count: true,
+        orderBy: { _count: { tipo: 'desc' } },
+        take: 5
+      }),
 
-    // Documentos más rechazados por tipo
-    const documentosRechazadosPorTipo = await prisma.documento.groupBy({
-      by: ['tipo'],
-      where: { estado: 'RECHAZADO' },
-      _count: true,
-      orderBy: { _count: { tipo: 'desc' } },
-      take: 5
-    })
+      // Trámites estancados (más de 5 días sin actualizar)
+      prisma.tramite.count({
+        where: {
+          estadoGeneral: { in: ['EN_PROCESO', 'ESPERANDO_CLIENTE', 'ESPERANDO_APROBACION'] },
+          updatedAt: { lt: cincoDiasAtras },
+          ...jurisdiccionFilter
+        }
+      }),
+
+      // Solo los campos que muestra la tabla
+      prisma.tramite.findMany({
+        where: jurisdiccionFilter,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          denominacionSocial1: true,
+          estadoGeneral: true,
+          jurisdiccion: true,
+          createdAt: true,
+          user: { select: { name: true, email: true } }
+        }
+      }),
+
+      prisma.tramite.count({ where: { createdAt: { gte: mesAnteriorInicio, lte: mesAnteriorFin }, ...jurisdiccionFilter } }),
+      sumaMovimientos(mesAnteriorInicio, mesAnteriorFin),
+      prisma.user.count({ where: { createdAt: { gte: mesAnteriorInicio, lte: mesAnteriorFin } } }),
+
+      tiemposP,
+
+      prisma.lead.count(),
+      prisma.tramite.count({ where: { formularioCompleto: false } }),
+      prisma.lead.groupBy({
+        by: ['motivoPerdida'],
+        where: { estado: 'DESCARTADO', motivoPerdida: { not: null } },
+        _count: { _all: true },
+      }),
+      leadsSinCuentaP,
+    ])
 
     // 5. ALERTAS
     const alertas = []
-
-    // Trámites estancados (más de 5 días sin actualizar)
-    const cincoDiasAtras = new Date()
-    cincoDiasAtras.setDate(cincoDiasAtras.getDate() - 5)
-    
-    const tramitesEstancados = await prisma.tramite.count({
-      where: {
-        estadoGeneral: { in: ['EN_PROCESO', 'ESPERANDO_CLIENTE', 'ESPERANDO_APROBACION'] },
-        updatedAt: { lt: cincoDiasAtras },
-        ...jurisdiccionFilter
-      }
-    })
 
     if (tramitesEstancados > 0) {
       alertas.push({
@@ -260,28 +332,7 @@ export async function GET(request: Request) {
       })
     }
 
-    // 6. ÚLTIMOS TRÁMITES
-    const ultimosTramites = await prisma.tramite.findMany({
-      where: jurisdiccionFilter,
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        }
-      }
-    })
-
     // 7. TASAS DE CONVERSIÓN
-    const usuariosConTramite = await prisma.user.count({
-      where: {
-        tramites: { some: {} }
-      }
-    })
-
     const tasaRegistroATramite = usuariosRegistrados > 0 
       ? (usuariosConTramite / usuariosRegistrados) * 100 
       : 0
@@ -289,47 +340,6 @@ export async function GET(request: Request) {
     const tasaTramiteACompletado = tramitesTotales > 0 
       ? (tramitesCompletados / tramitesTotales) * 100 
       : 0
-
-    // 8. INGRESOS POR MES (últimos 6 meses) - queries paralelas con aggregate
-    const ingresosPromises = []
-    for (let i = 5; i >= 0; i--) {
-      const mes = subMonths(new Date(), i)
-      const inicio = startOfMonth(mes)
-      const fin = endOfMonth(mes)
-      ingresosPromises.push(
-        prisma.movimientoComision.aggregate({
-          where: filtroMovimientos(inicio, fin),
-          _sum: { monto: true }
-        }).then(result => ({ mes: mesCorto(mes), ingresos: result._sum.monto || 0 }))
-      )
-    }
-    const ingresosPorMes = await Promise.all(ingresosPromises)
-
-    // 9. COMPARATIVAS VS MES ANTERIOR
-    const mesAnteriorInicio = startOfMonth(subMonths(new Date(), 1))
-    const mesAnteriorFin = endOfMonth(subMonths(new Date(), 1))
-
-    const [
-      tramitesMesAnterior,
-      ingresosMesAnterior,
-      clientesMesAnterior
-    ] = await Promise.all([
-      prisma.tramite.count({
-        where: {
-          createdAt: { gte: mesAnteriorInicio, lte: mesAnteriorFin },
-          ...jurisdiccionFilter
-        }
-      }),
-      prisma.movimientoComision.aggregate({
-        where: filtroMovimientos(mesAnteriorInicio, mesAnteriorFin),
-        _sum: { monto: true }
-      }),
-      prisma.user.count({
-        where: {
-          createdAt: { gte: mesAnteriorInicio, lte: mesAnteriorFin }
-        }
-      })
-    ])
 
     const calcularCambio = (actual: number, anterior: number) => {
       if (anterior === 0) return actual > 0 ? 100 : 0
@@ -361,25 +371,8 @@ export async function GET(request: Request) {
     // Cada etapa se mide con las fechas que el admin marca en el trámite. Antes
     // los días por etapa estaban fijos en el código (1,5 / 1 / 1,5 / 1) y se
     // mostraban como si fueran datos.
-    const tramitesCompletadosConFechas = await prisma.tramite.findMany({
-      where: {
-        estadoGeneral: 'COMPLETADO',
-        sociedadInscripta: true,
-        fechaSociedadInscripta: { not: null },
-        ...jurisdiccionFilter
-      },
-      select: {
-        id: true,
-        fechaFormularioCompleto: true,
-        fechaDenominacionReservada: true,
-        fechaCapitalDepositado: true,
-        fechaDocumentosFirmados: true,
-        fechaSociedadInscripta: true
-      },
-      take: 50, // Últimos 50 trámites completados
-      orderBy: { fechaSociedadInscripta: 'desc' }
-    })
-
+    const tramitesCompletadosConFechas = tiempos.tramites
+    const historialesValidacion = tiempos.historiales
     const DIA_MS = 1000 * 60 * 60 * 24
     // Días entre dos hitos. Si falta una fecha o quedaron cargadas al revés
     // (pasa con trámites viejos cargados a mano), ese trámite no cuenta.
@@ -398,17 +391,6 @@ export async function GET(request: Request) {
         : null
     }
 
-    // Primera vez que el trámite pasó a EN_PROCESO = formulario validado.
-    const historialesValidacion = tramitesCompletadosConFechas.length > 0
-      ? await prisma.historialEstado.findMany({
-          where: {
-            tramiteId: { in: tramitesCompletadosConFechas.map(t => t.id) },
-            estadoNuevo: 'EN_PROCESO'
-          },
-          select: { tramiteId: true, createdAt: true },
-          orderBy: { createdAt: 'asc' }
-        })
-      : []
     const fechasValidacion = new Map<string, Date>()
     historialesValidacion.forEach(h => {
       if (!fechasValidacion.has(h.tramiteId)) fechasValidacion.set(h.tramiteId, h.createdAt)
@@ -428,35 +410,6 @@ export async function GET(request: Request) {
       },
       muestra: ts.length
     }
-
-    // Respuesta final
-    const [leadsConsulta, leadsBorrador, perdidosPorMotivo, leadsSinUsuario, usuariosConSociedad] = await Promise.all([
-      prisma.lead.count(),
-      prisma.tramite.count({ where: { formularioCompleto: false } }),
-      prisma.lead.groupBy({
-        by: ['motivoPerdida'],
-        where: { estado: 'DESCARTADO', motivoPerdida: { not: null } },
-        _count: { _all: true },
-      }),
-      prisma.lead.findMany({ where: { userId: null }, select: { email: true } }),
-      prisma.user.count({ where: { tramites: { some: { estadoGeneral: 'COMPLETADO' } } } }),
-    ])
-
-    // Embudo de personas, cada paso incluido en el anterior. «Interesados» eran
-    // los leads más los borradores, que son poblaciones que se pisan con los
-    // registrados (un borrador ya es un usuario) y daban menos interesados que
-    // registrados. Ahora: todos los registrados más los leads que nunca
-    // abrieron cuenta (sin usuario vinculado ni uno con su email).
-    const emailsLeads = leadsSinUsuario.map(l => l.email?.toLowerCase()).filter((e): e is string => !!e)
-    const emailsConCuenta = emailsLeads.length > 0
-      ? new Set(
-          (await prisma.user.findMany({
-            where: { email: { in: emailsLeads, mode: 'insensitive' } },
-            select: { email: true }
-          })).map(u => u.email.toLowerCase())
-        )
-      : new Set<string>()
-    const leadsSinCuenta = leadsSinUsuario.filter(l => !l.email || !emailsConCuenta.has(l.email.toLowerCase())).length
 
     return NextResponse.json({
       tramites: {
