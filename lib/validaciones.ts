@@ -81,6 +81,49 @@ export function validarTelefono(valor: string | null | undefined): string | null
   return null
 }
 
+// ─── Cuenta de usuario (registro, perfil, contraseña) ──────────────────────
+// Las mismas reglas del formulario, repetidas en el servidor para que no se
+// puedan saltear con un request directo.
+
+export const EMAIL_MAX_CARACTERES = 254
+export const PASSWORD_MIN_CARACTERES = 6
+// bcrypt sólo mira los primeros 72 bytes: más largo no suma seguridad.
+export const PASSWORD_MAX_CARACTERES = 72
+export const NOMBRE_USUARIO_MAX_CARACTERES = 100
+
+/** El email como se guarda y se busca en la base: sin espacios y en minúsculas. */
+export function normalizarEmail(valor: string | null | undefined): string {
+  return String(valor ?? '').trim().toLowerCase()
+}
+
+/** validarEmail más el largo máximo, para los emails de cuenta. */
+export function validarEmailCuenta(valor: string | null | undefined): string | null {
+  const error = validarEmail(valor)
+  if (error) return error
+  if (normalizarEmail(valor).length > EMAIL_MAX_CARACTERES) return 'El email es demasiado largo'
+  return null
+}
+
+export function validarPassword(valor: unknown): string | null {
+  if (typeof valor !== 'string' || !valor) return 'La contraseña es obligatoria'
+  if (valor.length < PASSWORD_MIN_CARACTERES) {
+    return `La contraseña debe tener al menos ${PASSWORD_MIN_CARACTERES} caracteres`
+  }
+  if (valor.length > PASSWORD_MAX_CARACTERES) {
+    return `La contraseña puede tener hasta ${PASSWORD_MAX_CARACTERES} caracteres`
+  }
+  return null
+}
+
+export function validarNombreUsuario(valor: unknown): string | null {
+  const nombre = typeof valor === 'string' ? valor.trim() : ''
+  if (nombre.length < 2) return 'Ingresá tu nombre'
+  if (nombre.length > NOMBRE_USUARIO_MAX_CARACTERES) {
+    return `El nombre puede tener hasta ${NOMBRE_USUARIO_MAX_CARACTERES} caracteres`
+  }
+  return null
+}
+
 export const DENOMINACION_MIN_CARACTERES = 3
 
 export function validarDenominacion(valor: string | null | undefined): string | null {

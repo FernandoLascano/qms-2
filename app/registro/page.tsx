@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import { validarPassword } from '@/lib/validaciones'
 const GoogleSignInButton = dynamic(
   () => import('@/components/auth/google-sign-in-button').then((m) => m.GoogleSignInButton),
   { ssr: false, loading: () => <div className="h-12 w-full rounded-control bg-surface-3/90 animate-pulse" aria-hidden /> }
@@ -61,8 +62,10 @@ export default function RegistroPage() {
       return
     }
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+    // Las mismas reglas que valida el servidor
+    const errorPassword = validarPassword(formData.password)
+    if (errorPassword) {
+      setError(errorPassword)
       return
     }
 

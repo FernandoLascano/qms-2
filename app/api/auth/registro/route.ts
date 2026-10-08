@@ -7,19 +7,34 @@ import { verifyTurnstileToken } from "@/lib/turnstile"
 import { buildEmailVerificationLink, createEmailVerificationToken } from "@/lib/email-verification"
 import { enviarEmailVerificacionCuenta } from "@/lib/emails/send"
 import { capturarLead } from '@/lib/leads/capturar'
+import { normalizarEmail, validarEmailCuenta, validarNombreUsuario, validarPassword, validarTelefono } from '@/lib/validaciones'
 
 export async function POST(request: Request) {
   try {
     const rateLimitResponse = await rateLimit(request, 'auth', 5, '1 m')
     if (rateLimitResponse) return rateLimitResponse
     const body = await request.json()
-    const { email, password, name, phone, turnstileToken, website } = body
+    const { password, turnstileToken, website } = body
 
-    if (!email || !password || !name) {
+    if (!body?.email || !password || !body?.name) {
       return NextResponse.json(
         { error: "Faltan datos requeridos" },
         { status: 400 }
       )
+    }
+
+    // Mismas reglas que el formulario, del lado servidor (un request directo
+    // no puede crear una cuenta con contraseña de 1 carácter o email inválido).
+    const email = normalizarEmail(body.email)
+    const name = typeof body.name === 'string' ? body.name.trim() : ''
+    const phone = typeof body.phone === 'string' && body.phone.trim() ? body.phone.trim() : null
+    const errorValidacion =
+      validarEmailCuenta(email) ||
+      validarPassword(password) ||
+      validarNombreUsuario(name) ||
+      (phone ? validarTelefono(phone) : null)
+    if (errorValidacion) {
+      return NextResponse.json({ error: errorValidacion }, { status: 400 })
     }
 
     // Honeypot anti-bot: si viene con contenido, es spam.
@@ -50,7 +65,7 @@ export async function POST(request: Request) {
 
     // Verificar si el usuario ya existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.trim().toLowerCase() }
+      where: { email }
     })
 
     if (existingUser) {
@@ -77,10 +92,10 @@ export async function POST(request: Request) {
     // Crear usuario
     const user = await prisma.user.create({
       data: {
-        email: email.trim().toLowerCase(),
+        email,
         password: hashedPassword,
         name,
-        phone: phone || null,
+        phone,
         rol: "CLIENTE",
         partnerId,
         referredAt: partnerId ? new Date() : null,
