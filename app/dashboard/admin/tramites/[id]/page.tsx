@@ -20,6 +20,7 @@ import {
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getObjetoSocialTexto } from '@/lib/constants'
+import { esObjetoPreAprobado } from '@/lib/objeto-social'
 import { esDocumentoDeQMS } from '@/lib/documentos'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 
@@ -554,10 +555,8 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
 
 function ObjetoSocial({ objetoSocial }: { objetoSocial: string | null }) {
   const texto = objetoSocial || ''
-  const preAprobado =
-    texto === 'PREAPROBADO' ||
-    texto.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
-    texto.includes('1. Construcción de todo tipo de obras')
+  // Mismo criterio que el resto de la app (lib/objeto-social.ts)
+  const preAprobado = esObjetoPreAprobado(texto)
 
   return (
     <div className="space-y-2">

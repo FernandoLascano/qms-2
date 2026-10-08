@@ -1,5 +1,7 @@
 // Constantes compartidas de la aplicación
 
+import { esObjetoPreAprobado } from '@/lib/objeto-social'
+
 export const OBJETO_SOCIAL_PREAPROBADO = `La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades:
 
 1. Construcción de todo tipo de obras, públicas o privadas, edificios, viviendas, locales comerciales y plantas industriales; realizar refacciones, remodelaciones, instalaciones, trabajos de albañilería y/o cualquier trabajo de la construcción.
@@ -30,20 +32,13 @@ export const OBJETO_SOCIAL_PREAPROBADO = `La sociedad tiene por objeto realizar 
 
 14. Actuar como fiduciante, fiduciaria, beneficiaria, fideicomisaria, por cuenta propia o por cuenta de terceros y/o asociada a terceros, en todo tipo de emprendimientos.`
 
-// Función helper para obtener el texto del objeto social
+// Función helper para obtener el texto del objeto social. Si es el
+// pre-aprobado (el marcador o el texto guardado, en cualquiera de sus formatos)
+// devuelve la versión de arriba, que es el mismo texto de lib/objeto-social.ts
+// separado en renglones para leerlo mejor.
 export function getObjetoSocialTexto(objetoSocial: string | null | undefined): string {
   if (!objetoSocial) return 'No especificado'
-
-  // Si es el valor "PREAPROBADO", devolver el texto completo
-  if (objetoSocial === 'PREAPROBADO') {
-    return OBJETO_SOCIAL_PREAPROBADO
-  }
-
-  // Si ya contiene el texto del objeto social pre-aprobado (de trámites guardados anteriormente)
-  if (objetoSocial.includes('La sociedad tiene por objeto realizar')) {
-    return objetoSocial
-  }
-
+  if (esObjetoPreAprobado(objetoSocial)) return OBJETO_SOCIAL_PREAPROBADO
   // Si es personalizado, devolver el texto como está
   return objetoSocial
 }
