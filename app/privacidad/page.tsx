@@ -15,7 +15,7 @@ export default function PrivacidadPage() {
       <article className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Política de Privacidad</h1>
-          <p className="text-gray-500 mb-12">Última actualización: {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-500 mb-12">Última actualización: 16 de agosto de 2026</p>
 
           <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
             <section>
