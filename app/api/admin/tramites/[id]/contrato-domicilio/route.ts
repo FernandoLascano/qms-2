@@ -6,6 +6,7 @@ import { conversorPdfConfigurado, htmlAPdf } from '@/lib/pdf'
 import {
   fechaDDMMAAAA,
   contratoDomicilioHtml,
+  domicilioDelServicio,
   generarContratoDomicilio,
   PIE_CONTRATO_HTML,
   precioYCondiciones,
@@ -128,6 +129,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
   // Lo que sale del trámite y de la configuración, sin versiones anteriores.
   const datosDelTramite: DatosContrato = {
+    domicilio_servicio: domicilioDelServicio(domicilio?.direccion),
     sociedad_denominacion: sinTipoSocietario(tramite.denominacionAprobada || tramite.denominacionSocial1 || ''),
     sociedad_cuit: tramite.cuit || '',
     sociedad_matricula: tramite.matricula || '',
@@ -166,9 +168,6 @@ export async function GET(_request: Request, { params }: RouteParams) {
     })),
     personas,
     representanteClave: representante?.clave ?? null,
-    // La dirección del contrato está fija en la plantilla (Pasaje Chagas 6043):
-    // si el domicilio del trámite es otro, el formulario lo avisa.
-    direccionDomicilio: domicilio?.direccion ?? null,
     pdfDisponible: conversorPdfConfigurado(),
   })
 }

@@ -4,6 +4,15 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
+import type { ConceptoPago } from '@prisma/client'
+
+/** "oct" → "Oct": etiqueta corta del mes, en castellano. */
+const mesCorto = (d: Date) => {
+  const m = format(d, 'MMM', { locale: es }).replace('.', '')
+  return m.charAt(0).toUpperCase() + m.slice(1)
+}
 
 export async function GET(request: Request) {
   try {
@@ -87,18 +96,30 @@ export async function GET(request: Request) {
             createdAt: { gte: inicio, lte: fin },
             ...jurisdiccionFilter
           }
-        }).then(count => ({ mes: format(mes, 'MMM'), cantidad: count }))
+        }).then(count => ({ mes: mesCorto(mes), cantidad: count }))
       )
     }
     const tramitesPorMes = await Promise.all(mesesPromises)
 
     // 2. MÉTRICAS DE INGRESOS
-    const pagosPeriodo = await prisma.pago.aggregate({
-      where: {
-        estado: 'APROBADO',
-        fechaPago: { gte: fechaInicio, lte: fechaFin },
-        tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
-      },
+    // Ingresos computables = lo mismo que se liquida a las partes y lo que dice
+    // el reporte mensual: los movimientos de comisiones (honorarios y domicilio).
+    // Antes se sumaban todos los pagos aprobados, incluidas tasas y depósitos de
+    // capital que el cliente paga a terceros, y el número no coincidía.
+    const idsJurisdiccion = jurisdiccionFilter.jurisdiccion
+      ? (await prisma.tramite.findMany({ where: jurisdiccionFilter, select: { id: true } })).map((t) => t.id)
+      : null
+    // Los movimientos se fechan a la medianoche UTC del día calendario: se
+    // compara contra el día calendario del inicio del rango.
+    const filtroMovimientos = (desde: Date, hasta: Date) => ({
+      excluido: false,
+      fecha: { gte: new Date(Date.UTC(desde.getFullYear(), desde.getMonth(), desde.getDate())), lte: hasta },
+      ...(idsJurisdiccion ? { tramiteId: { in: idsJurisdiccion } } : {}),
+    })
+    const conceptosIngreso = { in: CONCEPTOS_COMISIONABLES as ConceptoPago[] }
+
+    const pagosPeriodo = await prisma.movimientoComision.aggregate({
+      where: filtroMovimientos(fechaInicio, fechaFin),
       _sum: { monto: true },
       _count: true
     })
@@ -106,6 +127,7 @@ export async function GET(request: Request) {
     const pagosPendientes = await prisma.pago.aggregate({
       where: {
         estado: 'PENDIENTE',
+        concepto: conceptosIngreso,
         tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
       },
       _sum: { monto: true },
@@ -117,6 +139,7 @@ export async function GET(request: Request) {
       by: ['concepto'],
       where: {
         estado: 'APROBADO',
+        concepto: conceptosIngreso,
         fechaPago: { gte: fechaInicio, lte: fechaFin },
         tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
       },
@@ -272,14 +295,10 @@ export async function GET(request: Request) {
       const inicio = startOfMonth(mes)
       const fin = endOfMonth(mes)
       ingresosPromises.push(
-        prisma.pago.aggregate({
-          where: {
-            estado: 'APROBADO',
-            fechaPago: { gte: inicio, lte: fin },
-            tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
-          },
+        prisma.movimientoComision.aggregate({
+          where: filtroMovimientos(inicio, fin),
           _sum: { monto: true }
-        }).then(result => ({ mes: format(mes, 'MMM'), ingresos: result._sum.monto || 0 }))
+        }).then(result => ({ mes: mesCorto(mes), ingresos: result._sum.monto || 0 }))
       )
     }
     const ingresosPorMes = await Promise.all(ingresosPromises)
@@ -299,12 +318,8 @@ export async function GET(request: Request) {
           ...jurisdiccionFilter
         }
       }),
-      prisma.pago.aggregate({
-        where: {
-          estado: 'APROBADO',
-          fechaPago: { gte: mesAnteriorInicio, lte: mesAnteriorFin },
-          tramite: jurisdiccionFilter.jurisdiccion ? { jurisdiccion: jurisdiccionFilter.jurisdiccion } : undefined
-        },
+      prisma.movimientoComision.aggregate({
+        where: filtroMovimientos(mesAnteriorInicio, mesAnteriorFin),
         _sum: { monto: true }
       }),
       prisma.user.count({
