@@ -42,6 +42,27 @@ const STATUS_TEXT: Record<ServiceStatus, string> = {
   unconfigured: 'text-ink-3',
 }
 
+/**
+ * Un solo pedido por vez. En desarrollo React monta los efectos dos veces y
+ * salían dos chequeos completos por cada carga de Hoy (cada uno de 3-4 s); si
+ * ya hay uno en camino, el segundo espera ese mismo resultado.
+ */
+let pedidoEnCurso: Promise<HealthResponse> | null = null
+
+function pedirEstado(): Promise<HealthResponse> {
+  if (!pedidoEnCurso) {
+    pedidoEnCurso = fetch('/api/admin/health', { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return (await res.json()) as HealthResponse
+      })
+      .finally(() => {
+        pedidoEnCurso = null
+      })
+  }
+  return pedidoEnCurso
+}
+
 export function ServiceStatus() {
   const [data, setData] = useState<HealthResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -53,9 +74,7 @@ export function ServiceStatus() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/admin/health', { cache: 'no-store' })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json: HealthResponse = await res.json()
+      const json = await pedirEstado()
       setData(json)
       lastFetch.current = Date.now()
       setSecondsAgo(0)
@@ -67,7 +86,12 @@ export function ServiceStatus() {
   }, [])
 
   useEffect(() => {
-    load()
+    // El chequeo tarda segundos (SMTP, GA4, MercadoPago…): arranca cuando el
+    // navegador terminó de pintar el resto de Hoy, no compitiendo con él.
+    const arranque =
+      typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback(() => load(), { timeout: 1500 })
+        : window.setTimeout(() => load(), 200)
     // Solo refresca automáticamente si la pestaña está visible.
     const refresh = setInterval(() => {
       if (document.visibilityState === 'visible') load()
@@ -76,6 +100,8 @@ export function ServiceStatus() {
       if (lastFetch.current) setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
     }, 1000)
     return () => {
+      if (typeof window.cancelIdleCallback === 'function') window.cancelIdleCallback(arranque)
+      else window.clearTimeout(arranque)
       clearInterval(refresh)
       clearInterval(tick)
     }

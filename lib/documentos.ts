@@ -16,7 +16,14 @@ export function esDocumentoDeQMS(tipo: string | null | undefined): boolean {
 
 // Filtro Prisma de los documentos que el admin realmente tiene que aprobar.
 // El OR con `tipo: null` es necesario porque `notIn` deja afuera los NULL.
+// Sólo cuentan los trámites vivos: si la sociedad ya está inscripta o el
+// trámite se completó o canceló, un documento que quedó en «Pendiente» ya no
+// es trabajo de nadie (y si no, el contador de Hoy nunca baja a cero).
 export const WHERE_DOCUMENTOS_POR_APROBAR: Prisma.DocumentoWhereInput = {
   estado: 'PENDIENTE',
   OR: [{ tipo: null }, { tipo: { notIn: TIPOS_DOCUMENTO_DE_QMS } }],
+  tramite: {
+    sociedadInscripta: false,
+    estadoGeneral: { notIn: ['COMPLETADO', 'CANCELADO'] },
+  },
 }

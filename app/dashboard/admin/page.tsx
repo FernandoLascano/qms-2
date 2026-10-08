@@ -89,8 +89,8 @@ async function AdminDashboardPage() {
       completados,
       enProceso,
       esperandoCliente,
-      totalUsuarios,
       documentosPendientes,
+      tramitesConDocumentos,
       pendientesValidacion,
       tramitesRecientes,
       totalBorradores,
@@ -108,8 +108,9 @@ async function AdminDashboardPage() {
       prisma.tramite.count({ where: { sociedadInscripta: true } }),
       prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
       prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
-      prisma.user.count(),
       prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
+      // La lista de Trámites cuenta trámites, no documentos: lo decimos los dos.
+      prisma.tramite.count({ where: { documentos: { some: WHERE_DOCUMENTOS_POR_APROBAR } } }),
       prisma.tramite.count({
         where: { formularioCompleto: true, estadoValidacion: 'PENDIENTE_VALIDACION' },
       }),
@@ -173,6 +174,9 @@ async function AdminDashboardPage() {
   const serieTramites = porSemana(fechasTramites.map((t) => t.createdAt))
   const serieUsuarios = porSemana(fechasUsuarios.map((u) => u.createdAt))
   const serieInscriptas = porSemana(fechasInscripciones.map((t) => t.fechaInscripcion))
+  // Las tarjetas dicen «últimas 12 semanas»: el número es el de la curva y el
+  // del %. Los totales históricos ya están en «Trámites por estado» y el embudo.
+  const suma = (serie: number[]) => serie.reduce((a, b) => a + b, 0)
 
   /**
    * Bandeja de trabajo: reemplaza los dos banners condicionales y las ocho
@@ -190,7 +194,9 @@ async function AdminDashboardPage() {
     {
       icono: FileText,
       cantidad: documentosPendientes,
-      titulo: 'Aprobar documentos',
+      titulo:
+        `${documentosPendientes === 1 ? 'Documento' : 'Documentos'} por aprobar` +
+        (tramitesConDocumentos > 1 ? ` en ${tramitesConDocumentos} trámites` : ''),
       href: '/dashboard/admin/tramites?filter=documentos-pendientes',
       urgente: true,
     },
@@ -396,7 +402,7 @@ async function AdminDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
             <MetricaTendencia
               label="Trámites nuevos"
-              valor={totalTramites}
+              valor={suma(serieTramites)}
               serie={serieTramites}
               tono="primary"
               href="/dashboard/admin/tramites"
@@ -404,7 +410,7 @@ async function AdminDashboardPage() {
             />
             <MetricaTendencia
               label="Sociedades inscriptas"
-              valor={completados}
+              valor={suma(serieInscriptas)}
               serie={serieInscriptas}
               tono="success"
               href="/dashboard/admin/sociedades"
@@ -412,7 +418,7 @@ async function AdminDashboardPage() {
             />
             <MetricaTendencia
               label="Usuarios registrados"
-              valor={totalUsuarios}
+              valor={suma(serieUsuarios)}
               serie={serieUsuarios}
               tono="info"
               href="/dashboard/admin/usuarios"
