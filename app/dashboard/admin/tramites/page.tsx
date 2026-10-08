@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
+import { WHERE_ENLACES_PAGADOS, WHERE_PAGOS_APROBADOS } from '@/lib/tramites/eliminacion'
 import { PageHeader } from '@/components/ui/page-header'
 import TramitesLista from '@/components/admin/TramitesLista'
 
@@ -17,7 +18,14 @@ async function AdminTramitesPage() {
     where: { formularioCompleto: true },
     include: {
       user: { select: { name: true, email: true, phone: true } },
-      _count: { select: { documentos: { where: WHERE_DOCUMENTOS_POR_APROBAR } } },
+      _count: {
+        select: {
+          documentos: { where: WHERE_DOCUMENTOS_POR_APROBAR },
+          // Para decidir si se muestra el tacho (misma regla que la API).
+          pagos: { where: WHERE_PAGOS_APROBADOS },
+          enlacesPago: { where: WHERE_ENLACES_PAGADOS },
+        },
+      },
     },
     orderBy: { updatedAt: 'desc' },
   })
