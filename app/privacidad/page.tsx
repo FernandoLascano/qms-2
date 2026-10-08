@@ -15,13 +15,13 @@ export default function PrivacidadPage() {
       <article className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Política de Privacidad</h1>
-          <p className="text-gray-500 mb-12">Última actualización: 16 de agosto de 2026</p>
+          <p className="text-gray-500 mb-12">Última actualización: 8 de octubre de 2026</p>
 
           <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Marco legal</h2>
               <p>
-                QuieroMiSAS se encuentra comprometido con la protección de los datos personales de sus usuarios. El tratamiento de datos se realiza en cumplimiento de la <strong>Ley 25.326 de Protección de Datos Personales</strong> de la República Argentina, su decreto reglamentario 1558/2001, y las disposiciones de la Dirección Nacional de Protección de Datos Personales (DPDP).
+                QuieroMiSAS se encuentra comprometido con la protección de los datos personales de sus usuarios. El tratamiento de datos se realiza en cumplimiento de la <strong>Ley 25.326 de Protección de Datos Personales</strong> de la República Argentina, su decreto reglamentario 1558/2001, y las disposiciones de la Agencia de Acceso a la Información Pública (AAIP), autoridad de aplicación en materia de protección de datos personales.
               </p>
             </section>
 
@@ -72,7 +72,7 @@ export default function PrivacidadPage() {
                 <li><strong>Oposición:</strong> oponerse al tratamiento en determinados supuestos.</li>
               </ul>
               <p className="mt-3">
-                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La DPDP es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/aaip/datospersonales/derechos" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
+                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La Agencia de Acceso a la Información Pública (AAIP) es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/aaip/datospersonales/derechos" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
               </p>
             </section>
 
