@@ -20,6 +20,8 @@ import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { trackEvent } from '@/lib/analytics'
 import {
+  ACTIVIDAD_PRINCIPAL_MIN_CARACTERES,
+  validarActividadPrincipal,
   validarCbu,
   validarCuit,
   validarDenominacion,
@@ -89,6 +91,7 @@ interface FormData {
   // Paso 3: Objeto
   objetoSocial: 'PREAPROBADO' | 'PERSONALIZADO'
   objetoPersonalizado: string
+  actividadPrincipal: string
   sinDomicilio: boolean
   provinciaResidencia: string
   domicilio: string
@@ -143,7 +146,7 @@ interface FormData {
 function tieneDatosCargados(data: FormData): boolean {
   const campos = [
     data.dni, data.telefono, data.denominacion1, data.denominacion2, data.denominacion3,
-    data.objetoPersonalizado, data.domicilio, data.cbuPrincipal, data.cbuSecundario,
+    data.objetoPersonalizado, data.actividadPrincipal, data.domicilio, data.cbuPrincipal, data.cbuSecundario,
     ...data.socios.flatMap(s => [s.nombre, s.apellido, s.dni, s.cuit]),
     ...data.administradores.flatMap(a => [a.nombre, a.apellido, a.dni, a.cuit]),
   ]
@@ -190,6 +193,7 @@ export default function NuevoTramitePage() {
     
     objetoSocial: 'PREAPROBADO',
     objetoPersonalizado: '',
+    actividadPrincipal: '',
     sinDomicilio: false,
     provinciaResidencia: '',
     domicilio: '',
@@ -350,6 +354,7 @@ export default function NuevoTramitePage() {
                 denominacion3: draft.denominacionSocial3 || '',
                 objetoSocial: esPreAprobado ? 'PREAPROBADO' : 'PERSONALIZADO',
                 objetoPersonalizado: esPreAprobado ? '' : (draft.objetoSocial || ''),
+                actividadPrincipal: datosUsuario.actividadPrincipal || '',
                 sinDomicilio: draft.domicilioLegal === 'A informar' || draft.domicilioLegal === '',
                 provinciaResidencia: datosUsuario.provinciaResidencia || '',
                 domicilio: domicilioParsed,
@@ -598,6 +603,13 @@ export default function NuevoTramitePage() {
         if (formData.objetoSocial === 'PERSONALIZADO' && !formData.objetoPersonalizado.trim()) {
           toast.error('Por favor completa el objeto social personalizado')
           return false
+        }
+        if (formData.objetoSocial === 'PREAPROBADO') {
+          const errorActividad = validarActividadPrincipal(formData.actividadPrincipal)
+          if (errorActividad) {
+            toast.error(errorActividad)
+            return false
+          }
         }
         if (!formData.sinDomicilio) {
           if (!formData.domicilio.trim() || !formData.ciudad.trim() || !formData.departamento.trim()) {
@@ -1236,6 +1248,25 @@ export default function NuevoTramitePage() {
                         </label>
                       </div>
                     </div>
+                    {formData.objetoSocial === 'PREAPROBADO' && (
+                      <div>
+                        <Label htmlFor="actividadPrincipal">¿Cuál va a ser la actividad principal de la sociedad? *</Label>
+                        <p className="mt-1 text-body-sm text-ink-2">
+                          El objeto pre-aprobado abarca muchas actividades; contanos a qué se va a dedicar la sociedad en concreto.
+                        </p>
+                        <textarea
+                          id="actividadPrincipal"
+                          value={formData.actividadPrincipal}
+                          onChange={(e) => setFormData(prev => ({ ...prev, actividadPrincipal: e.target.value }))}
+                          className="mt-2 flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                          rows={3}
+                          placeholder="Ej.: Desarrollo de software a medida y venta de licencias para comercios"
+                        />
+                        <p className={`mt-1 text-label ${formData.actividadPrincipal.trim().length >= ACTIVIDAD_PRINCIPAL_MIN_CARACTERES ? 'text-ink-3' : 'text-warning'}`}>
+                          {formData.actividadPrincipal.trim().length} / {ACTIVIDAD_PRINCIPAL_MIN_CARACTERES} caracteres mínimos
+                        </p>
+                      </div>
+                    )}
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
                         <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>

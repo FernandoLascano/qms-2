@@ -136,7 +136,25 @@ export function erroresFormatoTramite(data: any): string[] {
 
   if (siHay(data.fechaCierre)) agregar('Fecha de cierre', validarFechaCierre(data.fechaCierre))
 
+  // Con el objeto pre-aprobado igual pedimos a qué se va a dedicar la sociedad
+  if (data.objetoSocial !== 'PERSONALIZADO') {
+    agregar('Actividad principal', validarActividadPrincipal(data.actividadPrincipal))
+  }
+
   return errores
+}
+
+// Con el objeto pre-aprobado (que abarca muchas actividades) el cliente igual
+// tiene que contar a qué se va a dedicar la sociedad en concreto.
+export const ACTIVIDAD_PRINCIPAL_MIN_CARACTERES = 30
+
+export function validarActividadPrincipal(valor: string | null | undefined): string | null {
+  const texto = String(valor ?? '').trim()
+  if (!texto) return 'Contanos cuál va a ser la actividad principal de la sociedad'
+  if (texto.length < ACTIVIDAD_PRINCIPAL_MIN_CARACTERES) {
+    return `Contanos un poco más sobre la actividad principal (al menos ${ACTIVIDAD_PRINCIPAL_MIN_CARACTERES} caracteres)`
+  }
+  return null
 }
 
 // Fecha de cierre de ejercicio en formato dd-mm, con día y mes reales.

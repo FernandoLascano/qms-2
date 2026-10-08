@@ -160,7 +160,9 @@ export async function POST(request: Request) {
       provinciaResidencia: data.provinciaResidencia || '',
       sinDomicilio: data.sinDomicilio || false,
       objetoSocial: data.objetoSocial || 'PRE_APROBADO',
-      objetoPersonalizado: data.objetoPersonalizado || ''
+      objetoPersonalizado: data.objetoPersonalizado || '',
+      // A qué se va a dedicar la sociedad (se pide aunque elija el pre-aprobado)
+      actividadPrincipal: (data.actividadPrincipal || '').trim()
     }
 
     // Preparar capital social

@@ -139,6 +139,8 @@ export async function POST(request: Request) {
       departamento: data.departamento || '',
       // Dónde vive la persona (no es la sede de la sociedad)
       provinciaResidencia: data.provinciaResidencia || '',
+      // A qué se va a dedicar la sociedad (se pide aunque elija el pre-aprobado)
+      actividadPrincipal: data.actividadPrincipal || '',
       // Último paso del wizard en el que estuvo, para volver ahí al recargar
       pasoActual: Number.isInteger(data.pasoActual) ? data.pasoActual : 1
     }
