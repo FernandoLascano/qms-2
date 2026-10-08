@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailDocumentoRechazado } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -84,13 +85,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     if (usuario) {
       try {
-        await enviarEmailDocumentoRechazado(
+        enSegundoPlano('admin/documentos/[id]/rechazar', () => enviarEmailDocumentoRechazado(
           usuario.email,
           usuario.name,
           documento.nombre,
           observaciones,
           documento.tramiteId
-        )
+        ))
       } catch {
         // Non-critical: email sending failed
       }

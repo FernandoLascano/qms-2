@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -122,65 +123,61 @@ export async function POST(request: Request, { params }: RouteParams) {
       }
     })
 
-    // Obtener información del trámite para el email
-    const tramite = await prisma.tramite.findUnique({
-      where: { id: pago.tramiteId },
-      include: { user: { select: { name: true, email: true } } }
-    })
-
-    // Notificar a todos los admins
-    const admins = await prisma.user.findMany({
-      where: { rol: 'ADMIN' },
-      select: { id: true, email: true, name: true }
-    })
-
-    // Crear notificaciones y enviar emails para todos los admins
-    await Promise.all(
-      admins.map(async admin => {
-        await prisma.notificacion.create({
-          data: {
-            userId: admin.id,
-            tramiteId: pago.tramiteId,
-            tipo: 'ACCION_REQUERIDA',
-            titulo: 'Comprobante de Transferencia Recibido',
-            mensaje: `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.`,
-            link: `/dashboard/admin/tramites/${pago.tramiteId}?tab=pagos`
-          }
-        })
-
-        // Enviar email al admin
-        if (admin.email) {
-          try {
-            const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
-            const clienteNombre = tramite?.user?.name || 'Cliente'
-            const mensajeEmail = `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
-            
-            await enviarEmailNotificacion(
-              admin.email,
-              admin.name || 'Administrador',
-              'Comprobante de Transferencia Recibido',
-              mensajeEmail,
-              pago.tramiteId,
-              { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante', tab: 'pagos' } }
-            )
-          } catch {
-            // Email sending failed (non-critical)
-          }
-        }
+    // Datos para los avisos: el trámite (con cliente) y los admins, en paralelo.
+    const [tramite, admins] = await Promise.all([
+      prisma.tramite.findUnique({
+        where: { id: pago.tramiteId },
+        select: { denominacionAprobada: true, denominacionSocial1: true, user: { select: { name: true } } }
+      }),
+      prisma.user.findMany({
+        where: { rol: 'ADMIN' },
+        select: { id: true, email: true, name: true }
       })
-    )
+    ])
 
-    // Notificar al cliente
-    await prisma.notificacion.create({
-      data: {
-        userId: session.user.id,
-        tramiteId: pago.tramiteId,
-        tipo: 'EXITO',
-        titulo: 'Comprobante Subido Correctamente',
-        mensaje: 'Tu comprobante de transferencia fue recibido. El administrador lo revisará y validará el pago.',
-        link: `/dashboard/tramites/${pago.tramiteId}`
-      }
+    const mensajeAdmin = `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.`
+
+    // Notificaciones en la base (admins + cliente) en un solo insert.
+    await prisma.notificacion.createMany({
+      data: [
+        ...admins.map(admin => ({
+          userId: admin.id,
+          tramiteId: pago.tramiteId,
+          tipo: 'ACCION_REQUERIDA' as const,
+          titulo: 'Comprobante de Transferencia Recibido',
+          mensaje: mensajeAdmin,
+          link: `/dashboard/admin/tramites/${pago.tramiteId}?tab=pagos`
+        })),
+        {
+          userId: session.user.id,
+          tramiteId: pago.tramiteId,
+          tipo: 'EXITO' as const,
+          titulo: 'Comprobante Subido Correctamente',
+          mensaje: 'Tu comprobante de transferencia fue recibido. El administrador lo revisará y validará el pago.',
+          link: `/dashboard/tramites/${pago.tramiteId}`
+        }
+      ]
     })
+
+    // Emails a los admins después de responder.
+    const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
+    const clienteNombre = tramite?.user?.name || 'Cliente'
+    const mensajeEmail = `${mensajeAdmin}\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
+    enSegundoPlano(
+      'pagos/comprobante-transferencia',
+      ...admins
+        .filter(admin => admin.email)
+        .map(admin => () =>
+          enviarEmailNotificacion(
+            admin.email,
+            admin.name || 'Administrador',
+            'Comprobante de Transferencia Recibido',
+            mensajeEmail,
+            pago.tramiteId,
+            { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante', tab: 'pagos' } }
+          )
+        )
+    )
 
     return NextResponse.json({ 
       success: true,

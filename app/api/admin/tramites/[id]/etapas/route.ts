@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailEtapaCompletada, enviarEmailSociedadInscripta } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -191,7 +192,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           try {
             // Si es la etapa final (sociedad inscripta), enviar email especial
             if (etapa === 'sociedadInscripta') {
-              await enviarEmailSociedadInscripta(
+              enSegundoPlano('admin/tramites/[id]/etapas', () => enviarEmailSociedadInscripta(
                 usuario.email,
                 usuario.name,
                 tramite.denominacionAprobada || tramite.denominacionSocial1,
@@ -199,16 +200,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
                 tramite.matricula,
                 id,
                 tramite.plan
-              )
+              ))
             } 
             // Para otras etapas importantes, enviar email de progreso
             else if (nombresEtapas[etapa]) {
-              await enviarEmailEtapaCompletada(
+              enSegundoPlano('admin/tramites/[id]/etapas', () => enviarEmailEtapaCompletada(
                 usuario.email,
                 usuario.name,
                 nombresEtapas[etapa],
                 id
-              )
+              ))
             }
           } catch {
             // Email sending failed (non-critical)

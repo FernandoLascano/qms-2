@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 export async function POST(request: Request) {
   try {
@@ -114,24 +115,6 @@ export async function POST(request: Request) {
       }
     })
 
-    // Crear notificación para el usuario
-    await prisma.notificacion.create({
-      data: {
-        userId: session.user.id,
-        tramiteId: tramiteId,
-        tipo: 'INFO',
-        titulo: 'Documento subido',
-        mensaje: `Se ha subido el documento "${nombre}". Será revisado por nuestro equipo.`,
-        link: `/dashboard/tramites/${tramiteId}`
-      }
-    })
-
-    // Notificar a los admins según el tipo de documento
-    const admins = await prisma.user.findMany({
-      where: { rol: 'ADMIN' },
-      select: { id: true }
-    })
-
     // Determinar el tipo de notificación según el documento
     let notifTitulo = ''
     let notifMensaje = ''
@@ -156,44 +139,54 @@ export async function POST(request: Request) {
       notifLink = `/dashboard/admin/tramites/${tramiteId}?tab=documentos`
     }
 
-    // Crear notificación y enviar email para todos los admins
-    for (const admin of admins) {
-      await prisma.notificacion.create({
-        data: {
+    const admins = await prisma.user.findMany({
+      where: { rol: 'ADMIN' },
+      select: { id: true, email: true, name: true }
+    })
+
+    // Notificaciones en la base (rápidas) en un solo insert: la del cliente y
+    // una por admin. Antes iban de a una, con un findUnique por admin.
+    await prisma.notificacion.createMany({
+      data: [
+        {
+          userId: session.user.id,
+          tramiteId: tramiteId,
+          tipo: 'INFO' as const,
+          titulo: 'Documento subido',
+          mensaje: `Se ha subido el documento "${nombre}". Será revisado por nuestro equipo.`,
+          link: `/dashboard/tramites/${tramiteId}`
+        },
+        ...admins.map(admin => ({
           userId: admin.id,
           tramiteId: tramiteId,
-          tipo: 'ACCION_REQUERIDA',
+          tipo: 'ACCION_REQUERIDA' as const,
           titulo: notifTitulo,
           mensaje: notifMensaje,
           link: notifLink
-        }
-      })
+        }))
+      ]
+    })
 
-      // Enviar email al admin
-      const adminUser = await prisma.user.findUnique({
-        where: { id: admin.id },
-        select: { email: true, name: true }
-      })
-
-      if (adminUser?.email) {
-        try {
-          const denominacion = tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Trámite'
-          const clienteNombre = tramite?.user?.name || 'Cliente'
-          const mensajeEmail = `${notifMensaje}\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
-          
-          await enviarEmailNotificacion(
-            adminUser.email,
-            adminUser.name || 'Administrador',
+    // Emails a los admins después de responder (dentro del request sumaban
+    // varios segundos a cada subida).
+    const denominacion = tramite.denominacionAprobada || tramite.denominacionSocial1 || 'Trámite'
+    const clienteNombre = tramite.user?.name || 'Cliente'
+    const mensajeEmail = `${notifMensaje}\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
+    enSegundoPlano(
+      'documentos/upload',
+      ...admins
+        .filter(admin => admin.email)
+        .map(admin => () =>
+          enviarEmailNotificacion(
+            admin.email,
+            admin.name || 'Administrador',
             notifTitulo,
             mensajeEmail,
             tramiteId,
             { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar en el panel', tab: notifLink.includes('tab=pagos') ? 'pagos' : 'documentos' } }
           )
-        } catch {
-          // Non-critical: email sending failed
-        }
-      }
-    }
+        )
+    )
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -123,7 +124,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Enviar email de notificación
     try {
       const { enviarEmailSociedadInscripta } = await import('@/lib/emails/send')
-      await enviarEmailSociedadInscripta(
+      enSegundoPlano('admin/tramites/[id]/datos-finales', () => enviarEmailSociedadInscripta(
         tramite.user.email,
         tramite.user.name,
         tramite.denominacionAprobada || tramite.denominacionSocial1,
@@ -131,7 +132,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         matricula,
         id,
         tramite.plan
-      )
+      ))
     } catch {
       // No fallar si el email no se envía
     }

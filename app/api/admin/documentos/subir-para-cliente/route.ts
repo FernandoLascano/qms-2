@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 export async function POST(request: Request) {
   try {
@@ -36,35 +37,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Trámite no encontrado' }, { status: 404 })
     }
 
-    const nombresGuardados: string[] = []
+    // Cada archivo se sube y registra en paralelo (antes iban de a uno).
+    const resultados = await Promise.all(
+      files.map(async (file, i): Promise<string | null> => {
+        if (!file || typeof (file as any).arrayBuffer !== 'function') return null
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      if (!file || typeof (file as any).arrayBuffer !== 'function') continue
+        const buffer = Buffer.from(await file.arrayBuffer())
+        const uploadResult = await uploadToSupabase(buffer, `documentos-admin/${tramiteId}`, file.name, file.type)
+        if (!uploadResult?.url) return null
 
-      const buffer = Buffer.from(await file.arrayBuffer())
-      const uploadResult = await uploadToSupabase(buffer, `documentos-admin/${tramiteId}`, file.name, file.type)
-      if (!uploadResult?.url) continue
+        const nombre = (nombres[i] || file.name.replace(/\.[^/.]+$/, '')).trim()
+        const tipo = tipos[i] || 'DOCUMENTO_PARA_FIRMAR'
+        const descripcion = (descripciones[i] || '').trim() || 'Documento para firmar'
 
-      const nombre = (nombres[i] || file.name.replace(/\.[^/.]+$/, '')).trim()
-      const tipo = tipos[i] || 'DOCUMENTO_PARA_FIRMAR'
-      const descripcion = (descripciones[i] || '').trim() || 'Documento para firmar'
-
-      await prisma.documento.create({
-        data: {
-          tramiteId,
-          userId,
-          nombre,
-          descripcion,
-          url: uploadResult.url,
-          tamanio: buffer.length,
-          mimeType: file.type || 'application/pdf',
-          tipo: tipo as any,
-          estado: 'PENDIENTE'
-        }
+        await prisma.documento.create({
+          data: {
+            tramiteId,
+            userId,
+            nombre,
+            descripcion,
+            url: uploadResult.url,
+            tamanio: buffer.length,
+            mimeType: file.type || 'application/pdf',
+            tipo: tipo as any,
+            estado: 'PENDIENTE'
+          }
+        })
+        return nombre
       })
-      nombresGuardados.push(nombre)
-    }
+    )
+    const nombresGuardados = resultados.filter((n): n is string => n !== null)
 
     if (nombresGuardados.length === 0) {
       return NextResponse.json({ error: 'No se pudo subir ningún archivo. Intentá de nuevo.' }, { status: 500 })
@@ -81,19 +83,24 @@ export async function POST(request: Request) {
     const mensaje = `Los documentos de tu Sociedad ya están listos para firmar:\n${listado}\n\nIngresá a tu panel: cada documento tiene sus instrucciones específicas de firma.`
 
     try {
-      await prisma.notificacion.create({
-        data: {
-          userId,
-          tramiteId,
-          tipo: 'ACCION_REQUERIDA',
-          titulo: 'Documentos listos para firmar',
-          mensaje,
-          link: `/dashboard/tramites/${tramiteId}#documentos-para-firmar`
-        }
-      })
-      const usuario = await prisma.user.findUnique({ where: { id: userId } })
+      const [, usuario] = await Promise.all([
+        prisma.notificacion.create({
+          data: {
+            userId,
+            tramiteId,
+            tipo: 'ACCION_REQUERIDA',
+            titulo: 'Documentos listos para firmar',
+            mensaje,
+            link: `/dashboard/tramites/${tramiteId}#documentos-para-firmar`
+          }
+        }),
+        prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } })
+      ])
       if (usuario) {
-        await enviarEmailNotificacion(usuario.email, usuario.name || 'Usuario', 'Documentos listos para firmar', mensaje, tramiteId, { tono: 'accion', cta: { texto: 'Ir a firmar', ancla: 'documentos-para-firmar' } })
+        // El email sale después de responder.
+        enSegundoPlano('admin/subir-para-cliente', () =>
+          enviarEmailNotificacion(usuario.email, usuario.name || 'Usuario', 'Documentos listos para firmar', mensaje, tramiteId, { tono: 'accion', cta: { texto: 'Ir a firmar', ancla: 'documentos-para-firmar' } })
+        )
       }
     } catch {
       // Aviso no crítico
