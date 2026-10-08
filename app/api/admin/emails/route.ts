@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { emailManual } from '@/lib/emails/templates'
 import { contactosDe, contraparteDe } from '@/lib/emails/contactos'
+import { prepararMailManual } from '@/lib/emails/destinatario'
 import { Prisma } from '@prisma/client'
 import { EmailDirection, EmailStatus } from '@prisma/client'
 
@@ -144,13 +145,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Faltan campos obligatorios (to, subject, text)' }, { status: 400 })
     }
 
+    // Variables de plantilla que hayan quedado, nombre para el saludo y freno
+    // si quedó algún «[Completar…]» sin reemplazar.
+    const preparado = await prepararMailManual({
+      texto: String(text),
+      asunto: String(subject),
+      para: toList,
+      nombreSugerido: typeof destinatario === 'string' ? destinatario : null,
+    })
+    if (!preparado.ok) {
+      return NextResponse.json({ error: preparado.error }, { status: 400 })
+    }
+    const texto = preparado.texto
+    const asunto = preparado.asunto
+
     // El sobre se arma acá y no en el navegador: así el correo manual sale con
     // la misma cabecera, pie y tipografía que los automáticos, y no hay una
     // segunda definición del diseño que se desactualice.
-    const html = emailManual({
-      texto: String(text),
-      nombre: typeof destinatario === 'string' && destinatario.trim() ? destinatario.trim() : toList[0],
-    })
+    const html = emailManual({ texto, nombre: preparado.nombre })
 
     const parsedAttachments: Array<{
       filename: string
@@ -186,9 +198,9 @@ export async function POST(request: NextRequest) {
       to: toList,
       cc: ccList,
       bcc: bccList.length ? bccList : undefined,
-      subject,
+      subject: asunto,
       html,
-      text: text || html.replace(/<[^>]*>/g, ''),
+      text: texto || html.replace(/<[^>]*>/g, ''),
       attachments: parsedAttachments.map((item) => ({
         filename: item.filename,
         content: item.content,
@@ -209,9 +221,9 @@ export async function POST(request: NextRequest) {
         to: toList,
         cc: ccList,
         bcc: bccList,
-        subject,
+        subject: asunto,
         bodyHtml: html,
-        bodyText: text || html.replace(/<[^>]*>/g, ''),
+        bodyText: texto || html.replace(/<[^>]*>/g, ''),
         direction: 'OUTBOUND',
         status: 'READ',
         tramiteId: tramiteId || null,

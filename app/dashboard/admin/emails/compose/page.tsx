@@ -4,7 +4,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FileInput } from '@/components/ui/file-input'
-import { TEMPLATES, textoDePlantilla, type DbTemplate } from '@/lib/emails/respuestas-rapidas'
+import { TEMPLATES, personalizar, textoDePlantilla, type DbTemplate } from '@/lib/emails/respuestas-rapidas'
+import {
+  interpolarConocidas,
+  mensajeDePendientes,
+  pendientesDeCompletar,
+  variablesDe,
+  type DatosDestinatario,
+} from '@/lib/emails/redaccion'
 import { Send, Loader2, Eye, EyeOff, X, FileText, User } from 'lucide-react'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
@@ -49,6 +56,10 @@ export default function ComposeEmailPage() {
   const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
   const [draftRestored, setDraftRestored] = useState(false)
 
+  // Quién es el destinatario (si hay uno solo): con eso se saluda por el
+  // nombre y se rellenan las {{variables}} de las plantillas.
+  const [datosDestino, setDatosDestino] = useState<DatosDestinatario | null>(null)
+
   // Destinatarios desde trámites
   const [tramites, setTramites] = useState<Tramite[]>([])
   const [showRecipients, setShowRecipients] = useState(false)
@@ -58,6 +69,35 @@ export default function ComposeEmailPage() {
   useEffect(() => {
     fetchTramites()
   }, [])
+
+  const unicoDestinatario = to.length === 1 ? to[0] : ''
+  useEffect(() => {
+    if (!unicoDestinatario) {
+      setDatosDestino(null)
+      return
+    }
+    let vigente = true
+    fetch(`/api/admin/emails/destinatario?email=${encodeURIComponent(unicoDestinatario)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d: DatosDestinatario | null) => {
+        if (vigente) setDatosDestino(d)
+      })
+      .catch(() => {
+        if (vigente) setDatosDestino(null)
+      })
+    return () => {
+      vigente = false
+    }
+  }, [unicoDestinatario])
+
+  // Si la plantilla se eligió antes que el destinatario, las variables se
+  // completan apenas se sabe quién es.
+  useEffect(() => {
+    if (!datosDestino) return
+    const variables = variablesDe(datosDestino)
+    setSubject((prev) => interpolarConocidas(prev, variables))
+    setBody((prev) => personalizar(interpolarConocidas(prev, variables), datosDestino.nombre))
+  }, [datosDestino])
 
   useEffect(() => {
     ;(async () => {
@@ -147,21 +187,29 @@ export default function ComposeEmailPage() {
     )
   })
 
+  /** Rellena las variables conocidas y pone el nombre en el «¡Hola!». */
+  const completarPlantilla = (texto: string) =>
+    personalizar(interpolarConocidas(texto, variablesDe(datosDestino)), datosDestino?.nombre)
+
+  // Indicaciones «[Completar…]» o variables que quedaron sin reemplazar: se
+  // avisan mientras se escribe y frenan el envío.
+  const avisoPendientes = mensajeDePendientes(pendientesDeCompletar(subject, body))
+
   const handleTemplateChange = (key: string) => {
     setSelectedTemplate(key)
     if (key.startsWith('db:')) {
       const id = key.slice(3)
       const template = dbTemplates.find(t => t.id === id)
       if (template) {
-        setSubject(template.subject)
-        setBody(textoDePlantilla(template.bodyHtml) || template.subject)
+        setSubject(completarPlantilla(template.subject))
+        setBody(completarPlantilla(textoDePlantilla(template.bodyHtml) || template.subject))
       }
       return
     }
     const template = TEMPLATES.find(t => t.key === key)
     if (template) {
-      setSubject(template.subject)
-      setBody(template.body)
+      setSubject(completarPlantilla(template.subject))
+      setBody(completarPlantilla(template.body))
     }
   }
 
@@ -242,14 +290,17 @@ export default function ComposeEmailPage() {
       fetch('/api/emails/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ texto: body || 'Tu mensaje aparecerá acá…' }),
+        body: JSON.stringify({
+          texto: body || 'Tu mensaje aparecerá acá…',
+          nombre: datosDestino?.nombre ?? '',
+        }),
       })
         .then((res) => res.text())
         .then(setPrevia)
         .catch(() => setPrevia(''))
     }, 400)
     return () => clearTimeout(t)
-  }, [body, showPreview])
+  }, [body, showPreview, datosDestino])
 
   const medirPrevia = () => {
     const doc = marcoPrevia.current?.contentDocument
@@ -269,6 +320,11 @@ export default function ComposeEmailPage() {
       bcc.some(email => !EMAIL_REGEX.test(email))
     ) {
       setError('Hay uno o más emails inválidos')
+      return
+    }
+
+    if (avisoPendientes) {
+      setError(avisoPendientes)
       return
     }
 
@@ -292,6 +348,7 @@ export default function ComposeEmailPage() {
           bcc,
           subject: subject.trim(),
           text: body,
+          destinatario: datosDestino?.nombre || undefined,
           attachments: attachmentsPayload,
         }),
       })
@@ -511,6 +568,9 @@ export default function ComposeEmailPage() {
                 rows={12}
                 className="w-full px-4 py-3 border border-line-strong rounded-control text-body-sm font-medium bg-surface text-ink placeholder:text-ink-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none leading-relaxed"
               />
+              {avisoPendientes && (
+                <p className="mt-1.5 text-label font-medium text-warning">{avisoPendientes}</p>
+              )}
             </div>
 
             {/* Attachments */}
@@ -557,7 +617,7 @@ export default function ComposeEmailPage() {
 
               <button
                 onClick={handleSend}
-                disabled={sending || !to.length || !subject.trim() || !body.trim()}
+                disabled={sending || !to.length || !subject.trim() || !body.trim() || !!avisoPendientes}
                 className="flex items-center justify-center gap-2 px-6 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:bg-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {sending ? (
