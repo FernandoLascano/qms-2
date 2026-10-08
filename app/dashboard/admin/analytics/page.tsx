@@ -9,7 +9,6 @@ import {
   Clock,
   TrendingUp,
   FileCheck,
-  Download
 } from 'lucide-react'
 import { MetricCard } from '@/components/admin/analytics/MetricCard'
 import { TramitesPorMesChart } from '@/components/admin/analytics/TramitesPorMesChart'
@@ -24,8 +23,7 @@ import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
 import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { generarReporteProfesional } from '@/lib/analytics/reportGenerator'
-import { Button } from '@/components/ui/button'
+import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
 
@@ -201,10 +199,7 @@ export default function AnalyticsPage() {
                 filename={`analytics-${periodo}-${jurisdiccion || 'todas'}`}
               />
             )}
-            <Button onClick={() => data && generarReporteProfesional(data, periodo, jurisdiccion)} disabled={!data}>
-              <Download className="h-4 w-4" aria-hidden />
-              Exportar PDF
-            </Button>
+            <ReporteMensualPdf />
           </>
         }
       />

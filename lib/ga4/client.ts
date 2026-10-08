@@ -1,22 +1,26 @@
 import { GoogleAuth } from 'google-auth-library'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
+import { CUENTA_ANALYTICS, clienteSinClaves, enVercel } from '@/lib/gcp'
 
 const GA4_READONLY_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 
 export type Ga4ClientResult =
-  | { ok: true; client: BetaAnalyticsDataClient; method: 'service_account' | 'oauth' }
+  | { ok: true; client: BetaAnalyticsDataClient; method: 'service_account' | 'vercel_oidc' | 'oauth' }
   | { ok: false; error: string }
 
 /**
- * GA4 Data API. Dos modos de autenticación, en orden de preferencia:
+ * GA4 Data API. Modos de autenticación, en orden de preferencia:
  *
- * 1) Service Account (recomendado, no vence nunca): definí
- *    GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 (el JSON de la cuenta de servicio en base64)
- *    o GOOGLE_SERVICE_ACCOUNT_JSON (el JSON crudo). Requiere darle acceso "Viewer"
- *    al email de la service account en la propiedad GA4.
+ * 1) Service Account con clave en env: GOOGLE_SERVICE_ACCOUNT_JSON_BASE64 o
+ *    GOOGLE_SERVICE_ACCOUNT_JSON. (El proyecto de Google no deja crear claves,
+ *    así que en la práctica no se usa.)
  *
- * 2) OAuth2 refresh token de usuario (legacy, se vence): GOOGLE_OAUTH_CLIENT_ID,
- *    GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REFRESH_TOKEN.
+ * 2) Sin claves, desde Vercel (lo que se usa en producción): la cuenta
+ *    qms-analytics vía el token OIDC de Vercel (lib/gcp.ts). No vence. Requiere
+ *    que ese email tenga acceso "Lector" en la propiedad GA4.
+ *
+ * 3) OAuth2 refresh token de usuario (legacy, se vence: sólo para correr en
+ *    una máquina local): GOOGLE_OAUTH_CLIENT_ID / _SECRET / _REFRESH_TOKEN.
  */
 function trimEnv(v: string | undefined): string | undefined {
   if (v == null) return undefined
@@ -75,7 +79,13 @@ export function createGa4DataClient(): Ga4ClientResult {
     return { ok: true, client: new BetaAnalyticsDataClient({ auth }), method: 'service_account' }
   }
 
-  // 2) OAuth2 refresh token (legacy)
+  // 2) Sin claves, desde Vercel
+  if (enVercel() && process.env.GA4_SIN_CLAVES !== 'false') {
+    const auth = new GoogleAuth({ authClient: clienteSinClaves(CUENTA_ANALYTICS, [GA4_READONLY_SCOPE]) })
+    return { ok: true, client: new BetaAnalyticsDataClient({ auth }), method: 'vercel_oidc' }
+  }
+
+  // 3) OAuth2 refresh token (legacy)
   const clientId = trimEnv(process.env.GOOGLE_OAUTH_CLIENT_ID)
   const clientSecret = trimEnv(process.env.GOOGLE_OAUTH_CLIENT_SECRET)
   const refreshToken = trimEnv(process.env.GOOGLE_OAUTH_REFRESH_TOKEN)

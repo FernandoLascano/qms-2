@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { etiquetaPeriodo, type Porcentajes, type TotalesLiquidacion } from '@/lib/comisiones'
 import { fmt, fmtFecha, type Gasto, type Movimiento } from './tipos'
+import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
 
 /**
  * Reporte mensual para las demás partes (cláusula 5.3 del contrato
@@ -88,7 +89,7 @@ export function ReporteMensual({
           <div>
             <h3 className="text-heading text-ink">Reporte para las partes</h3>
             <p className="text-body-sm text-ink-2">
-              El que pide el contrato todos los meses (cláusula 5.3). Revisalo y completá los costos de MW antes de mandarlo.
+              El que pide el contrato todos los meses (cláusula 5.3). En PDF sale el reporte mensual completo, con la gestión del mes.
             </p>
           </div>
         </div>
@@ -101,6 +102,7 @@ export function ReporteMensual({
             <Copy className="h-4 w-4" aria-hidden />
             Copiar
           </Button>
+          <ReporteMensualPdf periodo={periodo} etiqueta="PDF" size="sm" />
         </div>
       </div>
       {abierto && (
