@@ -119,6 +119,8 @@ function LoginForm() {
         console.error('Error de login:', result.error)
         if (result.error === 'EMAIL_NOT_VERIFIED') {
           setError('Te falta verificar el email. Revisá tu casilla y abrí el link de confirmación.')
+        } else if (result.error === 'TOO_MANY_ATTEMPTS') {
+          setError('Demasiados intentos. Probá de nuevo en unos minutos.')
         } else {
           setError('Email o contraseña incorrectos')
           setCredencialesMal(true)

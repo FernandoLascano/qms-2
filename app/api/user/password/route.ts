@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { rateLimit } from '@/lib/rate-limit'
+import { validarPassword } from '@/lib/validaciones'
 
 // PUT - Cambiar contraseña
 export async function PUT(request: NextRequest) {
@@ -15,6 +17,11 @@ export async function PUT(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // La contraseña actual también se puede adivinar desde acá: mismo límite
+    // por usuario que el login.
+    const rateLimitResponse = await rateLimit(request, 'password-change', 5, '15 m', session.user.id)
+    if (rateLimitResponse) return rateLimitResponse
 
     const body = await request.json()
     const { currentPassword, newPassword } = body
@@ -48,9 +55,11 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
+    // Mismas reglas que el registro (mínimo y máximo)
+    const errorPassword = validarPassword(newPassword)
+    if (errorPassword) {
       return NextResponse.json(
-        { error: 'La nueva contraseña debe tener al menos 6 caracteres' },
+        { error: errorPassword.replace('La contraseña', 'La nueva contraseña') },
         { status: 400 }
       )
     }

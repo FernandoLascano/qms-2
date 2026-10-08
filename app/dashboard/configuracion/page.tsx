@@ -49,8 +49,13 @@ export default function ConfiguracionPage() {
         throw new Error(error.error || 'Error al actualizar perfil')
       }
 
+      const actualizado = await res.json()
       await update()
-      toast.success('Perfil actualizado correctamente')
+      if (actualizado?.emailCambiado) {
+        toast.success('Perfil actualizado. Te mandamos un link al email nuevo: abrilo para verificarlo.')
+      } else {
+        toast.success('Perfil actualizado correctamente')
+      }
     } catch (error: any) {
       console.error('Error:', error)
       toast.error(error.message || 'Error al actualizar perfil')
