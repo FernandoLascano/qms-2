@@ -52,6 +52,12 @@ const AVISOS_PAGO = {
   },
 }
 
+const NOMBRES_PLAN: Record<string, string> = {
+  BASICO: 'Básico',
+  EMPRENDEDOR: 'Emprendedor',
+  PREMIUM: 'Premium',
+}
+
 async function TramiteDetallePage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return null
@@ -65,7 +71,8 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
       enlacesPago: { orderBy: { createdAt: 'desc' } },
       pagos: { orderBy: { createdAt: 'desc' } },
       documentos: { orderBy: { createdAt: 'desc' } },
-      notificaciones: { orderBy: { createdAt: 'desc' }, take: 10 },
+      // Sólo las del cliente: los avisos a los admins llevan el mismo tramiteId
+      notificaciones: { where: { userId: session.user.id }, orderBy: { createdAt: 'desc' }, take: 10 },
       mensajes: {
         include: { user: { select: { name: true, email: true } } },
         orderBy: { createdAt: 'asc' },
@@ -96,7 +103,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
           { label: nombre },
         ]}
         badge={<Badge tone={estado.tone} dot>{estado.label}</Badge>}
-        description={`${tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} · Plan ${tramite.plan}`}
+        description={`${tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} · Plan ${NOMBRES_PLAN[tramite.plan] || tramite.plan}`}
       />
 
       {aviso && (
@@ -236,7 +243,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
                 value={tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
                 icon={Building2}
               />
-              <DataItem label="Plan contratado" value={tramite.plan} />
+              <DataItem label="Plan contratado" value={NOMBRES_PLAN[tramite.plan] || tramite.plan} />
               <DataItem
                 label="Capital social"
                 value={`$${tramite.capitalSocial.toLocaleString('es-AR')}`}
