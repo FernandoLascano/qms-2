@@ -120,7 +120,7 @@ export default function PrivacidadPage() {
           </div>
 
           <div className="mt-4 pt-8 border-t border-gray-200">
-            <Link href="/" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link href="/" className="inline-flex min-h-10 items-center text-brand-700 hover:text-brand-800 font-medium">
               ← Volver al inicio
             </Link>
           </div>

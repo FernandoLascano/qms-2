@@ -99,7 +99,7 @@ export function NotasClient({ notas }: { notas: NotaCard[] }) {
 
                   <Link
                     href={`/blog/${nota.slug}`}
-                    className="inline-flex items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
+                    className="inline-flex min-h-10 items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
                   >
                     Leer artículo
                     <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />

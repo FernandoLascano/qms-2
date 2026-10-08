@@ -258,7 +258,7 @@ function LoginForm() {
 
       <p className="text-center text-body-sm text-ink-2 pt-4 border-t border-line">
         ¿No tenés cuenta?{' '}
-        <Link href="/registro" className="text-primary font-semibold hover:underline">
+        <Link href="/registro" className="inline-flex min-h-10 items-center text-primary font-semibold hover:underline">
           Creá una gratis
         </Link>
       </p>
@@ -272,12 +272,12 @@ export default function LoginPage() {
       {/* Cabecera mínima, con el mismo peso que la de la portada. */}
       <header className="border-b border-line bg-surface/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" aria-label="Ir al inicio">
+          <Link href="/" aria-label="Ir al inicio" className="inline-flex min-h-10 items-center">
             <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" className="h-9 w-auto" />
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-body-sm font-medium text-ink-2 hover:text-primary transition"
+            className="inline-flex min-h-10 items-center gap-2 text-body-sm font-medium text-ink-2 hover:text-primary transition"
           >
             <ArrowLeft className="w-4 h-4" />
             Volver al inicio

@@ -444,7 +444,7 @@ export default function HomePage({
             animate={stepsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 1.8 }}
           >
-            <Link href="/registro">
+            <Link href="/registro" className="inline-block">
               <motion.button
                 /* Era el único CTA principal en negro: los otros seis del sitio
                    van en el color de marca, y este cierra el recorrido más
@@ -537,7 +537,7 @@ export default function HomePage({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Grupo MW — Martínez Wehbe & Asociados (se abre en una pestaña nueva)"
-                className="inline-block opacity-90 transition-opacity hover:opacity-100"
+                className="inline-flex min-h-10 items-center opacity-90 transition-opacity hover:opacity-100"
               >
                 <Image
                   src="/assets/img/grupo-mw.png"
@@ -552,36 +552,36 @@ export default function HomePage({
             {/* Columna 2: Servicios */}
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Servicios</h4>
-              <ul className="space-y-3 text-sm">
-                <li><Link href="/tramite/nuevo" className="text-n-400 hover:text-white transition">Constituir S.A.S.</Link></li>
-                <li><a href="#planes" className="text-n-400 hover:text-white transition">Planes y Precios</a></li>
-                <li><a href="#" className="text-n-400 hover:text-white transition">Reformas de Estatuto</a></li>
-                <li><a href="#" className="text-n-400 hover:text-white transition">Asesoría Societaria</a></li>
+              <ul className="space-y-1 text-sm md:space-y-3">
+                <li><Link href="/tramite/nuevo" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Constituir S.A.S.</Link></li>
+                <li><a href="#planes" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Planes y Precios</a></li>
+                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Reformas de Estatuto</a></li>
+                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Asesoría Societaria</a></li>
               </ul>
             </div>
 
             {/* Columna 3: Recursos */}
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Recursos</h4>
-              <ul className="space-y-3 text-sm">
-                <li><a href="#faq" className="text-n-400 hover:text-white transition">Preguntas Frecuentes</a></li>
-                <li><Link href="/blog" className="text-n-400 hover:text-white transition">Blog y Notas</Link></li>
-                <li><a href="#" className="text-n-400 hover:text-white transition">Marco Legal</a></li>
+              <ul className="space-y-1 text-sm md:space-y-3">
+                <li><a href="#faq" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Preguntas Frecuentes</a></li>
+                <li><Link href="/blog" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Blog y Notas</Link></li>
+                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Marco Legal</a></li>
               </ul>
             </div>
 
             {/* Columna 4: Contacto */}
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Contacto</h4>
-              <ul className="space-y-3 text-sm">
+              <ul className="space-y-1 text-sm md:space-y-3">
                 <li className="text-n-400">Córdoba, Argentina</li>
                 <li>
-                  <a href="tel:+5493512136212" className="text-n-400 hover:text-white transition">
+                  <a href="tel:+5493512136212" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">
                     +54 9 351 213 6212
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:contacto@quieromisas.com" className="text-n-400 hover:text-white transition">
+                  <a href="mailto:contacto@quieromisas.com" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">
                     contacto@quieromisas.com
                   </a>
                 </li>
@@ -605,8 +605,8 @@ export default function HomePage({
                 © 2026 QuieroMiSAS
               </p>
               <div className="flex gap-6 text-xs text-ink-3">
-                <a href="/terminos" className="hover:text-white transition">Términos</a>
-                <a href="/privacidad" className="hover:text-white transition">Privacidad</a>
+                <a href="/terminos" className="inline-flex min-h-10 items-center hover:text-white transition">Términos</a>
+                <a href="/privacidad" className="inline-flex min-h-10 items-center hover:text-white transition">Privacidad</a>
               </div>
             </div>
           </div>
