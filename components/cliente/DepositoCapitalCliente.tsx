@@ -8,6 +8,7 @@ import { DollarSign, Upload, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
+import { pesos } from '@/lib/etiquetas'
 
 interface DepositoCapitalClienteProps {
   tramiteId: string
@@ -94,7 +95,7 @@ export default function DepositoCapitalCliente({
   const alias = cuenta?.alias || null
   const titular = cuenta?.titular || ''
   const montoEsperado = cuenta?.montoEsperado || 0
-  const montoTexto = montoEsperado > 0 ? `$${montoEsperado.toLocaleString('es-AR')}` : ''
+  const montoTexto = montoEsperado > 0 ? pesos(montoEsperado) : ''
   const fechaActivacion = cuenta?.fechaActivacion || null
   
   // Verificar si la cuenta aún no está activa
@@ -122,7 +123,7 @@ export default function DepositoCapitalCliente({
 
   const handleSubirComprobante = async () => {
     if (!archivo) {
-      toast.error('Debes seleccionar un archivo')
+      toast.error('Tenés que seleccionar un archivo')
       return
     }
 
@@ -137,7 +138,7 @@ export default function DepositoCapitalCliente({
       data.append('nombre', 'Comprobante - DEPOSITO_CAPITAL')
       data.append(
         'descripcion',
-        `Comprobante de depósito del 25% del capital social${montoEsperado > 0 ? ` ($${montoEsperado.toLocaleString('es-AR')})` : ''}`
+        `Comprobante de depósito del 25% del capital social${montoEsperado > 0 ? ` (${pesos(montoEsperado)})` : ''}`
       )
 
       const response = await fetch('/api/documentos/upload', {
@@ -179,7 +180,7 @@ export default function DepositoCapitalCliente({
         <div className="bg-surface border border-success-line rounded-control p-3 text-label text-ink-2">
           <p>
             Capital social informado:{' '}
-            <strong>${capitalSocial.toLocaleString('es-AR')}</strong>
+            <strong>{pesos(capitalSocial)}</strong>
           </p>
           {montoTexto && (
             <p>
@@ -244,7 +245,7 @@ export default function DepositoCapitalCliente({
         ) : (
           <div className="bg-warning-soft border border-warning-line rounded-control p-3 text-label text-warning">
             <p className="font-semibold mb-1">Datos no disponibles</p>
-            <p>Los datos de la cuenta bancaria aún no han sido proporcionados. Contacta al equipo si necesitas esta información.</p>
+            <p>Los datos de la cuenta bancaria aún no han sido proporcionados. Escribinos si necesitás esta información.</p>
           </div>
         )}
 
@@ -270,7 +271,7 @@ export default function DepositoCapitalCliente({
                 href={comprobanteSubido.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-body-sm text-info hover:underline mt-2 inline-block"
+                className="text-body-sm text-info hover:underline mt-2 inline-flex min-h-10 items-center"
               >
                 Ver comprobante subido
               </a>

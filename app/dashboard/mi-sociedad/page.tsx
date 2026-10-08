@@ -5,10 +5,12 @@ import Link from 'next/link'
 import { Building2, Download, FileText, MessageCircle, BookOpen, Handshake, MapPin, FolderOpen } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { objetoSocialParaMostrar } from '@/lib/objeto-social'
+import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
+import { formatearFecha } from '@/lib/fechas'
 
 export const dynamic = 'force-dynamic'
 
-const fmtFecha = (f: Date | string | null | undefined) => (f ? new Date(f).toLocaleDateString('es-AR') : null)
+const fmtFecha = (f: Date | string | null | undefined) => (f ? formatearFecha(f) : null)
 
 // Documentos que forman el legajo, en orden de relevancia, con etiqueta amigable.
 const DOCS_LEGAJO: { tipo: string; label: string }[] = [
@@ -71,7 +73,7 @@ function Persona({ p, tipo }: { p: any; tipo: 'socio' | 'admin' }) {
         </p>
         {tipo === 'socio' && p.aporteCapital != null && (
           <p className="text-label font-medium text-ink-2 mt-0.5">
-            Aporte de capital: ${Number(p.aporteCapital).toLocaleString('es-AR')}
+            Aporte de capital: {pesos(Number(p.aporteCapital))}
           </p>
         )}
       </div>
@@ -136,14 +138,14 @@ function TortaCapital({ socios }: { socios: any[] }) {
             <span className="h-3 w-3 rounded-chip flex-shrink-0" style={{ backgroundColor: it.color }} />
             <span className="font-medium text-ink truncate flex-1">{it.nombre}</span>
             <span className="text-ink-2 tabular-nums whitespace-nowrap">
-              {it.pct}%{it.capital ? ` · $${it.capital.toLocaleString('es-AR')}` : ''}
+              {it.pct}%{it.capital ? ` · ${pesos(it.capital)}` : ''}
             </span>
           </div>
         ))}
         {capitalTotal > 0 && (
           <div className="flex items-center justify-between border-t border-line pt-2 text-body-sm font-semibold text-ink">
             <span>Capital total</span>
-            <span className="tabular-nums">${capitalTotal.toLocaleString('es-AR')}</span>
+            <span className="tabular-nums">{pesos(capitalTotal)}</span>
           </div>
         )}
       </div>
@@ -210,9 +212,9 @@ export default async function MiSociedadPage() {
                 <Dato label="CUIT" valor={soc.cuit} />
                 <Dato label="Matrícula" valor={soc.matricula} />
                 <Dato label="N° Resolución" valor={soc.numeroResolucion} />
-                <Dato label="Fecha de inscripción" valor={soc.fechaInscripcion ? new Date(soc.fechaInscripcion).toLocaleDateString('es-AR') : null} />
-                <Dato label="Jurisdicción" valor={soc.jurisdiccion} />
-                <Dato label="Plan" valor={soc.plan} />
+                <Dato label="Fecha de inscripción" valor={fmtFecha(soc.fechaInscripcion)} />
+                <Dato label="Jurisdicción" valor={nombreJurisdiccion(soc.jurisdiccion)} />
+                <Dato label="Plan" valor={nombrePlan(soc.plan)} />
               </CardContent>
             </Card>
 
@@ -223,7 +225,7 @@ export default async function MiSociedadPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-3 gap-4">
-                  <Dato label="Capital social" valor={soc.capitalSocial ? `$${soc.capitalSocial.toLocaleString('es-AR')}` : null} />
+                  <Dato label="Capital social" valor={soc.capitalSocial ? pesos(soc.capitalSocial) : null} />
                   <Dato label="Domicilio legal" valor={soc.domicilioLegal} />
                   <Dato label="Integración" valor={`${soc.porcentajeIntegracion}%`} />
                 </div>
@@ -291,7 +293,7 @@ export default async function MiSociedadPage() {
                             href={`/api/documentos/${doc!.id}/view?download=1`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-body-sm font-medium text-primary hover:text-primary"
+                            className="inline-flex min-h-10 items-center gap-1 text-body-sm font-medium text-primary hover:text-primary"
                           >
                             <Download className="h-4 w-4" /> Descargar
                           </a>
@@ -300,7 +302,7 @@ export default async function MiSociedadPage() {
                     </div>
                   )
                 })()}
-                <Link href="/dashboard/documentos" className="mt-4 inline-flex items-center gap-2 text-body-sm font-medium text-primary hover:text-primary">
+                <Link href="/dashboard/documentos" className="mt-4 inline-flex min-h-10 items-center gap-2 text-body-sm font-medium text-primary hover:text-primary">
                   <FolderOpen className="h-4 w-4" /> Ver todos mis documentos
                 </Link>
                 <p className="text-label text-ink-3 mt-1">Toda la documentación que recibamos de tu sociedad la vas a encontrar en Documentos.</p>
@@ -318,7 +320,7 @@ export default async function MiSociedadPage() {
                 <CardContent className="grid sm:grid-cols-3 gap-4">
                   <Dato label="Dirección" valor={soc.domicilioSede.direccion} />
                   <Dato label="Estado" valor="Activo" />
-                  <Dato label="Monto anual" valor={soc.domicilioSede.montoAnual ? `$${soc.domicilioSede.montoAnual.toLocaleString('es-AR')}` : null} />
+                  <Dato label="Monto anual" valor={soc.domicilioSede.montoAnual ? pesos(soc.domicilioSede.montoAnual) : null} />
                   <Dato label="Inicio" valor={fmtFecha(soc.domicilioSede.fechaInicio)} />
                   <Dato label="Vence / próximo pago" valor={fmtFecha(soc.domicilioSede.fechaVencimiento)} />
                   <Dato label="Último pago" valor={fmtFecha(soc.domicilioSede.ultimoCobro)} />

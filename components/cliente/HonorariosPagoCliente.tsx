@@ -7,6 +7,7 @@ import { DollarSign, ExternalLink, CheckCircle, Clock, Upload, Building2, Credit
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
+import { pesos } from '@/lib/etiquetas'
 
 interface Pago {
   id: string
@@ -56,7 +57,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
   const handleSubirComprobante = async (pagoId: string) => {
     const file = archivoComprobante[pagoId]
     if (!file) {
-      toast.error('Selecciona un archivo')
+      toast.error('Seleccioná un archivo')
       return
     }
 
@@ -122,7 +123,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                     </p>
                     <div className="flex items-center gap-4 text-label text-ink-2">
                       <span className="font-semibold bg-surface px-2 py-1 rounded border border-info-line">
-                        Monto: ${pago.montoTransferencia?.toLocaleString('es-AR')}
+                        Monto: {pesos(pago.montoTransferencia)}
                       </span>
                       <span>Subido: {new Date(pago.createdAt).toLocaleDateString('es-AR')}</span>
                     </div>
@@ -166,7 +167,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                             <h6 className="font-semibold text-ink">Pago con Mercado Pago</h6>
                           </div>
                           <p className="text-title font-semibold text-ink mb-1">
-                            ${pago.monto.toLocaleString('es-AR')}
+                            {pesos(pago.monto)}
                           </p>
                           <p className="text-label text-ink-2 mb-1">Precio regular (con tarjeta / Mercado Pago)</p>
                           <p className="text-label text-ink-2">
@@ -200,13 +201,13 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                             </span>
                           </div>
                           <p className="text-title font-semibold text-success mb-1">
-                            ${pago.montoTransferencia.toLocaleString('es-AR')}
+                            {pesos(pago.montoTransferencia)}
                           </p>
                           <p className="text-label text-ink-2 line-through mb-1">
-                            ${pago.monto.toLocaleString('es-AR')}
+                            {pesos(pago.monto)}
                           </p>
                           <p className="text-label text-success font-medium mb-3">
-                            Ahorrás ${(pago.monto - (pago.montoTransferencia || 0)).toLocaleString('es-AR')}
+                            Ahorrás {pesos(pago.monto - (pago.montoTransferencia || 0))}
                           </p>
                         </div>
                       </div>
@@ -295,7 +296,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                       {getConceptoTexto(pago.concepto)}
                     </h5>
                     <p className="text-heading font-semibold text-info mb-1">
-                      ${pago.monto.toLocaleString('es-AR')}
+                      {pesos(pago.monto)}
                     </p>
                     <p className="text-label text-ink-2">
                       Pagado el {new Date(pago.createdAt).toLocaleDateString('es-AR')}
@@ -310,8 +311,8 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
         {/* Info */}
         <div className="bg-success-soft border border-success-line rounded-control p-3">
           <p className="text-label text-success">
-            <strong>Pago seguro:</strong> Elige la opción que prefieras. Si pagas por transferencia,
-            sube el comprobante y el administrador validará el pago.
+            <strong>Pago seguro:</strong> Elegí la opción que prefieras. Si pagás por transferencia,
+            subí el comprobante y el administrador validará el pago.
           </p>
         </div>
       </CardContent>

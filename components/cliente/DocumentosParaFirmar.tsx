@@ -229,7 +229,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
     // Validación estricta: verificar que hay archivo seleccionado
     const archivo = archivosSeleccionados[doc.id]
     if (!archivo) {
-      toast.error('Debes seleccionar un archivo para este documento')
+      toast.error('Tenés que seleccionar un archivo para este documento')
       return
     }
 
@@ -388,7 +388,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
         </CardTitle>
         <CardDescription className="text-info">
           {documentosPendientes.length > 0 
-            ? 'Descarga estos documentos, fírmalos y súbelos firmados'
+            ? 'Descargá estos documentos, firmalos y subilos firmados'
             : documentosEnValidacion.length > 0
             ? 'Documentos subidos esperando validación'
             : 'Documentos enviados para firmar y su estado'
@@ -514,7 +514,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                       handleSubirFirmado(doc)
                     }}
                     disabled={subiendo[doc.id] || !archivosSeleccionados[doc.id]}
-                    className="gap-2 bg-success-solid hover:bg-success-solid disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-10 sm:h-8 gap-2 bg-success-solid hover:bg-success-solid disabled:opacity-50 disabled:cursor-not-allowed"
                     size="sm"
                     type="button"
                   >
@@ -588,7 +588,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                               estaRechazado ? 'text-primary' : 'text-warning'
                             }`}>
                               {estaRechazado ? (
-                                <>Documento rechazado. Por favor, revisa los comentarios y sube una nueva versión.</>
+                                <>Documento rechazado. Revisá los comentarios y subí una nueva versión.</>
                               ) : (
                                 <>Subido el {new Date(documentoFirmado.createdAt).toLocaleDateString('es-AR')}. Esperando validación por Quiero Mi SAS.</>
                               )}
@@ -616,7 +616,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                                     handleSubirFirmado(doc)
                                   }}
                                   disabled={subiendo[doc.id] || !archivosSeleccionados[doc.id]}
-                                  className="gap-2 bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="h-10 sm:h-8 gap-2 bg-primary hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                   size="sm"
                                   type="button"
                                 >
@@ -707,7 +707,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                   Importante
                 </p>
                 <p className="text-body-sm text-warning">
-                  Una vez que hayas firmado los documentos, sube cada uno con el botón "Subir Firmado". 
+                  Una vez que hayas firmado los documentos, subí cada uno con el botón "Subir Firmado". 
                   Nosotros los revisaremos y te confirmaremos si están correctos.
                 </p>
               </div>

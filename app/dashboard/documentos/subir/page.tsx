@@ -82,12 +82,12 @@ export default function SubirDocumentoPage() {
     e.preventDefault()
 
     if (!archivo) {
-      toast.error('Debes seleccionar un archivo')
+      toast.error('Tenés que seleccionar un archivo')
       return
     }
 
     if (!formData.tramiteId) {
-      toast.error('Debes seleccionar un trámite')
+      toast.error('Tenés que seleccionar un trámite')
       return
     }
 
@@ -135,7 +135,7 @@ export default function SubirDocumentoPage() {
         <div>
           <h2 className="text-display text-ink">Subir Documento</h2>
           <p className="text-ink-2 mt-1">
-            Carga los documentos necesarios para tu trámite
+            Cargá los documentos necesarios para tu trámite
           </p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function SubirDocumentoPage() {
         <CardHeader>
           <CardTitle>Información del Documento</CardTitle>
           <CardDescription>
-            Completa los datos y selecciona el archivo a subir
+            Completá los datos y seleccioná el archivo a subir
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -309,7 +309,7 @@ export default function SubirDocumentoPage() {
             <li>• Constancia de CUIT de todos los socios</li>
             <li>• Comprobante de domicilio de la sociedad</li>
             <li>• Comprobante de depósito del 25% del capital social</li>
-            <li>• Estatuto firmado (si ya lo tienes)</li>
+            <li>• Estatuto firmado (si ya lo tenés)</li>
           </ul>
         </CardContent>
       </Card>
