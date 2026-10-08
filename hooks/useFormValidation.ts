@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { cbuValido, cuitValido, validarDni, validarEmail, validarTelefono } from '@/lib/validaciones'
 
 interface ValidationRule {
   validator: (value: any, formData?: any) => boolean | string
@@ -123,11 +124,10 @@ export const validators = {
     message
   }),
 
-  email: (message = 'Ingresa un email válido'): ValidationRule => ({
+  email: (message = 'Ingresá un email válido'): ValidationRule => ({
     validator: (value) => {
       if (!value) return true // Si está vacío, required se encarga
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      return emailRegex.test(value) || message
+      return validarEmail(value) === null || message
     },
     message
   }),
@@ -159,26 +159,25 @@ export const validators = {
   dni: (message = 'El DNI debe tener 7 u 8 dígitos'): ValidationRule => ({
     validator: (value) => {
       if (!value) return true
-      const dniRegex = /^\d{7,8}$/
-      return dniRegex.test(value.replace(/[.\-]/g, '')) || message
+      return validarDni(value) === null || message
     },
     message
   }),
 
-  cuit: (message = 'El CUIT debe tener 11 dígitos'): ValidationRule => ({
+  // Además de los 11 dígitos controla el dígito verificador
+  cuit: (message = 'El CUIT/CUIL no es válido'): ValidationRule => ({
     validator: (value) => {
       if (!value) return true
-      const cuitRegex = /^\d{11}$/
-      return cuitRegex.test(value.replace(/[.\-]/g, '')) || message
+      return cuitValido(value) || message
     },
     message
   }),
 
-  cbu: (message = 'El CBU debe tener 22 dígitos'): ValidationRule => ({
+  // Además de los 22 dígitos controla los dígitos verificadores
+  cbu: (message = 'El CBU no es válido'): ValidationRule => ({
     validator: (value) => {
       if (!value) return true
-      const cbuRegex = /^\d{22}$/
-      return cbuRegex.test(value.replace(/[.\-]/g, '')) || message
+      return cbuValido(value) || message
     },
     message
   }),
@@ -192,11 +191,10 @@ export const validators = {
     message: message || `El valor mínimo es ${min}`
   }),
 
-  phone: (message = 'Ingresa un teléfono válido'): ValidationRule => ({
+  phone: (message = 'Ingresá un teléfono válido'): ValidationRule => ({
     validator: (value) => {
       if (!value) return true
-      const phoneRegex = /^[\d\s\-\+\(\)]{8,15}$/
-      return phoneRegex.test(value) || message
+      return validarTelefono(value) === null || message
     },
     message
   })

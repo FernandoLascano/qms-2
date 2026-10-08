@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
 
 // Guardar borrador del formulario
 export async function POST(request: Request) {
@@ -17,7 +18,9 @@ export async function POST(request: Request) {
 
     const data = await request.json()
     
-    // Si viene un tramiteId específico, usar ese trámite
+    // Con tramiteId se actualiza ese borrador; sin tramiteId se crea uno nuevo.
+    // Antes, sin id se pisaba "el borrador más reciente": abrir «Nuevo trámite»
+    // sobrescribía sin aviso otro borrador a medias del cliente.
     let existingDraft = null
     if (data.tramiteId) {
       existingDraft = await prisma.tramite.findFirst({
@@ -28,46 +31,34 @@ export async function POST(request: Request) {
           formularioCompleto: false
         }
       })
-    } else {
-      // Si no hay tramiteId, buscar el borrador más reciente
-      existingDraft = await prisma.tramite.findFirst({
-        where: {
-          userId: session.user.id,
-          estadoGeneral: 'INICIADO',
-          formularioCompleto: false
-        },
-        orderBy: {
-          updatedAt: 'desc'
-        }
-      })
-    }
 
-    // Si el formulario ya se envió, el auto-guardado puede seguir corriendo unos
-    // segundos más. Sin este corte crea un trámite duplicado, porque el borrador
-    // original ya quedó marcado como completo y no lo encuentra la búsqueda de arriba.
-    if (!existingDraft) {
-      const yaEnviado = await prisma.tramite.findFirst({
-        where: {
-          userId: session.user.id,
-          formularioCompleto: true,
-          ...(data.tramiteId
-            ? { id: data.tramiteId }
-            : { denominacionSocial1: data.denominacion1?.trim() || 'Pendiente de definir' })
-        },
-        select: { id: true }
-      })
-
-      if (yaEnviado) {
-        return NextResponse.json({
-          success: true,
-          tramiteId: yaEnviado.id,
-          message: 'El trámite ya fue enviado, no se guarda borrador'
+      if (!existingDraft) {
+        // Si el formulario ya se envió, el auto-guardado puede seguir corriendo
+        // unos segundos más: no hay nada que guardar.
+        const yaEnviado = await prisma.tramite.findFirst({
+          where: { id: data.tramiteId, userId: session.user.id, formularioCompleto: true },
+          select: { id: true }
         })
+
+        if (yaEnviado) {
+          return NextResponse.json({
+            success: true,
+            tramiteId: yaEnviado.id,
+            yaEnviado: true,
+            message: 'El trámite ya fue enviado, no se guarda borrador'
+          })
+        }
+
+        return NextResponse.json(
+          { error: 'El borrador no existe o no se puede editar' },
+          { status: 404 }
+        )
       }
     }
 
     // Preparar datos
-    const objetoSocialPreAprobado ='La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades: 1) Construcción de todo tipo de obras, públicas o privadas, edificios, viviendas, locales comerciales y plantas industriales; realizar refacciones, remodelaciones, instalaciones, trabajos de albañilería y/o cualquier trabajo de la construcción. 2) Transporte nacional o internacional de cargas en general, ya sea por vía terrestre, aérea o marítima, con medios de transporte propios o de terceros, pudiendo realizar todo lo inherente a su logística. 3) Compra, venta y permuta, explotación, arrendamientos y administración de bienes inmuebles, urbanos y rurales y la realización de operaciones de propiedad horizontal. 4) Realizar toda clase de operaciones financieras por todos los medios autorizados por la legislación vigente. Se exceptúan las operaciones comprendidas en la Ley de Entidades Financiera. 5) Realizar la explotación directa por sí o por terceros en establecimientos rurales, ganaderos, agrícolas, avícolas, frutícolas, vitivinícolas, forestales, cría, venta y cruza de ganado, explotación de tambos, cultivos, compra, venta y acopio de cereales. 6) Elaboración, producción, transformación y comercialización de productos y subproductos alimenticios de todo tipo, expendio de todo tipo de bebidas, explotación de servicio de catering, de concesiones gastronómicas, bares, restoranes, comedores, organización y logística en eventos sociales. 7) Creación, producción, elaboración, transformación, desarrollo, reparación, implementación, servicio técnico, consultoría, comercialización, distribución, importación y exportación de softwares, equipos informáticos, eléctricos y electrónicos. 8) Producción, organización y explotación de espectáculos públicos y privados, teatrales, musicales, coreográficos, desfiles, exposiciones, ferias, conciertos musicales, recitales, y eventos sociales. 9) Explotación de agencia de viajes y turismo, pudiendo realizar reservas y ventas de pasajes, terrestres, aéreos, marítimos, nacionales o internacionales; organización, reserva y ventas de excursiones, reservas de hotelería, reserva, organización y ventas de charters y traslados, dentro y fuera del país de contingentes. 10) Organización, administración, gerenciamiento y explotación de centros médicos asistenciales, con atención polivalente e integral de medicina, atención clínica, terapéutica y quirúrgica, con o sin internación y demás actividades relacionadas a la salud y servicios de atención médica. 11) Constituir, instalar y comercializar editoriales y gráficas en cualquier soporte. 12) Instalación y explotación de establecimientos destinados a la industrialización, fabricación y elaboración de las materias primas, productos y subproductos relacionados directamente con su objeto social. 13) Importación y exportación de bienes y servicios. 14) Actuar como fiduciante, fiduciaria, beneficiaria, fideicomisaria, por cuenta propia o por cuenta de terceros y/o asociada a terceros, en todo tipo de emprendimientos.'
+    // El mismo texto que ve el cliente en el formulario (fuente única)
+    const objetoSocialPreAprobado = OBJETO_SOCIAL_PREAPROBADO
     
     const objetoSocialFinal = data.objetoSocial === 'PERSONALIZADO' 
       ? (data.objetoPersonalizado || 'Pendiente de definir')
@@ -145,7 +136,11 @@ export async function POST(request: Request) {
       fechaCierre: data.fechaCierre || '31-12',
       asesoramientoContable: data.asesoramientoContable || false,
       ciudad: data.ciudad || '',
-      departamento: data.departamento || ''
+      departamento: data.departamento || '',
+      // Dónde vive la persona (no es la sede de la sociedad)
+      provinciaResidencia: data.provinciaResidencia || '',
+      // Último paso del wizard en el que estuvo, para volver ahí al recargar
+      pasoActual: Number.isInteger(data.pasoActual) ? data.pasoActual : 1
     }
 
     let tramite
