@@ -128,9 +128,8 @@ export function indicadores(items: Indicador[]) {
 
 export type Columna = { titulo: string; num?: boolean; ancho?: string }
 
-/** Cuadro numerado al estilo de un informe: título arriba, fuente abajo. */
+/** Cuadro al estilo de un informe: título arriba (se numera solo, en orden), fuente abajo. */
 export function cuadro(opciones: {
-  numero?: number
   titulo?: string
   columnas: Columna[]
   filas: (string | number)[][]
@@ -146,7 +145,7 @@ export function cuadro(opciones: {
     : `<tr><td class="vacio" colspan="${columnas.length}">${esc(opciones.vacio ?? 'Sin movimientos en el período.')}</td></tr>`
   return `
   <figure class="exhibit">
-    ${opciones.titulo ? `<figcaption class="exhibit-titulo">${opciones.numero ? `<span>Cuadro ${opciones.numero}</span>` : ''}${esc(opciones.titulo)}</figcaption>` : ''}
+    ${opciones.titulo ? `<figcaption class="exhibit-titulo"><span class="n-cuadro"></span>${esc(opciones.titulo)}</figcaption>` : ''}
     <table class="tabla">
       <colgroup>${columnas.map((c) => `<col${c.ancho ? ` style="width:${c.ancho}"` : ''}>`).join('')}</colgroup>
       <thead><tr>${columnas.map((c) => `<th${c.num ? ' class="num"' : ''}>${esc(c.titulo)}</th>`).join('')}</tr></thead>
@@ -158,10 +157,10 @@ export function cuadro(opciones: {
 }
 
 /** Envoltorio de un gráfico SVG con título numerado y fuente. */
-export function grafico(opciones: { numero: number; titulo: string; svg: string; fuente?: string }) {
+export function grafico(opciones: { titulo: string; svg: string; fuente?: string }) {
   return `
   <figure class="exhibit">
-    <figcaption class="exhibit-titulo"><span>Gráfico ${opciones.numero}</span>${esc(opciones.titulo)}</figcaption>
+    <figcaption class="exhibit-titulo"><span class="n-grafico"></span>${esc(opciones.titulo)}</figcaption>
     <div class="grafico">${opciones.svg}</div>
     ${opciones.fuente ? `<p class="fuente">${esc(opciones.fuente)}</p>` : ''}
   </figure>`
@@ -292,6 +291,10 @@ const CSS = `
   /* Cuadros y gráficos */
   .exhibit { margin: 0 0 6mm; break-inside: avoid; }
   .exhibit-titulo { margin-bottom: 2.2mm; font-size: 8.6pt; font-weight: 700; color: var(--negro); }
+  /* «Cuadro N» y «Gráfico N» se numeran solos en el orden del documento. */
+  .cuerpo { counter-reset: cuadro grafico; }
+  .n-cuadro::before { counter-increment: cuadro; content: 'Cuadro ' counter(cuadro); }
+  .n-grafico::before { counter-increment: grafico; content: 'Gráfico ' counter(grafico); }
   .exhibit-titulo span { display: inline-block; margin-right: 2mm; color: var(--rojo); font-size: 7.4pt; letter-spacing: 0.14em; text-transform: uppercase; }
   .fuente { margin: 1.6mm 0 0; font-size: 7.2pt; font-style: italic; color: var(--gris-2); }
   .tabla { width: 100%; border-collapse: collapse; font-size: 8.3pt; table-layout: fixed; }

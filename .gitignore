@@ -64,3 +64,7 @@ Thumbs.db
 .DS_Store
 
 .vercel
+
+# QA con Playwright
+/qa/.auth
+/qa/salida

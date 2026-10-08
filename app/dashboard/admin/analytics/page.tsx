@@ -23,7 +23,7 @@ import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
 import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { InformeGestion } from '@/components/admin/reportes/InformeGestion'
+import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
 
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
                 filename={`analytics-${periodo}-${jurisdiccion || 'todas'}`}
               />
             )}
-            <InformeGestion />
+            <ReporteMensualPdf />
           </>
         }
       />

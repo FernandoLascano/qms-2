@@ -37,8 +37,10 @@ export function barrasVerticales(opciones: {
   destacado?: number
   formato?: (n: number) => string
   alto?: number
+  /** false = sin el valor arriba de cada barra (series largas, p. ej. por día). */
+  valores?: boolean
 }) {
-  const { datos, destacado = -1, formato = abreviar } = opciones
+  const { datos, destacado = -1, formato = abreviar, valores = true } = opciones
   const W = 640
   const H = opciones.alto ?? 220
   const izq = 44
@@ -64,7 +66,7 @@ export function barrasVerticales(opciones: {
     const yv = y(d.valor)
     const color = i === destacado ? ROJO : GRIS
     const valor =
-      d.valor > 0
+      valores && d.valor > 0
         ? `<text x="${cx}" y="${yv - 4}" text-anchor="middle" font-size="8.5" font-weight="${i === destacado ? 700 : 400}" fill="${i === destacado ? NEGRO : GRIS_TEXTO}" ${FUENTE}>${esc(formato(d.valor))}</text>`
         : ''
     return (

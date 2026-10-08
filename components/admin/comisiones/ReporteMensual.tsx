@@ -2,15 +2,13 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { ChevronDown, Copy, FileDown, FileText } from 'lucide-react'
+import { ChevronDown, Copy, FileText } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Field } from '@/components/ui/field'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { descargarPdf } from '@/components/admin/reportes/descargar'
 import { etiquetaPeriodo, type Porcentajes, type TotalesLiquidacion } from '@/lib/comisiones'
 import { fmt, fmtFecha, type Gasto, type Movimiento } from './tipos'
+import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
 
 /**
  * Reporte mensual para las demás partes (cláusula 5.3 del contrato
@@ -37,38 +35,6 @@ export function ReporteMensual({
   gastosFondoMes: Gasto[]
 }) {
   const [abierto, setAbierto] = useState(false)
-  const [pdfAbierto, setPdfAbierto] = useState(false)
-  const [generando, setGenerando] = useState(false)
-  // Los costos de MW suelen repetirse mes a mes: se recuerdan en este navegador.
-  const [costosMw, setCostosMw] = useState(() => {
-    try {
-      return localStorage.getItem('qms-reporte-costos-mw') ?? ''
-    } catch {
-      return ''
-    }
-  })
-  const [evolucion, setEvolucion] = useState('')
-
-  async function descargar() {
-    setGenerando(true)
-    try {
-      try {
-        localStorage.setItem('qms-reporte-costos-mw', costosMw)
-      } catch {
-        // sin almacenamiento: no pasa nada
-      }
-      await descargarPdf('/api/admin/reportes/partes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ periodo, costosMw, evolucion }),
-      })
-      setPdfAbierto(false)
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'No se pudo generar el reporte')
-    } finally {
-      setGenerando(false)
-    }
-  }
 
   const originacion = [
     totales.comisionFernando > 0 && `Fernando ${fmt(totales.comisionFernando)}`,
@@ -123,7 +89,7 @@ export function ReporteMensual({
           <div>
             <h3 className="text-heading text-ink">Reporte para las partes</h3>
             <p className="text-body-sm text-ink-2">
-              El que pide el contrato todos los meses (cláusula 5.3). Revisalo y completá los costos de MW antes de mandarlo.
+              El que pide el contrato todos los meses (cláusula 5.3). En PDF sale el reporte mensual completo, con la gestión del mes.
             </p>
           </div>
         </div>
@@ -136,37 +102,9 @@ export function ReporteMensual({
             <Copy className="h-4 w-4" aria-hidden />
             Copiar
           </Button>
-          <Button size="sm" onClick={() => setPdfAbierto(true)}>
-            <FileDown className="h-4 w-4" aria-hidden />
-            PDF
-          </Button>
+          <ReporteMensualPdf periodo={periodo} etiqueta="PDF" size="sm" />
         </div>
       </div>
-      <Dialog open={pdfAbierto} onOpenChange={setPdfAbierto}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-title">Reporte a las partes · {etiquetaPeriodo(periodo)}</DialogTitle>
-            <DialogDescription>
-              Ingresos, distribución y Fondo salen solos de la liquidación. Completá lo que el sistema no sabe; si queda vacío, sale como «Sin informar».
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Field label="Costos cubiertos por MW (cláusula 3.1)" htmlFor="rp-costos" hint="Uno por renglón. Queda guardado para el mes que viene.">
-              <Textarea id="rp-costos" rows={5} value={costosMw} onChange={(e) => setCostosMw(e.target.value)} placeholder={'Hosting y base de datos: US$ 45\nPublicidad: $ 120.000'} />
-            </Field>
-            <Field label="Novedades del producto" htmlFor="rp-evolucion" hint="Qué cambió en el mes: mejoras, lanzamientos, problemas.">
-              <Textarea id="rp-evolucion" rows={5} value={evolucion} onChange={(e) => setEvolucion(e.target.value)} />
-            </Field>
-          </div>
-          <DialogFooter>
-            <Button onClick={descargar} loading={generando}>
-              {!generando && <FileDown className="h-4 w-4" aria-hidden />}
-              Descargar PDF
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {abierto && (
         <div className="border-t border-line p-card-sm sm:p-card">
           <Textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={22} className="font-mono text-body-sm" aria-label="Texto del reporte" />

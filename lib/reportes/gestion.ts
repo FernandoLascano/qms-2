@@ -2,18 +2,17 @@ import { prisma } from '@/lib/prisma'
 import { etiquetaPeriodo, moverPeriodo } from '@/lib/comisiones'
 import {
   cuadro,
-  documentoReporte,
   dosColumnas,
   grafico,
   indicadores,
-  mensajesClave,
-  notas,
   numero,
   pct,
   pesos,
   seccion,
   variacion,
   esc,
+  subtitulo,
+  type Indicador,
 } from './diseno'
 import { barrasHorizontales, barrasVerticales } from './graficos'
 
@@ -238,7 +237,13 @@ function compara(actual: number, anterior: number, mesAnterior: string, formato:
   return `(${v > 0 ? '+' : '−'}${pct(Math.abs(v))} contra ${mesAnterior}: ${formato(anterior)})`
 }
 
-export async function informeGestionHtml(d: Datos, preparadoPor: string) {
+export type Gestion = Datos
+
+/**
+ * Piezas del reporte que salen de la gestión: mensajes clave, indicadores y
+ * secciones (cada una recibe su número, el reporte las ordena).
+ */
+export function piezasGestion(d: Datos) {
   const mes = nombreMes(d.periodo)
   const mesAnt = nombreMes(d.anterior)
   const ticket = d.ingresos.cobros ? d.ingresos.actual / d.ingresos.cobros : 0
@@ -250,210 +255,164 @@ export async function informeGestionHtml(d: Datos, preparadoPor: string) {
   const serieVisible = d.serie.slice(desde)
   const tituloSerie = serieVisible.length === 12 ? 'últimos 12 meses' : `${etiquetaPeriodo(serieVisible[0].periodo).toLowerCase()} a ${etiquetaPeriodo(d.periodo).toLowerCase()}`
 
-  // 01 · Resumen ejecutivo
   const claves = [
     `Ingresos computables de <strong>${pesos(d.ingresos.actual)}</strong> en ${d.ingresos.cobros} ${d.ingresos.cobros === 1 ? 'cobro' : 'cobros'} ${compara(d.ingresos.actual, d.ingresos.previo, mesAnt, pesos)}.`,
     `<strong>${d.tramites.inscriptas.length}</strong> ${d.tramites.inscriptas.length === 1 ? 'sociedad inscripta' : 'sociedades inscriptas'} y <strong>${d.tramites.completos}</strong> ${d.tramites.completos === 1 ? 'formulario completo' : 'formularios completos'} en el mes ${compara(d.tramites.completos, d.tramites.completosAnt, mesAnt)}.`,
+    `${d.comercial.leads} ${d.comercial.leads === 1 ? 'consulta nueva' : 'consultas nuevas'} y <strong>${d.comercial.primerosCobros}</strong> ${d.comercial.primerosCobros === 1 ? 'cliente nuevo' : 'clientes nuevos'} (primer cobro de honorarios) en el mes.`,
     d.tiempos.medianaTotal != null
       ? `Una SAS tarda <strong>${numero(d.tiempos.medianaTotal)} días</strong> (mediana) desde el formulario completo hasta la inscripción, sobre ${d.tiempos.casos} ${d.tiempos.casos === 1 ? 'caso' : 'casos'} de los últimos 12 meses.`
-      : `Todavía no hay sociedades inscriptas en los últimos 12 meses para medir tiempos.`,
-    `${d.comercial.leads} ${d.comercial.leads === 1 ? 'consulta nueva' : 'consultas nuevas'} y ${d.comercial.primerosCobros} ${d.comercial.primerosCobros === 1 ? 'cliente nuevo' : 'clientes nuevos'} (primer cobro de honorarios) en el mes.`,
-    d.cartera.domiciliosActivos
-      ? `${d.cartera.domiciliosActivos} domicilios en sede activos, con un abono anual comprometido de ${pesos(d.cartera.abonoAnual)}; ${d.cartera.vencen90} ${d.cartera.vencen90 === 1 ? 'vence' : 'vencen'} en los próximos 90 días.`
       : '',
   ].filter(Boolean)
 
-  const resumen = seccion(
-    1,
-    'Resumen ejecutivo',
-    mensajesClave('Mensajes clave', claves) +
-      indicadores([
-        { valor: pesos(d.ingresos.actual), etiqueta: 'Ingresos del mes', delta: variacion(d.ingresos.actual, d.ingresos.previo), nota: `vs. ${mesAnt}` },
-        { valor: pesos(ticket), etiqueta: 'Ticket promedio', delta: variacion(ticket, ticketAnt), nota: `vs. ${mesAnt}` },
-        { valor: numero(d.tramites.inscriptas.length), etiqueta: 'Sociedades inscriptas', delta: variacion(d.tramites.inscriptas.length, d.tramites.inscriptasAnt), nota: `vs. ${mesAnt}` },
-        { valor: pesos(d.ingresos.anio), etiqueta: `Acumulado ${d.periodo.slice(0, 4)}`, nota: `${d.ingresos.cobrosAnio} cobros` },
-      ]),
-    { bajada: `Lo principal de ${etiquetaPeriodo(d.periodo).toLowerCase()} en una hoja.` },
-  )
+  const kpis: Indicador[] = [
+    { valor: pesos(d.ingresos.actual), etiqueta: 'Ingresos del mes', delta: variacion(d.ingresos.actual, d.ingresos.previo), nota: `vs. ${mesAnt}` },
+    { valor: pesos(ticket), etiqueta: 'Ticket promedio', delta: variacion(ticket, ticketAnt), nota: `vs. ${mesAnt}` },
+    { valor: numero(d.tramites.inscriptas.length), etiqueta: 'Sociedades inscriptas', delta: variacion(d.tramites.inscriptas.length, d.tramites.inscriptasAnt), nota: `vs. ${mesAnt}` },
+    { valor: pesos(d.ingresos.anio), etiqueta: `Acumulado ${d.periodo.slice(0, 4)}`, nota: `${d.ingresos.cobrosAnio} cobros` },
+  ]
 
-  // 02 · Ingresos
-  const ingresos = seccion(
-    2,
-    'Ingresos',
-    grafico({
-      numero: 1,
-      titulo: `Ingresos computables por mes, ${tituloSerie}`,
-      svg: barrasVerticales({ datos: serieVisible.map((s) => ({ etiqueta: mesCorto(s.periodo), valor: s.valor })), destacado: serieVisible.length - 1 }),
-      fuente: 'Fuente: módulo de Comisiones de QMS. Honorarios y domicilio en sede, sin tasas ni gastos de terceros.',
-    }) +
-      dosColumnas(
-        cuadro({
-          numero: 1,
-          titulo: `Composición de los ingresos de ${mes}`,
-          columnas: [{ titulo: 'Concepto' }, { titulo: 'Cobros', num: true, ancho: '16%' }, { titulo: 'Monto', num: true, ancho: '30%' }, { titulo: '%', num: true, ancho: '14%' }],
-          filas: d.ingresos.porAsunto.map((a) => [esc(a.etiqueta), a.cantidad, pesos(a.monto), pct(d.ingresos.actual ? (a.monto / d.ingresos.actual) * 100 : 0)]),
-          total: d.ingresos.porAsunto.length ? ['Total', d.ingresos.cobros, pesos(d.ingresos.actual), '100%'] : undefined,
-        }),
-        cuadro({
-          numero: 2,
-          titulo: 'Origen de los ingresos',
-          columnas: [{ titulo: 'Origen' }, { titulo: 'Monto', num: true, ancho: '34%' }, { titulo: '%', num: true, ancho: '16%' }],
-          filas: d.ingresos.actual
-            ? [
-                ['Orgánico (web, sin originador)', pesos(d.ingresos.organico), pct((d.ingresos.organico / d.ingresos.actual) * 100)],
-                ['Referido por una de las partes', pesos(d.ingresos.actual - d.ingresos.organico), pct(((d.ingresos.actual - d.ingresos.organico) / d.ingresos.actual) * 100)],
-              ]
-            : [],
-          fuente: 'Originador según la cláusula 4.2 del contrato asociativo.',
-        }),
-      ) +
-      cuadro({
-        numero: 3,
-        titulo: `Detalle de cobros de ${mes}`,
-        columnas: [{ titulo: 'Fecha', ancho: '14%' }, { titulo: 'Cliente' }, { titulo: 'Concepto', ancho: '30%' }, { titulo: 'Monto', num: true, ancho: '18%' }],
-        filas: d.ingresos.movsMes
-          .slice()
-          .sort((a, b) => a.fecha.getTime() - b.fecha.getTime())
-          .map((m) => [m.fecha.toISOString().slice(0, 10).split('-').reverse().join('/'), esc(m.cliente), esc(m.asunto), pesos(m.monto)]),
-        total: d.ingresos.movsMes.length ? ['', 'Total', '', pesos(d.ingresos.actual)] : undefined,
-      }),
-    { bajada: 'Lo cobrado que entra en el reparto del contrato asociativo.' },
-  )
-
-  // 03 · Operación
-  const etapasValidas = d.tiempos.etapas.filter((e) => e.mediana != null)
-  const operacion = seccion(
-    3,
-    'Operación',
-    indicadores([
-      { valor: numero(d.tramites.iniciados), etiqueta: 'Trámites iniciados', delta: variacion(d.tramites.iniciados, d.tramites.iniciadosAnt), nota: `vs. ${mesAnt}` },
-      { valor: numero(d.tramites.completos), etiqueta: 'Formularios completos', delta: variacion(d.tramites.completos, d.tramites.completosAnt), nota: `vs. ${mesAnt}` },
-      { valor: numero(d.tramites.enCurso), etiqueta: 'En curso hoy', nota: `${d.tramites.estancados} sin movimiento hace +7 días` },
-      {
-        valor: d.tiempos.medianaTotal != null ? `${numero(d.tiempos.medianaTotal)} días` : '—',
-        etiqueta: 'Formulario a inscripción',
-        nota: 'mediana, últimos 12 meses',
-      },
-    ]) +
-      cuadro({
-        numero: 4,
-        titulo: `Sociedades inscriptas en ${mes}`,
-        columnas: [{ titulo: 'Sociedad' }, { titulo: 'Plan', ancho: '17%' }, { titulo: 'Jurisdicción', ancho: '17%' }, { titulo: 'Inscripta', ancho: '14%' }, { titulo: 'Días', num: true, ancho: '10%' }],
-        filas: d.tramites.inscriptas.map((t) => {
-          const dd = dias(t.fechaFormularioCompleto ?? t.createdAt, t.fechaSociedadInscripta)
-          return [
-            esc(t.denominacionAprobada || t.denominacionSocial1),
-            PLAN[t.plan] ?? t.plan,
-            JURIS[t.jurisdiccion] ?? t.jurisdiccion,
-            t.fechaSociedadInscripta ? t.fechaSociedadInscripta.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) : '',
-            dd != null ? numero(dd) : '—',
-          ]
-        }),
-        vacio: 'No se inscribieron sociedades en el mes.',
-        fuente: 'Días corridos desde el formulario completo hasta la inscripción.',
-      }) +
-      (etapasValidas.length
-        ? grafico({
-            numero: 2,
-            titulo: 'Dónde se va el tiempo: días por etapa (mediana)',
-            svg: barrasHorizontales({
-              datos: etapasValidas.map((e) => ({ etiqueta: e.etiqueta, valor: e.mediana!, nota: `${e.casos} casos` })),
-              formato: (n) => `${numero(n)} días`,
-              destacarPrimero: false,
-            }),
-            fuente: 'Sociedades inscriptas en los últimos 12 meses con ambas fechas registradas. Días corridos.',
-          })
-        : '') +
-      dosColumnas(
-        cuadro({
-          titulo: 'Formularios completos por plan',
-          columnas: [{ titulo: 'Plan' }, { titulo: 'Cantidad', num: true, ancho: '30%' }],
-          filas: d.tramites.porPlan.map(([k, v]) => [k, v]),
-          vacio: 'Sin formularios completos en el mes.',
-        }),
-        cuadro({
-          titulo: 'Formularios completos por jurisdicción',
-          columnas: [{ titulo: 'Jurisdicción' }, { titulo: 'Cantidad', num: true, ancho: '30%' }],
-          filas: d.tramites.porJurisdiccion.map(([k, v]) => [k, v]),
-          vacio: 'Sin formularios completos en el mes.',
-        }),
-      ),
-    { nueva: true, bajada: 'Cuántos trámites entran, cuántos salen y cuánto tardan.' },
-  )
-
-  // 04 · Comercial
-  const comercial = seccion(
-    4,
-    'Comercial',
-    indicadores([
-      { valor: numero(d.comercial.leads), etiqueta: 'Consultas nuevas', delta: variacion(d.comercial.leads, d.comercial.leadsAnt), nota: `vs. ${mesAnt}` },
-      { valor: numero(d.comercial.primerosCobros), etiqueta: 'Clientes nuevos', nota: 'primer cobro de honorarios' },
-      { valor: numero(d.comercial.perdidos.reduce((a, [, v]) => a + v, 0)), etiqueta: 'Consultas descartadas', nota: 'cerradas sin venta en el mes' },
-    ]) +
+  /** Ingresos: evolución, composición y origen. `detalle` = cuadro de cobros que arma el reporte. */
+  const ingresos = (n: number, detalle: string) =>
+    seccion(
+      n,
+      'Ingresos',
       grafico({
-        numero: 3,
-        titulo: `Actividad comercial de ${mes}, paso por paso`,
-        svg: barrasHorizontales({
-          datos: [
-            { etiqueta: 'Consultas', valor: d.comercial.leads },
-            { etiqueta: 'Trámites iniciados', valor: d.tramites.iniciados },
-            { etiqueta: 'Formularios completos', valor: d.tramites.completos },
-            { etiqueta: 'Clientes nuevos (1.er cobro)', valor: d.comercial.primerosCobros },
-            { etiqueta: 'Sociedades inscriptas', valor: d.tramites.inscriptas.length },
-          ],
-          formato: numero,
-          destacarPrimero: false,
-        }),
-        fuente: 'Cuántos casos pasaron por cada paso en el mes. No es una tasa de conversión: quien se inscribe este mes pudo haber consultado antes.',
+        titulo: `Ingresos computables por mes, ${tituloSerie}`,
+        svg: barrasVerticales({ datos: serieVisible.map((s) => ({ etiqueta: mesCorto(s.periodo), valor: s.valor })), destacado: serieVisible.length - 1 }),
+        fuente: 'Fuente: módulo de Comisiones de QMS. Honorarios y domicilio en sede, sin tasas ni gastos de terceros.',
       }) +
-      dosColumnas(
-        cuadro({
-          titulo: 'De dónde llegaron las consultas',
-          columnas: [{ titulo: 'Canal' }, { titulo: 'Consultas', num: true, ancho: '30%' }],
-          filas: d.comercial.porOrigen.map(([k, v]) => [k, v]),
-          vacio: 'Sin consultas en el mes.',
-        }),
-        cuadro({
-          titulo: 'Por qué se perdieron',
-          columnas: [{ titulo: 'Motivo' }, { titulo: 'Casos', num: true, ancho: '30%' }],
-          filas: d.comercial.perdidos.map(([k, v]) => [k, v]),
-          vacio: 'No se descartaron consultas en el mes.',
-        }),
-      ),
-    { nueva: true, bajada: 'De dónde vienen los clientes y dónde se caen.' },
-  )
+        dosColumnas(
+          cuadro({
+            titulo: `Composición de los ingresos de ${mes}`,
+            columnas: [{ titulo: 'Concepto' }, { titulo: 'Cobros', num: true, ancho: '16%' }, { titulo: 'Monto', num: true, ancho: '30%' }, { titulo: '%', num: true, ancho: '14%' }],
+            filas: d.ingresos.porAsunto.map((a) => [esc(a.etiqueta), a.cantidad, pesos(a.monto), pct(d.ingresos.actual ? (a.monto / d.ingresos.actual) * 100 : 0)]),
+            total: d.ingresos.porAsunto.length ? ['Total', d.ingresos.cobros, pesos(d.ingresos.actual), '100%'] : undefined,
+          }),
+          cuadro({
+            titulo: 'Origen de los ingresos',
+            columnas: [{ titulo: 'Origen' }, { titulo: 'Monto', num: true, ancho: '34%' }, { titulo: '%', num: true, ancho: '16%' }],
+            filas: d.ingresos.actual
+              ? [
+                  ['Orgánico (web, sin originador)', pesos(d.ingresos.organico), pct((d.ingresos.organico / d.ingresos.actual) * 100)],
+                  ['Referido por una de las partes', pesos(d.ingresos.actual - d.ingresos.organico), pct(((d.ingresos.actual - d.ingresos.organico) / d.ingresos.actual) * 100)],
+                ]
+              : [],
+            fuente: 'Originador según la cláusula 4.2 del contrato asociativo.',
+          }),
+        ) +
+        detalle,
+      { nueva: true, bajada: 'Lo cobrado que entra en el reparto del contrato asociativo.' },
+    )
 
-  // 05 · Cartera recurrente
-  const cartera = seccion(
-    5,
-    'Cartera recurrente',
-    indicadores([
-      { valor: numero(d.cartera.domiciliosActivos), etiqueta: 'Domicilios en sede activos' },
-      { valor: pesos(d.cartera.abonoAnual), etiqueta: 'Abono anual comprometido' },
-      { valor: numero(d.cartera.vencen90), etiqueta: 'Vencen en 90 días', nota: d.cartera.vencen90 ? `${pesos(d.cartera.vencen90Monto)} a renovar` : undefined },
-    ]) +
-      notas('Notas metodológicas', [
-        'Ingresos computables: honorarios y domicilio en sede cobrados, según el módulo de Comisiones (lo mismo que se liquida a las partes). No incluyen tasas, depósitos de capital ni otros gastos que paga el cliente a terceros.',
-        'Los montos son nominales, en pesos y sin ajustar por inflación.',
-        'Las fechas de cobro se toman en hora argentina. Un cobro del último día del mes pertenece a ese mes.',
-        '«En curso hoy» y la cartera de domicilios reflejan el estado a la fecha de emisión, no al cierre del mes.',
-        'Los tiempos usan la mediana (el caso del medio) para que un trámite trabado no distorsione el promedio.',
-      ]),
-  )
+  const etapasValidas = d.tiempos.etapas.filter((e) => e.mediana != null)
+  const operacion = (n: number) =>
+    seccion(
+      n,
+      'Operación',
+      indicadores([
+        { valor: numero(d.tramites.iniciados), etiqueta: 'Trámites iniciados', delta: variacion(d.tramites.iniciados, d.tramites.iniciadosAnt), nota: `vs. ${mesAnt}` },
+        { valor: numero(d.tramites.completos), etiqueta: 'Formularios completos', delta: variacion(d.tramites.completos, d.tramites.completosAnt), nota: `vs. ${mesAnt}` },
+        { valor: numero(d.tramites.enCurso), etiqueta: 'En curso hoy', nota: `${d.tramites.estancados} sin movimiento hace +7 días` },
+        { valor: d.tiempos.medianaTotal != null ? `${numero(d.tiempos.medianaTotal)} días` : '—', etiqueta: 'Formulario a inscripción', nota: 'mediana, últimos 12 meses' },
+      ]) +
+        cuadro({
+          titulo: `Sociedades inscriptas en ${mes}`,
+          columnas: [{ titulo: 'Sociedad' }, { titulo: 'Plan', ancho: '17%' }, { titulo: 'Jurisdicción', ancho: '17%' }, { titulo: 'Inscripta', ancho: '14%' }, { titulo: 'Días', num: true, ancho: '10%' }],
+          filas: d.tramites.inscriptas.map((t) => {
+            const dd = dias(t.fechaFormularioCompleto ?? t.createdAt, t.fechaSociedadInscripta)
+            return [
+              esc(t.denominacionAprobada || t.denominacionSocial1),
+              PLAN[t.plan] ?? t.plan,
+              JURIS[t.jurisdiccion] ?? t.jurisdiccion,
+              t.fechaSociedadInscripta ? t.fechaSociedadInscripta.toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) : '',
+              dd != null ? numero(dd) : '—',
+            ]
+          }),
+          vacio: 'No se inscribieron sociedades en el mes.',
+          fuente: 'Días corridos desde el formulario completo hasta la inscripción.',
+        }) +
+        (etapasValidas.length
+          ? grafico({
+              titulo: 'Dónde se va el tiempo: días por etapa (mediana)',
+              svg: barrasHorizontales({
+                datos: etapasValidas.map((e) => ({ etiqueta: e.etiqueta, valor: e.mediana!, nota: `${e.casos} casos` })),
+                formato: (x) => `${numero(x)} días`,
+                destacarPrimero: false,
+              }),
+              fuente: 'Sociedades inscriptas en los últimos 12 meses con ambas fechas registradas. Días corridos.',
+            })
+          : '') +
+        dosColumnas(
+          cuadro({
+            titulo: 'Formularios completos por plan',
+            columnas: [{ titulo: 'Plan' }, { titulo: 'Cantidad', num: true, ancho: '30%' }],
+            filas: d.tramites.porPlan.map(([k, v]) => [k, v]),
+            vacio: 'Sin formularios completos en el mes.',
+          }),
+          cuadro({
+            titulo: 'Formularios completos por jurisdicción',
+            columnas: [{ titulo: 'Jurisdicción' }, { titulo: 'Cantidad', num: true, ancho: '30%' }],
+            filas: d.tramites.porJurisdiccion.map(([k, v]) => [k, v]),
+            vacio: 'Sin formularios completos en el mes.',
+          }),
+        ) +
+        subtitulo('Cartera recurrente') +
+        indicadores([
+          { valor: numero(d.cartera.domiciliosActivos), etiqueta: 'Domicilios en sede activos' },
+          { valor: pesos(d.cartera.abonoAnual), etiqueta: 'Abono anual comprometido' },
+          { valor: numero(d.cartera.vencen90), etiqueta: 'Vencen en 90 días', nota: d.cartera.vencen90 ? `${pesos(d.cartera.vencen90Monto)} a renovar` : undefined },
+        ]),
+      { nueva: true, bajada: 'Cuántos trámites entran, cuántos salen y cuánto tardan.' },
+    )
 
-  return documentoReporte({
-    titulo: `Informe de gestión · ${etiquetaPeriodo(d.periodo)}`,
-    portada: {
-      rotulo: 'Informe de gestión',
-      titulo: etiquetaPeriodo(d.periodo),
-      bajada: 'Ingresos, operación y actividad comercial de QuieroMiSAS en el mes, comparados con el mes anterior y los últimos doce meses.',
-      datos: [
-        ['Preparado por', preparadoPor],
-        ['Fecha de emisión', new Date().toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', day: 'numeric', month: 'long', year: 'numeric' })],
-        ['Clasificación', 'Confidencial · uso interno'],
-      ],
-    },
-    cuerpo: resumen + ingresos + operacion + comercial + cartera,
-  })
+  /** Comercial: consultas (leads), clientes nuevos y por qué se pierden. */
+  const comercial = (n: number, opciones: { nueva?: boolean } = {}) =>
+    seccion(
+      n,
+      'Comercial',
+      indicadores([
+        { valor: numero(d.comercial.leads), etiqueta: 'Consultas nuevas', delta: variacion(d.comercial.leads, d.comercial.leadsAnt), nota: `vs. ${mesAnt}` },
+        { valor: numero(d.comercial.primerosCobros), etiqueta: 'Clientes nuevos', nota: 'primer cobro de honorarios' },
+        { valor: numero(d.comercial.perdidos.reduce((a, [, v]) => a + v, 0)), etiqueta: 'Consultas descartadas', nota: 'cerradas sin venta en el mes' },
+      ]) +
+        grafico({
+          titulo: `Actividad comercial de ${mes}, paso por paso`,
+          svg: barrasHorizontales({
+            datos: [
+              { etiqueta: 'Consultas', valor: d.comercial.leads },
+              { etiqueta: 'Trámites iniciados', valor: d.tramites.iniciados },
+              { etiqueta: 'Formularios completos', valor: d.tramites.completos },
+              { etiqueta: 'Clientes nuevos (1.er cobro)', valor: d.comercial.primerosCobros },
+              { etiqueta: 'Sociedades inscriptas', valor: d.tramites.inscriptas.length },
+            ],
+            formato: numero,
+            destacarPrimero: false,
+          }),
+          fuente: 'Cuántos casos pasaron por cada paso en el mes. No es una tasa de conversión: quien se inscribe este mes pudo haber consultado antes.',
+        }) +
+        dosColumnas(
+          cuadro({
+            titulo: 'De dónde llegaron las consultas',
+            columnas: [{ titulo: 'Canal' }, { titulo: 'Consultas', num: true, ancho: '30%' }],
+            filas: d.comercial.porOrigen.map(([k, v]) => [k, v]),
+            vacio: 'Sin consultas en el mes.',
+          }),
+          cuadro({
+            titulo: 'Por qué se perdieron',
+            columnas: [{ titulo: 'Motivo' }, { titulo: 'Casos', num: true, ancho: '30%' }],
+            filas: d.comercial.perdidos.map(([k, v]) => [k, v]),
+            vacio: 'No se descartaron consultas en el mes.',
+          }),
+        ),
+      { nueva: opciones.nueva, bajada: 'De las consultas a los clientes: de dónde vienen y dónde se caen.' },
+    )
+
+  const notasMetodo = [
+    'Ingresos computables: honorarios y domicilio en sede cobrados, según el módulo de Comisiones (lo mismo que se liquida a las partes). No incluyen tasas, depósitos de capital ni otros gastos que paga el cliente a terceros.',
+    'Los montos son nominales, en pesos y sin ajustar por inflación. Las fechas de cobro se toman en hora argentina.',
+    '«En curso hoy» y la cartera de domicilios reflejan el estado a la fecha de emisión, no al cierre del mes.',
+    'Los tiempos usan la mediana (el caso del medio) para que un trámite trabado no distorsione el promedio.',
+  ]
+
+  return { claves, kpis, ingresos, operacion, comercial, notasMetodo }
 }
-

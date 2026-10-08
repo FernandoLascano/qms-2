@@ -18,8 +18,7 @@ const nextConfig: NextConfig = {
   // Las plantillas, el logo y las fuentes se leen del disco en la función: hay que incluirlos en el deploy.
   outputFileTracingIncludes: {
     "/api/admin/tramites/[id]/contrato-domicilio": ["./lib/plantillas/**"],
-    "/api/admin/reportes/gestion": ["./lib/plantillas/**"],
-    "/api/admin/reportes/partes": ["./lib/plantillas/**"],
+    "/api/admin/reportes/mensual": ["./lib/plantillas/**"],
   },
   images: {
     remotePatterns: [
