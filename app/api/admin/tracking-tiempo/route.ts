@@ -2,6 +2,47 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ETAPAS_FLUJO } from '@/lib/tramites/estado'
+
+/*
+ * Tiempos por etapa sobre los 14 pasos reales del flujo (ETAPAS_FLUJO), los
+ * mismos que el admin tilda en «Control de Etapas». Antes se medían las 7
+ * etapas viejas y los pasos nuevos (honorarios, homonimia, cuenta bancaria,
+ * borrador…) quedaban sumados adentro de otra etapa.
+ *
+ * Cada paso guarda su fecha en `fecha<Campo>` (lo pone PATCH …/etapas). El
+ * tiempo de un paso se mide desde el último paso anterior que tenga fecha
+ * (o desde la creación del trámite): los trámites viejos tienen pasos que
+ * nunca se marcaron y no por eso hay que descartar el resto.
+ */
+const campoFecha = (campo: string) => `fecha${campo[0].toUpperCase()}${campo.slice(1)}`
+const CAMPOS_FECHA = ETAPAS_FLUJO.map((e) => campoFecha(e.campo))
+const MS_DIA = 1000 * 60 * 60 * 24
+
+type ConFechas = { createdAt: Date } & Record<string, unknown>
+
+const fechaDe = (tramite: ConFechas, campo: string): Date | null => {
+  const valor = tramite[campoFecha(campo)]
+  return valor instanceof Date ? valor : null
+}
+
+/** Milisegundos que tomó cada paso con fecha, en el orden del flujo. */
+function duracionesPorPaso(tramite: ConFechas): Record<string, number> {
+  const out: Record<string, number> = {}
+  let anterior = tramite.createdAt
+  for (const paso of ETAPAS_FLUJO) {
+    const fecha = fechaDe(tramite, paso.campo)
+    if (!fecha) continue
+    const diff = fecha.getTime() - anterior.getTime()
+    // Un paso tildado fuera de orden da negativo: no es un tiempo real.
+    if (diff >= 0) out[paso.campo] = diff
+    if (fecha > anterior) anterior = fecha
+  }
+  return out
+}
+
+const SELECT_FECHAS = Object.fromEntries(CAMPOS_FECHA.map((c) => [c, true])) as Record<string, true>
+
 
 // GET - Obtener métricas de tracking de tiempo
 export async function GET(request: NextRequest) {
@@ -20,31 +61,16 @@ export async function GET(request: NextRequest) {
 
     if (tramiteId) {
       // Tracking de tiempo para un trámite específico
-      const tramite = await prisma.tramite.findUnique({
+      const tramite = (await prisma.tramite.findUnique({
         where: { id: tramiteId },
         select: {
           id: true,
           denominacionSocial1: true,
           denominacionAprobada: true,
           createdAt: true,
-          fechaFormularioCompleto: true,
-          fechaDenominacionReservada: true,
-          fechaCapitalDepositado: true,
-          fechaTasaPagada: true,
-          fechaDocumentosRevisados: true,
-          fechaDocumentosFirmados: true,
-          fechaTramiteIngresado: true,
-          fechaSociedadInscripta: true,
-          formularioCompleto: true,
-          denominacionReservada: true,
-          capitalDepositado: true,
-          tasaPagada: true,
-          documentosRevisados: true,
-          documentosFirmados: true,
-          tramiteIngresado: true,
-          sociedadInscripta: true
-        }
-      })
+          ...SELECT_FECHAS,
+        },
+      })) as (ConFechas & { id: string; denominacionSocial1: string | null; denominacionAprobada: string | null }) | null
 
       if (!tramite) {
         return NextResponse.json(
@@ -53,66 +79,15 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Calcular tiempos por etapa
       const tiempos: Record<string, { dias: number, horas: number, minutos: number } | null> = {}
-
-      // Tiempo desde inicio hasta formulario completo
-      if (tramite.fechaFormularioCompleto) {
-        const diff = tramite.fechaFormularioCompleto.getTime() - tramite.createdAt.getTime()
-        tiempos.formularioCompleto = calcularTiempo(diff)
-      }
-
-      // Tiempo desde formulario hasta reserva de denominación
-      if (tramite.fechaFormularioCompleto && tramite.fechaDenominacionReservada) {
-        const diff = tramite.fechaDenominacionReservada.getTime() - tramite.fechaFormularioCompleto.getTime()
-        tiempos.denominacionReservada = calcularTiempo(diff)
-      }
-
-      // Tiempo desde reserva hasta depósito de capital
-      if (tramite.fechaDenominacionReservada && tramite.fechaCapitalDepositado) {
-        const diff = tramite.fechaCapitalDepositado.getTime() - tramite.fechaDenominacionReservada.getTime()
-        tiempos.capitalDepositado = calcularTiempo(diff)
-      }
-
-      // Tiempo desde capital hasta pago de tasa
-      if (tramite.fechaCapitalDepositado && tramite.fechaTasaPagada) {
-        const diff = tramite.fechaTasaPagada.getTime() - tramite.fechaCapitalDepositado.getTime()
-        tiempos.tasaPagada = calcularTiempo(diff)
-      }
-
-      // Tiempo desde tasa hasta documentos revisados
-      if (tramite.fechaTasaPagada && tramite.fechaDocumentosRevisados) {
-        const diff = tramite.fechaDocumentosRevisados.getTime() - tramite.fechaTasaPagada.getTime()
-        tiempos.documentosRevisados = calcularTiempo(diff)
-      }
-
-      // Tiempo desde revisión hasta documentos firmados
-      if (tramite.fechaDocumentosRevisados && tramite.fechaDocumentosFirmados) {
-        const diff = tramite.fechaDocumentosFirmados.getTime() - tramite.fechaDocumentosRevisados.getTime()
-        tiempos.documentosFirmados = calcularTiempo(diff)
-      }
-
-      // Tiempo desde firmas hasta ingreso del trámite
-      if (tramite.fechaDocumentosFirmados && tramite.fechaTramiteIngresado) {
-        const diff = tramite.fechaTramiteIngresado.getTime() - tramite.fechaDocumentosFirmados.getTime()
-        tiempos.tramiteIngresado = calcularTiempo(diff)
-      }
-
-      // Tiempo desde ingreso hasta inscripción
-      if (tramite.fechaTramiteIngresado && tramite.fechaSociedadInscripta) {
-        const diff = tramite.fechaSociedadInscripta.getTime() - tramite.fechaTramiteIngresado.getTime()
-        tiempos.sociedadInscripta = calcularTiempo(diff)
+      for (const [campo, diff] of Object.entries(duracionesPorPaso(tramite))) {
+        tiempos[campo] = calcularTiempo(diff)
       }
 
       // Tiempo total
       let tiempoTotal = null
-      if (tramite.fechaSociedadInscripta) {
-        const diff = tramite.fechaSociedadInscripta.getTime() - tramite.createdAt.getTime()
-        tiempoTotal = calcularTiempo(diff)
-      } else if (tramite.fechaTramiteIngresado) {
-        const diff = tramite.fechaTramiteIngresado.getTime() - tramite.createdAt.getTime()
-        tiempoTotal = calcularTiempo(diff)
-      }
+      const fin = fechaDe(tramite, 'sociedadInscripta') ?? fechaDe(tramite, 'tramiteIngresado')
+      if (fin) tiempoTotal = calcularTiempo(fin.getTime() - tramite.createdAt.getTime())
 
       return NextResponse.json({
         tramite: {
@@ -124,69 +99,37 @@ export async function GET(request: NextRequest) {
       })
     } else {
       // Métricas agregadas de todos los trámites
-      const tramites = await prisma.tramite.findMany({
+      const tramites = (await prisma.tramite.findMany({
         where: {
           formularioCompleto: true
         },
-        select: {
-          fechaFormularioCompleto: true,
-          fechaDenominacionReservada: true,
-          fechaCapitalDepositado: true,
-          fechaTasaPagada: true,
-          fechaDocumentosRevisados: true,
-          fechaDocumentosFirmados: true,
-          fechaTramiteIngresado: true,
-          fechaSociedadInscripta: true,
-          createdAt: true
-        }
-      })
+        select: { createdAt: true, ...SELECT_FECHAS },
+      })) as ConFechas[]
 
-      // Calcular promedios
+      // Promedio en días de cada paso, en el orden del flujo.
+      const acumulado: Record<string, number[]> = {}
+      for (const tramite of tramites) {
+        for (const [campo, diff] of Object.entries(duracionesPorPaso(tramite))) {
+          ;(acumulado[campo] ??= []).push(diff)
+        }
+      }
       const promedios: Record<string, number> = {}
-      const etapas = [
-        'formularioCompleto',
-        'denominacionReservada',
-        'capitalDepositado',
-        'tasaPagada',
-        'documentosRevisados',
-        'documentosFirmados',
-        'tramiteIngresado',
-        'sociedadInscripta'
-      ]
-
-      etapas.forEach((etapa, index) => {
-        const tiemposEtapa: number[] = []
-        
-        tramites.forEach(tramite => {
-          const fechaActual = getFechaEtapa(tramite, etapa)
-          const fechaAnterior = index === 0 
-            ? tramite.createdAt 
-            : getFechaEtapa(tramite, etapas[index - 1])
-          
-          if (fechaActual && fechaAnterior) {
-            const diff = fechaActual.getTime() - fechaAnterior.getTime()
-            tiemposEtapa.push(diff)
-          }
-        })
-
-        if (tiemposEtapa.length > 0) {
-          const promedio = tiemposEtapa.reduce((a, b) => a + b, 0) / tiemposEtapa.length
-          promedios[etapa] = promedio / (1000 * 60 * 60 * 24) // Convertir a días
-        }
-      })
+      for (const paso of ETAPAS_FLUJO) {
+        const lista = acumulado[paso.campo]
+        if (lista?.length) promedios[paso.campo] = lista.reduce((a, b) => a + b, 0) / lista.length / MS_DIA
+      }
 
       // Tiempo promedio total
       const tiemposTotales: number[] = []
       tramites.forEach(tramite => {
-        const fechaFinal = tramite.fechaSociedadInscripta || tramite.fechaTramiteIngresado
+        const fechaFinal = fechaDe(tramite, 'sociedadInscripta') ?? fechaDe(tramite, 'tramiteIngresado')
         if (fechaFinal) {
-          const diff = fechaFinal.getTime() - tramite.createdAt.getTime()
-          tiemposTotales.push(diff)
+          tiemposTotales.push(fechaFinal.getTime() - tramite.createdAt.getTime())
         }
       })
 
       const tiempoPromedioTotal = tiemposTotales.length > 0
-        ? tiemposTotales.reduce((a, b) => a + b, 0) / tiemposTotales.length / (1000 * 60 * 60 * 24)
+        ? tiemposTotales.reduce((a, b) => a + b, 0) / tiemposTotales.length / MS_DIA
         : 0
 
       return NextResponse.json({
@@ -205,25 +148,9 @@ export async function GET(request: NextRequest) {
 }
 
 function calcularTiempo(diffMs: number) {
-  const dias = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  const horas = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const dias = Math.floor(diffMs / MS_DIA)
+  const horas = Math.floor((diffMs % MS_DIA) / (1000 * 60 * 60))
   const minutos = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-  
+
   return { dias, horas, minutos }
 }
-
-function getFechaEtapa(tramite: any, etapa: string): Date | null {
-  const mapeo: Record<string, string> = {
-    'formularioCompleto': 'fechaFormularioCompleto',
-    'denominacionReservada': 'fechaDenominacionReservada',
-    'capitalDepositado': 'fechaCapitalDepositado',
-    'tasaPagada': 'fechaTasaPagada',
-    'documentosRevisados': 'fechaDocumentosRevisados',
-    'documentosFirmados': 'fechaDocumentosFirmados',
-    'tramiteIngresado': 'fechaTramiteIngresado',
-    'sociedadInscripta': 'fechaSociedadInscripta'
-  }
-  
-  return tramite[mapeo[etapa]] || null
-}
-

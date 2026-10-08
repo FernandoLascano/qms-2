@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import {
   BENEFICIARIO_LABEL,
   bonoComercial,
-  calcularReparto,
+  cargaEnMW,
   etiquetaPeriodo,
   type Porcentajes,
 } from '@/lib/comisiones'
@@ -26,7 +26,9 @@ import { fmt, fmtFecha, pedir, type Movimiento } from './tipos'
  *
  * Esta tabla da los montos exactos según el contrato:
  *  · Originación: si alguien trajo al cliente, a esa persona. Si entró solo
- *    por la web de QMS, igual se carga a Fernando: así lo liquida él en MW.
+ *    por la web de QMS (orgánico: en QMS no hay originación, contrato 4.2 a),
+ *    en MW igual se carga una «originación» a Fernando: es sólo la forma de
+ *    cargarlo allá (ver cargaEnMW en lib/comisiones.ts).
  *  · Operadores: el resto de lo de Fernando, con los dos fondos adentro (él
  *    los custodia). Cliente de la web: 30% originación + 40% operadores =
  *    el mismo 70% del contrato (50% suyo + 20% de fondo).
@@ -69,18 +71,14 @@ export function CargaMW({
   const hayBono = bonoPct > 0
 
   const filas = movimientos.map((m) => {
-    const r = calcularReparto(m.monto, m.originador, porcentajes)
-    const deFernando = r.operadorFernando + r.fondoFernando + r.fondoJustiniano
-    // Cliente de la web: lo de Fernando se parte en dos líneas de MW. El
-    // total no cambia; sólo cómo se carga.
-    const web = m.originador === 'NINGUNO'
-    const originacion = web ? Math.min(m.monto * (porcentajes.originacion / 100), deFernando) : r.comisionOriginacion
+    // Regla de carga en MW (no es el reparto de QMS): ver cargaEnMW.
+    const c = cargaEnMW(m.monto, m.originador, porcentajes)
     return {
       m,
-      web,
-      originacion,
-      operadores: web ? deFernando - originacion : deFernando,
-      mw: r.mw,
+      web: c.originacionSoloEnMW,
+      originacion: c.originacion,
+      operadores: c.operadores,
+      mw: c.mw,
       bono: bonoComercial(m.monto, m.originador, bonoPct, porcentajes),
     }
   })
@@ -102,7 +100,8 @@ export function CargaMW({
       <div className="border-b border-line px-card-sm py-3.5 sm:px-card">
         <h3 className="text-heading text-ink">Cómo cargarlo en MW</h3>
         <p className="mt-0.5 text-body-sm text-ink-2">
-          Los montos de cada línea para liquidar {etiquetaPeriodo(periodo).toLowerCase()} en el sistema de MW, según el contrato QMS.
+          Los montos de cada línea para liquidar {etiquetaPeriodo(periodo).toLowerCase()} en el sistema de MW. Es
+          sólo la forma de cargarlo allá: lo que cobra cada uno es lo de «A pagar» y Movimientos.
         </p>
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <label className="text-body-sm text-ink-2" htmlFor="bono-mes">
@@ -142,7 +141,7 @@ export function CargaMW({
             <tr className="border-b border-line bg-surface-2 text-left text-label text-ink-2">
               <th className="px-card-sm py-2.5 font-semibold sm:pl-card">Cobro</th>
               <th className="py-2.5 pr-4 text-right font-semibold">Cobrado</th>
-              <th className="py-2.5 pr-4 text-right font-semibold">Originación</th>
+              <th className="py-2.5 pr-4 text-right font-semibold" title="Línea «Originación» del sistema de MW">Originación (MW)</th>
               <th className="py-2.5 pr-4 text-right font-semibold" title="Parte de Fernando + los dos fondos, que él custodia">Operadores</th>
               {hayBono ? (
                 <>
@@ -165,7 +164,7 @@ export function CargaMW({
                 <td className="whitespace-nowrap py-3 pr-4 text-right tnum">
                   <p className="font-semibold text-ink">{fmt(originacion)}</p>
                   <p className="text-label text-ink-3">
-                    {web ? 'a Fernando · entró por la web' : `a ${BENEFICIARIO_LABEL[m.originador as 'FERNANDO' | 'JUSTINIANO' | 'MW']}`}
+                    {web ? 'a Fernando · sólo en MW (en QMS, orgánico)' : `a ${BENEFICIARIO_LABEL[m.originador as 'FERNANDO' | 'JUSTINIANO' | 'MW']}`}
                   </p>
                 </td>
                 <td className="whitespace-nowrap py-3 pr-4 text-right tnum">
@@ -204,9 +203,10 @@ export function CargaMW({
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-info" aria-hidden />
         <p>
           No uses la plantilla por defecto de MW (30% / 32,5% / 37,5%): la diferencia sale del fondo. Cliente de la
-          web: originación 30% a vos, operadores 40% (de ahí sale el Fondo de Desarrollo, 20%) y MW 30% (de ahí sale
-          tu bono comercial, si hay). Si alguien trajo al cliente, la originación es suya y el resto se reparte
-          según el contrato.
+          web: en QMS es orgánico y no lleva originación (contrato, 4.2 a), pero en MW se carga así: originación 30%
+          a vos, operadores 40% (de ahí sale el Fondo de Desarrollo, 20%) y MW 30% (de ahí sale tu bono comercial,
+          si hay). Es el mismo 70% tuyo + fondos que en QMS, partido en dos líneas. Si alguien trajo al cliente, la
+          originación es suya y el resto se reparte según el contrato.
         </p>
       </div>
     </Card>

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { erroresConfig } from '@/lib/schemas/configuracion'
 
 // GET - Obtener configuración
 export async function GET(request: NextRequest) {
@@ -47,6 +48,13 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
+
+    // Campos numéricos: ni vacíos (NaN llega como null), ni negativos, ni
+    // fuera de rango. Un campo que no viene se deja como estaba.
+    const errores = erroresConfig(body ?? {})
+    if (errores.length > 0) {
+      return NextResponse.json({ error: errores[0], errores }, { status: 400 })
+    }
 
     // Obtener configuración existente o crear una nueva
     let config = await prisma.config.findFirst()

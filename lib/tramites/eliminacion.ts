@@ -43,3 +43,32 @@ export function motivoNoEliminable(t: DatosEliminacion): string | null {
 }
 
 export const puedeEliminarse = (t: DatosEliminacion) => motivoNoEliminable(t) === null
+
+export interface TramiteDeUsuario {
+  denominacionAprobada?: string | null
+  denominacionSocial1?: string | null
+  sociedadInscripta?: boolean | null
+  estadoGeneral?: string | null
+  _count: { pagos: number; enlacesPago: number }
+}
+
+/**
+ * Motivo por el que un usuario no se puede borrar (borrarlo borra sus
+ * trámites), o null si se puede. La usan el DELETE de usuarios y el listado,
+ * para deshabilitar el botón con el mismo texto que devolvería el servidor.
+ */
+export function motivoUsuarioNoEliminable(tramites: TramiteDeUsuario[]): string | null {
+  const bloqueados = tramites.filter((t) =>
+    motivoNoEliminable({
+      sociedadInscripta: t.sociedadInscripta,
+      estadoGeneral: t.estadoGeneral,
+      pagosAprobados: t._count.pagos,
+      enlacesPagados: t._count.enlacesPago,
+    }),
+  )
+  if (bloqueados.length === 0) return null
+  const nombres = bloqueados
+    .map((t) => t.denominacionAprobada || t.denominacionSocial1 || 'sin nombre')
+    .join(', ')
+  return `No se puede eliminar: tiene trámites inscriptos o con pagos cobrados (${nombres}).`
+}

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { adminUsuarioPatchSchema } from '@/lib/schemas/admin-user'
-import { motivoNoEliminable, WHERE_ENLACES_PAGADOS, WHERE_PAGOS_APROBADOS } from '@/lib/tramites/eliminacion'
+import { motivoUsuarioNoEliminable, WHERE_ENLACES_PAGADOS, WHERE_PAGOS_APROBADOS } from '@/lib/tramites/eliminacion'
 
 interface RouteParams {
   params: Promise<{
@@ -140,22 +140,9 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     // Borrar el usuario borra sus trámites: misma regla que el borrado de un
     // trámite (lib/tramites/eliminacion), chequeada antes de borrar nada.
-    const bloqueados = usuario.tramites.filter((t) =>
-      motivoNoEliminable({
-        sociedadInscripta: t.sociedadInscripta,
-        estadoGeneral: t.estadoGeneral,
-        pagosAprobados: t._count.pagos,
-        enlacesPagados: t._count.enlacesPago
-      })
-    )
-    if (bloqueados.length > 0) {
-      const nombres = bloqueados
-        .map((t) => t.denominacionAprobada || t.denominacionSocial1 || 'sin nombre')
-        .join(', ')
-      return NextResponse.json(
-        { error: `No se puede eliminar: tiene trámites inscriptos o con pagos cobrados (${nombres}).` },
-        { status: 403 }
-      )
+    const motivo = motivoUsuarioNoEliminable(usuario.tramites)
+    if (motivo) {
+      return NextResponse.json({ error: motivo }, { status: 403 })
     }
 
     // Eliminar datos relacionados de cada trámite

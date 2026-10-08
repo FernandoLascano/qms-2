@@ -27,7 +27,7 @@ import TramitesFiltros, {
   SLUG_POR_FILTRO,
   type FiltroTipo,
 } from './TramitesFiltros'
-import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { calcularProgreso, estadoDerivado, etapaActual, getEstado } from '@/lib/tramites/estado'
 import { puedeEliminarse } from '@/lib/tramites/eliminacion'
 import { cn } from '@/lib/utils'
 import { PlanBadge } from '@/components/ui/plan-badge'
@@ -52,7 +52,8 @@ const coincideFiltro = (tramite: any, filtro: FiltroTipo) => {
     case 'DOCUMENTOS_PENDIENTES':
       return (tramite._count?.documentos ?? 0) > 0
     case 'ESPERANDO_CLIENTE':
-      return tramite.estadoGeneral === 'ESPERANDO_CLIENTE'
+      // Según las etapas, no el estado guardado a mano (que nadie actualizaba).
+      return estadoDerivado(tramite) === 'ESPERANDO_CLIENTE'
     case 'EN_PROCESO':
       return !tramite.sociedadInscripta && calcularProgreso(tramite) < 100
     case 'COMPLETADOS':

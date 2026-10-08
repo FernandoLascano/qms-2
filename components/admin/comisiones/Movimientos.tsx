@@ -181,7 +181,7 @@ export function MovimientosTab({
                   <th className="py-2.5 pr-4 font-semibold">Cliente</th>
                   <th className="py-2.5 pr-4 font-semibold">Originado por</th>
                   <th className="py-2.5 pr-4 text-right font-semibold">Honorario</th>
-                  <th className="py-2.5 pr-4 text-right font-semibold" title="Comisión de originación">Originación</th>
+                  <th className="py-2.5 pr-4 text-right font-semibold" title="Comisión de originación según el contrato QMS. Un cliente orgánico (web) no lleva: la «originación a Fernando» es sólo la forma de cargarlo en MW (ver Liquidación › Cómo cargarlo en MW)">Originación</th>
                   <th className="py-2.5 pr-4 text-right font-semibold">MW</th>
                   <th className="py-2.5 pr-4 text-right font-semibold">Operador</th>
                   <th className="py-2.5 pr-4 text-right font-semibold" title="Fondo de Desarrollo (Fernando + Justiniano)">Fondo</th>

@@ -61,7 +61,11 @@ export async function PATCH(
     if (typeof body.displayName === 'string') data.displayName = body.displayName.trim()
     if (typeof body.subject === 'string') data.subject = body.subject.trim()
     if (typeof body.bodyHtml === 'string') data.bodyHtml = body.bodyHtml
-    if (typeof body.category === 'string') data.category = body.category.trim() || 'general'
+    // La categoría de una plantilla del sistema no se toca: antes la pantalla
+    // mandaba «general» porque no conocía «transaccional».
+    if (!existing.isSystem && typeof body.category === 'string') {
+      data.category = body.category.trim() || 'general'
+    }
     if (typeof body.isActive === 'boolean') data.isActive = body.isActive
     if (body.variables !== undefined) {
       const v = parseVariables(body.variables)

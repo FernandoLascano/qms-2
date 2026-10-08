@@ -6,8 +6,8 @@ import { Loader2, Save, Shield, Code2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
+import { CATEGORIAS_PLANTILLA, etiquetaCategoria } from '@/lib/emails/categorias-plantilla'
 
-const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
 
 interface Tpl {
   id: string
@@ -108,7 +108,7 @@ export default function EditarPlantillaPage() {
           subject,
           bodyHtml,
           variables,
-          category,
+          category: tpl?.isSystem ? undefined : category,
           isActive,
         }),
       })
@@ -181,16 +181,27 @@ export default function EditarPlantillaPage() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-label font-semibold text-ink-2 mb-1">Categoría</label>
-            <Select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </Select>
+            {tpl?.isSystem ? (
+              // La de los mails automáticos no se cambia (y no se pisa al guardar).
+              <p className="px-3 py-2 border border-line rounded-control text-body-sm text-ink-2 bg-surface-2">
+                {etiquetaCategoria(category, true)}
+              </p>
+            ) : (
+              <Select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
+                {CATEGORIAS_PLANTILLA.map((c) => (
+                  <option key={c.valor} value={c.valor}>
+                    {c.label}
+                  </option>
+                ))}
+                {/* Una categoría vieja que no está en la lista se conserva. */}
+                {!CATEGORIAS_PLANTILLA.some((c) => c.valor === category) && (
+                  <option value={category}>{etiquetaCategoria(category)}</option>
+                )}
+              </Select>
+            )}
           </div>
           <div className="flex items-end pb-2">
             <label className="flex items-center gap-2 text-body-sm font-medium text-ink-2 cursor-pointer">

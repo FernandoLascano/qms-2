@@ -7,21 +7,15 @@ import { Select } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { SlidersHorizontal } from 'lucide-react'
+import { estadoDerivado } from '@/lib/tramites/estado'
 
-interface Etapas {
-  formularioCompleto: boolean
-  denominacionReservada: boolean
-  capitalDepositado: boolean
-  tasaPagada: boolean
-  documentosRevisados: boolean
-  documentosFirmados: boolean
-  tramiteIngresado: boolean
-  sociedadInscripta: boolean
-}
+/** Las etapas del flujo (ETAPAS_FLUJO), campo → tildada. */
+type Etapas = Record<string, boolean>
 
 interface EstadoManagerProps {
   tramiteId: string
   estadoActual: string
+  estadoValidacion?: string | null
   etapas: Etapas
 }
 
@@ -34,36 +28,11 @@ const ESTADOS = [
   { value: 'CANCELADO', label: 'Cancelado', color: 'bg-primary-soft text-primary' },
 ]
 
-export default function EstadoManager({ tramiteId, estadoActual, etapas }: EstadoManagerProps) {
+export default function EstadoManager({ tramiteId, estadoActual, estadoValidacion, etapas }: EstadoManagerProps) {
   const router = useRouter()
   
-  // Calcular estado sugerido basado en las etapas
-  const calcularEstadoSugerido = (): string => {
-    if (etapas.sociedadInscripta) {
-      return 'COMPLETADO'
-    }
-    if (etapas.tramiteIngresado) {
-      return 'ESPERANDO_APROBACION'
-    }
-    if (etapas.documentosFirmados) {
-      return 'EN_PROCESO'
-    }
-    if (etapas.documentosRevisados) {
-      return 'EN_PROCESO'
-    }
-    if (etapas.capitalDepositado && etapas.tasaPagada) {
-      return 'EN_PROCESO'
-    }
-    if (etapas.denominacionReservada) {
-      return 'ESPERANDO_CLIENTE'
-    }
-    if (etapas.formularioCompleto) {
-      return 'EN_PROCESO'
-    }
-    return 'INICIADO'
-  }
-
-  const estadoSugerido = calcularEstadoSugerido()
+  // Misma función que usan los filtros, los contadores y las etiquetas.
+  const estadoSugerido = estadoDerivado({ ...etapas, estadoGeneral: estadoActual, estadoValidacion })
   const [nuevoEstado, setNuevoEstado] = useState(estadoActual)
   const [guardando, setGuardando] = useState(false)
   
@@ -115,7 +84,8 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
           <span>Gestión de Estado</span>
         </CardTitle>
         <CardDescription>
-          Cambia el estado general del trámite
+          Los filtros, contadores y etiquetas usan el estado según las etapas. El estado guardado
+          sólo se cambia a mano (por ejemplo, para cancelar el trámite).
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -123,7 +93,7 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <label className="text-body-sm font-medium text-ink-2 mb-2 block">
-                Estado Actual
+                Estado guardado
               </label>
               <span className={`inline-block px-4 py-2 rounded-control font-medium ${estadoActualInfo?.color}`}>
                 {estadoActualInfo?.label}
@@ -132,7 +102,7 @@ export default function EstadoManager({ tramiteId, estadoActual, etapas }: Estad
 
             <div className="flex-1">
               <label className="text-body-sm font-medium text-ink-2 mb-2 block">
-                Estado Sugerido (automático)
+                Según las etapas
               </label>
               <span className={`inline-block px-4 py-2 rounded-control font-medium ${ESTADOS.find(e => e.value === estadoSugerido)?.color || 'bg-surface-3 text-ink'}`}>
                 {ESTADOS.find(e => e.value === estadoSugerido)?.label || estadoSugerido}

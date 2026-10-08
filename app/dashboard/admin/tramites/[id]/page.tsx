@@ -22,7 +22,7 @@ import { esObjetoPreAprobado } from '@/lib/objeto-social'
 import { esDocumentoDeQMS } from '@/lib/documentos'
 import { fechaLarga, fechaParaInput } from '@/lib/fechas'
 import { motivoNoEliminable } from '@/lib/tramites/eliminacion'
-import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { ETAPAS_FLUJO, calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 
 import { Card, CardBody } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -261,16 +261,10 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
           <EstadoManager
             tramiteId={tramite.id}
             estadoActual={tramite.estadoGeneral}
-            etapas={{
-              formularioCompleto: tramite.formularioCompleto,
-              denominacionReservada: tramite.denominacionReservada,
-              capitalDepositado: tramite.capitalDepositado,
-              tasaPagada: tramite.tasaPagada,
-              documentosRevisados: tramite.documentosRevisados,
-              documentosFirmados: tramite.documentosFirmados,
-              tramiteIngresado: tramite.tramiteIngresado,
-              sociedadInscripta: tramite.sociedadInscripta,
-            }}
+            etapas={Object.fromEntries(
+              ETAPAS_FLUJO.map((e) => [e.campo, Boolean((tramite as Record<string, unknown>)[e.campo])]),
+            )}
+            estadoValidacion={tramite.estadoValidacion}
           />
 
           <DenominacionSelector

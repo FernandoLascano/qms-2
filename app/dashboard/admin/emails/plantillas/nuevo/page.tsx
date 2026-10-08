@@ -6,8 +6,8 @@ import { Loader2, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
+import { CATEGORIAS_PLANTILLA } from '@/lib/emails/categorias-plantilla'
 
-const CATEGORIES = ['general', 'tramite', 'pago', 'notificacion'] as const
 
 export default function NuevaPlantillaPage() {
   const router = useRouter()
@@ -94,9 +94,9 @@ export default function NuevaPlantillaPage() {
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {CATEGORIAS_PLANTILLA.map((c) => (
+                <option key={c.valor} value={c.valor}>
+                  {c.label}
                 </option>
               ))}
             </Select>

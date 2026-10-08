@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Clock, TrendingUp, AlertCircle } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { toast } from 'sonner'
+import { ETAPAS_FLUJO } from '@/lib/tramites/estado'
 
 interface TiempoEtapa {
   dias: number
@@ -61,16 +62,10 @@ export default function TrackingTiempo() {
     return null
   }
 
-  const nombresEtapas: Record<string, string> = {
-    formularioCompleto: 'Formulario Completo',
-    denominacionReservada: 'Reserva de Denominación',
-    capitalDepositado: 'Capital Depositado',
-    tasaPagada: 'Tasa Pagada',
-    documentosRevisados: 'Documentos Revisados',
-    documentosFirmados: 'Documentos Firmados',
-    tramiteIngresado: 'Trámite Ingresado',
-    sociedadInscripta: 'Sociedad Inscripta'
-  }
+  // Los 14 pasos del flujo, con los mismos nombres que «Control de Etapas».
+  const nombresEtapas: Record<string, string> = Object.fromEntries(
+    ETAPAS_FLUJO.map((e) => [e.campo, e.label]),
+  )
 
   const datosGrafico = Object.entries(data.promedios)
     .filter(([_, valor]) => valor > 0)
@@ -234,7 +229,7 @@ export default function TrackingTiempo() {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(data.promedios).map(([etapa, dias]) => (
+                {ETAPAS_FLUJO.map(({ campo: etapa }) => [etapa, data.promedios[etapa] ?? 0] as const).map(([etapa, dias]) => (
                   <tr key={etapa} className="border-b border-line hover:bg-surface-2">
                     <td className="py-3 px-4 text-ink">
                       {nombresEtapas[etapa] || etapa}

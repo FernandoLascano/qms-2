@@ -144,6 +144,71 @@ export function calcularProgreso(tramite: TramiteLike): number {
   return resumenProgreso(tramite).porcentaje
 }
 
+/** Valores de `estadoGeneral` (enum de Prisma). */
+export type EstadoGeneral =
+  | 'INICIADO'
+  | 'EN_PROCESO'
+  | 'ESPERANDO_CLIENTE'
+  | 'ESPERANDO_APROBACION'
+  | 'COMPLETADO'
+  | 'CANCELADO'
+
+/**
+ * `select` de Prisma con todo lo que necesitan `estadoDerivado`, `getEstado` y
+ * `calcularProgreso`. Si falta un campo, el paso cuenta como no hecho.
+ */
+export const SELECT_ESTADO_DERIVADO = {
+  estadoGeneral: true,
+  estadoValidacion: true,
+  formularioCompleto: true,
+  honorariosPagados: true,
+  homonimiaAnalizada: true,
+  ciudadanoDigitalOk: true,
+  denominacionReservada: true,
+  cuentaBancariaAbierta: true,
+  capitalDepositado: true,
+  tasaPagada: true,
+  borradorEnviado: true,
+  borradorAprobadoCliente: true,
+  documentosRevisados: true,
+  documentosFirmados: true,
+  tramiteIngresado: true,
+  sociedadInscripta: true,
+} as const
+
+/**
+ * Estado del trámite derivado de las etapas tildadas en «Control de Etapas».
+ *
+ * Es la fuente de verdad para filtros, contadores y etiquetas. El
+ * `estadoGeneral` guardado sólo se cambia a mano (Gestión de Estado) y nadie lo
+ * actualizaba al tildar etapas: un trámite esperando el depósito de capital
+ * seguía guardado como EN_PROCESO y no aparecía en «Esperando cliente». Del
+ * guardado sólo se respeta CANCELADO, que es una decisión manual.
+ *
+ * Para decidir de quién es la pelota se mira el paso siguiente al último
+ * tildado (no el primero sin tildar): los trámites viejos tienen pasos
+ * intermedios que nunca se marcaron (p. ej. honorariosPagados) y no por eso
+ * están esperando al cliente.
+ */
+export function estadoDerivado(tramite: TramiteLike): EstadoGeneral {
+  if (String(tramite?.estadoGeneral ?? '') === 'CANCELADO') return 'CANCELADO'
+  if (hecho(tramite, 'sociedadInscripta')) return 'COMPLETADO'
+  if (!hecho(tramite, 'formularioCompleto')) return 'INICIADO'
+
+  const estadoValidacion = String(tramite?.estadoValidacion ?? '')
+  if (estadoValidacion === 'REQUIERE_CORRECCIONES') return 'ESPERANDO_CLIENTE'
+  if (hecho(tramite, 'tramiteIngresado')) return 'ESPERANDO_APROBACION'
+  if (estadoValidacion === 'PENDIENTE_VALIDACION') return 'EN_PROCESO'
+
+  let ultimoHecho = -1
+  ETAPAS_FLUJO.forEach((e, i) => {
+    if (hecho(tramite, e.campo)) ultimoHecho = i
+  })
+  const siguiente = ETAPAS_FLUJO.slice(ultimoHecho + 1).find((e) => !hecho(tramite, e.campo))
+  if (!siguiente) return 'EN_PROCESO'
+  return siguiente.responsable === 'cliente' ? 'ESPERANDO_CLIENTE' : 'EN_PROCESO'
+}
+
 export interface EtapaEstado extends EtapaDef {
   completada: boolean
   actual: boolean
@@ -225,7 +290,10 @@ export function getEstado(
     }
   }
 
-  if (estadoGeneral === 'ESPERANDO_CLIENTE') {
+  // Desde acá manda lo que dicen las etapas, no el estado guardado a mano.
+  const derivado = estadoDerivado(tramite)
+
+  if (derivado === 'ESPERANDO_CLIENTE') {
     return {
       label: esAdmin ? 'Esperando al cliente' : 'Te toca a vos',
       tone: 'warning',
@@ -233,16 +301,12 @@ export function getEstado(
     }
   }
 
-  if (estadoGeneral === 'ESPERANDO_APROBACION') {
+  if (derivado === 'ESPERANDO_APROBACION') {
     return {
       label: esAdmin ? 'Esperando al organismo' : 'En el organismo',
       tone: 'info',
       requiereCliente: false,
     }
-  }
-
-  if (estadoGeneral === 'INICIADO') {
-    return { label: 'Iniciado', tone: 'info', requiereCliente: false }
   }
 
   return { label: 'En proceso', tone: 'info', requiereCliente: false }
@@ -265,7 +329,6 @@ export function requiereAtencionCliente(tramite: {
     tramite.pagos?.length ||
       tramite.enlacesPago?.length ||
       tramite.documentos?.length ||
-      tramite.estadoGeneral === 'ESPERANDO_CLIENTE' ||
-      tramite.estadoValidacion === 'REQUIERE_CORRECCIONES',
+      estadoDerivado(tramite) === 'ESPERANDO_CLIENTE',
   )
 }

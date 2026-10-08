@@ -31,6 +31,7 @@ import { toast } from 'sonner'
 import { EJEMPLOS_EMAIL } from '@/lib/emails/ejemplos'
 import { RECARGO_TARJETA, precioRegular, ahorroTransferencia, formatARS } from '@/lib/precios'
 import { Select } from '@/components/ui/select'
+import { aNumero, erroresConfig, valorInput } from '@/lib/schemas/configuracion'
 
 interface ConfigData {
   // Notificaciones
@@ -147,6 +148,15 @@ export default function ConfiguracionAdminPage() {
   }
 
   const handleSave = async () => {
+    // Misma validación que el servidor: un campo vacío o negativo no se manda.
+    const errores = erroresConfig(config as unknown as Record<string, unknown>)
+    if (errores.length > 0) {
+      toast.error(errores[0], {
+        description: errores.length > 1 ? `Y ${errores.length - 1} problema(s) más.` : undefined,
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -310,8 +320,8 @@ export default function ConfiguracionAdminPage() {
               <Input
                 id="diasAlertaDenominacion"
                 type="number"
-                value={config.diasAlertaDenominacion}
-                onChange={(e) => setConfig({ ...config, diasAlertaDenominacion: parseInt(e.target.value) })}
+                value={valorInput(config.diasAlertaDenominacion)}
+                onChange={(e) => setConfig({ ...config, diasAlertaDenominacion: aNumero(e.target.value) })}
                 min={1}
                 max={30}
               />
@@ -326,8 +336,8 @@ export default function ConfiguracionAdminPage() {
                 id="diasAlertaEstancamiento"
                 type="number"
                 className="max-w-40"
-                value={config.diasAlertaEstancamiento}
-                onChange={(e) => setConfig({ ...config, diasAlertaEstancamiento: parseInt(e.target.value) })}
+                value={valorInput(config.diasAlertaEstancamiento)}
+                onChange={(e) => setConfig({ ...config, diasAlertaEstancamiento: aNumero(e.target.value) })}
                 min={1}
                 max={60}
               />
@@ -534,8 +544,8 @@ export default function ConfiguracionAdminPage() {
                 id="diasVencimientoReserva"
                 type="number"
                 className="max-w-40"
-                value={config.diasVencimientoReserva}
-                onChange={(e) => setConfig({ ...config, diasVencimientoReserva: parseInt(e.target.value) })}
+                value={valorInput(config.diasVencimientoReserva)}
+                onChange={(e) => setConfig({ ...config, diasVencimientoReserva: aNumero(e.target.value) })}
                 min={1}
                 max={90}
               />
@@ -550,8 +560,8 @@ export default function ConfiguracionAdminPage() {
                 id="horasLimiteRespuesta"
                 type="number"
                 className="max-w-40"
-                value={config.horasLimiteRespuesta}
-                onChange={(e) => setConfig({ ...config, horasLimiteRespuesta: parseInt(e.target.value) })}
+                value={valorInput(config.horasLimiteRespuesta)}
+                onChange={(e) => setConfig({ ...config, horasLimiteRespuesta: aNumero(e.target.value) })}
                 min={1}
                 max={168}
               />
@@ -628,8 +638,8 @@ export default function ConfiguracionAdminPage() {
                     <Input
                       id="precioPlanBasico"
                       type="number"
-                      value={config.precioPlanBasico}
-                      onChange={(e) => setConfig({ ...config, precioPlanBasico: parseFloat(e.target.value) })} className="max-w-40 pl-7"
+                      value={valorInput(config.precioPlanBasico)}
+                      onChange={(e) => setConfig({ ...config, precioPlanBasico: aNumero(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -649,8 +659,8 @@ export default function ConfiguracionAdminPage() {
                     <Input
                       id="precioPlanEmprendedor"
                       type="number"
-                      value={config.precioPlanEmprendedor}
-                      onChange={(e) => setConfig({ ...config, precioPlanEmprendedor: parseFloat(e.target.value) })} className="max-w-40 pl-7"
+                      value={valorInput(config.precioPlanEmprendedor)}
+                      onChange={(e) => setConfig({ ...config, precioPlanEmprendedor: aNumero(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -670,8 +680,8 @@ export default function ConfiguracionAdminPage() {
                     <Input
                       id="precioPlanPremium"
                       type="number"
-                      value={config.precioPlanPremium}
-                      onChange={(e) => setConfig({ ...config, precioPlanPremium: parseFloat(e.target.value) })} className="max-w-40 pl-7"
+                      value={valorInput(config.precioPlanPremium)}
+                      onChange={(e) => setConfig({ ...config, precioPlanPremium: aNumero(e.target.value) })} className="max-w-40 pl-7"
                       min={0}
                       step={1000}
                     />
@@ -711,8 +721,8 @@ export default function ConfiguracionAdminPage() {
                   <Input
                     id="smvm"
                     type="number"
-                    value={config.smvm}
-                    onChange={(e) => setConfig({ ...config, smvm: parseFloat(e.target.value) })} className="max-w-40 pl-7"
+                    value={valorInput(config.smvm)}
+                    onChange={(e) => setConfig({ ...config, smvm: aNumero(e.target.value) })} className="max-w-40 pl-7"
                     min={0}
                     step={1000}
                   />
@@ -743,8 +753,8 @@ export default function ConfiguracionAdminPage() {
                       <Input
                         id={key}
                         type="number"
-                        value={config[key]}
-                        onChange={(e) => setConfig({ ...config, [key]: parseFloat(e.target.value) })}
+                        value={valorInput(config[key])}
+                        onChange={(e) => setConfig({ ...config, [key]: aNumero(e.target.value) })}
                         className="pr-8"
                         min={0}
                         max={100}
@@ -817,8 +827,8 @@ export default function ConfiguracionAdminPage() {
                       <Input
                         id="domicilioSedePrecioAnual"
                         type="number"
-                        value={config.domicilioSedePrecioAnual}
-                        onChange={(e) => setConfig({ ...config, domicilioSedePrecioAnual: parseFloat(e.target.value) })} className="max-w-40 pl-7"
+                        value={valorInput(config.domicilioSedePrecioAnual)}
+                        onChange={(e) => setConfig({ ...config, domicilioSedePrecioAnual: aNumero(e.target.value) })} className="max-w-40 pl-7"
                         min={0}
                         step={1000}
                       />
@@ -830,8 +840,8 @@ export default function ConfiguracionAdminPage() {
                       id="domicilioSedeDiasAlerta"
                       type="number"
                       className="max-w-40"
-                      value={config.domicilioSedeDiasAlerta}
-                      onChange={(e) => setConfig({ ...config, domicilioSedeDiasAlerta: parseInt(e.target.value) })}
+                      value={valorInput(config.domicilioSedeDiasAlerta)}
+                      onChange={(e) => setConfig({ ...config, domicilioSedeDiasAlerta: aNumero(e.target.value) })}
                       min={0}
                       step={1}
                     />
