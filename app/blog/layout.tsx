@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     ],
   },
   alternates: {
-    canonical: 'https://www.quieromisas.com/blog',
+    canonical: '/blog',
   },
 }
 

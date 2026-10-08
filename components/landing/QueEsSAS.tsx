@@ -106,7 +106,7 @@ export function QueEsSAS() {
             <p className="text-n-700">
               Podés consultar más información en el{' '}
               <a
-                href="https://www.argentina.gob.ar/justicia/registronacional/registrodesociedades/sas"
+                href="https://www.argentina.gob.ar/justicia/igj/sociedad-por-acciones-simplificada"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-700 font-semibold underline hover:text-brand-800 transition-colors"

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { prisma } from '@/lib/prisma'
+import { urlLogoPartner } from '@/lib/partner-logo'
 import PartnerLandingClient from './PartnerLandingClient'
 
 interface Props {
@@ -44,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${partner.nombre} | QuieroMiSAS`,
+    alternates: { canonical: `/partners/${slug}` },
     description: partner.aplicaDescuento && partner.descuentoValor
       ? `Conseguí beneficios exclusivos y ahorro en planes de constitución con ${partner.nombre}.`
       : `Beneficios exclusivos de ${partner.nombre} para constituir tu SAS.`,
@@ -126,6 +128,8 @@ export default async function PartnerPage({ params }: Props) {
   if (!partner) {
     notFound()
   }
+
+  const logoSrc = urlLogoPartner(partner.logoUrl)
 
   const headerStore = await headers()
   const forwardedFor = headerStore.get('x-forwarded-for')
@@ -233,10 +237,10 @@ export default async function PartnerPage({ params }: Props) {
             </div>
 
             <div className="bg-gradient-to-b from-brand-50 to-white px-8 py-10 md:px-10 md:py-14">
-              {partner.logoUrl && (
+              {logoSrc && (
                 <div className="relative flex h-16 w-full max-w-xs items-center justify-start sm:max-w-sm">
                   <Image
-                    src={partner.logoUrl}
+                    src={logoSrc}
                     alt={`Logo ${partner.nombre}`}
                     width={320}
                     height={64}

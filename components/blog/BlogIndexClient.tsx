@@ -154,7 +154,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
                     {/* Link */}
                     <Link
                       href={`/blog/${post.slug}`}
-                      className="inline-flex items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
+                      className="inline-flex min-h-10 items-center gap-2 text-brand-700 font-semibold hover:text-brand-800 transition-colors group/link"
                     >
                       Leer artículo
                       <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
@@ -201,13 +201,13 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
             &copy; {new Date().getFullYear()} QuieroMiSAS by Martínez Wehbe & Asociados. Todos los derechos reservados.
           </p>
           <div className="mt-6 flex justify-center gap-8 text-sm">
-            <Link href="/" className="hover:text-white transition">
+            <Link href="/" className="inline-flex min-h-10 items-center hover:text-white transition">
               Inicio
             </Link>
-            <Link href="/terminos" className="hover:text-white transition">
+            <Link href="/terminos" className="inline-flex min-h-10 items-center hover:text-white transition">
               Términos
             </Link>
-            <Link href="/privacidad" className="hover:text-white transition">
+            <Link href="/privacidad" className="inline-flex min-h-10 items-center hover:text-white transition">
               Privacidad
             </Link>
           </div>

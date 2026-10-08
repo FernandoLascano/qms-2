@@ -63,6 +63,8 @@ function Muestra({ nombre, clase, texto }: { nombre: string; clase: string; text
 export default async function DesignSystemPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect('/login')
+  // Herramienta interna: solo para el equipo.
+  if (session.user.rol !== 'ADMIN') redirect('/dashboard')
 
   return (
     <div className="space-y-section">

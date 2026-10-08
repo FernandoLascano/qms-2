@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
 export const metadata = {
+  alternates: { canonical: '/privacidad' },
   title: 'Política de Privacidad | QuieroMiSAS',
   description: 'Política de privacidad y protección de datos personales. Cumplimiento de la Ley 25.326 de la República Argentina.',
 }
@@ -14,7 +15,7 @@ export default function PrivacidadPage() {
       <article className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Política de Privacidad</h1>
-          <p className="text-gray-500 mb-12">Última actualización: {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-500 mb-12">Última actualización: 16 de agosto de 2026</p>
 
           <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
             <section>
@@ -71,7 +72,7 @@ export default function PrivacidadPage() {
                 <li><strong>Oposición:</strong> oponerse al tratamiento en determinados supuestos.</li>
               </ul>
               <p className="mt-3">
-                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La DPDP es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/justicia/derechofacil/ley simple/proteccion-datos-personales" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
+                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La DPDP es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/aaip/datospersonales/derechos" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
               </p>
             </section>
 
@@ -119,7 +120,7 @@ export default function PrivacidadPage() {
           </div>
 
           <div className="mt-4 pt-8 border-t border-gray-200">
-            <Link href="/" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link href="/" className="inline-flex min-h-10 items-center text-brand-700 hover:text-brand-800 font-medium">
               ← Volver al inicio
             </Link>
           </div>

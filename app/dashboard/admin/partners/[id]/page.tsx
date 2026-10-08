@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { urlLogoPartner } from '@/lib/partner-logo'
 import { useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -252,7 +253,7 @@ export default function PartnerDetailPage() {
                 {partner.logoUrl && (
                   <div className="flex h-16 max-w-xs items-center justify-start rounded-control border border-line bg-surface px-2">
                     <img
-                      src={partner.logoUrl}
+                      src={urlLogoPartner(partner.logoUrl) ?? undefined}
                       alt={partner.nombre}
                       className="h-full max-h-16 w-full object-contain object-left"
                     />

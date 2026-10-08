@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
 export const metadata = {
+  alternates: { canonical: '/terminos' },
   title: 'Términos y Condiciones | QuieroMiSAS',
   description: 'Términos y condiciones de uso del servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina.',
 }
@@ -14,7 +15,7 @@ export default function TerminosPage() {
       <article className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Términos y Condiciones</h1>
-          <p className="text-gray-500 mb-12">Última actualización: {new Date().toLocaleDateString('es-AR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <p className="text-gray-500 mb-12">Última actualización: 21 de julio de 2026</p>
 
           <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
             <section>
@@ -96,7 +97,7 @@ export default function TerminosPage() {
           </div>
 
           <div className="mt-4 pt-8 border-t border-gray-200">
-            <Link href="/" className="text-brand-700 hover:text-brand-800 font-medium">
+            <Link href="/" className="inline-flex min-h-10 items-center text-brand-700 hover:text-brand-800 font-medium">
               ← Volver al inicio
             </Link>
           </div>

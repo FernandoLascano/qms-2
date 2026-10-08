@@ -9,7 +9,7 @@ import { NextResponse } from 'next/server'
  * olvida del chequeo, igual queda protegida.
  *
  * - Cualquier ruta bajo /dashboard requiere una sesión válida (si no, redirige a /login).
- * - El área /dashboard/admin además exige rol ADMIN.
+ * - El área /dashboard/admin y el sistema de diseño además exigen rol ADMIN.
  *
  * Corre en el runtime edge y solo lee el JWT de la cookie (no usa Prisma),
  * por lo que es seguro a nivel edge. No cubre /api: esas rutas incluyen
@@ -21,7 +21,9 @@ export default withAuth(
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
-    if (pathname.startsWith('/dashboard/admin') && token?.rol !== 'ADMIN') {
+    const soloAdmin =
+      pathname.startsWith('/dashboard/admin') || pathname.startsWith('/dashboard/design-system')
+    if (soloAdmin && token?.rol !== 'ADMIN') {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 

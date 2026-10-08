@@ -184,7 +184,7 @@ export function Contacto() {
                         <a
                           key={i}
                           href={item.href}
-                          className="block text-ink-2 hover:text-brand-700 transition-colors"
+                          className="flex min-h-10 items-center text-ink-2 hover:text-brand-700 transition-colors md:block md:min-h-0"
                         >
                           {typeof line === 'string' ? line : `${line.label}:${line.text}`}
                         </a>
