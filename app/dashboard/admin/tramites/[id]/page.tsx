@@ -20,6 +20,7 @@ import {
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getObjetoSocialTexto } from '@/lib/constants'
+import { esObjetoPreAprobado } from '@/lib/objeto-social'
 import { esDocumentoDeQMS } from '@/lib/documentos'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
 
@@ -479,7 +480,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
               action={<EditObjetoSocial {...editProps} />}
               padding="default"
             >
-              <ObjetoSocial objetoSocial={tramite.objetoSocial} />
+              <ObjetoSocial objetoSocial={tramite.objetoSocial} actividadPrincipal={datosUsuario.actividadPrincipal} />
             </CollapsibleSection>
 
             <CollapsibleSection
@@ -552,12 +553,16 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
 
 /* ─────────────────────────── Subcomponentes ─────────────────────────── */
 
-function ObjetoSocial({ objetoSocial }: { objetoSocial: string | null }) {
+function ObjetoSocial({
+  objetoSocial,
+  actividadPrincipal,
+}: {
+  objetoSocial: string | null
+  actividadPrincipal?: string
+}) {
   const texto = objetoSocial || ''
-  const preAprobado =
-    texto === 'PREAPROBADO' ||
-    texto.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros') ||
-    texto.includes('1. Construcción de todo tipo de obras')
+  // Mismo criterio que el resto de la app (lib/objeto-social.ts)
+  const preAprobado = esObjetoPreAprobado(texto)
 
   return (
     <div className="space-y-2">
@@ -569,6 +574,12 @@ function ObjetoSocial({ objetoSocial }: { objetoSocial: string | null }) {
           ? 'El cliente eligió el objeto social estándar pre-aprobado.'
           : getObjetoSocialTexto(objetoSocial)}
       </p>
+      {actividadPrincipal && (
+        <div className="rounded-control border border-line bg-surface-2 p-3">
+          <p className="text-label font-semibold text-ink">Actividad principal (según el cliente)</p>
+          <p className="mt-1 whitespace-pre-line text-body-sm text-ink-2">{actividadPrincipal}</p>
+        </div>
+      )}
     </div>
   )
 }

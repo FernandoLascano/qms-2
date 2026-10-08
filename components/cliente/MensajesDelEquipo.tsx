@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { MessageCircle, AlertCircle, CheckCircle, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { mensajeVisible } from '@/lib/notificaciones'
 
 interface Notificacion {
   id: string
@@ -99,7 +100,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
                     </p>
                   ) : (
                     <p className="text-body-sm text-ink-2 whitespace-pre-line">
-                      {notif.mensaje}
+                      {mensajeVisible(notif.mensaje)}
                     </p>
                   )}
                   <p className="text-label text-ink-2 mt-2">

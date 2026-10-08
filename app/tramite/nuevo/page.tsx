@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink, Info } from 'lucide-react'
@@ -19,6 +19,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { trackEvent } from '@/lib/analytics'
+import {
+  ACTIVIDAD_PRINCIPAL_MIN_CARACTERES,
+  validarActividadPrincipal,
+  validarCbu,
+  validarCuit,
+  validarDenominacion,
+  validarDni,
+  validarEmail,
+  validarFechaCierre,
+  validarTelefono,
+} from '@/lib/validaciones'
 
 const PROVINCIAS_AR = [
   'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
@@ -26,6 +37,12 @@ const PROVINCIAS_AR = [
   'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
   'Santiago del Estero', 'Tierra del Fuego', 'Tucumán', 'Otro país',
 ]
+
+const NOMBRES_PLAN: Record<string, string> = {
+  BASICO: 'Básico',
+  EMPRENDEDOR: 'Emprendedor',
+  PREMIUM: 'Premium',
+}
 
 const PASOS = [
   { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
@@ -74,6 +91,7 @@ interface FormData {
   // Paso 3: Objeto
   objetoSocial: 'PREAPROBADO' | 'PERSONALIZADO'
   objetoPersonalizado: string
+  actividadPrincipal: string
   sinDomicilio: boolean
   provinciaResidencia: string
   domicilio: string
@@ -124,6 +142,17 @@ interface FormData {
   asesoramientoContable: boolean
 }
 
+// ¿El cliente ya escribió algo en el formulario? (los valores por defecto no cuentan)
+function tieneDatosCargados(data: FormData): boolean {
+  const campos = [
+    data.dni, data.telefono, data.denominacion1, data.denominacion2, data.denominacion3,
+    data.objetoPersonalizado, data.actividadPrincipal, data.domicilio, data.cbuPrincipal, data.cbuSecundario,
+    ...data.socios.flatMap(s => [s.nombre, s.apellido, s.dni, s.cuit]),
+    ...data.administradores.flatMap(a => [a.nombre, a.apellido, a.dni, a.cuit]),
+  ]
+  return campos.some(c => String(c || '').trim() !== '')
+}
+
 export default function NuevoTramitePage() {
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -133,6 +162,13 @@ export default function NuevoTramitePage() {
   // borrador ya no existe (quedó marcado como completo) y crea un trámite duplicado.
   const [enviado, setEnviado] = useState(false)
   const [cargandoBorrador, setCargandoBorrador] = useState(true)
+  // Id del borrador que se está editando. Arranca con el de la URL (retomar) y,
+  // si es un trámite nuevo, lo completa el primer auto-guardado. Todo guardado
+  // posterior y el envío final usan este id: así nunca se pisa otro borrador.
+  const tramiteIdRef = useRef<string | null>(null)
+  // Guardado en curso: el siguiente espera a que termine para no crear dos
+  // borradores si el primero todavía no devolvió el id.
+  const guardadoEnCursoRef = useRef<Promise<void> | null>(null)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
   const [smvm, setSmvm] = useState(317800) // Valor por defecto
   const [precios, setPrecios] = useState({
@@ -157,6 +193,7 @@ export default function NuevoTramitePage() {
     
     objetoSocial: 'PREAPROBADO',
     objetoPersonalizado: '',
+    actividadPrincipal: '',
     sinDomicilio: false,
     provinciaResidencia: '',
     domicilio: '',
@@ -228,6 +265,7 @@ export default function NuevoTramitePage() {
       
       // Si hay un tramiteId en la URL, cargar ese trámite específico
       if (tramiteIdFromUrl) {
+        tramiteIdRef.current = tramiteIdFromUrl
         fetch(`/api/tramites/${tramiteIdFromUrl}`)
           .then(res => res.json())
           .then(data => {
@@ -316,6 +354,7 @@ export default function NuevoTramitePage() {
                 denominacion3: draft.denominacionSocial3 || '',
                 objetoSocial: esPreAprobado ? 'PREAPROBADO' : 'PERSONALIZADO',
                 objetoPersonalizado: esPreAprobado ? '' : (draft.objetoSocial || ''),
+                actividadPrincipal: datosUsuario.actividadPrincipal || '',
                 sinDomicilio: draft.domicilioLegal === 'A informar' || draft.domicilioLegal === '',
                 provinciaResidencia: datosUsuario.provinciaResidencia || '',
                 domicilio: domicilioParsed,
@@ -394,8 +433,16 @@ export default function NuevoTramitePage() {
               })
               
               setFormData(nuevoFormData)
+              // Volver al paso donde había quedado (se guarda con el borrador)
+              const pasoGuardado = Number(datosUsuario.pasoActual)
+              if (Number.isInteger(pasoGuardado) && pasoGuardado >= 1 && pasoGuardado <= 7) {
+                setPasoActual(pasoGuardado)
+              }
               toast.success('Trámite cargado para continuar')
             } else {
+              // No es un borrador editable: no seguir guardando sobre ese id
+              tramiteIdRef.current = null
+              window.history.replaceState({}, '', window.location.pathname)
               toast.error('Este trámite ya está completado o no existe')
             }
             setCargandoBorrador(false)
@@ -417,41 +464,50 @@ export default function NuevoTramitePage() {
   }, [status])
 
   // Auto-guardado
-  const handleAutoSave = useCallback(async (data: FormData) => {
+  const guardarBorrador = useCallback(async (data: FormData & { pasoActual: number }) => {
+    const tramiteId = tramiteIdRef.current
+    // Un trámite nuevo recién se crea cuando el cliente cargó algo propio: abrir
+    // el formulario y no tocar nada no deja un borrador vacío
+    if (!tramiteId && !tieneDatosCargados(data)) return
+    // Sin id el servidor crea un borrador nuevo; con id actualiza sólo ese
+    const dataToSave = tramiteId ? { ...data, tramiteId } : data
+
+    const response = await fetch('/api/tramites/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataToSave)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      // Si se creó un borrador nuevo, recordar su id y dejarlo en la URL
+      // (así una recarga lo retoma en lugar de empezar otro)
+      if (result.tramiteId && !tramiteIdRef.current) {
+        tramiteIdRef.current = result.tramiteId
+        window.history.replaceState({}, '', `${window.location.pathname}?tramiteId=${result.tramiteId}`)
+      }
+    }
+  }, [])
+
+  const handleAutoSave = useCallback(async (data: FormData & { pasoActual: number }) => {
     if (status !== 'authenticated' || enviado) return
 
     try {
-      // Obtener tramiteId de la URL si está presente
-      const urlParams = new URLSearchParams(window.location.search)
-      let tramiteIdFromUrl = urlParams.get('tramiteId')
-      
-      // Incluir tramiteId en los datos si está presente
-      const dataToSave = tramiteIdFromUrl 
-        ? { ...data, tramiteId: tramiteIdFromUrl }
-        : data
-      
-      const response = await fetch('/api/tramites/draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave)
-      })
-      
-      if (response.ok) {
-        const result = await response.json()
-        // Si se creó un nuevo trámite, actualizar la URL con el tramiteId
-        if (result.tramiteId && !tramiteIdFromUrl) {
-          tramiteIdFromUrl = result.tramiteId
-          const newUrl = `${window.location.pathname}?tramiteId=${result.tramiteId}`
-          window.history.replaceState({}, '', newUrl)
-        }
-      }
+      // Esperar el guardado anterior (puede ser el que trae el id del borrador)
+      if (guardadoEnCursoRef.current) await guardadoEnCursoRef.current.catch(() => {})
+      const guardado = guardarBorrador(data)
+      guardadoEnCursoRef.current = guardado
+      await guardado
     } catch (error) {
       console.error('Error en auto-guardado:', error)
     }
-  }, [status, enviado])
+  }, [status, enviado, guardarBorrador])
+
+  // Se guarda también el paso en el que está, para volver ahí al recargar
+  const datosAutoGuardado = useMemo(() => ({ ...formData, pasoActual }), [formData, pasoActual])
 
   const { isSaving, lastSaved } = useAutoSave({
-    data: formData,
+    data: datosAutoGuardado,
     onSave: handleAutoSave,
     delay: 5000, // 5 segundos
     enabled: status === 'authenticated' && pasoActual >= 1 && !enviado // Habilitar desde el paso 1, cortar al enviar
@@ -463,31 +519,35 @@ export default function NuevoTramitePage() {
     apellido: [validators.required('El apellido es obligatorio')],
     dni: [
       validators.required('El DNI es obligatorio'),
-      validators.dni('El DNI debe tener 7 u 8 dígitos')
+      validators.dni('El DNI tiene que tener 7 u 8 dígitos, sin puntos')
     ],
     telefono: [
       validators.required('El teléfono es obligatorio'),
-      validators.phone('Ingresa un teléfono válido')
+      validators.phone('Ingresá un teléfono válido, con código de área')
     ],
     email: [
       validators.required('El email es obligatorio'),
-      validators.email('Ingresa un email válido')
+      validators.email('Ingresá un email válido (por ejemplo, nombre@gmail.com)')
     ]
   }, formData)
 
-  // Validación en tiempo real para el paso 2
+  // Validación en tiempo real para el paso 2 (mismo criterio que el servidor)
+  const reglaDenominacion = {
+    validator: (value: string) => validarDenominacion(value) ?? true,
+    message: 'La denominación no es válida'
+  }
   const paso2Validation = useFormValidation({
     denominacion1: [
       validators.required('La primera opción de denominación es obligatoria'),
-      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+      reglaDenominacion
     ],
     denominacion2: [
       validators.required('La segunda opción de denominación es obligatoria'),
-      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+      reglaDenominacion
     ],
     denominacion3: [
       validators.required('La tercera opción de denominación es obligatoria'),
-      validators.minLength(3, 'La denominación debe tener al menos 3 caracteres')
+      reglaDenominacion
     ]
   }, formData)
 
@@ -507,14 +567,32 @@ export default function NuevoTramitePage() {
       case 1:
         if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.dni.trim() || 
             !formData.telefono.trim() || !formData.email.trim() || !formData.plan || !formData.jurisdiccion) {
-          toast.error('Por favor completa todos los campos obligatorios')
+          toast.error('Completá todos los campos obligatorios')
           return false
+        }
+        {
+          // Mismo criterio que los mensajes en línea: si hay un error de formato no se avanza
+          const errorFormato = validarDni(formData.dni) || validarTelefono(formData.telefono) || validarEmail(formData.email)
+          if (errorFormato) {
+            toast.error(errorFormato)
+            return false
+          }
         }
         return true
       case 2:
         if (!formData.denominacion1.trim() || !formData.denominacion2.trim() || !formData.denominacion3.trim()) {
-          toast.error('Por favor completa las tres opciones de denominación')
+          toast.error('Completá las tres opciones de denominación')
           return false
+        }
+        {
+          const opciones = [formData.denominacion1, formData.denominacion2, formData.denominacion3]
+          for (let i = 0; i < opciones.length; i++) {
+            const error = validarDenominacion(opciones[i])
+            if (error) {
+              toast.error(`Opción ${i + 1}: ${error}`)
+              return false
+            }
+          }
         }
         return true
       case 3:
@@ -525,6 +603,13 @@ export default function NuevoTramitePage() {
         if (formData.objetoSocial === 'PERSONALIZADO' && !formData.objetoPersonalizado.trim()) {
           toast.error('Por favor completa el objeto social personalizado')
           return false
+        }
+        if (formData.objetoSocial === 'PREAPROBADO') {
+          const errorActividad = validarActividadPrincipal(formData.actividadPrincipal)
+          if (errorActividad) {
+            toast.error(errorActividad)
+            return false
+          }
         }
         if (!formData.sinDomicilio) {
           if (!formData.domicilio.trim() || !formData.ciudad.trim() || !formData.departamento.trim()) {
@@ -540,8 +625,19 @@ export default function NuevoTramitePage() {
           return false
         }
         if (formData.jurisdiccion === 'CORDOBA' && (!formData.cbuPrincipal.trim() || !formData.cbuSecundario.trim())) {
-          toast.error('Por favor completa ambos CBU')
+          toast.error('Completá los dos CBU')
           return false
+        }
+        // "INFORMAR_LUEGO" es la opción de cargarlos más adelante
+        if (formData.cbuPrincipal !== 'INFORMAR_LUEGO') {
+          const cbus: Array<[string, string]> = [['principal', formData.cbuPrincipal], ['secundario', formData.cbuSecundario]]
+          for (const [cual, cbu] of cbus) {
+            const error = cbu.trim() ? validarCbu(cbu) : null
+            if (error) {
+              toast.error(`CBU ${cual}: ${error}`)
+              return false
+            }
+          }
         }
         return true
       case 5:
@@ -555,6 +651,11 @@ export default function NuevoTramitePage() {
               !socio.cuit.trim() || !socio.domicilio.trim() || !socio.ciudad.trim() || 
               !socio.departamento.trim() || !socio.provincia.trim() || !socio.estadoCivil || !socio.profesion.trim()) {
             toast.error(`Por favor completa todos los campos del Socio ${i + 1} (incluyendo ciudad, departamento y provincia)`)
+            return false
+          }
+          const errorSocio = validarDni(socio.dni) || validarCuit(socio.cuit)
+          if (errorSocio) {
+            toast.error(`Socio ${i + 1}: ${errorSocio}`)
             return false
           }
           // Validar que tenga aporte de capital
@@ -595,7 +696,12 @@ export default function NuevoTramitePage() {
           const admin = formData.administradores[i]
           if (!admin.nombre.trim() || !admin.apellido.trim() || !admin.dni.trim() ||
               !admin.cuit.trim() || !admin.domicilio.trim() || !admin.estadoCivil || !admin.profesion.trim()) {
-            toast.error(`Por favor completa todos los campos del Administrador ${i + 1}`)
+            toast.error(`Completá todos los campos del Administrador ${i + 1}`)
+            return false
+          }
+          const errorAdmin = validarDni(admin.dni) || validarCuit(admin.cuit)
+          if (errorAdmin) {
+            toast.error(`Administrador ${i + 1}: ${errorAdmin}`)
             return false
           }
         }
@@ -613,9 +719,12 @@ export default function NuevoTramitePage() {
         }
         return true
       case 7:
-        if (!formData.fechaCierre.trim()) {
-          toast.error('Por favor completa la fecha de cierre de ejercicio')
-          return false
+        {
+          const errorFecha = validarFechaCierre(formData.fechaCierre)
+          if (errorFecha) {
+            toast.error(errorFecha)
+            return false
+          }
         }
         return true
       default:
@@ -644,7 +753,7 @@ export default function NuevoTramitePage() {
     // Validar TODOS los pasos antes de enviar
     for (let paso = 1; paso <= 7; paso++) {
       if (!validarPaso(paso)) {
-        toast.error(`Por favor completa todos los campos requeridos en el paso ${paso}`)
+        toast.error(`Revisá los datos del paso ${paso}`)
         setPasoActual(paso) // Llevar al usuario al paso con error
         return
       }
@@ -653,10 +762,16 @@ export default function NuevoTramitePage() {
     setGuardando(true)
 
     try {
+      // Si hay un auto-guardado en curso, esperarlo: puede ser el que crea el
+      // borrador y trae su id
+      if (guardadoEnCursoRef.current) await guardadoEnCursoRef.current.catch(() => {})
+
       const response = await fetch('/api/tramites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        // El id del borrador hace que se complete ese mismo trámite (no se
+        // busca por denominación, que el cliente pudo haber cambiado)
+        body: JSON.stringify({ ...formData, tramiteId: tramiteIdRef.current })
       })
 
       const result = await response.json()
@@ -1133,6 +1248,25 @@ export default function NuevoTramitePage() {
                         </label>
                       </div>
                     </div>
+                    {formData.objetoSocial === 'PREAPROBADO' && (
+                      <div>
+                        <Label htmlFor="actividadPrincipal">¿Cuál va a ser la actividad principal de la sociedad? *</Label>
+                        <p className="mt-1 text-body-sm text-ink-2">
+                          El objeto pre-aprobado abarca muchas actividades; contanos a qué se va a dedicar la sociedad en concreto.
+                        </p>
+                        <textarea
+                          id="actividadPrincipal"
+                          value={formData.actividadPrincipal}
+                          onChange={(e) => setFormData(prev => ({ ...prev, actividadPrincipal: e.target.value }))}
+                          className="mt-2 flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                          rows={3}
+                          placeholder="Ej.: Desarrollo de software a medida y venta de licencias para comercios"
+                        />
+                        <p className={`mt-1 text-label ${formData.actividadPrincipal.trim().length >= ACTIVIDAD_PRINCIPAL_MIN_CARACTERES ? 'text-ink-3' : 'text-warning'}`}>
+                          {formData.actividadPrincipal.trim().length} / {ACTIVIDAD_PRINCIPAL_MIN_CARACTERES} caracteres mínimos
+                        </p>
+                      </div>
+                    )}
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
                         <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>
@@ -1359,18 +1493,11 @@ export default function NuevoTramitePage() {
                         pattern="\d{22}"
                         className="font-mono"
                         error={
-                          formData.jurisdiccion === 'CORDOBA' && formData.cbuPrincipal && 
-                          formData.cbuPrincipal.replace(/[.\-]/g, '').length !== 22
-                            ? 'El CBU debe tener exactamente 22 dígitos'
-                            : undefined
+                          formData.cbuPrincipal ? validarCbu(formData.cbuPrincipal) || undefined : undefined
                         }
                         validation={
-                          formData.jurisdiccion === 'CORDOBA' && formData.cbuPrincipal
-                            ? formData.cbuPrincipal.replace(/[.\-]/g, '').length === 22 && /^\d{22}$/.test(formData.cbuPrincipal.replace(/[.\-]/g, ''))
-                              ? 'success'
-                              : formData.cbuPrincipal.length > 0
-                                ? 'error'
-                                : 'none'
+                          formData.cbuPrincipal
+                            ? validarCbu(formData.cbuPrincipal) ? 'error' : 'success'
                             : 'none'
                         }
                       />
@@ -1388,18 +1515,11 @@ export default function NuevoTramitePage() {
                         pattern="\d{22}"
                         className="font-mono"
                         error={
-                          formData.jurisdiccion === 'CORDOBA' && formData.cbuSecundario && 
-                          formData.cbuSecundario.replace(/[.\-]/g, '').length !== 22
-                            ? 'El CBU debe tener exactamente 22 dígitos'
-                            : undefined
+                          formData.cbuSecundario ? validarCbu(formData.cbuSecundario) || undefined : undefined
                         }
                         validation={
-                          formData.jurisdiccion === 'CORDOBA' && formData.cbuSecundario
-                            ? formData.cbuSecundario.replace(/[.\-]/g, '').length === 22 && /^\d{22}$/.test(formData.cbuSecundario.replace(/[.\-]/g, ''))
-                              ? 'success'
-                              : formData.cbuSecundario.length > 0
-                                ? 'error'
-                                : 'none'
+                          formData.cbuSecundario
+                            ? validarCbu(formData.cbuSecundario) ? 'error' : 'success'
                             : 'none'
                         }
                       />
@@ -1597,16 +1717,10 @@ export default function NuevoTramitePage() {
                           required
                           helpText="Sin puntos ni guiones, solo números"
                           maxLength={8}
-                          error={
-                            socio.dni && !/^\d{7,8}$/.test(socio.dni)
-                              ? 'El DNI debe tener 7 u 8 dígitos'
-                              : undefined
-                          }
+                          error={socio.dni ? validarDni(socio.dni) || undefined : undefined}
                           validation={
                             socio.dni
-                              ? /^\d{7,8}$/.test(socio.dni)
-                                ? 'success'
-                                : 'error'
+                              ? validarDni(socio.dni) ? 'error' : 'success'
                               : 'none'
                           }
                         />
@@ -1623,16 +1737,10 @@ export default function NuevoTramitePage() {
                           required
                           helpText="11 dígitos sin guiones"
                           maxLength={11}
-                          error={
-                            socio.cuit && !/^\d{11}$/.test(socio.cuit)
-                              ? 'El CUIT debe tener 11 dígitos'
-                              : undefined
-                          }
+                          error={socio.cuit ? validarCuit(socio.cuit) || undefined : undefined}
                           validation={
                             socio.cuit
-                              ? /^\d{11}$/.test(socio.cuit)
-                                ? 'success'
-                                : 'error'
+                              ? validarCuit(socio.cuit) ? 'error' : 'success'
                               : 'none'
                           }
                         />
@@ -2008,16 +2116,10 @@ export default function NuevoTramitePage() {
                           required
                           helpText="Sin puntos ni guiones, solo números"
                           maxLength={8}
-                          error={
-                            admin.dni && !/^\d{7,8}$/.test(admin.dni)
-                              ? 'El DNI debe tener 7 u 8 dígitos'
-                              : undefined
-                          }
+                          error={admin.dni ? validarDni(admin.dni) || undefined : undefined}
                           validation={
                             admin.dni
-                              ? /^\d{7,8}$/.test(admin.dni)
-                                ? 'success'
-                                : 'error'
+                              ? validarDni(admin.dni) ? 'error' : 'success'
                               : 'none'
                           }
                         />
@@ -2034,16 +2136,10 @@ export default function NuevoTramitePage() {
                           required
                           helpText="11 dígitos sin guiones"
                           maxLength={11}
-                          error={
-                            admin.cuit && !/^\d{11}$/.test(admin.cuit)
-                              ? 'El CUIT debe tener 11 dígitos'
-                              : undefined
-                          }
+                          error={admin.cuit ? validarCuit(admin.cuit) || undefined : undefined}
                           validation={
                             admin.cuit
-                              ? /^\d{11}$/.test(admin.cuit)
-                                ? 'success'
-                                : 'error'
+                              ? validarCuit(admin.cuit) ? 'error' : 'success'
                               : 'none'
                           }
                         />
@@ -2206,9 +2302,11 @@ export default function NuevoTramitePage() {
                       required
                       className="max-w-xs"
                     />
-                    <p className="text-label text-primary mt-1">Este campo es obligatorio</p>
+                    {validarFechaCierre(formData.fechaCierre) && (
+                      <p className="text-label text-danger mt-1">{validarFechaCierre(formData.fechaCierre)}</p>
+                    )}
                     <p className="text-label text-ink-2 mt-1">
-                      Ingresa el día y mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
+                      Ingresá el día y el mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
                     </p>
                   </div>
 
@@ -2236,9 +2334,9 @@ export default function NuevoTramitePage() {
                       Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
                     </p>
                     <div className="bg-surface rounded-control p-4 text-ink-2 space-y-2 border border-success-line">
-                      <p><span className="font-semibold">Plan seleccionado:</span> {formData.plan}</p>
+                      <p><span className="font-semibold">Plan seleccionado:</span> {NOMBRES_PLAN[formData.plan] || formData.plan}</p>
                       <p><span className="font-semibold">Jurisdicción:</span> {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}</p>
-                      <p><span className="font-semibold">Capital Social:</span> ${formData.capitalSocial}</p>
+                      <p><span className="font-semibold">Capital Social:</span> ${(parseFloat(String(formData.capitalSocial).replace(/\./g, '').replace(',', '.')) || 0).toLocaleString('es-AR')}</p>
                       <p><span className="font-semibold">Socios:</span> {formData.numeroSocios}</p>
                       <p><span className="font-semibold">Administradores:</span> {formData.numeroAdministradores}</p>
                     </div>

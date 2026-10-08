@@ -13,6 +13,7 @@ import { diasHasta, type Modalidad } from '@/lib/cartera'
 import ServiciosCliente, { type ServicioCatalogoOpcion } from '@/components/admin/sociedades/ServiciosCliente'
 import { PageHeader } from '@/components/ui/page-header'
 import { PlanBadge } from '@/components/ui/plan-badge'
+import { esObjetoPreAprobado, objetoSocialParaMostrar } from '@/lib/objeto-social'
 
 interface PageProps {
   params: Promise<{
@@ -297,10 +298,8 @@ async function SociedadDetallePage({ params }: PageProps) {
         >
           <div className="mb-3">
             {(() => {
-              const objetoText = tramite.objetoSocial || ''
-              const esPreAprobado = 
-                objetoText.includes('La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades:') &&
-                objetoText.includes('1) Construcción de todo tipo de obras')
+              // Mismo criterio que el resto de la app (lib/objeto-social.ts)
+              const esPreAprobado = esObjetoPreAprobado(tramite.objetoSocial)
               return esPreAprobado ? (
                 <span className="px-2 py-1 bg-success-soft text-success text-label font-medium rounded-full">
                   Pre-aprobado
@@ -313,7 +312,7 @@ async function SociedadDetallePage({ params }: PageProps) {
             })()}
           </div>
           <p className="text-body-sm text-ink-2 whitespace-pre-line">
-            {tramite.objetoSocial}
+            {objetoSocialParaMostrar(tramite.objetoSocial)}
           </p>
         </CollapsibleCard>
 

@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
+import { waitUntil } from '@vercel/functions'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { enviarEmailTramiteEnviado } from '@/lib/emails/send'
+import { enviarEmailNuevoTramiteAdmin, enviarEmailTramiteEnviado } from '@/lib/emails/send'
+import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
+import { erroresFormatoTramite } from '@/lib/validaciones'
 import { marcarLeadsGanados } from '@/lib/leads/ganado'
 import { marcarLeadGanadoPorEmail } from '@/lib/leads/capturar'
 
@@ -101,6 +104,19 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validar formatos (DNI, CUIT/CUIL con dígito verificador, CBU, email…):
+    // el mismo criterio que usa el formulario para no dejar avanzar de paso
+    const erroresFormato = erroresFormatoTramite(data)
+    if (erroresFormato.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'Datos inválidos',
+          details: `Revisá estos datos: ${erroresFormato.join('; ')}`
+        },
+        { status: 400 }
+      )
+    }
+
     // Usar el usuario de la sesión
     const usuario = await prisma.user.findUnique({
       where: { id: session.user.id }
@@ -113,10 +129,11 @@ export async function POST(request: Request) {
       )
     }
 
-    // Preparar objeto social
-    const objetoSocialFinal = data.objetoSocial === 'PERSONALIZADO' 
-      ? data.objetoPersonalizado 
-      : 'La sociedad tiene por objeto realizar por cuenta propia y/o de terceros, o asociadas a terceros en el país o en el extranjero, las siguientes actividades: Compra, venta y permuta, explotación, arrendamientos y administración de bienes inmuebles, urbanos y rurales y la realización de operaciones de propiedad horizontal. Realizar toda clase de operaciones financieras por todos los medios autorizados por la legislación vigente. Se excluyen las operaciones comprendidas en la Ley de Entidades Financiera. Importación y exportación de bienes y servicios. Actuar como fiduciante, fiduciaria, beneficiaria, fideicomisaria, por cuenta propia o por cuenta de terceros y/o asociada a terceros, en todo tipo de emprendimientos. El objeto social comprende además la realización de toda actividad que se relacione directa o indirectamente con el objeto principal.'
+    // Preparar objeto social: el pre-aprobado es exactamente el texto que el
+    // cliente vio en el formulario (fuente única en lib/objeto-social.ts)
+    const objetoSocialFinal = data.objetoSocial === 'PERSONALIZADO'
+      ? data.objetoPersonalizado
+      : OBJETO_SOCIAL_PREAPROBADO
 
     // Preparar domicilio legal
     const domicilioLegal = data.sinDomicilio 
@@ -143,7 +160,9 @@ export async function POST(request: Request) {
       provinciaResidencia: data.provinciaResidencia || '',
       sinDomicilio: data.sinDomicilio || false,
       objetoSocial: data.objetoSocial || 'PRE_APROBADO',
-      objetoPersonalizado: data.objetoPersonalizado || ''
+      objetoPersonalizado: data.objetoPersonalizado || '',
+      // A qué se va a dedicar la sociedad (se pide aunque elija el pre-aprobado)
+      actividadPrincipal: (data.actividadPrincipal || '').trim()
     }
 
     // Preparar capital social
@@ -216,19 +235,35 @@ export async function POST(request: Request) {
         }))
       : []
 
-    // Buscar si existe un borrador con la misma denominación y que pertenezca al usuario
-    const borradorExistente = await prisma.tramite.findFirst({
-      where: {
-        userId: usuario.id,
-        denominacionSocial1: data.denominacion1 || '',
-        formularioCompleto: false,
-        estadoGeneral: 'INICIADO'
-      },
-      orderBy: {
-        updatedAt: 'desc'
+    // El formulario manda el id del borrador que se estuvo editando. Se completa
+    // ese mismo trámite; antes se buscaba por denominación y, si el cliente la
+    // cambiaba justo antes de enviar, quedaba un trámite duplicado.
+    const tramiteIdBorrador = typeof data.tramiteId === 'string' && data.tramiteId ? data.tramiteId : null
+    const borradorExistente = tramiteIdBorrador
+      ? await prisma.tramite.findFirst({
+          where: {
+            id: tramiteIdBorrador,
+            userId: usuario.id,
+            formularioCompleto: false,
+            estadoGeneral: 'INICIADO'
+          }
+        })
+      : null
+
+    // Doble envío (por ejemplo, un reintento): ese borrador ya se completó
+    if (tramiteIdBorrador && !borradorExistente) {
+      const yaEnviado = await prisma.tramite.findFirst({
+        where: { id: tramiteIdBorrador, userId: usuario.id, formularioCompleto: true },
+        select: { id: true, estadoGeneral: true }
+      })
+      if (yaEnviado) {
+        return NextResponse.json({
+          success: true,
+          tramite: { id: yaEnviado.id, estado: yaEnviado.estadoGeneral }
+        })
       }
-    })
-    
+    }
+
     let tramite
     
     if (borradorExistente) {
@@ -356,38 +391,29 @@ export async function POST(request: Request) {
       })
     ))
 
-    // Enviar email de confirmación al usuario (no fallar si hay error)
-    try {
-      await enviarEmailTramiteEnviado(
-        usuario.email,
-        usuario.name || data.nombre || 'Usuario',
-        tramite.id,
-        data.denominacion1
-      )
-    } catch {
-      // Email sending failed (non-critical)
-    }
-
-    // Enviar email a todos los admins sobre el nuevo trámite (no fallar si hay error)
-    try {
-      const { enviarEmailNuevoTramiteAdmin } = await import('@/lib/emails/send')
-      
-      await Promise.all(admins.map(async (admin) => {
-        try {
-          await enviarEmailNuevoTramiteAdmin(
+    // Los emails (al cliente y a cada admin) se mandan en segundo plano: dentro
+    // del request demoraban ~10 s la respuesta del formulario. waitUntil mantiene
+    // viva la función en Vercel hasta que terminen.
+    const nombreCliente = usuario.name || data.nombre || 'Usuario'
+    waitUntil(
+      Promise.allSettled([
+        enviarEmailTramiteEnviado(usuario.email, nombreCliente, tramite.id, data.denominacion1),
+        ...admins.map(admin =>
+          enviarEmailNuevoTramiteAdmin(
             admin.email,
             admin.name || 'Administrador',
-            usuario.name || data.nombre || 'Usuario',
+            nombreCliente,
             data.denominacion1,
             tramite.id
           )
-        } catch {
-          // Admin email sending failed (non-critical)
-        }
-      }))
-    } catch {
-      // Admin emails sending failed (non-critical)
-    }
+        ),
+      ]).then(resultados => {
+        // No es crítico para el trámite, pero que quede en el log
+        resultados.forEach(r => {
+          if (r.status === 'rejected') console.error('Error al enviar email de trámite enviado:', r.reason)
+        })
+      })
+    )
 
     // Crear historial de estado
     await prisma.historialEstado.create({
