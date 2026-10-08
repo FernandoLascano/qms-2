@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { DollarSign, CheckCircle, XCircle } from 'lucide-react'
-import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
+import { CONCEPTOS_COMISIONABLES, hoyInput } from '@/lib/comisiones'
 import { Select } from '@/components/ui/select'
 
 interface Pago {
@@ -30,7 +30,9 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
   const [registrando, setRegistrando] = useState(false)
   const [nuevoPago, setNuevoPago] = useState({
     concepto: 'TASA_RETRIBUTIVA',
-    monto: ''
+    monto: '',
+    fecha: hoyInput(),
+    metodoPago: 'TRANSFERENCIA'
   })
 
   const getConceptoTexto = (concepto: string) => {
@@ -64,7 +66,9 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           concepto: nuevoPago.concepto,
-          monto: parseFloat(nuevoPago.monto)
+          monto: parseFloat(nuevoPago.monto),
+          fecha: nuevoPago.fecha,
+          metodoPago: nuevoPago.metodoPago
         })
       })
 
@@ -73,7 +77,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
         setNuevoPago(prev => ({ ...prev, monto: '' }))
         router.refresh()
       } else {
-        toast.error('Error al registrar pago')
+        toast.error((await response.json().catch(() => null))?.error || 'Error al registrar pago')
       }
     } catch (error) {
       toast.error('Error al registrar pago')
@@ -159,6 +163,34 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
                     ? 'No pasa a Comisiones. Si es un ingreso de QMS, cargalo a mano en Comisiones.'
                     : 'Es un gasto del trámite: no pasa a Comisiones.'}
               </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="fecha-pago">Fecha del pago</Label>
+                <Input
+                  id="fecha-pago"
+                  type="date"
+                  value={nuevoPago.fecha}
+                  max={hoyInput()}
+                  onChange={(e) => setNuevoPago(prev => ({ ...prev, fecha: e.target.value }))}
+                  disabled={registrando}
+                />
+                <p className="mt-1 text-label text-ink-2">El día en que entró la plata: define el mes en Comisiones.</p>
+              </div>
+              <div>
+                <Label htmlFor="metodo-pago">Medio de pago</Label>
+                <Select
+                  id="metodo-pago"
+                  value={nuevoPago.metodoPago}
+                  onChange={(e) => setNuevoPago(prev => ({ ...prev, metodoPago: e.target.value }))}
+                  disabled={registrando}
+                >
+                  <option value="TRANSFERENCIA">Transferencia</option>
+                  <option value="MERCADO_PAGO">Mercado Pago</option>
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="TARJETA">Tarjeta</option>
+                </Select>
+              </div>
             </div>
             <div>
               <Label htmlFor="monto">Monto (ARS)</Label>
