@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { DollarSign, CheckCircle, XCircle } from 'lucide-react'
 import { CONCEPTOS_COMISIONABLES, hoyInput } from '@/lib/comisiones'
 import { Select } from '@/components/ui/select'
+import { formatearFecha } from '@/lib/fechas'
 
 interface Pago {
   id: string
@@ -125,7 +126,7 @@ export default function PagosControl({ tramiteId, userId, pagos }: PagosControlP
                     </p>
                     {pago.fechaPago && (
                       <p className="text-label text-ink-2">
-                        {new Date(pago.fechaPago).toLocaleDateString('es-AR')}
+                        {formatearFecha(pago.fechaPago)}
                       </p>
                     )}
                   </div>

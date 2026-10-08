@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock } from 'lucide-react'
 import { Select } from '@/components/ui/select'
+import { fechaParaInput, formatearFecha, hoyParaInput, sumarAniosInput } from '@/lib/fechas'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -27,17 +28,14 @@ type Item = {
 type ConfigDom = { direcciones: string[]; precioAnual: number; diasAlerta: number }
 type Disponible = { id: string; denominacion: string; cliente: string; inscripta: boolean }
 
-const hoyISO = () => new Date().toISOString().slice(0, 10)
-const masUnAnioISO = (iso: string) => {
-  const d = new Date(iso)
-  d.setFullYear(d.getFullYear() + 1)
-  return d.toISOString().slice(0, 10)
-}
+// Día de hoy en Argentina: en UTC, después de las 21 h proponía el día siguiente.
+const hoyISO = hoyParaInput
+const masUnAnioISO = (iso: string) => sumarAniosInput(iso, 1)
 
 const fmt = (n: number) => '$' + (Math.round(n * 100) / 100).toLocaleString('es-AR', { maximumFractionDigits: 2 })
-const fmtFecha = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('es-AR') : '—')
+const fmtFecha = (iso: string | null) => formatearFecha(iso)
 const diasHasta = (iso: string) => Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000)
-const toDateInput = (iso: string | null) => (iso ? new Date(iso).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10))
+const toDateInput = (iso: string | null) => fechaParaInput(iso) || hoyParaInput()
 
 export default function DomiciliosPage() {
   const [loading, setLoading] = useState(true)

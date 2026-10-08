@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog'
 import { MODALIDAD_TEXTO, esRecurrente, type Modalidad } from '@/lib/cartera'
 import { cn } from '@/lib/utils'
+import { fechaCorta } from '@/lib/fechas'
 
 export interface ServicioDeCliente {
   id: string
@@ -39,7 +40,7 @@ export interface ServicioCatalogoOpcion {
 }
 
 const pesos = (n: number) => '$' + Math.round(n).toLocaleString('es-AR')
-const fecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+const fecha = (iso: string) => fechaCorta(iso)
 const sufijo: Partial<Record<Modalidad, string>> = { MENSUAL: '/mes', ANUAL: '/año' }
 
 async function pedir(url: string, metodo: string, json?: unknown) {

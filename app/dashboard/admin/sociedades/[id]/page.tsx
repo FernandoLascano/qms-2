@@ -6,8 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Building2, FileText, Tag, Briefcase, MapPin, Users, User, CheckCircle, Calendar, Download } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
+import { fechaLarga } from '@/lib/fechas'
 import CollapsibleCard from '@/components/admin/CollapsibleCard'
 import { diasHasta, type Modalidad } from '@/lib/cartera'
 import ServiciosCliente, { type ServicioCatalogoOpcion } from '@/components/admin/sociedades/ServiciosCliente'
@@ -157,7 +156,7 @@ async function SociedadDetallePage({ params }: PageProps) {
               <p className="text-body-sm text-success mb-1">Fecha de Inscripción</p>
               <p className="font-semibold text-success">
                 {tramite.fechaSociedadInscripta || tramite.fechaInscripcion
-                  ? format(new Date(tramite.fechaSociedadInscripta || tramite.fechaInscripcion!), "d 'de' MMMM, yyyy", { locale: es })
+                  ? fechaLarga(tramite.fechaSociedadInscripta || tramite.fechaInscripcion)
                   : 'N/A'}
               </p>
             </div>
@@ -219,7 +218,7 @@ async function SociedadDetallePage({ params }: PageProps) {
           <div>
             <p className="text-body-sm text-ink-2 mb-1">Fecha de Inicio</p>
             <p className="font-semibold text-ink">
-              {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+              {fechaLarga(tramite.createdAt)}
             </p>
           </div>
           <div>
