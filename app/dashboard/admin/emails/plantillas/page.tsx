@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, RefreshCw, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/ui/page-header'
+import { etiquetaCategoria } from '@/lib/emails/categorias-plantilla'
 
 interface EmailTpl {
   id: string
@@ -137,7 +138,7 @@ export default function EmailPlantillasPage() {
                       <p className="text-label text-ink-2 truncate max-w-xs">{t.subject}</p>
                     </td>
                     <td className="px-4 py-3 font-mono text-label text-ink-2">{t.name}</td>
-                    <td className="px-4 py-3 text-ink-2">{t.category}</td>
+                    <td className="px-4 py-3 text-ink-2">{etiquetaCategoria(t.category, t.isSystem)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
