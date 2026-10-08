@@ -33,9 +33,15 @@ export function MetricCard({
   return (
     <div className="bg-surface rounded-control shadow-raise p-6 hover:shadow-raise transition">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <p className="text-body-sm font-medium text-ink-2 mb-1">{title}</p>
-          <h3 className="text-display font-semibold text-ink mb-2">{value}</h3>
+          {/* Los montos van en pesos completos: si son largos, un tamaño menos
+              para que no se partan en dos renglones. */}
+          <h3
+            className={`${String(value).length > 8 ? 'text-title' : 'text-display'} whitespace-nowrap tnum font-semibold text-ink mb-2`}
+          >
+            {value}
+          </h3>
           
           {subtitle && (
             <p className="text-body-sm text-ink-2">{subtitle}</p>

@@ -21,6 +21,7 @@ import { TiemposPromedioPanel } from '@/components/admin/analytics/TiemposPromed
 import { ExportButton } from '@/components/admin/analytics/ExportButton'
 import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
 import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
+import { pesos } from '@/components/admin/analytics/tema'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
@@ -71,25 +72,30 @@ interface AnalyticsData {
       esPositivo: boolean
     }
   }
+  // null = sin casos suficientes para promediar esa etapa.
   tiemposPromedio: {
-    total: number
-    desdeValidacion?: number
+    total: number | null
+    desdeValidacion: number | null
     porEtapa: {
-      reservaDenominacion: number
-      depositoCapital: number
-      firmaEstatuto: number
-      inscripcion: number
+      reservaDenominacion: number | null
+      depositoCapital: number | null
+      firmaEstatuto: number | null
+      inscripcion: number | null
     }
+    muestra: number
   }
   leads?: {
     consultas: number
     borradores: number
+    interesados: number
     perdidosPorMotivo: { motivo: string | null; cantidad: number }[]
   }
   clientes: {
     registrados: number
     activos: number
     nuevos: number
+    conTramite: number
+    conSociedad: number
     tasaRegistroATramite: string
     tasaTramiteACompletado: string
   }
@@ -107,6 +113,17 @@ interface AnalyticsData {
   }>
   ultimosTramites: Array<any>
 }
+
+const ESTADO_LABEL: Record<string, string> = {
+  INICIADO: 'Iniciado',
+  EN_PROCESO: 'En proceso',
+  ESPERANDO_CLIENTE: 'Esperando cliente',
+  ESPERANDO_APROBACION: 'Esperando aprobación',
+  COMPLETADO: 'Completado',
+  CANCELADO: 'Cancelado',
+}
+
+const JURISDICCION_LABEL: Record<string, string> = { CORDOBA: 'Córdoba', CABA: 'CABA' }
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
@@ -135,7 +152,7 @@ export default function AnalyticsPage() {
         if (!res.ok) {
           if (!cancelled) {
             setGa4Data(null)
-            setGa4Error(json.mensaje || json.error || 'No se pudo cargar Google Analytics')
+            setGa4Error(json.mensaje || 'No pudimos conectar con Google Analytics.')
           }
           return
         }
@@ -146,7 +163,7 @@ export default function AnalyticsPage() {
       } catch (e: unknown) {
         if (!cancelled) {
           setGa4Data(null)
-          setGa4Error(e instanceof Error ? e.message : 'Error de red')
+          setGa4Error('No pudimos conectar con Google Analytics. Revisá la conexión y probá de nuevo.')
         }
       } finally {
         if (!cancelled) setGa4Loading(false)
@@ -311,7 +328,7 @@ export default function AnalyticsPage() {
         
         <MetricCard
           title="Ingresos Período"
-          value={`$${((data.ingresos?.periodo || 0) / 1000).toFixed(0)}K`}
+          value={pesos(data.ingresos?.periodo || 0)}
           icon={DollarSign}
           subtitle={`${data.ingresos?.cantidadPagos || 0} pagos`}
           color="blue"
@@ -338,7 +355,7 @@ export default function AnalyticsPage() {
         
         <MetricCard
           title="Ticket promedio"
-          value={`$${((data.ingresos?.promedioPorTramite || 0) / 1000).toFixed(0)}K`}
+          value={pesos(data.ingresos?.promedioPorTramite || 0)}
           icon={DollarSign}
           subtitle="Por cobro del período"
           color="green"
@@ -354,7 +371,7 @@ export default function AnalyticsPage() {
         
         <MetricCard
           title="Pagos Pendientes"
-          value={`$${((data.ingresos?.pendientes || 0) / 1000).toFixed(0)}K`}
+          value={pesos(data.ingresos?.pendientes || 0)}
           icon={Clock}
           subtitle="Por cobrar"
           color="red"
@@ -418,6 +435,7 @@ export default function AnalyticsPage() {
             total={data.tiemposPromedio.total}
             desdeValidacion={data.tiemposPromedio.desdeValidacion}
             porEtapa={data.tiemposPromedio.porEtapa}
+            muestra={data.tiemposPromedio.muestra}
           />
         )}
       </div>
@@ -433,10 +451,10 @@ export default function AnalyticsPage() {
       {/* Embudo de conversión y alertas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ConversionFunnel
-          leads={(data.leads?.consultas || 0) + (data.leads?.borradores || 0)}
+          leads={data.leads?.interesados ?? data.clientes?.registrados ?? 0}
           registrados={data.clientes?.registrados || 0}
-          conTramite={Math.round((data.clientes?.registrados || 0) * (parseFloat(data.clientes?.tasaRegistroATramite || '0') / 100))}
-          completados={data.tramites?.completados || 0}
+          conTramite={data.clientes?.conTramite || 0}
+          completados={data.clientes?.conSociedad || 0}
         />
         <AlertasPanel alertas={data.alertas || []} />
       </div>
@@ -469,10 +487,10 @@ export default function AnalyticsPage() {
                       tramite.estadoGeneral === 'INICIADO' ? 'bg-info-soft text-info' :
                       'bg-surface-3 text-ink'
                     }`}>
-                      {tramite.estadoGeneral.replace(/_/g, ' ')}
+                      {ESTADO_LABEL[tramite.estadoGeneral] ?? tramite.estadoGeneral}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-body-sm text-ink-2">{tramite.jurisdiccion}</td>
+                  <td className="px-4 py-3 text-body-sm text-ink-2">{JURISDICCION_LABEL[tramite.jurisdiccion] ?? tramite.jurisdiccion}</td>
                   <td className="px-4 py-3 text-body-sm text-ink-2">
                     {format(new Date(tramite.createdAt), 'dd/MM/yyyy')}
                   </td>
@@ -494,7 +512,7 @@ export default function AnalyticsPage() {
               return (
                 <div key={item.jurisdiccion}>
                   <div className="flex justify-between text-body-sm mb-1">
-                    <span className="font-medium text-ink-2">{item.jurisdiccion}</span>
+                    <span className="font-medium text-ink-2">{JURISDICCION_LABEL[item.jurisdiccion] ?? item.jurisdiccion}</span>
                     <span className="text-ink-2">
                       {item._count} ({porcentaje.toFixed(0)}%)
                     </span>

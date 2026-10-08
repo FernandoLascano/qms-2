@@ -42,20 +42,40 @@ const STATUS_TEXT: Record<ServiceStatus, string> = {
   unconfigured: 'text-ink-3',
 }
 
+/**
+ * Un solo pedido por vez. En desarrollo React monta los efectos dos veces y
+ * salían dos chequeos completos por cada carga de Hoy (cada uno de 3-4 s); si
+ * ya hay uno en camino, el segundo espera ese mismo resultado.
+ */
+let pedidoEnCurso: Promise<HealthResponse> | null = null
+
+function pedirEstado(): Promise<HealthResponse> {
+  if (!pedidoEnCurso) {
+    pedidoEnCurso = fetch('/api/admin/health', { cache: 'no-store' })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return (await res.json()) as HealthResponse
+      })
+      .finally(() => {
+        pedidoEnCurso = null
+      })
+  }
+  return pedidoEnCurso
+}
+
 export function ServiceStatus() {
   const [data, setData] = useState<HealthResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [secondsAgo, setSecondsAgo] = useState(0)
   const lastFetch = useRef<number>(0)
+  const contenedor = useRef<HTMLDivElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/admin/health', { cache: 'no-store' })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json: HealthResponse = await res.json()
+      const json = await pedirEstado()
       setData(json)
       lastFetch.current = Date.now()
       setSecondsAgo(0)
@@ -67,15 +87,38 @@ export function ServiceStatus() {
   }, [])
 
   useEffect(() => {
-    load()
+    // El chequeo tarda 2-3 s (SMTP, GA4, MercadoPago…) y la tarjeta está al
+    // pie de Hoy: se pide recién cuando la tarjeta se acerca a la pantalla, así
+    // no demora la carga del resto ni corre si nadie la mira.
+    let arrancado = false
+    const arrancar = () => {
+      if (arrancado) return
+      arrancado = true
+      load()
+    }
+    const observador =
+      typeof IntersectionObserver === 'function' && contenedor.current
+        ? new IntersectionObserver(
+            (entradas) => {
+              if (entradas.some((e) => e.isIntersecting)) {
+                observador?.disconnect()
+                arrancar()
+              }
+            },
+            { rootMargin: '200px' },
+          )
+        : null
+    if (observador && contenedor.current) observador.observe(contenedor.current)
+    else arrancar()
     // Solo refresca automáticamente si la pestaña está visible.
     const refresh = setInterval(() => {
-      if (document.visibilityState === 'visible') load()
+      if (arrancado && document.visibilityState === 'visible') load()
     }, REFRESH_MS)
     const tick = setInterval(() => {
       if (lastFetch.current) setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
     }, 1000)
     return () => {
+      observador?.disconnect()
       clearInterval(refresh)
       clearInterval(tick)
     }
@@ -86,6 +129,7 @@ export function ServiceStatus() {
   const downCount = services.filter((s) => s.status === 'down').length
 
   return (
+    <div ref={contenedor}>
     <Card className={degraded ? 'border-2 border-danger-line' : ''}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <div className="flex items-center gap-2">
@@ -178,6 +222,7 @@ export function ServiceStatus() {
         )}
       </CardContent>
     </Card>
+    </div>
   )
 }
 

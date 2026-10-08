@@ -10,10 +10,12 @@ interface ConversionFunnelProps {
 }
 
 /**
- * El embudo empezaba en «registrados» y por eso no servía para lo que hacía
- * falta: medía gente que ya había decidido abrir una cuenta, o sea después del
- * punto donde se pierde a la mayoría. Ahora arranca en el interés —consultas
- * más borradores— que es donde realmente empieza el recorrido.
+ * Embudo de personas: cada paso está incluido en el anterior, así que nunca
+ * puede haber más gente abajo que arriba.
+ *  - Interesados: todos los registrados más los leads que nunca abrieron cuenta.
+ *  - Registrados: usuarios con cuenta.
+ *  - Iniciaron trámite: usuarios con al menos un trámite (aunque sea borrador).
+ *  - Completados: usuarios con una sociedad inscripta.
  */
 export function ConversionFunnel({ leads, registrados, conTramite, completados }: ConversionFunnelProps) {
   const base = Math.max(leads, registrados)
