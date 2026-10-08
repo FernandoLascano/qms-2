@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Banknote, Send, History, Clock, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { validarCbu } from '@/lib/validaciones'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -78,8 +79,10 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
       return
     }
 
-    if (cbu.length !== 22) {
-      toast.error('El CBU debe tener 22 dígitos')
+    // Misma validación que el servidor (dígitos verificadores incluidos).
+    const errorCbu = validarCbu(cbu)
+    if (errorCbu) {
+      toast.error(errorCbu)
       return
     }
 

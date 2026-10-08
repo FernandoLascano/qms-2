@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { soloDigitos, validarCbu } from '@/lib/validaciones'
 
 interface RouteParams {
   params: Promise<{
@@ -23,11 +24,26 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     const { id } = await params
     const body = await request.json()
-    const { banco, cbu, alias, titular, montoEsperado, fechaActivacion } = body
+    const { banco, alias, titular, montoEsperado, fechaActivacion } = body
 
-    if (!banco || !cbu || !titular || !montoEsperado) {
+    if (!banco || !body.cbu || !titular || !montoEsperado) {
       return NextResponse.json(
         { error: 'Faltan datos obligatorios' },
+        { status: 400 }
+      )
+    }
+
+    // El CBU va al cliente para que deposite: si está mal copiado, la plata no
+    // llega. Se validan los dígitos verificadores y se guarda sin separadores.
+    const errorCbu = validarCbu(body.cbu)
+    if (errorCbu) {
+      return NextResponse.json({ error: errorCbu }, { status: 400 })
+    }
+    const cbu = soloDigitos(body.cbu)
+
+    if (!(Number(montoEsperado) > 0)) {
+      return NextResponse.json(
+        { error: 'El monto esperado tiene que ser un número mayor a cero' },
         { status: 400 }
       )
     }
