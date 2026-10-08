@@ -297,6 +297,7 @@ model Tramite {
   serviciosContratados ServicioContratado[]
   domicilioSede    DomicilioSede?
   contratosDomicilio ContratoDomicilioVersion[]
+  contratosDomicilioFirmados ContratoDomicilioFirmado[]
 
   @@index([userId])
   @@index([estadoGeneral])
@@ -659,10 +660,35 @@ model ContratoDomicilioVersion {
   datos     Json
   formato   String // "pdf" | "docx": el de la primera descarga de esta versión
   generadoPor String? // nombre del admin
+  firmados    ContratoDomicilioFirmado[]
 
   createdAt DateTime @default(now())
 
   @@unique([tramiteId, version])
+}
+
+// Contrato de domicilio ya firmado (por fuera: Adobe Sign u otra plataforma),
+// subido por el admin. Una fila por archivo cargado: el vigente es el último;
+// al reemplazarlo el anterior queda como historial. Cuelga del trámite (igual
+// que las versiones) para no perderse si se borra el registro de DomicilioSede.
+model ContratoDomicilioFirmado {
+  id        String  @id @default(cuid())
+  tramiteId String
+  tramite   Tramite @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+
+  archivoPath   String // path del objeto en el bucket privado `documentos`
+  nombreArchivo String // nombre original del archivo subido
+  tamanio       Int // bytes
+  fechaFirma    DateTime // la elige el admin
+  cargadoPor    String? // nombre del admin que lo subió
+
+  // Versión generada a la que corresponde (opcional).
+  contratoVersionId String?
+  contratoVersion   ContratoDomicilioVersion? @relation(fields: [contratoVersionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) // fecha de carga
+
+  @@index([tramiteId, createdAt])
 }
 
 // CUENTAS BANCARIAS POR TRÁMITE (por ejemplo, depósito de capital)

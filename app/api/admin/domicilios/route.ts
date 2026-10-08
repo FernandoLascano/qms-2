@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { estadoContrato, serializarFirmado, type ResumenContrato } from '@/lib/contrato-domicilio-firmado'
 
 // GET - Lista de servicios de domicilio en sede + parámetros de config
 export async function GET() {
@@ -40,7 +41,44 @@ export async function GET() {
       }),
     ])
 
+    // Estado del contrato de cada domicilio. Va aparte y con catch: si la tabla
+    // de firmados todavía no existe (migración sin correr), la pantalla sigue
+    // andando y sólo se oculta la columna de contrato.
+    const tramiteIds = items.map((i) => i.tramiteId)
+    const contratos = await Promise.all([
+      prisma.contratoDomicilioFirmado.findMany({
+        where: { tramiteId: { in: tramiteIds } },
+        include: { contratoVersion: { select: { version: true } } },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.contratoDomicilioVersion.findMany({
+        where: { tramiteId: { in: tramiteIds } },
+        select: { tramiteId: true, version: true, createdAt: true },
+        orderBy: { version: 'desc' },
+      }),
+    ]).catch((e) => {
+      console.error('No se pudo leer el estado de los contratos de domicilio:', e)
+      return null
+    })
+    // Las listas vienen de la más nueva a la más vieja: la primera de cada trámite es la vigente.
+    const firmadoPorTramite = new Map<string, NonNullable<typeof contratos>[0][number]>()
+    const versionPorTramite = new Map<string, NonNullable<typeof contratos>[1][number]>()
+    for (const f of contratos?.[0] ?? []) if (!firmadoPorTramite.has(f.tramiteId)) firmadoPorTramite.set(f.tramiteId, f)
+    for (const v of contratos?.[1] ?? []) if (!versionPorTramite.has(v.tramiteId)) versionPorTramite.set(v.tramiteId, v)
+
+    const resumenContrato = (tramiteId: string): ResumenContrato | null => {
+      if (!contratos) return null
+      const firmado = firmadoPorTramite.get(tramiteId)
+      const version = versionPorTramite.get(tramiteId)
+      return {
+        estado: estadoContrato(firmado, version),
+        firmado: firmado ? serializarFirmado(firmado) : null,
+        ultimaVersion: version ? { version: version.version, fecha: version.createdAt.toISOString() } : null,
+      }
+    }
+
     return NextResponse.json({
+      contratosDisponibles: contratos !== null,
       config: {
         direcciones: config?.domicilioSedeDirecciones ?? [],
         precioAnual: config?.domicilioSedePrecioAnual ?? 0,
@@ -56,6 +94,7 @@ export async function GET() {
         ultimoCobro: i.ultimoCobro,
         notas: i.notas,
         createdAt: i.createdAt,
+        contrato: resumenContrato(i.tramiteId),
         tramite: {
           id: i.tramite.id,
           denominacion: i.tramite.denominacionAprobada || i.tramite.denominacionSocial1,
