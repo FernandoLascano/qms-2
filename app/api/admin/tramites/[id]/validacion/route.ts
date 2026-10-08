@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { enviarEmailValidacionTramite } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -87,14 +88,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Enviar email al usuario (no fallar si hay error)
     try {
-      await enviarEmailValidacionTramite(
+      enSegundoPlano('admin/tramites/[id]/validacion', () => enviarEmailValidacionTramite(
         tramite.user.email,
         tramite.user.name,
         tramite.denominacionSocial1,
         accion === 'VALIDADO',
         observaciones || undefined,
         id
-      )
+      ))
     } catch {
       // Error al enviar email de validación (no crítico)
     }

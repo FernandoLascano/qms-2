@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -68,14 +69,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     })
     if (usuario) {
       try {
-        await enviarEmailNotificacion(
+        enSegundoPlano('admin/tramites/[id]/denominacion', () => enviarEmailNotificacion(
           usuario.email,
           usuario.name || 'Usuario',
           'Denominación Sugerida para tu Sociedad',
           `Después de realizar el examen de homonimia, sugerimos utilizar la denominación: "${denominacion}" para tu sociedad. Te contactaremos para coordinar el pago de la tasa de reserva de nombre.`,
           id,
           { tono: 'info', destacado: { etiqueta: 'Denominación sugerida', valor: denominacion } }
-        )
+        ))
       } catch {
         // Error al enviar email de denominación sugerida (no crítico)
       }

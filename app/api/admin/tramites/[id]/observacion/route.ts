@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -55,14 +56,14 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     if (usuario) {
       try {
-        await enviarEmailNotificacion(
+        enSegundoPlano('admin/tramites/[id]/observacion', () => enviarEmailNotificacion(
           usuario.email,
           usuario.name,
           'Nuevo mensaje del equipo',
           mensaje,
           id,
           { tono: 'info', cta: { texto: 'Ver el mensaje en tu panel' } }
-        )
+        ))
       } catch {
         // Error al enviar email de notificación (no crítico)
       }

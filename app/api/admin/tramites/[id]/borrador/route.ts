@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -77,7 +78,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         }
       })
       if (tramite.user?.email) {
-        await enviarEmailNotificacion(tramite.user.email, tramite.user.name || 'Usuario', 'Borrador listo para revisar', mensaje, id, { tono: 'accion', cta: { texto: 'Revisar el borrador' } })
+        enSegundoPlano('admin/tramites/[id]/borrador', () => enviarEmailNotificacion(tramite.user.email, tramite.user.name || 'Usuario', 'Borrador listo para revisar', mensaje, id, { tono: 'accion', cta: { texto: 'Revisar el borrador' } }))
       }
     } catch {
       // Aviso no crítico

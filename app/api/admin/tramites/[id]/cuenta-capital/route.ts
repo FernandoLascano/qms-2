@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { soloDigitos, validarCbu } from '@/lib/validaciones'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -146,7 +147,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       try {
         // El mail no reusa el texto de la notificación: los datos bancarios
         // van en tabla, para que el CBU y el alias se lean y se copien bien.
-        await enviarEmailNotificacion(
+        enSegundoPlano('admin/tramites/[id]/cuenta-capital', () => enviarEmailNotificacion(
           tramite.user.email,
           tramite.user.name || 'Usuario',
           'Datos para el depósito del 25% del capital',
@@ -173,7 +174,7 @@ export async function POST(request: Request, { params }: RouteParams) {
             ],
             cta: { texto: 'Subir el comprobante', ancla: 'deposito-capital' },
           }
-        )
+        ))
       } catch {
         // Email sending failed (non-critical)
       }

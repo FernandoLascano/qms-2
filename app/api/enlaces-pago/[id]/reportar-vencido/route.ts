@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -74,14 +75,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       // Enviar email al admin
       if (admin.email) {
         try {
-          await enviarEmailNotificacion(
+          enSegundoPlano('enlaces-pago/[id]/reportar-vencido', () => enviarEmailNotificacion(
             admin.email,
             admin.name || 'Administrador',
             '⚠️ Enlace de Pago Reportado como Vencido',
             mensajeAviso,
             enlace.tramiteId,
             { paraAdmin: true, tono: 'aviso', cta: { texto: 'Generar un enlace nuevo', tab: 'pagos' } }
-          )
+          ))
         } catch {
           // Email no crítico
         }

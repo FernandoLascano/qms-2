@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailPagoPendiente } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -73,13 +74,13 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     if (usuario) {
       try {
-        await enviarEmailPagoPendiente(
+        enSegundoPlano('admin/tramites/[id]/enlaces-pago', () => enviarEmailPagoPendiente(
           usuario.email,
           usuario.name,
           conceptoTexto,
           parseFloat(monto),
           id
-        )
+        ))
       } catch {
         // Email sending failed (non-critical)
       }

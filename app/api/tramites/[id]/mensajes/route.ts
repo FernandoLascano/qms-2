@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10 // Timeout de 10 segundos máximo
@@ -151,14 +152,14 @@ export async function POST(
           // Enviar email al admin
           if (admin.email) {
             try {
-              await enviarEmailNotificacion(
+              enSegundoPlano('tramites/[id]/mensajes', () => enviarEmailNotificacion(
                 admin.email,
                 admin.name || 'Administrador',
                 titulo,
                 mensajeAviso,
                 id,
                 { paraAdmin: true, tono: 'info', cta: { texto: 'Responder en el panel', tab: 'comunicacion' } }
-              )
+              ))
             } catch {
               // Email no crítico
             }

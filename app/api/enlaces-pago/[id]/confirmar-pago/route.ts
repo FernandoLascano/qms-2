@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 export async function PATCH(
   req: NextRequest,
@@ -132,14 +133,14 @@ export async function PATCH(
           const clienteNombre = tramite?.user?.name || 'Cliente'
           const mensajeEmail = `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.\n\nTrámite: ${denominacion}\nCliente: ${clienteNombre}`
 
-          await enviarEmailNotificacion(
+          enSegundoPlano('enlaces-pago/[id]/confirmar-pago', () => enviarEmailNotificacion(
             admin.email,
             admin.name || 'Administrador',
             'Comprobante de Pago Recibido',
             mensajeEmail,
             enlace.tramiteId,
             { paraAdmin: true, tono: 'accion', cta: { texto: 'Revisar el comprobante', tab: 'pagos' } }
-          )
+          ))
         } catch {
           // Email no crítico
         }

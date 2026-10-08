@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { enviarEmailEtapaCompletada, enviarEmailNotificacion } from '@/lib/emails/send'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 const BASE_URL = process.env.NEXTAUTH_URL || 'https://www.quieromisas.com'
 
@@ -73,15 +74,11 @@ export async function marcarEtapaPagada(tramiteId: string, etapa: EtapaPago): Pr
     // Notificación no crítica
   }
 
-  try {
+  // Emails después de responder, en orden: primero la etapa y, si son los
+  // honorarios, el requisito de Ciudadano Digital Nivel 2.
+  enSegundoPlano('tramites-etapas', async () => {
     await enviarEmailEtapaCompletada(tramite.user.email, tramite.user.name || 'Usuario', cfg.nombre, tramiteId)
-  } catch {
-    // Email no crítico
-  }
-
-  // Al confirmar los honorarios, avisamos el requisito de Ciudadano Digital Nivel 2
-  if (etapa === 'honorariosPagados') {
-    try {
+    if (etapa === 'honorariosPagados') {
       await enviarEmailNotificacion(
         tramite.user.email,
         tramite.user.name || 'Usuario',
@@ -90,10 +87,8 @@ export async function marcarEtapaPagada(tramiteId: string, etapa: EtapaPago): Pr
         tramiteId,
         { tono: 'accion' }
       )
-    } catch {
-      // Email no crítico
     }
-  }
+  })
 
   return true
 }

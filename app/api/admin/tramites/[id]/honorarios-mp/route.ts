@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailPagoPendiente } from '@/lib/emails/send'
 import { validarCbu } from '@/lib/validaciones'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
   params: Promise<{
@@ -196,14 +197,14 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Enviar email de pago pendiente (no fallar si hay error)
     if (tramite.user) {
       try {
-        await enviarEmailPagoPendiente(
+        enSegundoPlano('admin/tramites/[id]/honorarios-mp', () => enviarEmailPagoPendiente(
           tramite.user.email,
           tramite.user.name,
           conceptoTexto,
           parseFloat(monto),
           id,
           montoTransferencia ? parseFloat(montoTransferencia) : null
-        )
+        ))
       } catch {
         // Email no crítico, continuar silenciosamente
       }

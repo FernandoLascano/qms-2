@@ -37,7 +37,12 @@ export const PUBLIC_ASSETS_BUCKET =
 
 export type UploadVisibility = 'public' | 'private'
 
+// Buckets ya confirmados en este proceso: listBuckets en cada subida sumaba
+// una ida y vuelta a Supabase a cada documento.
+const bucketsConfirmados = new Set<string>()
+
 async function ensureBucket(bucketName: string, isPublic: boolean): Promise<boolean> {
+  if (bucketsConfirmados.has(bucketName)) return true
   try {
     const supabase = getSupabaseClient()
     const { data: buckets, error: listError } = await supabase.storage.listBuckets()
@@ -59,6 +64,7 @@ async function ensureBucket(bucketName: string, isPublic: boolean): Promise<bool
       }
     }
 
+    bucketsConfirmados.add(bucketName)
     return true
   } catch {
     return false
@@ -88,7 +94,8 @@ export async function uploadToSupabase(
       .replace(/[^a-zA-Z0-9.-]/g, '_')
       .replace(/\.+/g, '.')
 
-    const timestamp = Date.now()
+    // Sufijo aleatorio: dos subidas en paralelo con el mismo nombre no chocan.
+    const timestamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     const filePath = `${folder}/${timestamp}-${cleanFileName}`
 
     const { error } = await supabase.storage.from(bucket).upload(filePath, buffer, {
