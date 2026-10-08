@@ -72,7 +72,13 @@ export default function AdminBlogPage() {
     }
   }
 
+  // Despublicar saca la nota del sitio (y de Google con el tiempo): se
+  // confirma. Publicar no, porque es lo que se busca al tocar el botón.
+  const [postADespublicar, setPostADespublicar] = useState<{ id: string; titulo: string } | null>(null)
+  const [cambiandoEstado, setCambiandoEstado] = useState(false)
+
   const togglePublicado = async (id: string, publicado: boolean) => {
+    setCambiandoEstado(true)
     try {
       const res = await fetch(`/api/blog/${id}`, {
         method: 'PATCH',
@@ -82,6 +88,7 @@ export default function AdminBlogPage() {
 
       if (res.ok) {
         toast.success(publicado ? 'Post despublicado' : 'Post publicado')
+        setPostADespublicar(null)
         fetchPosts()
       } else {
         toast.error('Error al cambiar estado')
@@ -89,6 +96,8 @@ export default function AdminBlogPage() {
     } catch (error) {
       console.error('Error:', error)
       toast.error('Error al cambiar estado')
+    } finally {
+      setCambiandoEstado(false)
     }
   }
 
@@ -232,7 +241,11 @@ export default function AdminBlogPage() {
 
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
-                      onClick={() => togglePublicado(post.id, post.publicado)}
+                      onClick={() =>
+                        post.publicado
+                          ? setPostADespublicar({ id: post.id, titulo: post.titulo })
+                          : togglePublicado(post.id, false)
+                      }
                       className={`px-4 py-2 rounded-control font-medium transition cursor-pointer ${
                         post.publicado
                           ? 'bg-warning-soft text-warning hover:bg-warning-solid'
@@ -276,6 +289,21 @@ export default function AdminBlogPage() {
         confirmLabel="Eliminar artículo"
         loading={eliminando}
         onConfirm={deletePost}
+      />
+
+      <ConfirmDialog
+        open={!!postADespublicar}
+        onOpenChange={(abierto) => !abierto && setPostADespublicar(null)}
+        title="¿Despublicar este artículo?"
+        description={
+          postADespublicar
+            ? `«${postADespublicar.titulo}» deja de verse en el blog y su enlace deja de funcionar. Queda como borrador y se puede volver a publicar.`
+            : undefined
+        }
+        confirmLabel="Despublicar"
+        destructive={false}
+        loading={cambiandoEstado}
+        onConfirm={() => postADespublicar && togglePublicado(postADespublicar.id, true)}
       />
     </div>
   )
