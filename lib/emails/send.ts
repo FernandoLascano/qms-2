@@ -37,18 +37,31 @@ async function resolverPlantillaEditable(
   }
 }
 
+/**
+ * Arma el mail tal cual sale: la plantilla editable de la base si hay una
+ * activa, si no la de código. La usa también el email de prueba, así prueba
+ * lo mismo que reciben los clientes.
+ */
+export async function renderizarEmail(
+  template: keyof typeof templates,
+  subject: string,
+  data: Record<string, unknown>
+): Promise<{ html: string; subject: string }> {
+  const templateFunction = templates[template]
+
+  if (typeof templateFunction !== 'function') {
+    throw new Error(`Template "${template}" no encontrada`)
+  }
+
+  // La plantilla editable de la base tiene prioridad; si no hay, usamos la de código.
+  const override = await resolverPlantillaEditable(template as string, subject, data)
+  if (override) return override
+  return { html: (templateFunction as unknown as (d: Record<string, unknown>) => string)(data), subject }
+}
+
 export async function sendEmail({ to, subject, template, data }: SendEmailParams) {
   try {
-    const templateFunction = templates[template]
-
-    if (!templateFunction) {
-      throw new Error(`Template "${template}" no encontrada`)
-    }
-
-    // La plantilla editable de la base tiene prioridad; si no hay, usamos la de código.
-    const override = await resolverPlantillaEditable(template as string, subject, data)
-    const html = override ? override.html : templateFunction(data as any)
-    const asuntoFinal = override ? override.subject : subject
+    const { html, subject: asuntoFinal } = await renderizarEmail(template, subject, data)
 
     const nodemailerResult = await sendEmailNodemailer({
       to,

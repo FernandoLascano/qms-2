@@ -28,6 +28,7 @@ import {
   Forward
 , X } from 'lucide-react'
 import { toast } from 'sonner'
+import { EJEMPLOS_EMAIL } from '@/lib/emails/ejemplos'
 import { RECARGO_TARJETA, precioRegular, ahorroTransferencia, formatARS } from '@/lib/precios'
 import { Select } from '@/components/ui/select'
 
@@ -86,7 +87,7 @@ export default function ConfiguracionAdminPage() {
 
   // Estados para test de email
   const [testEmail, setTestEmail] = useState('')
-  const [testEmailType, setTestEmailType] = useState('welcome')
+  const [testEmailType, setTestEmailType] = useState(EJEMPLOS_EMAIL[0].template)
   const [testingEmail, setTestingEmail] = useState(false)
   const [testingConnection, setTestingConnection] = useState(false)
   const [smtpStatus, setSmtpStatus] = useState<'idle' | 'success' | 'error'>('idle')
@@ -485,12 +486,9 @@ export default function ConfiguracionAdminPage() {
                       value={testEmailType}
                       onChange={(e) => setTestEmailType(e.target.value)}
                     >
-                      <option value="welcome">Bienvenida (Registro)</option>
-                      <option value="nuevoTramite">Nuevo Trámite Iniciado</option>
-                      <option value="cambioEstado">Cambio de Estado</option>
-                      <option value="accionRequerida">Acción Requerida</option>
-                      <option value="tramiteCompletado">Trámite Completado</option>
-                      <option value="recordatorioPago">Recordatorio de Pago</option>
+                      {EJEMPLOS_EMAIL.map((e) => (
+                        <option key={e.template} value={e.template}>{e.etiqueta}</option>
+                      ))}
                     </Select>
                   </div>
                 </div>

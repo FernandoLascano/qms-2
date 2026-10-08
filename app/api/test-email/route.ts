@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { verifyEmailConnection, sendEmail, emailTemplates } from '@/lib/email'
+import { verifyEmailConnection, sendEmail } from '@/lib/email'
+import { renderizarEmail } from '@/lib/emails/send'
+import { ejemploDe } from '@/lib/emails/ejemplos'
 
 // GET - Verificar conexión SMTP
 export async function GET() {
@@ -37,24 +39,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email de destino requerido' }, { status: 400 })
     }
 
-    let emailData: { subject: string; html: string }
-
-    switch (tipo) {
-      case 'bienvenida':
-        emailData = emailTemplates.welcome('Usuario de Prueba')
-        break
-      case 'nuevoTramite':
-        emailData = emailTemplates.nuevoTramite('Usuario de Prueba', 'EMPRESA TEST SAS')
-        break
-      case 'completado':
-        emailData = emailTemplates.tramiteCompletado('Usuario de Prueba', 'EMPRESA TEST SAS', '30-12345678-9')
-        break
-      case 'pago':
-        emailData = emailTemplates.recordatorioPago('Usuario de Prueba', 'EMPRESA TEST SAS', '$285.000', '25/03/2026', 'https://www.quieromisas.com')
-        break
-      default:
-        emailData = emailTemplates.welcome('Usuario de Prueba')
+    // El tipo es el nombre de la plantilla actual (lib/emails/templates.tsx).
+    // Antes la pantalla mandaba claves que no coincidían con las del servidor y
+    // siempre salía la Bienvenida, armada con una versión vieja del diseño.
+    const ejemplo = ejemploDe(typeof tipo === 'string' ? tipo : '')
+    if (!ejemplo) {
+      return NextResponse.json({ error: `Tipo de email desconocido: ${tipo}` }, { status: 400 })
     }
+
+    // Mismo armado que el envío real (incluida la plantilla editable de la
+    // base), pero sin registrarlo en la bandeja ni en ningún trámite.
+    const emailData = await renderizarEmail(
+      ejemplo.template as Parameters<typeof renderizarEmail>[0],
+      ejemplo.asunto,
+      ejemplo.datos,
+    )
 
     const result = await sendEmail({
       to: email,
