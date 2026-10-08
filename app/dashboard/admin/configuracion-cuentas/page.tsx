@@ -290,9 +290,12 @@ export default function ConfiguracionCuentasPage() {
                         <p className="text-body-sm text-ink-2">CBU</p>
                         <p className="font-mono text-body font-semibold text-ink tnum">{cuenta.cbu}</p>
                         {cbuInvalido && (
-                          <Badge tone="warning" className="mt-1">
-                            <AlertTriangle className="h-3 w-3" aria-hidden /> CBU inválido: {validarCbu(cuenta.cbu)}
-                          </Badge>
+                          <div className="mt-1 space-y-1">
+                            <Badge tone="warning">
+                              <AlertTriangle className="h-3 w-3" aria-hidden /> CBU inválido
+                            </Badge>
+                            <p className="text-label text-warning">{validarCbu(cuenta.cbu)}</p>
+                          </div>
                         )}
                       </div>
                       {cuenta.alias && (
