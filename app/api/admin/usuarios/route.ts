@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import {
+  motivoUsuarioNoEliminable,
+  WHERE_ENLACES_PAGADOS,
+  WHERE_PAGOS_APROBADOS,
+} from '@/lib/tramites/eliminacion'
 
 // GET - Listar todos los usuarios
 export async function GET() {
@@ -56,9 +61,41 @@ export async function GET() {
 
     const tramiteMap = new Map(ultimosTramites.map(t => [t.userId, t]))
 
+    // Trámites que impiden borrar al usuario (misma regla que el DELETE), para
+    // que la pantalla deshabilite el botón y muestre el motivo.
+    const protegidos = await prisma.tramite.findMany({
+      where: {
+        userId: { in: userIds },
+        OR: [
+          { sociedadInscripta: true },
+          { estadoGeneral: 'COMPLETADO' },
+          { pagos: { some: WHERE_PAGOS_APROBADOS } },
+          { enlacesPago: { some: WHERE_ENLACES_PAGADOS } },
+        ],
+      },
+      select: {
+        userId: true,
+        denominacionAprobada: true,
+        denominacionSocial1: true,
+        sociedadInscripta: true,
+        estadoGeneral: true,
+        _count: {
+          select: {
+            pagos: { where: WHERE_PAGOS_APROBADOS },
+            enlacesPago: { where: WHERE_ENLACES_PAGADOS },
+          },
+        },
+      },
+    })
+    const protegidosPorUsuario = new Map<string, typeof protegidos>()
+    for (const t of protegidos) {
+      protegidosPorUsuario.set(t.userId, [...(protegidosPorUsuario.get(t.userId) ?? []), t])
+    }
+
     const usuariosConInfo = usuarios.map(user => ({
       ...user,
-      ultimoTramite: tramiteMap.get(user.id) || null
+      ultimoTramite: tramiteMap.get(user.id) || null,
+      motivoNoEliminable: motivoUsuarioNoEliminable(protegidosPorUsuario.get(user.id) ?? []),
     }))
 
     return NextResponse.json(usuariosConInfo)

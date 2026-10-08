@@ -35,6 +35,8 @@ interface Usuario {
     estadoGeneral: string
     createdAt: string
   }
+  /** Por qué no se puede borrar (trámites inscriptos o con cobros), o null. */
+  motivoNoEliminable?: string | null
 }
 
 export default function UsuariosAdminPage() {
@@ -95,18 +97,18 @@ export default function UsuariosAdminPage() {
         method: 'DELETE'
       })
 
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
 
       if (res.ok) {
-        toast.success(data.message)
+        toast.success(data.message || 'Usuario eliminado')
         setUsuarios(usuarios.filter(u => u.id !== modalEliminar.id))
         setModalEliminar(null)
         setConfirmDelete('')
       } else {
-        toast.error(data.error)
+        toast.error(data.error || 'No se pudo eliminar el usuario')
       }
-    } catch (error) {
-      toast.error('Error al eliminar usuario')
+    } catch {
+      toast.error('No se pudo eliminar el usuario')
     } finally {
       setProcesando(false)
     }
@@ -385,6 +387,9 @@ export default function UsuariosAdminPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setModalEliminar(usuario)}
+                        disabled={Boolean(usuario.motivoNoEliminable)}
+                        title={usuario.motivoNoEliminable ?? undefined}
+                        aria-describedby={usuario.motivoNoEliminable ? `no-eliminable-${usuario.id}` : undefined}
                         className="gap-1 text-primary hover:text-primary hover:bg-primary-soft border-primary-line"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -393,6 +398,11 @@ export default function UsuariosAdminPage() {
                     )}
                   </div>
                 </div>
+                {usuario.rol !== 'ADMIN' && usuario.motivoNoEliminable && (
+                  <p id={`no-eliminable-${usuario.id}`} className="mt-3 text-label text-ink-3 lg:text-right">
+                    {usuario.motivoNoEliminable}
+                  </p>
+                )}
               </div>
           ))}
           </div>
