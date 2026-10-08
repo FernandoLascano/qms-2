@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { enviarEmailBienvenida } from "@/lib/emails/send"
+import { ipDesdeHeaders, limpiarLoginFallidos, loginBloqueado, registrarLoginFallido } from "@/lib/rate-limit"
 
 /** Login Google: GOOGLE_CLIENT_ID/SECRET o los mismos valores que GA4 (GOOGLE_OAUTH_*). */
 const googleClientId =
@@ -31,7 +32,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         try {
           if (!credentials?.email || !credentials?.password) {
             throw new Error("Email y contraseña requeridos")
@@ -40,28 +41,31 @@ export const authOptions: NextAuthOptions = {
           // Normalizar email: trim y lowercase
           const normalizedEmail = credentials.email.trim().toLowerCase()
 
+          // Límite de intentos fallidos por email y por IP (fuerza bruta).
+          // Se chequea antes de tocar la base o bcrypt.
+          const ip = ipDesdeHeaders(req?.headers)
+          if (await loginBloqueado(normalizedEmail, ip)) {
+            // Este string viaja hasta el cliente como result.error.
+            throw new Error("TOO_MANY_ATTEMPTS")
+          }
+
           const user = await prisma.user.findUnique({
             where: {
               email: normalizedEmail
             }
           })
 
-          if (!user) {
-            throw new Error("Email o contraseña incorrectos")
-          }
-
-          if (!user.password) {
-            throw new Error("Email o contraseña incorrectos")
-          }
-
-          const isCorrectPassword = await bcrypt.compare(
+          const isCorrectPassword = !!user?.password && await bcrypt.compare(
             credentials.password,
-            user.password as string
+            user.password
           )
 
-          if (!isCorrectPassword) {
+          if (!user || !isCorrectPassword) {
+            await registrarLoginFallido(normalizedEmail, ip)
             throw new Error("Email o contraseña incorrectos")
           }
+
+          await limpiarLoginFallidos(normalizedEmail)
 
           if (!user.emailVerified) {
             // Este string viaja hasta el cliente como result.error.
