@@ -33,7 +33,7 @@ import { NumeroAnimado } from '@/components/ui/motion'
 import { ServiceStatus } from '@/components/dashboard/service-status'
 import { RespaldoStatus } from '@/components/dashboard/respaldo-status'
 import { getEstadoRespaldo } from '@/lib/respaldo'
-import { getEstado } from '@/lib/tramites/estado'
+import { SELECT_ESTADO_DERIVADO, estadoDerivado, getEstado } from '@/lib/tramites/estado'
 import { porSemana, variacion } from '@/lib/dashboard/series'
 import { cn } from '@/lib/utils'
 import { contarAgendaLeads } from '@/lib/leads/agenda-servidor'
@@ -112,7 +112,13 @@ async function AdminDashboardPage() {
       prisma.tramite.count({ where: { formularioCompleto: true } }),
       prisma.tramite.count({ where: { sociedadInscripta: true } }),
       prisma.tramite.count({ where: { formularioCompleto: true, sociedadInscripta: false } }),
-      prisma.tramite.count({ where: { estadoGeneral: 'ESPERANDO_CLIENTE' } }),
+      // Se deriva de las etapas, igual que el filtro de la lista de Trámites.
+      prisma.tramite
+        .findMany({
+          where: { formularioCompleto: true, sociedadInscripta: false },
+          select: SELECT_ESTADO_DERIVADO,
+        })
+        .then((ts) => ts.filter((t) => estadoDerivado(t) === 'ESPERANDO_CLIENTE').length),
       prisma.documento.count({ where: WHERE_DOCUMENTOS_POR_APROBAR }),
       // La lista de Trámites cuenta trámites, no documentos: lo decimos los dos.
       prisma.tramite.count({ where: { documentos: { some: WHERE_DOCUMENTOS_POR_APROBAR } } }),
@@ -127,15 +133,8 @@ async function AdminDashboardPage() {
           id: true,
           denominacionSocial1: true,
           denominacionAprobada: true,
-          estadoGeneral: true,
-          estadoValidacion: true,
-          formularioCompleto: true,
-          sociedadInscripta: true,
-          denominacionReservada: true,
-          capitalDepositado: true,
-          tasaPagada: true,
-          documentosFirmados: true,
-          tramiteIngresado: true,
+          // Todas las etapas: el estado se deriva de ellas.
+          ...SELECT_ESTADO_DERIVADO,
           updatedAt: true,
           user: { select: { name: true, email: true } },
         },
