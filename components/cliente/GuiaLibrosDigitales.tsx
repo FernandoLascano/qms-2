@@ -124,7 +124,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
         </p>
         <Captura src="/assets/img/guia-ld-carga-3.png" alt="Historial de documentos cargados en el libro seleccionado." />
         <Importante>
-          <p>Una vez finalizada la carga, no se podrá eliminar ni alterar el documento (queda vinculado al CUIT de la Sociedad). Para agregar otros documentos, deberás iniciar un nuevo trámite en el Portal.</p>
+          <p>Una vez finalizada la carga, no se podrá eliminar ni alterar el documento (queda vinculado al CUIT de la Sociedad). Para agregar otros documentos, vas a tener que iniciar un nuevo trámite en el Portal.</p>
         </Importante>
       </div>
     )
@@ -160,7 +160,7 @@ const PASOS: { titulo: string; contenido: ReactNode }[] = [
           ver un ícono de <em>“clip”</em> donde podés consultar el documento adjunto.
         </p>
         <Importante>
-          <p>Si el acta tiene órdenes del día de carácter registral, deberás gestionar su inscripción ante la IPJ. Desde QuieroMiSAS estamos para ayudarte y asesorarte al respecto.</p>
+          <p>Si el acta tiene órdenes del día de carácter registral, vas a tener que gestionar su inscripción ante la IPJ. Desde QuieroMiSAS estamos para ayudarte y asesorarte al respecto.</p>
         </Importante>
       </div>
     )

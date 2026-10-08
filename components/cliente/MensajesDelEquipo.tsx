@@ -5,6 +5,7 @@ import { MessageCircle, AlertCircle, CheckCircle, Info } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { mensajeVisible } from '@/lib/notificaciones'
+import { textoLegible } from '@/lib/etiquetas'
 
 interface Notificacion {
   id: string
@@ -77,7 +78,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
                 {getIconoPorTipo(notif.tipo)}
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-ink mb-1">
-                    {notif.titulo}
+                    {textoLegible(notif.titulo)}
                   </h4>
                   {esDepositoCapital ? (
                     <p className="text-body-sm text-ink-2">
@@ -100,7 +101,7 @@ export default function MensajesDelEquipo({ notificaciones }: MensajesDelEquipoP
                     </p>
                   ) : (
                     <p className="text-body-sm text-ink-2 whitespace-pre-line">
-                      {mensajeVisible(notif.mensaje)}
+                      {textoLegible(mensajeVisible(notif.mensaje))}
                     </p>
                   )}
                   <p className="text-label text-ink-2 mt-2">

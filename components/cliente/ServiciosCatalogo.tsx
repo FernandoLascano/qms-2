@@ -22,6 +22,7 @@ import type { LucideIcon } from 'lucide-react'
 
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { pesos } from '@/lib/etiquetas'
 
 const WHATSAPP = '5493512136212'
 
@@ -50,7 +51,7 @@ const ICONOS: Record<string, LucideIcon> = {
 function precioVisible(s: ServicioCard) {
   if (s.modalidad === 'SIN_COSTO') return 'Sin cargo'
   if (s.precioDesde == null) return 'Consultar'
-  const monto = `$${s.precioDesde.toLocaleString('es-AR')}`
+  const monto = pesos(s.precioDesde)
   const periodo = s.modalidad === 'MENSUAL' ? ' por mes' : s.modalidad === 'ANUAL' ? ' por año' : ''
   return `Desde ${monto}${periodo}${s.precioTexto ? ` ${s.precioTexto}` : ''}`
 }
@@ -122,7 +123,7 @@ export default function ServiciosCatalogo({ servicios }: { servicios: ServicioCa
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 rounded-chip text-body-sm font-medium text-ink-2 hover:text-ink"
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-chip text-body-sm font-medium text-ink-2 hover:text-ink"
                   >
                     <MessageCircle className="h-4 w-4" aria-hidden />
                     Consultar por WhatsApp

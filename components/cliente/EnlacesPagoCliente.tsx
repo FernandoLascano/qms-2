@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ExternalLink, AlertCircle, CheckCircle, Clock, Upload, X } from 'lucide-react'
 import { FileInput } from '@/components/ui/file-input'
+import { pesos } from '@/lib/etiquetas'
 
 interface EnlacePago {
   id: string
@@ -138,7 +139,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                     </p>
                     <div className="flex items-center gap-4 text-label text-ink-2">
                       <span className="font-semibold bg-surface px-2 py-1 rounded border border-info-line">
-                        Monto: ${enlace.monto.toLocaleString('es-AR')}
+                        Monto: {pesos(enlace.monto)}
                       </span>
                       <span>Enviado: {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}</span>
                     </div>
@@ -168,7 +169,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       {getConceptoTexto(enlace.concepto)}
                     </h5>
                     <p className="text-title font-semibold text-info mb-2">
-                      ${enlace.monto.toLocaleString('es-AR')}
+                      {pesos(enlace.monto)}
                     </p>
                     <div className="flex items-center gap-4 text-label text-ink-2 mb-2">
                       <span>
@@ -202,6 +203,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       <Button
                         variant="ghost"
                         size="sm"
+                    className="h-10 sm:h-8"
                         onClick={() => {
                           setConfirmandoPago(null)
                           setArchivo(null)
@@ -292,7 +294,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                       {getConceptoTexto(enlace.concepto)}
                     </h5>
                     <p className="text-heading font-semibold text-success mb-1">
-                      ${enlace.monto.toLocaleString('es-AR')}
+                      {pesos(enlace.monto)}
                     </p>
                     <p className="text-label text-ink-2">
                       Pagado el {new Date(enlace.fechaEnvio).toLocaleDateString('es-AR')}

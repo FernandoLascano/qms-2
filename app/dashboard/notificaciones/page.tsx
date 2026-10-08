@@ -14,6 +14,7 @@ import { Badge, type Tone } from '@/components/ui/badge'
 import { EmptyState, InlineLoading } from '@/components/ui/states'
 import { cn } from '@/lib/utils'
 import { mensajeVisible } from '@/lib/notificaciones'
+import { textoLegible } from '@/lib/etiquetas'
 
 type Notificacion = {
   id: string
@@ -199,7 +200,7 @@ export default function NotificacionesPage() {
                           n.leida ? 'text-ink-2' : 'text-ink',
                         )}
                       >
-                        {n.titulo}
+                        {textoLegible(n.titulo)}
                       </h2>
                       {!n.leida && (
                         <span
@@ -209,7 +210,7 @@ export default function NotificacionesPage() {
                       )}
                     </div>
 
-                    <p className="mt-1 text-body-sm text-ink-2 text-pretty">{mensajeVisible(n.mensaje)}</p>
+                    <p className="mt-1 text-body-sm text-ink-2 text-pretty">{textoLegible(mensajeVisible(n.mensaje))}</p>
 
                     <div className="mt-2.5 flex flex-wrap items-center gap-2">
                       <Badge tone={cfg.tone} size="sm">

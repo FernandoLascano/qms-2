@@ -1,7 +1,5 @@
 import { getServerSession } from 'next-auth'
 import { notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { Building2, Calendar, CheckCircle, Download, FileText, User, Users } from 'lucide-react'
 
 import { authOptions } from '@/lib/auth'
@@ -24,6 +22,8 @@ import MensajesDelEquipo from '@/components/cliente/MensajesDelEquipo'
 import DocumentosParaFirmar from '@/components/cliente/DocumentosParaFirmar'
 import DepositoCapitalCliente from '@/components/cliente/DepositoCapitalCliente'
 import ChatBox from '@/components/chat/ChatBox'
+import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
+import { fechaLarga, formatearFecha } from '@/lib/fechas'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -50,12 +50,6 @@ const AVISOS_PAGO = {
     texto:
       'Estamos confirmando el pago con Mercado Pago. En cuanto se acredite vas a ver la etapa completada.',
   },
-}
-
-const NOMBRES_PLAN: Record<string, string> = {
-  BASICO: 'Básico',
-  EMPRENDEDOR: 'Emprendedor',
-  PREMIUM: 'Premium',
 }
 
 async function TramiteDetallePage({ params, searchParams }: PageProps) {
@@ -103,7 +97,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
           { label: nombre },
         ]}
         badge={<Badge tone={estado.tone} dot>{estado.label}</Badge>}
-        description={`${tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'} · Plan ${NOMBRES_PLAN[tramite.plan] || tramite.plan}`}
+        description={`${nombreJurisdiccion(tramite.jurisdiccion)} · Plan ${nombrePlan(tramite.plan)}`}
       />
 
       {aviso && (
@@ -142,7 +136,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
               {tramite.fechaInscripcion && (
                 <DataItem
                   label="Fecha de inscripción"
-                  value={format(new Date(tramite.fechaInscripcion), 'dd/MM/yyyy')}
+                  value={formatearFecha(tramite.fechaInscripcion)}
                   icon={Calendar}
                 />
               )}
@@ -236,17 +230,17 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
             <DataList columns={4}>
               <DataItem
                 label="Fecha de inicio"
-                value={format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", { locale: es })}
+                value={fechaLarga(tramite.createdAt)}
               />
               <DataItem
                 label="Jurisdicción"
-                value={tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+                value={nombreJurisdiccion(tramite.jurisdiccion)}
                 icon={Building2}
               />
-              <DataItem label="Plan contratado" value={NOMBRES_PLAN[tramite.plan] || tramite.plan} />
+              <DataItem label="Plan contratado" value={nombrePlan(tramite.plan)} />
               <DataItem
                 label="Capital social"
-                value={`$${tramite.capitalSocial.toLocaleString('es-AR')}`}
+                value={pesos(tramite.capitalSocial)}
               />
               {datosUsuario.fechaCierre && (
                 <DataItem
@@ -375,7 +369,7 @@ function PersonaCard({
         {mostrarAporte ? (
           <div className="text-right">
             <p className="text-body font-medium text-ink tnum">
-              ${Math.round(aporte).toLocaleString('es-AR')}
+              {pesos(Math.round(aporte))}
             </p>
             <p className="text-label text-ink-2 tnum">{porcentaje.toFixed(2)}%</p>
           </div>

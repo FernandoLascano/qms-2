@@ -1,7 +1,5 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { ArrowRight, Building2, Calendar, FileText, Plus, Users } from 'lucide-react'
 
 import { authOptions } from '@/lib/auth'
@@ -13,6 +11,8 @@ import { Badge } from '@/components/ui/badge'
 import { LabeledProgress } from '@/components/ui/progress'
 import { EmptyState } from '@/components/ui/states'
 import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { pesos, nombreJurisdiccion } from '@/lib/etiquetas'
+import { fechaLarga, formatearFecha } from '@/lib/fechas'
 
 async function TramitesPage() {
   const session = await getServerSession(authOptions)
@@ -100,27 +100,25 @@ async function TramitesPage() {
                               </>
                             ) : null}
                             Lo empezaste el{' '}
-                            {format(new Date(tramite.createdAt), "d 'de' MMMM", { locale: es })} y
+                            {formatearFecha(tramite.createdAt, { day: 'numeric', month: 'long' })} y
                             quedó sin enviar. Tocá para continuar donde lo dejaste.
                           </p>
                         ) : (
                           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-ink-2">
                             <span className="inline-flex items-center gap-2">
                               <Calendar className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-                              {format(new Date(tramite.createdAt), "d 'de' MMMM, yyyy", {
-                                locale: es,
-                              })}
+                              {fechaLarga(tramite.createdAt)}
                             </span>
                             <span className="inline-flex items-center gap-2">
                               <Building2 className="h-3.5 w-3.5 text-ink-3" aria-hidden />
-                              {tramite.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}
+                              {nombreJurisdiccion(tramite.jurisdiccion)}
                             </span>
                             <span className="inline-flex items-center gap-2">
                               <Users className="h-3.5 w-3.5 text-ink-3" aria-hidden />
                               {socios.length} {socios.length === 1 ? 'socio' : 'socios'}
                             </span>
                             <span className="tnum">
-                              Capital ${tramite.capitalSocial.toLocaleString('es-AR')}
+                              Capital {pesos(tramite.capitalSocial)}
                             </span>
                           </div>
                         )}

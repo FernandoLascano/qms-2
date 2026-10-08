@@ -11,6 +11,7 @@ import { Badge, CountBadge, type Tone } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/states'
 import { cn } from '@/lib/utils'
 import { mensajeVisible } from '@/lib/notificaciones'
+import { textoLegible } from '@/lib/etiquetas'
 
 /** El tipo de notificación se traduce al mismo mapa de tonos que el resto del módulo. */
 const TONO: Record<string, { tone: Tone; label: string }> = {
@@ -147,7 +148,7 @@ export default function NotificationBell() {
                                 n.leida ? 'text-ink-2' : 'text-ink',
                               )}
                             >
-                              {n.titulo}
+                              {textoLegible(n.titulo)}
                             </p>
                             {!n.leida && (
                               <span
@@ -158,7 +159,7 @@ export default function NotificationBell() {
                           </div>
 
                           <p className="mt-0.5 line-clamp-2 text-body-sm text-ink-2">
-                            {mensajeVisible(n.mensaje)}
+                            {textoLegible(mensajeVisible(n.mensaje))}
                           </p>
 
                           <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { FileText, Upload, Download, CheckCircle, Clock, XCircle, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { esDocumentoDeQMS } from '@/lib/documentos'
+import { textoLegible } from '@/lib/etiquetas'
+import { fechaLarga } from '@/lib/fechas'
 
 async function DocumentosPage() {
   const session = await getServerSession(authOptions)
@@ -109,7 +109,7 @@ async function DocumentosPage() {
             Mis Documentos
           </h1>
           <p className="mt-1 text-body text-ink-2">
-            Gestiona todos los documentos de tus trámites
+            Gestioná todos los documentos de tus trámites
           </p>
         </div>
         <Button asChild size="lg" className="gap-2 bg-primary hover:bg-primary-hover rounded-control shadow-raise font-semibold">
@@ -200,25 +200,25 @@ async function DocumentosPage() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-3 mb-1 flex-wrap">
-                        <h4 className="font-semibold text-ink">{doc.nombre}</h4>
+                        <h4 className="font-semibold text-ink">{textoLegible(doc.nombre)}</h4>
                         <span className={`px-3 py-1 rounded-control text-label font-medium border ${estadoEnviado(doc).clase}`}>
                           {estadoEnviado(doc).texto}
                         </span>
                       </div>
                       <p className="text-body-sm text-ink-2">
                         {doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1} ·{' '}
-                        {format(new Date(doc.fechaSubida), "d 'de' MMMM, yyyy", { locale: es })}
+                        {fechaLarga(doc.fechaSubida)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button asChild variant="secondary" size="sm">
+                    <Button asChild variant="secondary" size="sm" className="h-10 sm:h-8">
                       <Link href={`/dashboard/tramites/${doc.tramiteId}${doc.tipo === 'BORRADOR' ? '' : '#documentos-para-firmar'}`}>
                         {doc.tipo === 'BORRADOR' ? 'Ver en el trámite' : 'Ir a firmar'}
                       </Link>
                     </Button>
                     <a href={`/api/documentos/${doc.id}/view?download=1`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="ghost" size="sm" className="gap-2">
+                      <Button variant="ghost" size="sm" className="h-10 sm:h-8 gap-2">
                         <Download className="h-4 w-4" />
                         Descargar
                       </Button>
@@ -275,7 +275,7 @@ async function DocumentosPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1 flex-wrap">
-                        <h4 className="font-semibold text-ink">{doc.nombre}</h4>
+                        <h4 className="font-semibold text-ink">{textoLegible(doc.nombre)}</h4>
                         <span className={`px-3 py-1 rounded-control text-label font-medium border ${getEstadoColor(doc.estado)}`}>
                           {getEstadoTexto(doc.estado)}
                         </span>
@@ -285,7 +285,7 @@ async function DocumentosPage() {
                         <span className="text-ink-3">•</span>
                         <span>{doc.tramite.denominacionAprobada || doc.tramite.denominacionSocial1}</span>
                         <span className="text-ink-3">•</span>
-                        <span>{format(new Date(doc.fechaSubida), "d 'de' MMMM, yyyy", { locale: es })}</span>
+                        <span>{fechaLarga(doc.fechaSubida)}</span>
                         <span className="text-ink-3">•</span>
                         <span>{(doc.tamanio / 1024 / 1024).toFixed(2)} MB</span>
                       </div>
@@ -298,7 +298,7 @@ async function DocumentosPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <a href={`/api/documentos/${doc.id}/view?download=1`} target="_blank" rel="noopener noreferrer">
-                      <Button variant="outline" size="sm" className="gap-2 rounded-control border-line hover:border-primary-line hover:text-primary">
+                      <Button variant="outline" size="sm" className="h-10 sm:h-8 gap-2 rounded-control border-line hover:border-primary-line hover:text-primary">
                         <Download className="h-4 w-4" />
                         Descargar
                       </Button>

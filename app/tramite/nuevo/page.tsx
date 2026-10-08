@@ -19,6 +19,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { trackEvent } from '@/lib/analytics'
+import { capitalMinimo } from '@/lib/precios'
 import {
   ACTIVIDAD_PRINCIPAL_MIN_CARACTERES,
   validarActividadPrincipal,
@@ -30,6 +31,7 @@ import {
   validarFechaCierre,
   validarTelefono,
 } from '@/lib/validaciones'
+import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 
 const PROVINCIAS_AR = [
   'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
@@ -38,11 +40,8 @@ const PROVINCIAS_AR = [
   'Santiago del Estero', 'Tierra del Fuego', 'Tucumán', 'Otro país',
 ]
 
-const NOMBRES_PLAN: Record<string, string> = {
-  BASICO: 'Básico',
-  EMPRENDEDOR: 'Emprendedor',
-  PREMIUM: 'Premium',
-}
+// Valor por defecto hasta que llega el de /api/config
+const SMVM_POR_DEFECTO = 317800
 
 const PASOS = [
   { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
@@ -170,7 +169,10 @@ export default function NuevoTramitePage() {
   // borradores si el primero todavía no devolvió el id.
   const guardadoEnCursoRef = useRef<Promise<void> | null>(null)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
-  const [smvm, setSmvm] = useState(317800) // Valor por defecto
+  // El error de la fecha de cierre se muestra recién cuando el cliente deja el
+  // campo o intenta enviar, no apenas entra al paso
+  const [fechaCierreTocada, setFechaCierreTocada] = useState(false)
+  const [smvm, setSmvm] = useState(SMVM_POR_DEFECTO)
   const [precios, setPrecios] = useState({
     precioPlanBasico: 285000,
     precioPlanEmprendedor: 320000,
@@ -201,7 +203,7 @@ export default function NuevoTramitePage() {
     departamento: '',
     provincia: 'Córdoba',
     
-    capitalSocial: String(2 * smvm),
+    capitalSocial: String(capitalMinimo(smvm)),
     cbuPrincipal: '',
     cbuSecundario: '',
     
@@ -232,6 +234,25 @@ export default function NuevoTramitePage() {
     asesoramientoContable: false
   })
 
+  // Precargar nombre, apellido y email desde la sesión. En el primer render la
+  // sesión todavía está cargando, así que se completan cuando llega (ajuste de
+  // estado durante el render, una vez por sesión); solo se llenan los campos
+  // vacíos para no pisar lo que venga de un borrador.
+  const nombreSesion = session?.user?.name || ''
+  const emailSesion = session?.user?.email || ''
+  const claveSesion = `${nombreSesion}|${emailSesion}`
+  const [sesionPrecargada, setSesionPrecargada] = useState('|')
+  if (claveSesion !== sesionPrecargada) {
+    setSesionPrecargada(claveSesion)
+    const [nombre = '', ...resto] = nombreSesion.trim().split(/\s+/)
+    setFormData(prev => ({
+      ...prev,
+      nombre: prev.nombre || nombre,
+      apellido: prev.apellido || resto.join(' '),
+      email: prev.email || emailSesion,
+    }))
+  }
+
   // Cargar configuración (SMVM y precios de planes)
   useEffect(() => {
     fetch('/api/config')
@@ -239,11 +260,11 @@ export default function NuevoTramitePage() {
       .then(data => {
         if (data.smvm) {
           setSmvm(data.smvm)
-          // Actualizar capital social si aún no fue modificado por el usuario
-          setFormData(prev => ({
-            ...prev,
-            capitalSocial: String(2 * data.smvm)
-          }))
+          // Actualizar capital social si sigue en el mínimo por defecto (no lo
+          // tocó el usuario ni vino de un borrador)
+          setFormData(prev => prev.capitalSocial === String(capitalMinimo(SMVM_POR_DEFECTO))
+            ? { ...prev, capitalSocial: String(capitalMinimo(data.smvm)) }
+            : prev)
         }
         if (data.precioPlanBasico != null && data.precioPlanEmprendedor != null && data.precioPlanPremium != null) {
           setPrecios({
@@ -361,14 +382,14 @@ export default function NuevoTramitePage() {
                 ciudad: ciudadParsed,
                 departamento: departamentoParsed,
                 provincia: draft.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires',
-                capitalSocial: String(draft.capitalSocial || (2 * smvm)),
+                capitalSocial: String(draft.capitalSocial || capitalMinimo(smvm)),
                 cbuPrincipal: datosUsuario.cbuPrincipal || '',
                 cbuSecundario: datosUsuario.cbuSecundario || '',
                 fechaCierre: datosUsuario.fechaCierre || '31-12',
                 asesoramientoContable: datosUsuario.asesoramientoContable !== undefined ? datosUsuario.asesoramientoContable : false,
                 numeroSocios: socios.length || 1,
                 socios: socios.length > 0 ? socios.map((s: any) => {
-                  const capitalTotal = parseFloat(String(draft.capitalSocial || (2 * smvm)))
+                  const capitalTotal = parseFloat(String(draft.capitalSocial || capitalMinimo(smvm)))
                   const aporteCapital = parseFloat(String(s.aporteCapital || '0'))
                   const porcentajeCalculado = capitalTotal > 0 ? ((aporteCapital / capitalTotal) * 100).toFixed(2) : '0'
                   
@@ -551,6 +572,8 @@ export default function NuevoTramitePage() {
     ]
   }, formData)
 
+  const errorFechaCierre = fechaCierreTocada ? validarFechaCierre(formData.fechaCierre) : null
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
@@ -597,11 +620,11 @@ export default function NuevoTramitePage() {
         return true
       case 3:
         if (!formData.objetoSocial) {
-          toast.error('Por favor selecciona el tipo de objeto social')
+          toast.error('Seleccioná el tipo de objeto social')
           return false
         }
         if (formData.objetoSocial === 'PERSONALIZADO' && !formData.objetoPersonalizado.trim()) {
-          toast.error('Por favor completa el objeto social personalizado')
+          toast.error('Completá el objeto social personalizado')
           return false
         }
         if (formData.objetoSocial === 'PREAPROBADO') {
@@ -613,15 +636,15 @@ export default function NuevoTramitePage() {
         }
         if (!formData.sinDomicilio) {
           if (!formData.domicilio.trim() || !formData.ciudad.trim() || !formData.departamento.trim()) {
-            toast.error('Por favor completa el domicilio completo (calle, ciudad y departamento)')
+            toast.error('Completá el domicilio (calle, ciudad y departamento)')
             return false
           }
         }
         return true
       case 4:
-        const capitalMinimo = 2 * smvm // smvm * 2
-        if (!formData.capitalSocial.trim() || parseFloat(formData.capitalSocial) < capitalMinimo) {
-          toast.error(`El capital social mínimo es de $${capitalMinimo.toLocaleString('es-AR')} (2 SMVM = $${smvm.toLocaleString('es-AR')} cada uno)`)
+        const capitalMin = capitalMinimo(smvm)
+        if (!formData.capitalSocial.trim() || parseFloat(formData.capitalSocial) < capitalMin) {
+          toast.error(`El capital social mínimo es de ${pesos(capitalMin)} (2 SMVM = ${pesos(smvm)} cada uno)`)
           return false
         }
         if (formData.jurisdiccion === 'CORDOBA' && (!formData.cbuPrincipal.trim() || !formData.cbuSecundario.trim())) {
@@ -650,7 +673,7 @@ export default function NuevoTramitePage() {
           if (!socio.nombre.trim() || !socio.apellido.trim() || !socio.dni.trim() || 
               !socio.cuit.trim() || !socio.domicilio.trim() || !socio.ciudad.trim() || 
               !socio.departamento.trim() || !socio.provincia.trim() || !socio.estadoCivil || !socio.profesion.trim()) {
-            toast.error(`Por favor completa todos los campos del Socio ${i + 1} (incluyendo ciudad, departamento y provincia)`)
+            toast.error(`Completá todos los campos del Socio ${i + 1} (incluyendo ciudad, departamento y provincia)`)
             return false
           }
           const errorSocio = validarDni(socio.dni) || validarCuit(socio.cuit)
@@ -683,7 +706,7 @@ export default function NuevoTramitePage() {
         }, 0)
         const diferencia = Math.abs(capitalTotal - totalAportes)
         if (diferencia > 1) { // Permitir diferencia de hasta $1 por redondeo
-          toast.error(`El total de aportes ($${Math.round(totalAportes).toLocaleString('es-AR')}) debe ser igual al capital social ($${capitalTotal.toLocaleString('es-AR')}). Falta asignar: $${Math.round(capitalTotal - totalAportes).toLocaleString('es-AR')}`)
+          toast.error(`El total de aportes (${pesos(Math.round(totalAportes))}) debe ser igual al capital social (${pesos(capitalTotal)}). Falta asignar: ${pesos(Math.round(capitalTotal - totalAportes))}`)
           return false
         }
         return true
@@ -722,6 +745,7 @@ export default function NuevoTramitePage() {
         {
           const errorFecha = validarFechaCierre(formData.fechaCierre)
           if (errorFecha) {
+            setFechaCierreTocada(true)
             toast.error(errorFecha)
             return false
           }
@@ -1009,7 +1033,7 @@ export default function NuevoTramitePage() {
                     required
                     error={paso1Validation.errors.telefono || undefined}
                     validation={paso1Validation.getFieldValidation('telefono')}
-                    helpText="Incluye código de área"
+                    helpText="Incluí el código de área"
                     type="tel"
                   />
                   <div className="sm:col-span-2 lg:col-span-1">
@@ -1025,7 +1049,7 @@ export default function NuevoTramitePage() {
                       required
                       error={paso1Validation.errors.email || undefined}
                       validation={paso1Validation.getFieldValidation('email')}
-                      helpText="Usaremos este email para notificarte"
+                      helpText="Vamos a usar este email para avisarte novedades"
                       type="email"
                       autoComplete="email"
                     />
@@ -1057,9 +1081,9 @@ export default function NuevoTramitePage() {
 
                 <div className="border-t border-line pt-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-heading text-primary">Selecciona tu Plan</h3>
+                    <h3 className="font-semibold text-heading text-primary">Seleccioná tu plan</h3>
                     <Link href="/#planes" target="_blank">
-                      <Button variant="outline" size="sm" className="gap-2 text-primary border-primary-line hover:bg-primary-soft">
+                      <Button variant="outline" size="sm" className="h-10 sm:h-8 gap-2 text-primary border-primary-line hover:bg-primary-soft">
                         Ver Comparativa
                       </Button>
                     </Link>
@@ -1124,12 +1148,12 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Nombre de la Sociedad</h3>
                   <p className="text-ink-2 mb-4">
-                    Proporciona 3 opciones de nombre para tu SAS
+                    Proponé 3 opciones de nombre para tu SAS
                   </p>
                   
                   <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
                     <p className="text-body-sm text-primary">
-                      <span className="font-semibold">Importante:</span> Proporciona tres opciones en orden de preferencia. Luego de un examen de homonimia te informaremos cuál creemos que es la más viable para registrar.
+                      <span className="font-semibold">Importante:</span> Proponé tres opciones en orden de preferencia. Después de un examen de homonimia te vamos a informar cuál creemos que es la más viable para registrar.
                     </p>
                   </div>
 
@@ -1190,7 +1214,7 @@ export default function NuevoTramitePage() {
                       <span className="text-body-sm font-medium text-ink">La marca está registrada</span>
                     </label>
                     <p className="text-label text-ink-2 ml-6">
-                      Si la marca está registrada en el INPI, tendrás prioridad en la aprobación del nombre.
+                      Si la marca está registrada en el INPI, vas a tener prioridad en la aprobación del nombre.
                     </p>
                   </div>
                 </div>
@@ -1211,7 +1235,7 @@ export default function NuevoTramitePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Objeto y Domicilio</h3>
-                  <p className="text-ink-2 mb-4">Define el propósito de tu sociedad y su domicilio legal</p>
+                  <p className="text-ink-2 mb-4">Definí el propósito de tu sociedad y su domicilio legal</p>
                   <div className="space-y-4">
                     <div>
                       <Label>Objeto Social *</Label>
@@ -1225,7 +1249,7 @@ export default function NuevoTramitePage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                className="gap-1 text-label text-primary border-primary-line hover:bg-primary-soft"
+                                className="h-10 sm:h-8 gap-1 text-label text-primary border-primary-line hover:bg-primary-soft"
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
@@ -1243,7 +1267,7 @@ export default function NuevoTramitePage() {
                           <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
                           <div>
                             <p className="font-medium text-ink">Objeto personalizado</p>
-                            <p className="text-body-sm text-ink-2">Define actividades específicas para tu sociedad</p>
+                            <p className="text-body-sm text-ink-2">Definí actividades específicas para tu sociedad</p>
                           </div>
                         </label>
                       </div>
@@ -1269,8 +1293,8 @@ export default function NuevoTramitePage() {
                     )}
                     {formData.objetoSocial === 'PERSONALIZADO' && (
                       <div>
-                        <Label htmlFor="objetoPersonalizado">Describe tu objeto social *</Label>
-                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" rows={4} placeholder="Describe las actividades específicas..." />
+                        <Label htmlFor="objetoPersonalizado">Describí tu objeto social *</Label>
+                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" rows={4} placeholder="Describí las actividades específicas..." />
                       </div>
                     )}
                   </div>
@@ -1392,18 +1416,18 @@ export default function NuevoTramitePage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Capital Social y CBU</h3>
-                  <p className="text-ink-2 mb-4">Define el capital inicial de tu sociedad</p>
+                  <p className="text-ink-2 mb-4">Definí el capital inicial de tu sociedad</p>
                   <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
                     <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
                     <div>
                       <p className="text-body-sm text-ink-2">
                         El capital mínimo es de 2 salarios mínimos:{' '}
                         <span className="font-semibold text-ink tnum">
-                          ${(2 * smvm).toLocaleString('es-AR')}
+                          {pesos(capitalMinimo(smvm))}
                         </span>
                       </p>
                       <p className="mt-0.5 text-label text-ink-3 tnum">
-                        Salario mínimo actual: ${smvm.toLocaleString('es-AR')}
+                        Salario mínimo actual: {pesos(smvm)}
                       </p>
                     </div>
                   </div>
@@ -1412,25 +1436,25 @@ export default function NuevoTramitePage() {
                       <Label>Capital Social *</Label>
                       <div className="space-y-3 mt-2">
                         <label className="flex items-center gap-3 rounded-control border border-primary bg-primary-soft p-4 cursor-pointer">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(2 * smvm) }))} />
+                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(capitalMinimo(smvm))} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(capitalMinimo(smvm)) }))} />
                           <div>
-                            <p className="font-medium text-ink">Capital Social Mínimo (2 SMVM: ${(2 * smvm).toLocaleString('es-AR')})</p>
+                            <p className="font-medium text-ink">Capital Social Mínimo (2 SMVM: {pesos(capitalMinimo(smvm))})</p>
                           </div>
                         </label>
                         <label className="flex items-center gap-3 rounded-control border border-line p-4 transition-colors cursor-pointer hover:border-primary hover:bg-primary-soft/40">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(2 * smvm)} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
+                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(capitalMinimo(smvm))} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
                           <div>
                             <p className="font-medium text-ink">Otro monto</p>
                           </div>
                         </label>
                       </div>
                     </div>
-                    {formData.capitalSocial !== String(2 * smvm) && (
+                    {formData.capitalSocial !== String(capitalMinimo(smvm)) && (
                       <div>
                         <Label htmlFor="capitalSocialCustom">Capital Social *</Label>
-                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${(2 * smvm).toLocaleString('es-AR')}`} min={2 * smvm} />
-                        {formData.capitalSocial && parseFloat(formData.capitalSocial) < (2 * smvm) && (
-                          <p className="text-label text-primary mt-1">El capital mínimo es ${(2 * smvm).toLocaleString('es-AR')}</p>
+                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${pesos(capitalMinimo(smvm))}`} min={capitalMinimo(smvm)} />
+                        {formData.capitalSocial && parseFloat(formData.capitalSocial) < capitalMinimo(smvm) && (
+                          <p className="text-label text-primary mt-1">El capital mínimo es {pesos(capitalMinimo(smvm))}</p>
                         )}
                       </div>
                     )}
@@ -1465,7 +1489,7 @@ export default function NuevoTramitePage() {
                       />
                       <div>
                         <p className="font-medium text-ink">Informar CBU más adelante</p>
-                        <p className="text-body-sm text-ink-2">Podrás proporcionar el CBU en otro momento del proceso</p>
+                        <p className="text-body-sm text-ink-2">Vas a poder cargar el CBU en otro momento del proceso</p>
                       </div>
                     </label>
                   </div>
@@ -1545,7 +1569,7 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Socios / Accionistas</h3>
                   <p className="text-ink-2 mb-4">
-                    Define quiénes serán los socios y su participación en el capital
+                    Definí quiénes van a ser los socios y su participación en el capital
                   </p>
 
                   <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
@@ -1578,7 +1602,7 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
+                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           −
                         </button>
@@ -1606,7 +1630,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
+                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
                         >
                           +
                         </button>
@@ -1615,10 +1639,10 @@ export default function NuevoTramitePage() {
 
                     <div className="text-body-sm space-y-1">
                       <p className="text-ink-2">
-                        <span className="font-semibold text-ink">Capital Social:</span> ${parseFloat(formData.capitalSocial || '0').toLocaleString('es-AR')}
+                        <span className="font-semibold text-ink">Capital Social:</span> {pesos(parseFloat(formData.capitalSocial || '0'))}
                       </p>
                       <p className="text-ink-2">
-                        <span className="font-semibold text-ink">Total de Aportes:</span> $
+                        <span className="font-semibold text-ink">Total de Aportes:</span>{' '}
                         {(() => {
                           // Parsear capital social correctamente (remover puntos de miles)
                           const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
@@ -1635,7 +1659,7 @@ export default function NuevoTramitePage() {
                               return sum + (parseFloat(aporteStr) || 0)
                             }
                           }, 0)
-                          return Math.round(totalAportes).toLocaleString('es-AR')
+                          return pesos(totalAportes)
                         })()}
                       </p>
                       {(() => {
@@ -1658,8 +1682,8 @@ export default function NuevoTramitePage() {
                         const diferencia = Math.abs(faltaAsignar)
                         return (
                           <p className={diferencia <= 1 ? 'text-success font-medium' : 'text-primary font-medium'}>
-                            <span className="font-semibold">{diferencia <= 1 ? '✓ Capital completo' : 'Falta asignar'}:</span> $
-                            {diferencia <= 1 ? '0' : Math.round(faltaAsignar).toLocaleString('es-AR')}
+                            <span className="font-semibold">{diferencia <= 1 ? '✓ Capital completo' : 'Falta asignar'}:</span>{' '}
+                            {pesos(diferencia <= 1 ? 0 : faltaAsignar)}
                           </p>
                         )
                       })()}
@@ -1748,7 +1772,7 @@ export default function NuevoTramitePage() {
 
                       <div className="mb-4">
                         <Label>Domicilio completo *</Label>
-                        <p className="text-label text-ink-2 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
+                        <p className="text-label text-ink-2 mb-2">Incluí calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={socio.domicilio}
                           onChange={(e) => {
@@ -1843,7 +1867,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'MONTO'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
+                              className={`min-h-10 sm:min-h-0 px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'MONTO'
                                   ? 'border-primary-line bg-primary-soft text-primary font-medium'
                                   : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
@@ -1858,7 +1882,7 @@ export default function NuevoTramitePage() {
                                 newSocios[index].tipoAporte = 'PORCENTAJE'
                                 setFormData(prev => ({ ...prev, socios: newSocios }))
                               }}
-                              className={`px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
+                              className={`min-h-10 sm:min-h-0 px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
                                 socio.tipoAporte === 'PORCENTAJE'
                                   ? 'border-primary-line bg-primary-soft text-primary font-medium'
                                   : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
@@ -1918,7 +1942,7 @@ export default function NuevoTramitePage() {
                               />
                               {socio.aporteCapital && parseFloat(socio.aporteCapital) > 0 && (
                                 <p className="text-label text-ink-2 mt-1">
-                                  Equivale a ${parseFloat(socio.aporteCapital).toLocaleString('es-AR')}
+                                  Equivale a {pesos(parseFloat(socio.aporteCapital))}
                                 </p>
                               )}
                             </div>
@@ -1947,7 +1971,7 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Órgano de Administración</h3>
                   <p className="text-ink-2 mb-4">
-                    Define quiénes administrarán la sociedad
+                    Definí quiénes van a administrar la sociedad
                   </p>
 
                   <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
@@ -1971,7 +1995,7 @@ export default function NuevoTramitePage() {
                               }))
                             }
                           }}
-                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
+                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                           disabled={formData.numeroAdministradores <= 2}
                         >
                           −
@@ -1997,7 +2021,7 @@ export default function NuevoTramitePage() {
                               }]
                             }))
                           }}
-                          className="w-8 h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
+                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
                         >
                           +
                         </button>
@@ -2007,7 +2031,7 @@ export default function NuevoTramitePage() {
 
                   <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
                     <p className="text-label text-warning">
-                      💡 Puedes autocompletar los datos de un administrador seleccionando un socio existente
+                      💡 Podés autocompletar los datos de un administrador seleccionando un socio existente
                     </p>
                   </div>
 
@@ -2147,7 +2171,7 @@ export default function NuevoTramitePage() {
 
                       <div className="mb-4">
                         <Label>Domicilio completo *</Label>
-                        <p className="text-label text-ink-2 mb-2">Incluye calle, número, piso, departamento, lote o manzana si correspondiera</p>
+                        <p className="text-label text-ink-2 mb-2">Incluí calle, número, piso, departamento, lote o manzana si correspondiera</p>
                         <Input
                           value={admin.domicilio}
                           onChange={(e) => {
@@ -2281,7 +2305,7 @@ export default function NuevoTramitePage() {
                 <div>
                   <h3 className="font-semibold text-heading text-ink mb-2">Cierre de Ejercicio Económico</h3>
                   <p className="text-ink-2 mb-4">
-                    Define la fecha de cierre del ejercicio económico
+                    Definí la fecha de cierre del ejercicio económico
                   </p>
 
                   <div className="bg-surface-2 border-line rounded-control p-4 mb-4">
@@ -2297,13 +2321,15 @@ export default function NuevoTramitePage() {
                       name="fechaCierre"
                       value={formData.fechaCierre}
                       onChange={handleInputChange}
+                      onBlur={() => setFechaCierreTocada(true)}
                       placeholder="31-12"
                       pattern="\d{2}-\d{2}"
                       required
+                      aria-invalid={!!errorFechaCierre}
                       className="max-w-xs"
                     />
-                    {validarFechaCierre(formData.fechaCierre) && (
-                      <p className="text-label text-danger mt-1">{validarFechaCierre(formData.fechaCierre)}</p>
+                    {errorFechaCierre && (
+                      <p className="text-label text-danger mt-1">{errorFechaCierre}</p>
                     )}
                     <p className="text-label text-ink-2 mt-1">
                       Ingresá el día y el mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
@@ -2322,7 +2348,7 @@ export default function NuevoTramitePage() {
                       <div>
                         <p className="font-medium text-ink">Deseo recibir asesoramiento contable adicional</p>
                         <p className="text-body-sm text-ink-2">
-                          Recibe ayuda profesional con la gestión contable y fiscal de tu sociedad
+                          Recibí ayuda profesional con la gestión contable y fiscal de tu sociedad
                         </p>
                       </div>
                     </label>
@@ -2331,12 +2357,12 @@ export default function NuevoTramitePage() {
                   <div className="mt-8 bg-success-soft border-success-line rounded-card p-6">
                     <h4 className="font-semibold text-success text-title mb-3">¡Todo listo para enviar!</h4>
                     <p className="text-success mb-4">
-                      Has completado todos los pasos del formulario. Revisa la información y cuando estés listo, haz click en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
+                      Completaste todos los pasos del formulario. Revisá la información y, cuando estés listo, hacé clic en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
                     </p>
                     <div className="bg-surface rounded-control p-4 text-ink-2 space-y-2 border border-success-line">
-                      <p><span className="font-semibold">Plan seleccionado:</span> {NOMBRES_PLAN[formData.plan] || formData.plan}</p>
-                      <p><span className="font-semibold">Jurisdicción:</span> {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba (IPJ)' : 'CABA (IGJ)'}</p>
-                      <p><span className="font-semibold">Capital Social:</span> ${(parseFloat(String(formData.capitalSocial).replace(/\./g, '').replace(',', '.')) || 0).toLocaleString('es-AR')}</p>
+                      <p><span className="font-semibold">Plan seleccionado:</span> {nombrePlan(formData.plan)}</p>
+                      <p><span className="font-semibold">Jurisdicción:</span> {nombreJurisdiccion(formData.jurisdiccion)}</p>
+                      <p><span className="font-semibold">Capital Social:</span> {pesos((parseFloat(String(formData.capitalSocial).replace(/\./g, '').replace(',', '.')) || 0))}</p>
                       <p><span className="font-semibold">Socios:</span> {formData.numeroSocios}</p>
                       <p><span className="font-semibold">Administradores:</span> {formData.numeroAdministradores}</p>
                     </div>

@@ -33,6 +33,7 @@ import { AnilloProgreso } from '@/components/ui/charts'
 import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/tramites/estado'
 import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
 import { cn } from '@/lib/utils'
+import { nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 
 const ICONOS: Record<IconoAccion, LucideIcon> = {
   pago: CreditCard,
@@ -173,7 +174,7 @@ async function DashboardPage() {
                   as="h2"
                   actions={
                     tramites.length > 1 ? (
-                      <Button asChild variant="ghost" size="sm">
+                      <Button asChild variant="ghost" size="sm" className="h-10 sm:h-8">
                         <Link href="/dashboard/tramites">
                           Ver todos
                           <ArrowRight className="h-4 w-4" aria-hidden />
@@ -209,11 +210,9 @@ async function DashboardPage() {
                                 </Badge>
                               </div>
                               <p className="mt-1 text-body-sm text-ink-2">
-                                {tramite.jurisdiccion === 'CORDOBA'
-                                  ? 'Córdoba (IPJ)'
-                                  : 'CABA (IGJ)'}
+                                {nombreJurisdiccion(tramite.jurisdiccion)}
                                 <span className="mx-1.5 text-ink-3" aria-hidden>·</span>
-                                Plan {tramite.plan}
+                                Plan {nombrePlan(tramite.plan)}
                               </p>
                               <p className="mt-2 flex items-center gap-2 text-body text-ink">
                                 <Clock className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
@@ -259,7 +258,7 @@ async function DashboardPage() {
                             </p>
                           </div>
                         </div>
-                        <Button asChild variant="secondary" size="sm">
+                        <Button asChild variant="secondary" size="sm" className="h-10 sm:h-8">
                           <Link href="/dashboard/mi-sociedad">
                             Ver legajo
                             <ArrowRight className="h-4 w-4" aria-hidden />
@@ -329,7 +328,7 @@ async function DashboardPage() {
                   Escribinos por WhatsApp y te respondemos en el día. También podés dejar tu
                   consulta en el chat del trámite.
                 </p>
-                <Button asChild variant="secondary" size="sm" className="w-full">
+                <Button asChild variant="secondary" size="sm" className="h-10 sm:h-8 w-full">
                   <a
                     href="https://wa.me/5493512136212"
                     target="_blank"

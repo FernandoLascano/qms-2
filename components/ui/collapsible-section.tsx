@@ -57,7 +57,7 @@ export function CollapsibleSection({
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((v) => !v)}
-          className="group flex min-w-0 flex-1 items-center gap-2 rounded-control text-left"
+          className="group flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-control text-left sm:min-h-0"
         >
           <ChevronDown
             className={cn(
