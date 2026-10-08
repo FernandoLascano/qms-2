@@ -7,8 +7,14 @@
  *   - lib/tramites-helpers.ts           → 7 etapas
  * Resultado: el mismo trámite mostraba 71% en "Inicio" y 63% en "Mis Trámites".
  *
- * El progreso es de 7 etapas. "Documentos revisados" (aprobación del borrador
- * por el cliente) es un sub-paso interno de la firma y no suma porcentaje.
+ * Hay dos listas, cada una con su uso, y las dos viven acá:
+ *   - ETAPAS_FLUJO: los 14 pasos reales del proceso (los que el admin marca en
+ *     «Control de Etapas»). El PORCENTAJE de progreso se calcula sobre esta
+ *     lista, en todas las pantallas (cliente y admin).
+ *   - ETAPAS: los 7 hitos que se muestran en la línea de tiempo y que definen
+ *     la «etapa actual» redactada. No se usan para el porcentaje.
+ * Antes el encabezado del trámite calculaba sobre 7 y el control sobre 14, y
+ * el mismo trámite mostraba 14% arriba y 3/14 (21%) abajo.
  */
 
 export type Tone = 'neutral' | 'primary' | 'info' | 'success' | 'warning' | 'danger'
@@ -81,15 +87,61 @@ export const ETAPAS: EtapaDef[] = [
 
 export const TOTAL_ETAPAS = ETAPAS.length
 
+/** De quién depende un paso del flujo. */
+export type Responsable = 'cliente' | 'qms'
+
+export interface PasoFlujo {
+  /** Campo booleano del trámite. */
+  campo: string
+  label: string
+  descripcion: string
+  responsable: Responsable
+}
+
+/** Flujo lineal, en el orden real del proceso. Base del porcentaje de progreso. */
+export const ETAPAS_FLUJO: PasoFlujo[] = [
+  { campo: 'formularioCompleto', label: 'Formulario Completo', descripcion: 'Cliente completó el formulario', responsable: 'cliente' },
+  { campo: 'honorariosPagados', label: 'Honorarios Pagados', descripcion: 'Pago de honorarios confirmado (por ahora manual)', responsable: 'cliente' },
+  { campo: 'homonimiaAnalizada', label: 'Análisis de Homonimia', descripcion: 'Se analizó la opción de nombre más viable', responsable: 'qms' },
+  { campo: 'ciudadanoDigitalOk', label: 'Ciudadano Digital Nivel 2', descripcion: 'El cliente tiene Ciudadano Digital Nivel 2', responsable: 'cliente' },
+  { campo: 'denominacionReservada', label: 'Reserva de Nombre', descripcion: 'Tasa pagada y nombre reservado en IPJ/IGJ', responsable: 'qms' },
+  { campo: 'cuentaBancariaAbierta', label: 'Cuenta Bancaria Abierta', descripcion: 'Se abrió la cuenta para el depósito del capital', responsable: 'qms' },
+  { campo: 'capitalDepositado', label: 'Capital Depositado (25%)', descripcion: 'Cliente depositó el 25% del capital social', responsable: 'cliente' },
+  { campo: 'tasaPagada', label: 'Tasa Final Pagada', descripcion: 'Tasa retributiva final abonada', responsable: 'cliente' },
+  { campo: 'borradorEnviado', label: 'Borrador Enviado', descripcion: 'Se envió el borrador al cliente para que lo controle', responsable: 'qms' },
+  { campo: 'borradorAprobadoCliente', label: 'Borrador Aprobado', descripcion: 'El cliente controló y aprobó el borrador', responsable: 'cliente' },
+  { campo: 'documentosRevisados', label: 'Documentos Enviados', descripcion: 'Estatutos y actas enviados para firma', responsable: 'qms' },
+  { campo: 'documentosFirmados', label: 'Documentos Firmados', descripcion: 'Cliente firmó y envió los docs escaneados', responsable: 'cliente' },
+  { campo: 'tramiteIngresado', label: 'Trámite Ingresado', descripcion: 'Trámite ingresado en IPJ/IGJ', responsable: 'qms' },
+  { campo: 'sociedadInscripta', label: 'Sociedad Inscripta', descripcion: 'CUIT asignado y resolución obtenida', responsable: 'qms' },
+]
+
+export const TOTAL_PASOS_FLUJO = ETAPAS_FLUJO.length
+
 type TramiteLike = Record<string, unknown>
 
 const hecho = (tramite: TramiteLike, campo: string) => Boolean(tramite?.[campo])
 
-/** Porcentaje 0-100 sobre las 7 etapas. */
+export interface ResumenProgreso {
+  completadas: number
+  total: number
+  /** 0-100, redondeado. */
+  porcentaje: number
+}
+
+/** Cuántos pasos del flujo (ETAPAS_FLUJO) están hechos. */
+export function resumenProgreso(tramite: TramiteLike): ResumenProgreso {
+  const total = TOTAL_PASOS_FLUJO
+  if (!tramite) return { completadas: 0, total, porcentaje: 0 }
+  // Una sociedad inscripta está terminada aunque falte tildar algún paso intermedio.
+  if (hecho(tramite, 'sociedadInscripta')) return { completadas: total, total, porcentaje: 100 }
+  const completadas = ETAPAS_FLUJO.filter((e) => hecho(tramite, e.campo)).length
+  return { completadas, total, porcentaje: Math.round((completadas / total) * 100) }
+}
+
+/** Porcentaje 0-100 sobre los pasos del flujo (ETAPAS_FLUJO). */
 export function calcularProgreso(tramite: TramiteLike): number {
-  if (!tramite) return 0
-  const completadas = ETAPAS.filter((e) => hecho(tramite, e.campo)).length
-  return Math.round((completadas / TOTAL_ETAPAS) * 100)
+  return resumenProgreso(tramite).porcentaje
 }
 
 export interface EtapaEstado extends EtapaDef {

@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Clock, ListChecks, User, Building2, AlertTriangle } from 'lucide-react'
-
-type Responsable = 'cliente' | 'qms'
+import { ETAPAS_FLUJO, resumenProgreso, type Responsable } from '@/lib/tramites/estado'
 
 interface EtapasManagerProps {
   tramiteId: string
@@ -96,25 +95,19 @@ export default function EtapasManager({
     }
   }
 
-  // Flujo lineal, en el orden real del proceso. `responsable` = de quién depende ese paso.
-  const etapasLista: { key: string; label: string; valor: boolean; descripcion: string; responsable: Responsable }[] = [
-    { key: 'formularioCompleto', label: '1. Formulario Completo', valor: etapas.formularioCompleto, descripcion: 'Cliente completó el formulario', responsable: 'cliente' },
-    { key: 'honorariosPagados', label: '2. Honorarios Pagados', valor: etapas.honorariosPagados, descripcion: 'Pago de honorarios confirmado (por ahora manual)', responsable: 'cliente' },
-    { key: 'homonimiaAnalizada', label: '3. Análisis de Homonimia', valor: etapas.homonimiaAnalizada, descripcion: 'Se analizó la opción de nombre más viable', responsable: 'qms' },
-    { key: 'ciudadanoDigitalOk', label: '4. Ciudadano Digital Nivel 2', valor: etapas.ciudadanoDigitalOk, descripcion: 'El cliente tiene Ciudadano Digital Nivel 2', responsable: 'cliente' },
-    { key: 'denominacionReservada', label: '5. Reserva de Nombre', valor: etapas.denominacionReservada, descripcion: 'Tasa pagada y nombre reservado en IPJ/IGJ', responsable: 'qms' },
-    { key: 'cuentaBancariaAbierta', label: '6. Cuenta Bancaria Abierta', valor: etapas.cuentaBancariaAbierta, descripcion: 'Se abrió la cuenta para el depósito del capital', responsable: 'qms' },
-    { key: 'capitalDepositado', label: '7. Capital Depositado (25%)', valor: etapas.capitalDepositado, descripcion: 'Cliente depositó el 25% del capital social', responsable: 'cliente' },
-    { key: 'tasaPagada', label: '8. Tasa Final Pagada', valor: etapas.tasaPagada, descripcion: 'Tasa retributiva final abonada', responsable: 'cliente' },
-    { key: 'borradorEnviado', label: '9. Borrador Enviado', valor: etapas.borradorEnviado, descripcion: 'Se envió el borrador al cliente para que lo controle', responsable: 'qms' },
-    { key: 'borradorAprobadoCliente', label: '10. Borrador Aprobado', valor: etapas.borradorAprobadoCliente, descripcion: 'El cliente controló y aprobó el borrador', responsable: 'cliente' },
-    { key: 'documentosRevisados', label: '11. Documentos Enviados', valor: etapas.documentosRevisados, descripcion: 'Estatutos y actas enviados para firma', responsable: 'qms' },
-    { key: 'documentosFirmados', label: '12. Documentos Firmados', valor: etapas.documentosFirmados, descripcion: 'Cliente firmó y envió los docs escaneados', responsable: 'cliente' },
-    { key: 'tramiteIngresado', label: '13. Trámite Ingresado', valor: etapas.tramiteIngresado, descripcion: 'Trámite ingresado en IPJ/IGJ', responsable: 'qms' },
-    { key: 'sociedadInscripta', label: '14. Sociedad Inscripta', valor: etapas.sociedadInscripta, descripcion: 'CUIT asignado y resolución obtenida', responsable: 'qms' }
-  ]
+  // Flujo lineal, en el orden real del proceso (fuente única: lib/tramites/estado).
+  // `responsable` = de quién depende ese paso.
+  const valores = etapas as unknown as Record<string, boolean>
+  const etapasLista = ETAPAS_FLUJO.map((paso, i) => ({
+    key: paso.campo,
+    label: `${i + 1}. ${paso.label}`,
+    valor: Boolean(valores[paso.campo]),
+    descripcion: paso.descripcion,
+    responsable: paso.responsable,
+  }))
 
-  const completadas = etapasLista.filter(e => e.valor).length
+  // El mismo cálculo que el encabezado del trámite y la lista.
+  const progreso = resumenProgreso(valores)
 
   const renderResponsable = (responsable: Responsable) => {
     if (responsable === 'cliente') {
@@ -187,15 +180,22 @@ export default function EtapasManager({
               Progreso General
             </span>
             <span className="text-body-sm font-semibold text-info">
-              {completadas} / {etapasLista.length} completadas
+              {etapas.sociedadInscripta
+                ? 'Sociedad inscripta · 100%'
+                : `${progreso.completadas} / ${progreso.total} completadas · ${progreso.porcentaje}%`}
             </span>
           </div>
-          <div className="w-full bg-info-solid rounded-full h-3">
+          <div
+            className="w-full bg-surface border border-info-line rounded-full h-3 overflow-hidden"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progreso.porcentaje}
+            aria-label="Progreso general del trámite"
+          >
             <div
-              className="bg-info-solid h-3 rounded-full transition-all"
-              style={{
-                width: `${(completadas / etapasLista.length) * 100}%`
-              }}
+              className="bg-info-solid h-full rounded-full transition-all"
+              style={{ width: `${progreso.porcentaje}%` }}
             />
           </div>
         </div>
