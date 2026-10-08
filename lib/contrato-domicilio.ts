@@ -18,6 +18,7 @@ const PLANTILLA = path.join(process.cwd(), 'lib/plantillas/contrato-domicilio.do
 
 /** Lo que carga el formulario: todo texto, salvo las casillas. */
 export type DatosContrato = {
+  domicilio_servicio: string // dirección de la sede donde se fija el domicilio
   sociedad_denominacion: string
   sociedad_cuit: string
   sociedad_matricula: string
@@ -58,6 +59,16 @@ const MESES = [
 ]
 
 const CASILLA = (marcada: boolean) => (marcada ? '☒' : '☐')
+
+/**
+ * Dirección completa de la sede para el contrato, a partir de la que tiene
+ * asignada el cliente en Domicilios (que se guarda corta: "Ituzaingó 87").
+ */
+export function domicilioDelServicio(direccion: string | null | undefined): string {
+  const d = (direccion || 'Pasaje Chagas 6043').trim()
+  if (/pasaje chagas/i.test(d)) return 'Pasaje Chagas 6043, Barrio Villa Belgrano, ciudad de Córdoba, Provincia de Córdoba'
+  return /c[oó]rdoba/i.test(d) ? d : `${d}, ciudad de Córdoba, Provincia de Córdoba`
+}
 
 /** La plantilla ya agrega "S.A.S." después de la denominación. */
 export function sinTipoSocietario(denominacion: string): string {

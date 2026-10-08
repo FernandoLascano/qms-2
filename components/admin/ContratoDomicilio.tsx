@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { AlertTriangle, FileSignature, FileText, FileType } from 'lucide-react'
+import { FileSignature, FileText, FileType } from 'lucide-react'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,12 +25,8 @@ type Precarga = {
   versiones: Version[] // de la más nueva a la más vieja
   personas: PersonaContrato[]
   representanteClave: string | null
-  direccionDomicilio: string | null
   pdfDisponible: boolean
 }
-
-// La dirección del servicio está escrita en la plantilla del contrato.
-const DIRECCION_PLANTILLA = 'Pasaje Chagas 6043'
 
 /** Genera el contrato de domicilio desde la plantilla Word, con los datos del trámite. */
 export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) {
@@ -132,8 +128,6 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
   }
 
   const administradores = precarga?.personas.filter((p) => p.clave.startsWith('adm-')) ?? []
-  const direccionDistinta =
-    !!precarga?.direccionDomicilio && !precarga.direccionDomicilio.includes(DIRECCION_PLANTILLA)
 
   const texto = (k: keyof DatosContrato, label: string, extra?: { hint?: string; placeholder?: string }) => (
     <Field label={label} htmlFor={`cd-${k}`} hint={extra?.hint}>
@@ -190,17 +184,9 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
                 </Field>
               )}
 
-              {direccionDistinta && (
-                <div className="flex gap-2 rounded-control border border-warning-line bg-warning-soft px-3 py-2.5 text-body-sm text-ink">
-                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" aria-hidden />
-                  <span>
-                    Este cliente tiene el domicilio en <strong>{precarga?.direccionDomicilio}</strong>, pero la plantilla del contrato dice <strong>{DIRECCION_PLANTILLA}</strong>.
-                  </span>
-                </div>
-              )}
-
               <section className="space-y-3">
                 <h4 className="text-body-sm font-semibold text-ink">Sociedad</h4>
+                {texto('domicilio_servicio', 'Domicilio del servicio', { hint: 'La sede donde se fija el domicilio. Sale de la dirección asignada en Domicilios.' })}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {texto('sociedad_denominacion', 'Denominación', { hint: 'Sin "S.A.S.": el contrato lo agrega.' })}
                   {texto('sociedad_cuit', 'CUIT')}
