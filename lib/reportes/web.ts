@@ -1,4 +1,5 @@
 import { createGa4DataClient, getGa4PropertyResource } from '@/lib/ga4/client'
+import { CUENTA_ANALYTICS } from '@/lib/gcp'
 import { etiquetaPeriodo, moverPeriodo } from '@/lib/comisiones'
 import { cuadro, dosColumnas, esc, grafico, indicadores, mensajesClave, numero, pct, seccion, variacion } from './diseno'
 import { barrasVerticales } from './graficos'
@@ -119,7 +120,9 @@ export async function datosWeb(periodo: string): Promise<DatosWeb> {
       ok: false,
       motivo: /invalid_grant/.test(msg)
         ? 'la autorización de Google Analytics venció y hay que renovarla'
-        : 'Google Analytics no respondió',
+        : /PERMISSION_DENIED|permission/i.test(msg)
+          ? `falta darle acceso de Lector en Google Analytics a ${CUENTA_ANALYTICS}`
+          : 'Google Analytics no respondió',
     }
   }
 }

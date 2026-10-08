@@ -1,4 +1,5 @@
 import { getVercelOidcToken } from '@vercel/functions/oidc'
+import { CUENTA_PDF as CUENTA_SERVICIO, WIF_PROVIDER } from '@/lib/gcp'
 
 /**
  * Conversión a PDF con Gotenberg (Chromium y LibreOffice en un contenedor:
@@ -14,12 +15,6 @@ import { getVercelOidcToken } from '@vercel/functions/oidc'
  * Los valores no son secretos; se pueden pisar por variable de entorno.
  */
 const GOTENBERG_URL = process.env.GOTENBERG_URL || 'https://gotenberg-524890341277.southamerica-east1.run.app'
-const WIF_PROVIDER =
-  process.env.GCP_WIF_PROVIDER ||
-  '//iam.googleapis.com/projects/524890341277/locations/global/workloadIdentityPools/vercel/providers/vercel'
-const CUENTA_SERVICIO =
-  process.env.GCP_PDF_SERVICE_ACCOUNT || 'qms-pdf@project-4ca27e64-983d-4143-889.iam.gserviceaccount.com'
-
 // El servicio se apaga cuando no se usa y el primer pedido lo despierta
 // (Chromium incluido): puede tardar bastante más que los siguientes.
 const ESPERA_MS = 50_000
