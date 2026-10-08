@@ -481,8 +481,11 @@ export async function GET(request: Request) {
         pendientes: pagosPendientes._sum.monto || 0,
         cantidadPagos: pagosPeriodo._count || 0,
         porPlan: ingresosPorPlan,
-        promedioPorTramite: tramitesCompletados > 0 
-          ? Math.round((pagosPeriodo._sum.monto || 0) / tramitesCompletados) 
+        // Ticket promedio por cobro del período (igual que en el reporte
+        // mensual). Antes dividía por todos los trámites completados de la
+        // historia, y el número bajaba solo con el tiempo.
+        promedioPorTramite: pagosPeriodo._count > 0
+          ? Math.round((pagosPeriodo._sum.monto || 0) / pagosPeriodo._count)
           : 0,
         porMes: ingresosPorMes
       },

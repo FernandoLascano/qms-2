@@ -58,7 +58,7 @@ export function ExportButton({ data, filename = 'reporte' }: ExportButtonProps) 
 
     // Ingresos
     lines.push('INGRESOS')
-    lines.push('Periodo,Pendientes,Cantidad Pagos,Promedio por Trámite')
+    lines.push('Periodo,Pendientes,Cantidad Cobros,Ticket Promedio')
     lines.push([
       `$${data.ingresos?.periodo?.toLocaleString('es-AR') || 0}`,
       `$${data.ingresos?.pendientes?.toLocaleString('es-AR') || 0}`,

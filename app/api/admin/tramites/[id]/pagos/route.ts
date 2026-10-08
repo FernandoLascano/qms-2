@@ -23,7 +23,24 @@ export async function POST(request: Request, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const { concepto, monto } = await request.json()
+    const { concepto, monto, fecha, metodoPago } = await request.json()
+
+    // Fecha del cobro (AAAA-MM-DD, día argentino). Define en qué mes cae en
+    // Comisiones y en la liquidación, así que un pago cargado tarde tiene que
+    // llevar el día en que entró, no el de la carga. Sin fecha, hoy.
+    let fechaPago = new Date()
+    if (fecha) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha))) {
+        return NextResponse.json({ error: 'Fecha inválida' }, { status: 400 })
+      }
+      // Mediodía argentino: el día no cambia al pasarlo a UTC.
+      fechaPago = new Date(`${fecha}T12:00:00-03:00`)
+      if (isNaN(fechaPago.getTime()) || fechaPago.getTime() > Date.now() + 86_400_000) {
+        return NextResponse.json({ error: 'La fecha del pago no puede ser futura' }, { status: 400 })
+      }
+    }
+    const metodos = ['TRANSFERENCIA', 'MERCADO_PAGO', 'EFECTIVO', 'TARJETA']
+    const metodo = metodos.includes(metodoPago) ? metodoPago : 'TRANSFERENCIA'
 
     // Obtener trámite
     const tramite = await prisma.tramite.findUnique({
@@ -46,8 +63,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         monto: monto,
         moneda: 'ARS',
         estado: 'APROBADO',
-        metodoPago: 'TRANSFERENCIA',
-        fechaPago: new Date()
+        metodoPago: metodo,
+        fechaPago
       }
     })
 

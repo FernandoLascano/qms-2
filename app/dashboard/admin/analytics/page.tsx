@@ -337,10 +337,10 @@ export default function AnalyticsPage() {
         />
         
         <MetricCard
-          title="Valor Promedio"
+          title="Ticket promedio"
           value={`$${((data.ingresos?.promedioPorTramite || 0) / 1000).toFixed(0)}K`}
           icon={DollarSign}
-          subtitle="Por trámite completado"
+          subtitle="Por cobro del período"
           color="green"
         />
         
