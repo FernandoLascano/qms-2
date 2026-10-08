@@ -72,7 +72,7 @@ export default function PrivacidadPage() {
                 <li><strong>Oposición:</strong> oponerse al tratamiento en determinados supuestos.</li>
               </ul>
               <p className="mt-3">
-                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La DPDP es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/justicia/derechofacil/ley simple/proteccion-datos-personales" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
+                Para ejercer estos derechos, debe dirigirse a contacto@quieromisas.com con su solicitud. La DPDP es el órgano de control competente para atender reclamos: <a href="https://www.argentina.gob.ar/aaip/datospersonales/derechos" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">www.argentina.gob.ar</a>.
               </p>
             </section>
 
