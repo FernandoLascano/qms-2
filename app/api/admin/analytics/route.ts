@@ -6,6 +6,8 @@ import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { CONCEPTOS_COMISIONABLES } from '@/lib/comisiones'
+// Mismo formato de pesos que las tarjetas y los gráficos de Analytics.
+import { pesos } from '@/components/admin/analytics/tema'
 import type { ConceptoPago } from '@prisma/client'
 
 /** "oct" → "Oct": etiqueta corta del mes, en castellano. */
@@ -227,7 +229,7 @@ export async function GET(request: Request) {
     if ((pagosPendientes._count || 0) > 0) {
       alertas.push({
         tipo: 'info',
-        mensaje: `${pagosPendientes._count} pagos pendientes por $${(pagosPendientes._sum.monto || 0).toLocaleString()}`,
+        mensaje: `${pagosPendientes._count} pagos pendientes por ${pesos(pagosPendientes._sum.monto || 0)}`,
         valor: pagosPendientes._count
       })
     }
@@ -356,6 +358,9 @@ export async function GET(request: Request) {
     }
 
     // 10. TIEMPO PROMEDIO POR ETAPA (desde validación hasta inscripción)
+    // Cada etapa se mide con las fechas que el admin marca en el trámite. Antes
+    // los días por etapa estaban fijos en el código (1,5 / 1 / 1,5 / 1) y se
+    // mostraban como si fueran datos.
     const tramitesCompletadosConFechas = await prisma.tramite.findMany({
       where: {
         estadoGeneral: 'COMPLETADO',
@@ -365,97 +370,67 @@ export async function GET(request: Request) {
       },
       select: {
         id: true,
-        fechaSociedadInscripta: true,
+        fechaFormularioCompleto: true,
         fechaDenominacionReservada: true,
-        denominacionReservada: true,
-        capitalDepositado: true,
-        documentosFirmados: true,
-        sociedadInscripta: true
+        fechaCapitalDepositado: true,
+        fechaDocumentosFirmados: true,
+        fechaSociedadInscripta: true
       },
       take: 50, // Últimos 50 trámites completados
       orderBy: { fechaSociedadInscripta: 'desc' }
     })
 
-    const tiemposPromedio = {
-      total: 0, // Desde Reserva de Nombre hasta Inscripción
-      desdeValidacion: 0, // Desde validación del formulario hasta Inscripción
-      porEtapa: {
-        reservaDenominacion: 1.5,  // Días estimados
-        depositoCapital: 1,
-        firmaEstatuto: 1.5,
-        inscripcion: 1
-      }
+    const DIA_MS = 1000 * 60 * 60 * 24
+    // Días entre dos hitos. Si falta una fecha o quedaron cargadas al revés
+    // (pasa con trámites viejos cargados a mano), ese trámite no cuenta.
+    const dias = (desde: Date | null | undefined, hasta: Date | null | undefined) => {
+      if (!desde || !hasta) return null
+      const diff = (hasta.getTime() - desde.getTime()) / DIA_MS
+      return diff >= 0 ? diff : null
+    }
+    // Con menos de esta cantidad de casos el promedio no dice nada: la etapa
+    // sale como «sin datos suficientes» en vez de un número.
+    const MUESTRA_MINIMA = 3
+    const promedio = (valores: (number | null)[]) => {
+      const validos = valores.filter((v): v is number => v !== null)
+      return validos.length >= MUESTRA_MINIMA
+        ? validos.reduce((a, b) => a + b, 0) / validos.length
+        : null
     }
 
-    if (tramitesCompletadosConFechas.length > 0) {
-      // Obtener IDs de trámites para buscar fechas de validación
-      const tramiteIds = tramitesCompletadosConFechas.map(t => t.id)
-      
-      // Buscar fechas de validación en el historial (cuando cambió a EN_PROCESO)
-      // La validación ocurre cuando el estado cambia a EN_PROCESO
-      const historialesValidacion = await prisma.historialEstado.findMany({
-        where: {
-          tramiteId: { in: tramiteIds },
-          estadoNuevo: 'EN_PROCESO'
-        },
-        select: {
-          tramiteId: true,
-          createdAt: true
-        },
-        orderBy: {
-          createdAt: 'asc' // Tomar la primera vez que cambió a EN_PROCESO
-        }
-      })
-
-      // Crear mapa de fechas de validación por trámite
-      const fechasValidacion = new Map<string, Date>()
-      historialesValidacion.forEach(h => {
-        if (!fechasValidacion.has(h.tramiteId)) {
-          fechasValidacion.set(h.tramiteId, h.createdAt)
-        }
-      })
-
-      // Calcular tiempos desde Reserva de Nombre hasta inscripción (tiempo total)
-      const tiemposDesdeReserva = tramitesCompletadosConFechas
-        .map(t => {
-          const fechaReserva = t.fechaDenominacionReservada
-          const fechaInscripcion = t.fechaSociedadInscripta
-
-          // Solo calcular si tenemos ambas fechas
-          if (fechaReserva && fechaInscripcion) {
-            const diff = fechaInscripcion.getTime() - fechaReserva.getTime()
-            return diff / (1000 * 60 * 60 * 24) // Convertir a días
-          }
-          return null
+    // Primera vez que el trámite pasó a EN_PROCESO = formulario validado.
+    const historialesValidacion = tramitesCompletadosConFechas.length > 0
+      ? await prisma.historialEstado.findMany({
+          where: {
+            tramiteId: { in: tramitesCompletadosConFechas.map(t => t.id) },
+            estadoNuevo: 'EN_PROCESO'
+          },
+          select: { tramiteId: true, createdAt: true },
+          orderBy: { createdAt: 'asc' }
         })
-        .filter((t): t is number => t !== null) // Filtrar nulls
+      : []
+    const fechasValidacion = new Map<string, Date>()
+    historialesValidacion.forEach(h => {
+      if (!fechasValidacion.has(h.tramiteId)) fechasValidacion.set(h.tramiteId, h.createdAt)
+    })
 
-      // Calcular tiempos desde validación hasta inscripción
-      const tiemposDesdeValidacion = tramitesCompletadosConFechas
-        .map(t => {
-          const fechaValidacion = fechasValidacion.get(t.id)
-          const fechaInscripcion = t.fechaSociedadInscripta
-
-          // Solo calcular si tenemos ambas fechas
-          if (fechaValidacion && fechaInscripcion) {
-            const diff = fechaInscripcion.getTime() - fechaValidacion.getTime()
-            return diff / (1000 * 60 * 60 * 24) // Convertir a días
-          }
-          return null
-        })
-        .filter((t): t is number => t !== null) // Filtrar nulls
-
-      if (tiemposDesdeReserva.length > 0) {
-        tiemposPromedio.total = tiemposDesdeReserva.reduce((a, b) => a + b, 0) / tiemposDesdeReserva.length
-      }
-
-      if (tiemposDesdeValidacion.length > 0) {
-        tiemposPromedio.desdeValidacion = tiemposDesdeValidacion.reduce((a, b) => a + b, 0) / tiemposDesdeValidacion.length
-      }
+    const ts = tramitesCompletadosConFechas
+    const tiemposPromedio = {
+      // Desde Reserva de Nombre hasta Inscripción
+      total: promedio(ts.map(t => dias(t.fechaDenominacionReservada, t.fechaSociedadInscripta))),
+      // Desde validación del formulario hasta Inscripción
+      desdeValidacion: promedio(ts.map(t => dias(fechasValidacion.get(t.id), t.fechaSociedadInscripta))),
+      porEtapa: {
+        reservaDenominacion: promedio(ts.map(t => dias(t.fechaFormularioCompleto, t.fechaDenominacionReservada))),
+        depositoCapital: promedio(ts.map(t => dias(t.fechaDenominacionReservada, t.fechaCapitalDepositado))),
+        firmaEstatuto: promedio(ts.map(t => dias(t.fechaCapitalDepositado, t.fechaDocumentosFirmados))),
+        inscripcion: promedio(ts.map(t => dias(t.fechaDocumentosFirmados, t.fechaSociedadInscripta)))
+      },
+      muestra: ts.length
     }
 
     // Respuesta final
-    const [leadsConsulta, leadsBorrador, perdidosPorMotivo] = await Promise.all([
+    const [leadsConsulta, leadsBorrador, perdidosPorMotivo, leadsSinUsuario, usuariosConSociedad] = await Promise.all([
       prisma.lead.count(),
       prisma.tramite.count({ where: { formularioCompleto: false } }),
       prisma.lead.groupBy({
@@ -463,7 +438,25 @@ export async function GET(request: Request) {
         where: { estado: 'DESCARTADO', motivoPerdida: { not: null } },
         _count: { _all: true },
       }),
+      prisma.lead.findMany({ where: { userId: null }, select: { email: true } }),
+      prisma.user.count({ where: { tramites: { some: { estadoGeneral: 'COMPLETADO' } } } }),
     ])
+
+    // Embudo de personas, cada paso incluido en el anterior. «Interesados» eran
+    // los leads más los borradores, que son poblaciones que se pisan con los
+    // registrados (un borrador ya es un usuario) y daban menos interesados que
+    // registrados. Ahora: todos los registrados más los leads que nunca
+    // abrieron cuenta (sin usuario vinculado ni uno con su email).
+    const emailsLeads = leadsSinUsuario.map(l => l.email?.toLowerCase()).filter((e): e is string => !!e)
+    const emailsConCuenta = emailsLeads.length > 0
+      ? new Set(
+          (await prisma.user.findMany({
+            where: { email: { in: emailsLeads, mode: 'insensitive' } },
+            select: { email: true }
+          })).map(u => u.email.toLowerCase())
+        )
+      : new Set<string>()
+    const leadsSinCuenta = leadsSinUsuario.filter(l => !l.email || !emailsConCuenta.has(l.email.toLowerCase())).length
 
     return NextResponse.json({
       tramites: {
@@ -495,6 +488,7 @@ export async function GET(request: Request) {
         // la medición, que es justo donde estaba el agujero.
         consultas: leadsConsulta,
         borradores: leadsBorrador,
+        interesados: usuariosRegistrados + leadsSinCuenta,
         perdidosPorMotivo: perdidosPorMotivo.map((m: { motivoPerdida: string | null; _count: { _all: number } }) => ({
           motivo: m.motivoPerdida,
           cantidad: m._count._all,
@@ -504,6 +498,8 @@ export async function GET(request: Request) {
         registrados: usuariosRegistrados,
         activos: usuariosActivos,
         nuevos: usuariosNuevos,
+        conTramite: usuariosConTramite,
+        conSociedad: usuariosConSociedad,
         tasaRegistroATramite: tasaRegistroATramite.toFixed(1),
         tasaTramiteACompletado: tasaTramiteACompletado.toFixed(1)
       },

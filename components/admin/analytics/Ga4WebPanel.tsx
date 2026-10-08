@@ -72,11 +72,9 @@ export function Ga4WebPanel({ data, loading, error }: Ga4WebPanelProps) {
     return (
       <div className="bg-warning-soft border-2 border-warning-line rounded-card p-6">
         <h3 className="text-heading font-semibold text-warning mb-2">Tráfico web (Google Analytics)</h3>
-        <p className="text-warning text-body-sm mb-2">{error}</p>
-        <p className="text-warning text-label">
-          Configurá OAuth en Vercel: GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET,
-          GOOGLE_OAUTH_REFRESH_TOKEN (scope <code className="bg-warning-soft px-1 rounded">analytics.readonly</code>).
-          Opcional: GA4_PROPERTY_ID (default 516402270).
+        <p className="text-warning text-body-sm">{error}</p>
+        <p className="text-warning text-label mt-2">
+          Las métricas del negocio de abajo no dependen de esto y se ven igual.
         </p>
       </div>
     )
