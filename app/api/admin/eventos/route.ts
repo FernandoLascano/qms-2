@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 // GET - Obtener todos los eventos
 export async function GET(request: NextRequest) {
@@ -18,15 +19,52 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const fechaInicio = searchParams.get('fechaInicio')
     const fechaFin = searchParams.get('fechaFin')
+    const incluirCerrados = searchParams.get('incluirCerrados') === '1'
 
-    const where: any = {}
-    
+    const where: Prisma.EventoWhereInput = {}
+    const condiciones: Prisma.EventoWhereInput[] = []
+
     if (fechaInicio && fechaFin) {
-      where.fechaInicio = {
-        gte: new Date(fechaInicio),
-        lte: new Date(fechaFin)
-      }
+      const desde = new Date(fechaInicio)
+      const hasta = new Date(fechaFin)
+      // Un evento entra si se superpone con el rango visible: empieza antes de
+      // que termine el rango y termina (o empieza, si no tiene fin) después
+      // de que arranca.
+      condiciones.push({
+        fechaInicio: { lte: hasta },
+        OR: [
+          { fechaFin: { gte: desde } },
+          { fechaFin: null, fechaInicio: { gte: desde } }
+        ]
+      })
     }
+
+    // Los eventos automáticos de un trámite dejan de tener sentido cuando el
+    // hito ya pasó: el vencimiento de la reserva no importa una vez ingresado
+    // el trámite, y la fecha límite estimada no importa una vez inscripta la
+    // sociedad (o cerrado el trámite). Se ocultan, no se borran.
+    if (!incluirCerrados) {
+      const cerrado: Prisma.TramiteWhereInput = {
+        OR: [
+          { estadoGeneral: { in: ['COMPLETADO', 'CANCELADO'] } },
+          { sociedadInscripta: true }
+        ]
+      }
+      condiciones.push({
+        NOT: {
+          tipo: 'VENCIMIENTO_DENOMINACION',
+          tramite: { is: { OR: [cerrado, { tramiteIngresado: true }] } }
+        }
+      })
+      condiciones.push({
+        NOT: {
+          tipo: 'FECHA_LIMITE_TRAMITE',
+          tramite: { is: cerrado }
+        }
+      })
+    }
+
+    if (condiciones.length > 0) where.AND = condiciones
 
     const eventos = await prisma.evento.findMany({
       where,
@@ -36,6 +74,8 @@ export async function GET(request: NextRequest) {
             id: true,
             denominacionSocial1: true,
             denominacionAprobada: true,
+            estadoGeneral: true,
+            sociedadInscripta: true,
             user: {
               select: {
                 name: true,
