@@ -8,6 +8,8 @@ import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
 import { erroresFormatoTramite } from '@/lib/validaciones'
 import { marcarLeadsGanados } from '@/lib/leads/ganado'
 import { marcarLeadGanadoPorEmail } from '@/lib/leads/capturar'
+import { getPublicConfig } from '@/lib/config'
+import { capitalMinimo } from '@/lib/precios'
 
 export async function POST(request: Request) {
   try {
@@ -50,9 +52,11 @@ export async function POST(request: Request) {
       if (!data.departamento?.trim()) erroresValidacion.push('Departamento')
     }
 
-    // Validar capital social del paso 4
-    if (!data.capitalSocial || parseFloat(String(data.capitalSocial).replace(/\./g, '').replace(',', '.')) < 635600) {
-      erroresValidacion.push('Capital social (debe ser mayor o igual a $635,600)')
+    // Validar capital social del paso 4 (mínimo 2 SMVM, misma fuente que el formulario)
+    const { smvm } = await getPublicConfig()
+    const capitalMin = capitalMinimo(smvm)
+    if (!data.capitalSocial || parseFloat(String(data.capitalSocial).replace(/\./g, '').replace(',', '.')) < capitalMin) {
+      erroresValidacion.push(`Capital social (debe ser mayor o igual a $${capitalMin.toLocaleString('es-AR')})`)
     }
 
     // Validar socios del paso 5
@@ -171,7 +175,7 @@ export async function POST(request: Request) {
       const capitalStr = String(data.capitalSocial || '0')
       capitalSocial = parseFloat(capitalStr.replace(/\./g, '').replace(',', '.'))
     } catch {
-      capitalSocial = 635600
+      capitalSocial = capitalMin
     }
 
     // Preparar socios como JSON

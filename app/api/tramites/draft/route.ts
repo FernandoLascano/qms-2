@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
+import { getPublicConfig } from '@/lib/config'
+import { capitalMinimo } from '@/lib/precios'
 
 // Guardar borrador del formulario
 export async function POST(request: Request) {
@@ -68,12 +70,14 @@ export async function POST(request: Request) {
       ? 'A informar' 
       : `${data.domicilio || ''}, ${data.ciudad || ''}, ${data.departamento || ''}, ${data.provincia || ''}`.trim() || 'A informar'
 
+    // Mínimo por defecto: 2 SMVM de la config (misma fuente que el formulario)
+    const capitalMin = capitalMinimo((await getPublicConfig()).smvm)
     let capitalSocial = 0
     try {
       const capitalStr = String(data.capitalSocial || '0')
       capitalSocial = parseFloat(capitalStr.replace(/\./g, '').replace(',', '.'))
     } catch (err) {
-      capitalSocial = 635600
+      capitalSocial = capitalMin
     }
 
     const sociosJSON = data.socios && data.socios.length > 0 
@@ -209,7 +213,7 @@ export async function POST(request: Request) {
           denominacionSocial2: data.denominacion2?.trim() || null,
           denominacionSocial3: data.denominacion3?.trim() || null,
           objetoSocial: objetoSocialFinal,
-          capitalSocial: capitalSocial || 635600, // Valor mínimo por defecto
+          capitalSocial: capitalSocial || capitalMin, // Valor mínimo por defecto
           domicilioLegal: domicilioLegal,
           datosUsuario: datosUsuarioJSON,
           socios: sociosJSON.length > 0 ? sociosJSON : [{ id: 1, nombre: '', apellido: '', dni: '', cuit: '', domicilio: '', ciudad: '', departamento: '', provincia: '', estadoCivil: '', profesion: '', aporteCapital: 0, tipoAporte: 'MONTO', aportePorcentaje: '0', porcentaje: '0' }],

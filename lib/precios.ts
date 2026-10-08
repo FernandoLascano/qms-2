@@ -24,3 +24,10 @@ export function ahorroTransferencia(precioTransferencia: number): number {
 export function formatARS(monto: number): string {
   return `$${Math.round(monto).toLocaleString('es-AR')}`
 }
+
+// Capital social mínimo de una SAS: 2 SMVM. Fuente única para el formulario
+// (que recibe el SMVM de /api/config) y para la validación del servidor
+// (que lo lee con getPublicConfig).
+export function capitalMinimo(smvm: number): number {
+  return 2 * smvm
+}
