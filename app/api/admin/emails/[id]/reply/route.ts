@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { emailManual } from '@/lib/emails/templates'
+import { prepararMailManual } from '@/lib/emails/destinatario'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
@@ -44,13 +45,6 @@ export async function POST(
       return NextResponse.json({ error: 'Email no encontrado' }, { status: 404 })
     }
 
-    // Mismo sobre que los mails automáticos: el HTML se arma en el servidor
-    // para que no haya una segunda definición del diseño en el navegador.
-    const html = emailManual({
-      texto: String(text),
-      nombre: originalEmail.fromName || originalEmail.from,
-    })
-
     const replyTo = originalEmail.replyTo || originalEmail.from
     const toList = normalizeRecipients(to)
     const ccList = normalizeRecipients(cc)
@@ -59,6 +53,25 @@ export async function POST(
     const subject = originalEmail.subject.startsWith('Re:')
       ? originalEmail.subject
       : `Re: ${originalEmail.subject}`
+
+    // Variables de plantilla que hayan quedado, nombre para el saludo y freno
+    // si quedó algún «[Completar…]» sin reemplazar. El nombre del remitente
+    // sólo sirve si el mail original lo escribió la otra parte: en uno
+    // nuestro, fromName es «QuieroMiSAS».
+    const preparado = await prepararMailManual({
+      texto: String(text),
+      asunto: '',
+      para: finalToList,
+      nombreSugerido: originalEmail.direction === 'INBOUND' ? originalEmail.fromName : null,
+    })
+    if (!preparado.ok) {
+      return NextResponse.json({ error: preparado.error }, { status: 400 })
+    }
+    const texto = preparado.texto
+
+    // Mismo sobre que los mails automáticos: el HTML se arma en el servidor
+    // para que no haya una segunda definición del diseño en el navegador.
+    const html = emailManual({ texto, nombre: preparado.nombre })
 
     const parsedAttachments: Array<{
       filename: string
@@ -97,7 +110,7 @@ export async function POST(
       replyTo: process.env.SMTP_FROM || 'contacto@quieromisas.com',
       subject,
       html,
-      text: text || html.replace(/<[^>]*>/g, ''),
+      text: texto || html.replace(/<[^>]*>/g, ''),
       attachments: parsedAttachments.map((item) => ({
         filename: item.filename,
         content: item.content,
@@ -120,7 +133,7 @@ export async function POST(
         bcc: bccList,
         subject,
         bodyHtml: html,
-        bodyText: text || html.replace(/<[^>]*>/g, ''),
+        bodyText: texto || html.replace(/<[^>]*>/g, ''),
         direction: 'OUTBOUND',
         status: 'READ',
         parentEmailId: id,

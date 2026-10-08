@@ -12,6 +12,14 @@ import { Select } from '@/components/ui/select'
 import { InlineLoading } from '@/components/ui/states'
 import type { ContactoEmail } from '@/lib/emails/contactos'
 import { TEMPLATES, personalizar, textoDePlantilla, type DbTemplate } from '@/lib/emails/respuestas-rapidas'
+import {
+  interpolarConocidas,
+  mensajeDePendientes,
+  pendientesDeCompletar,
+  primerNombre,
+  variablesDe,
+  type DatosDestinatario,
+} from '@/lib/emails/redaccion'
 
 interface EmailDetail {
   id: string
@@ -54,6 +62,9 @@ export default function EmailDetailPage() {
   const [sending, setSending] = useState(false)
   const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
   const [cargandoLead, setCargandoLead] = useState(false)
+  // Quién recibe la respuesta: para saludarlo por el nombre y rellenar las
+  // {{variables}} de las plantillas.
+  const [datosDestino, setDatosDestino] = useState<DatosDestinatario | null>(null)
 
   // Las plantillas se piden la primera vez que se abre el editor.
   useEffect(() => {
@@ -64,13 +75,51 @@ export default function EmailDetailPage() {
       .catch(() => {})
   }, [showReply, dbTemplates.length])
 
+  const destinoUnico = replyTo.split(',').map((d) => d.trim()).filter(Boolean)
+  const direccionDestino = destinoUnico.length === 1 ? destinoUnico[0].toLowerCase() : ''
+  useEffect(() => {
+    if (!showReply || !direccionDestino) {
+      setDatosDestino(null)
+      return
+    }
+    let vigente = true
+    fetch(`/api/admin/emails/destinatario?email=${encodeURIComponent(direccionDestino)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: DatosDestinatario | null) => {
+        if (vigente) setDatosDestino(d)
+      })
+      .catch(() => {
+        if (vigente) setDatosDestino(null)
+      })
+    return () => {
+      vigente = false
+    }
+  }, [showReply, direccionDestino])
+
+  // Si la plantilla se eligió antes de saber quién es el destinatario, las
+  // variables se completan apenas llegan los datos.
+  useEffect(() => {
+    if (!datosDestino || composerMode !== 'reply') return
+    setReplyText((prev) => interpolarConocidas(prev, variablesDe(datosDestino)))
+  }, [datosDestino, composerMode])
+
+  // Indicaciones «[Completar…]» o variables sin resolver: se avisan mientras
+  // se escribe y frenan el envío.
+  const avisoPendientes = mensajeDePendientes(
+    pendientesDeCompletar(composerMode === 'forward' ? replySubject : '', replyText),
+  )
+
   function usarPlantilla(clave: string) {
     if (!email || !clave) return
-    const nombre = email.contacto?.nombre ?? email.fromName
+    // Nunca la dirección como nombre: si no se sabe, el «¡Hola!» queda genérico.
+    const nombre =
+      datosDestino?.nombre ||
+      (email.direction === 'INBOUND' ? primerNombre(email.fromName) : '')
     const texto = clave.startsWith('db:')
       ? textoDePlantilla(dbTemplates.find((t) => t.id === clave.slice(3))?.bodyHtml ?? '')
       : TEMPLATES.find((t) => t.key === clave)?.body ?? ''
-    setReplyText(personalizar(texto, nombre))
+    const variables = { ...(nombre ? { nombre } : {}), ...variablesDe(datosDestino) }
+    setReplyText(personalizar(interpolarConocidas(texto, variables), nombre))
   }
 
   // Alguien que escribe y no es cliente ni lead: se carga al CRM de un clic,
@@ -165,6 +214,10 @@ export default function EmailDetailPage() {
 
   const handleSend = async () => {
     if (!replyText.trim() || !email) return
+    if (avisoPendientes) {
+      toast.error(avisoPendientes)
+      return
+    }
     setSending(true)
     try {
       const attachmentsPayload = await Promise.all(
@@ -526,6 +579,9 @@ export default function EmailDetailPage() {
               className="w-full p-4 border border-line rounded-control text-body-sm font-medium bg-surface text-ink placeholder:text-ink-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
               autoFocus
             />
+            {avisoPendientes && (
+              <p className="mt-1.5 text-label font-medium text-warning">{avisoPendientes}</p>
+            )}
             <div className="grid sm:grid-cols-2 gap-3 mt-3">
               <input
                 type="text"
@@ -586,7 +642,7 @@ export default function EmailDetailPage() {
               </button>
               <button
                 onClick={handleSend}
-                disabled={!replyText.trim() || sending}
+                disabled={!replyText.trim() || sending || !!avisoPendientes}
                 className="flex items-center gap-2 px-6 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:bg-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {sending ? (

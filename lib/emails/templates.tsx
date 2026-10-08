@@ -8,6 +8,7 @@
 
 // URL base para los enlaces en emails
 import { SITE_URL } from '@/lib/seo/site'
+import { yaSaluda } from './redaccion'
 
 // NEXTAUTH_URL manda; el respaldo es el dominio canónico (con www), no una
 // variante sin www que repartiría las señales entre dos orígenes.
@@ -179,7 +180,7 @@ export const EmailLayout = ({
                 <tr>
                   <td style="padding: 40px 40px 0 40px;">
                     <p style="margin: 0; color: ${colors.textMuted}; ${type.body}">
-                      Hola <strong style="color: ${colors.dark}; font-weight: 700;">${nombre}</strong>
+                      ${nombre ? `Hola <strong style="color: ${colors.dark}; font-weight: 700;">${nombre}</strong>` : '¡Hola!'}
                     </p>
                   </td>
                 </tr>` : ''}
@@ -1349,7 +1350,7 @@ function escaparHtml(texto: string): string {
  * el registro por nombre que usan sendEmail y la vista previa.
  *
  * @param texto   Lo que escribió el operador, en texto plano.
- * @param nombre  Con quién saluda el encabezado.
+ * @param nombre  Con quién saluda el encabezado (vacío: saludo genérico).
  */
 export const emailManual = ({ texto, nombre }: { texto: string; nombre: string }) => {
   const parrafos = escaparHtml(texto)
@@ -1361,14 +1362,13 @@ export const emailManual = ({ texto, nombre }: { texto: string; nombre: string }
     )
     .join('')
 
-  // Quien escribe a mano casi siempre arranca con «Hola Martina,»: con el
-  // saludo automático del sobre, el mail decía hola dos veces.
-  const yaSaluda = /^\s*(hola|buen[oa]s|buen d[ií]a|estimad[oa]s?|querid[oa]s?)\b/i.test(texto)
-
   return EmailLayout({
     children: parrafos,
-    nombre,
+    // Sin nombre conocido el sobre saluda en genérico: nunca con la dirección.
+    nombre: nombre && !nombre.includes('@') ? escaparHtml(nombre) : '',
     preheader: texto.replace(/\s+/g, ' ').trim().slice(0, 120),
-    saludo: !yaSaluda,
+    // Si el texto ya trae su saludo («¡Hola Martina!», «Buen día»), el del
+    // sobre sobra: si no, el mail dice hola dos veces.
+    saludo: !yaSaluda(texto),
   })
 }
