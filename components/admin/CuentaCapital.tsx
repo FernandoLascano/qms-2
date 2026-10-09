@@ -97,7 +97,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
           cbu,
           alias,
           titular,
-          montoEsperado: parseFloat(montoEsperado),
+          montoEsperado: Number(montoEsperado),
           fechaActivacion: fechaActivacion || null
         })
       })
@@ -196,9 +196,12 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
               <span className="absolute left-3 top-2.5 text-ink-3">$</span>
               <Input
                 id="montoEsperado"
-                type="number"
-                value={montoEsperado}
-                onChange={(e) => setMontoEsperado(e.target.value)}
+                inputMode="numeric"
+                autoComplete="off"
+                // Texto con separador de miles: se lee 250.000 de un vistazo y
+                // no hay rueda ni flechas que lo cambien sin querer.
+                value={montoEsperado ? Number(montoEsperado).toLocaleString('es-AR') : ''}
+                onChange={(e) => setMontoEsperado(e.target.value.replace(/\D/g, ''))}
                 disabled={guardando}
                 className="pl-7 border-line focus:border-info-line"
               />
