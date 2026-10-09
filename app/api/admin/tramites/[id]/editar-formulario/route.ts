@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { reescalarAportes } from '@/lib/tramites/capital'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -90,6 +91,18 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       })
       const currentDatos = (currentTramite?.datosUsuario as any) || {}
       updateData.datosUsuario = { ...currentDatos, ...body.datosUsuario }
+    }
+
+    // Si cambió el capital y no vinieron los socios, los aportes en pesos se
+    // llevan al capital nuevo manteniendo el porcentaje de cada uno.
+    if (updateData.capitalSocial !== undefined && body.socios === undefined) {
+      const actual = await prisma.tramite.findUnique({
+        where: { id },
+        select: { capitalSocial: true, socios: true }
+      })
+      if (actual && actual.capitalSocial !== updateData.capitalSocial) {
+        updateData.socios = reescalarAportes(actual.socios, actual.capitalSocial, updateData.capitalSocial)
+      }
     }
 
     // Si no hay nada que actualizar
