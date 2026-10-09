@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { soloDigitos, validarCbu } from '@/lib/validaciones'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { reescalarAportes } from '@/lib/tramites/capital'
+import { capitalMinimo } from '@/lib/precios'
+import { getPublicConfig } from '@/lib/config'
 
 interface RouteParams {
   params: Promise<{
@@ -60,6 +63,32 @@ export async function POST(request: Request, { params }: RouteParams) {
         { error: 'Trámite no encontrado' },
         { status: 404 }
       )
+    }
+
+    // El capital se puede corregir desde acá mismo (el cliente suele poner el
+    // mínimo y después se redondea): así el monto del 25% y el capital de la
+    // sociedad no quedan desfasados.
+    if (body.capitalSocial !== undefined && body.capitalSocial !== null && body.capitalSocial !== '') {
+      const capitalNuevo = Math.round(Number(body.capitalSocial))
+      if (!(capitalNuevo > 0)) {
+        return NextResponse.json({ error: 'El capital social tiene que ser un número mayor a cero' }, { status: 400 })
+      }
+      const minimo = capitalMinimo((await getPublicConfig()).smvm)
+      if (capitalNuevo < minimo) {
+        return NextResponse.json(
+          { error: `El capital social no puede ser menor al mínimo legal ($${minimo.toLocaleString('es-AR')})` },
+          { status: 400 }
+        )
+      }
+      if (capitalNuevo !== tramite.capitalSocial) {
+        await prisma.tramite.update({
+          where: { id },
+          data: {
+            capitalSocial: capitalNuevo,
+            socios: reescalarAportes(tramite.socios, tramite.capitalSocial, capitalNuevo) as object
+          }
+        })
+      }
     }
 
     // Notificar al cliente con los datos bancarios

@@ -36,7 +36,14 @@ interface EnvioRecord {
 
 export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial }: CuentaCapitalProps) {
   const router = useRouter()
-  const montoSugerido = Math.round((capitalSocial || 0) * 0.25)
+  // El capital se puede corregir acá mismo: muchas veces el cliente pone el
+  // mínimo y después se redondea. Si se cambia, se guarda en el trámite al enviar.
+  const [capital, setCapital] = useState(capitalSocial ? String(Math.round(capitalSocial)) : '')
+  const capitalNum = Number(capital) || 0
+  const capitalCambiado = capitalNum !== Math.round(capitalSocial || 0)
+  const montoSugerido = Math.round(capitalNum * 0.25)
+  // Mientras no se toque el monto a mano, acompaña al 25% del capital.
+  const [montoTocado, setMontoTocado] = useState(false)
 
   const [banco, setBanco] = useState(cuentaInicial?.banco || '')
   const [cbu, setCbu] = useState(cuentaInicial?.cbu || '')
@@ -74,7 +81,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
   }, [tramiteId])
 
   const handleGuardar = async () => {
-    if (!banco || !cbu || !titular || !montoEsperado) {
+    if (!banco || !cbu || !titular || !montoEsperado || !capitalNum) {
       toast.error('Completa todos los campos obligatorios')
       return
     }
@@ -98,6 +105,7 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
           alias,
           titular,
           montoEsperado: Number(montoEsperado),
+          ...(capitalCambiado ? { capitalSocial: capitalNum } : {}),
           fechaActivacion: fechaActivacion || null
         })
       })
@@ -131,13 +139,34 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
       >
         <div className="space-y-6">
         <div className="bg-info-soft border-2 border-info-line rounded-control p-4">
-          <p className="text-info font-semibold flex items-center gap-2">
+          <div className="space-y-2 max-w-xs">
+            <Label htmlFor="capitalSocialDeposito">Capital social (ARS)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-2.5 text-ink-3">$</span>
+              <Input
+                id="capitalSocialDeposito"
+                inputMode="numeric"
+                autoComplete="off"
+                value={capital ? Number(capital).toLocaleString('es-AR') : ''}
+                onChange={(e) => {
+                  const digitos = e.target.value.replace(/\D/g, '')
+                  setCapital(digitos)
+                  if (!montoTocado) setMontoEsperado(digitos ? String(Math.round(Number(digitos) * 0.25)) : '')
+                }}
+                disabled={guardando}
+                className="pl-7 border-line focus:border-info-line bg-surface"
+              />
+            </div>
+          </div>
+          <p className="text-info font-semibold flex items-center gap-2 mt-3">
             <Banknote className="h-5 w-5" />
             Monto Sugerido (25%): ${montoSugerido.toLocaleString('es-AR')}
           </p>
-          <p className="text-label text-info mt-1 italic">
-            Capital social total: ${capitalSocial.toLocaleString('es-AR')}
-          </p>
+          {capitalCambiado && (
+            <p className="text-label text-info mt-1">
+              Al enviar se actualiza el capital del trámite (antes ${Math.round(capitalSocial || 0).toLocaleString('es-AR')}) y los aportes de los socios, manteniendo sus porcentajes.
+            </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -201,7 +230,10 @@ export default function CuentaCapital({ tramiteId, capitalSocial, cuentaInicial 
                 // Texto con separador de miles: se lee 250.000 de un vistazo y
                 // no hay rueda ni flechas que lo cambien sin querer.
                 value={montoEsperado ? Number(montoEsperado).toLocaleString('es-AR') : ''}
-                onChange={(e) => setMontoEsperado(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  setMontoTocado(true)
+                  setMontoEsperado(e.target.value.replace(/\D/g, ''))
+                }}
                 disabled={guardando}
                 className="pl-7 border-line focus:border-info-line"
               />
