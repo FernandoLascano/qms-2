@@ -614,3 +614,15 @@ select {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Sin flechitas para subir/bajar en los campos numéricos: con un clic de más
+   cambiaban un importe sin que se notara. Ver components/ui/input.tsx. */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

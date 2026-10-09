@@ -32,6 +32,25 @@ export interface InputProps
   size?: "md" | "sm"
 }
 
+// En un campo numérico la rueda del mouse y las flechas ↑/↓ cambian el valor
+// sin que uno lo note (así se mandó $249.983 en lugar de $250.000). En los
+// importes eso es un error caro: acá se anulan las dos cosas, y las flechitas
+// del costado se esconden en globals.css.
+function sinRuedaNiFlechas(
+  props: InputProps,
+): Pick<React.InputHTMLAttributes<HTMLInputElement>, "onWheel" | "onKeyDown"> {
+  return {
+    onWheel: (e) => {
+      e.currentTarget.blur()
+      props.onWheel?.(e)
+    },
+    onKeyDown: (e) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault()
+      props.onKeyDown?.(e)
+    },
+  }
+}
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, invalid, size = "md", ...props }, ref) => (
     <input
@@ -48,6 +67,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         className,
       )}
       {...props}
+      {...(type === "number" ? sinRuedaNiFlechas(props) : {})}
     />
   ),
 )
