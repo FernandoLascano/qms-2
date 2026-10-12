@@ -5,6 +5,8 @@ import { chatWithAssistant } from '@/lib/ai/assistant'
 import { rateLimit, rateLimitLong } from '@/lib/rate-limit'
 import { prisma } from '@/lib/prisma'
 import { verifyTurnstileToken } from '@/lib/turnstile'
+import { getPublicConfig } from '@/lib/config'
+import { formatARS, precioRegular } from '@/lib/precios'
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,21 +41,23 @@ export async function POST(request: NextRequest) {
       if (rl2) return rl2
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'Servicio de chat no configurado.' },
-        { status: 503 }
-      )
-    }
-
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'Se requiere al menos un mensaje' }, { status: 400 })
     }
 
     const recentMessages = messages.slice(-10)
 
-    const response = await chatWithAssistant(recentMessages, apiKey)
+    const { precioPlanBasico, precioPlanEmprendedor, precioPlanPremium } = await getPublicConfig()
+    const precios = [
+      ['Básico', precioPlanBasico],
+      ['Emprendedor', precioPlanEmprendedor],
+      ['Premium', precioPlanPremium],
+    ] as const
+    const contexto = `Honorarios vigentes de QuieroMiSAS (no incluyen las tasas del organismo ni el capital social):\n${precios
+      .map(([plan, p]) => `- Plan ${plan}: ${formatARS(p)} por transferencia, ${formatARS(precioRegular(p))} con tarjeta o Mercado Pago`)
+      .join('\n')}`
+
+    const response = await chatWithAssistant(recentMessages, contexto)
 
     const lastUserMessage = recentMessages.filter((m) => m.role === 'user').pop()
     if (lastUserMessage) {

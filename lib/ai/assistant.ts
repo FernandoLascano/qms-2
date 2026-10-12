@@ -1,4 +1,4 @@
-import { createAnthropicClient, getAnthropicModel, textFromMessage } from './anthropic'
+import { generarTexto } from './anthropic'
 import { KNOWLEDGE_BASE_COMPACT } from './knowledge-base'
 
 const SYSTEM_PROMPT = `Sos el Asistente QMS, asistente virtual de QuieroMiSAS, plataforma para constituir S.A.S. en Argentina.
@@ -30,22 +30,16 @@ ${KNOWLEDGE_BASE_COMPACT}
 
 export async function chatWithAssistant(
   messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
-  apiKey: string
+  /** Datos que cambian sin tocar el código (precios vigentes). */
+  contexto?: string,
 ): Promise<string> {
-  const client = createAnthropicClient(apiKey)
-
-  const claudeMessages: { role: 'user' | 'assistant'; content: string }[] = []
-  for (const m of messages) {
-    if (m.role === 'system') continue
-    claudeMessages.push({ role: m.role, content: m.content })
-  }
-
-  const response = await client.messages.create({
-    model: getAnthropicModel(),
-    max_tokens: 500,
+  return generarTexto({
     system: SYSTEM_PROMPT,
-    messages: claudeMessages,
+    contexto,
+    tarea: 'chat',
+    effort: 'low',
+    messages: messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
   })
-
-  return textFromMessage(response) || 'No pude generar una respuesta.'
 }

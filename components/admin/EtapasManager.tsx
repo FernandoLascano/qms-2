@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, Clock, ListChecks, User, Building2, AlertTriangle } from 'lucide-react'
+import ObservacionIA from '@/components/admin/ia/ObservacionIA'
 import { ETAPAS_FLUJO, resumenProgreso, type Responsable } from '@/lib/tramites/estado'
 
 interface EtapasManagerProps {
@@ -250,6 +251,8 @@ export default function EtapasManager({
               rows={4}
             />
           </div>
+
+          <ObservacionIA tramiteId={tramiteId} observacion={observaciones} />
 
           <Button onClick={handleGuardarTextos} disabled={guardandoTextos}>
             {guardandoTextos ? 'Guardando...' : 'Guardar textos'}

@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import LecturaComprobanteIA from '@/components/admin/ia/LecturaComprobanteIA'
 
 interface Comprobante {
   id: string
@@ -186,7 +187,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -245,6 +246,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
 
                   {(comprobante.estado === 'PENDIENTE' || comprobante.estado === 'EN_REVISION') && (
                     <>
+                      <LecturaComprobanteIA documentoId={comprobante.id} />
                       <Button
                         size="sm"
                         className="gap-2 bg-success-solid hover:bg-success-solid"

@@ -8,20 +8,36 @@ generación de artículos del blog) usan la API de Anthropic.
 | Variable | Requerida | Descripción |
 |----------|-----------|-------------|
 | `ANTHROPIC_API_KEY` | ✅ Sí | La API key de Anthropic. Sin esto, todas las features de IA fallan. |
-| `ANTHROPIC_MODEL` | ⬜ Opcional | El modelo a usar. Si no se define, usa `claude-sonnet-5` por defecto. |
+| `ANTHROPIC_MODEL` | ⬜ Opcional | Modelo para el trabajo del equipo (revisar formularios, leer comprobantes, borradores, blog). Por defecto `claude-opus-5-5`. |
+| `ANTHROPIC_MODEL_CHAT` | ⬜ Opcional | Modelo para los chats (asistente público y asistente del cliente). Por defecto `claude-haiku-5-5`, más rápido y barato. |
 
-## Por qué existe `ANTHROPIC_MODEL`
+Los modelos se pueden cambiar desde las variables de entorno de Vercel sin tocar
+código: cuando Anthropic retira un modelo (pasó con `claude-sonnet-4-20250514`
+en jun-2026 → 404 en todas las features), alcanza con cambiar la variable.
 
-El modelo estaba hardcodeado en `lib/ai/anthropic.ts`. Cuando Anthropic retira
-un modelo (les pasó con `claude-sonnet-4-20250514` en jun-2026 → devolvía 404 y
-rompía todas las features de IA), había que tocar código.
+> ⚠️ Los modelos actuales **rechazan el parámetro `temperature`** (400) y piensan
+> antes de responder: ese razonamiento cuenta dentro de `max_tokens`, así que no
+> conviene bajarlo demasiado. El código ya contempla las dos cosas.
 
-Ahora el default es `claude-sonnet-5`, pero podés **cambiar de modelo sin tocar
-código** definiendo `ANTHROPIC_MODEL` en las variables de entorno de Vercel.
-Ejemplos válidos: `claude-sonnet-5`, `claude-opus-4-8`, `claude-haiku-4-5`.
+## Qué hace la IA en el trámite
 
-> ⚠️ Los modelos actuales **rechazan el parámetro `temperature`** (400). El código
-> ya no lo envía; no lo reintroduzcas.
+Todo vive en `lib/ai/` (`anthropic.ts` es la base, `tramite.ts` tiene los
+prompts). Ninguna función decide ni envía nada: devuelven una lectura o un
+borrador que una persona revisa.
+
+| Dónde | Qué hace | Ruta |
+|-------|----------|------|
+| Admin › trámite › Gestión › Validación | Revisa el formulario y lista lo que hay que mirar | `POST /api/admin/tramites/[id]/ia` (`revisar-formulario`) |
+| Admin › trámite › Pagos › Comprobantes | Lee el comprobante y lo compara con el pago esperado | `POST /api/admin/documentos/[id]/leer-comprobante` |
+| Admin › trámite › Comunicación › Chat | Sugiere una respuesta al cliente | `POST /api/admin/tramites/[id]/ia` (`sugerir-chat`) |
+| Admin › Emails › Responder | Sugiere una respuesta al mail | `POST /api/admin/emails/[id]/sugerir-respuesta` |
+| Admin › trámite › Gestión › Observaciones del organismo | Explica la observación y redacta el mensaje al cliente | `POST /api/admin/tramites/[id]/ia` (`explicar-observacion`) |
+| Cliente › su trámite | Asistente que conoce el estado de ese trámite | `POST /api/tramites/[id]/asistente` |
+
+Las cuentas (dígitos verificadores, sumas de aportes, comparación de montos y
+CBU) se hacen con código, no con IA. Lo que escribe un cliente entra al modelo
+como dato, nunca como instrucción. El asistente del cliente recibe sólo lo que
+el cliente ya ve en su panel (`lib/ai/contexto-tramite.ts`).
 
 ## Cómo verificar que está andando
 

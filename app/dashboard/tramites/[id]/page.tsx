@@ -22,6 +22,7 @@ import MensajesDelEquipo from '@/components/cliente/MensajesDelEquipo'
 import DocumentosParaFirmar from '@/components/cliente/DocumentosParaFirmar'
 import DepositoCapitalCliente from '@/components/cliente/DepositoCapitalCliente'
 import ChatBox from '@/components/chat/ChatBox'
+import AsistenteTramite from '@/components/cliente/AsistenteTramite'
 import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 import { fechaLarga, formatearFecha } from '@/lib/fechas'
 
@@ -196,6 +197,8 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
               <MensajesDelEquipo notificaciones={tramite.notificaciones} />
             )}
           </div>
+
+          {tramite.formularioCompleto && <AsistenteTramite tramiteId={tramite.id} />}
 
           <section className="space-y-4">
             <SectionHeader

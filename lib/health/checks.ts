@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { verifyEmailConnection } from '@/lib/email'
+import { getAnthropicModel } from '@/lib/ai/anthropic'
 
 export type ServiceStatus = 'ok' | 'down' | 'unconfigured'
 
@@ -80,7 +81,7 @@ export async function runHealthChecks(): Promise<HealthReport> {
         headers: { 'x-api-key': apiKey!, 'anthropic-version': '2023-06-01' },
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      return { detail: `Modelo: ${process.env.ANTHROPIC_MODEL || 'claude-sonnet-5 (default)'}` }
+      return { detail: `Modelo: ${getAnthropicModel()}` }
     }),
 
     // MercadoPago — GET /v1/payment_methods, solo lectura, valida el access token.

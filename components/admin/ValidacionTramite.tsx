@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react'
+import RevisionFormularioIA from '@/components/admin/ia/RevisionFormularioIA'
 
 interface ValidacionTramiteProps {
   tramiteId: string
@@ -123,6 +124,8 @@ export default function ValidacionTramite({
             incluyendo casos antiguos donde estadoValidacion es null */}
         {estadoActual !== 'VALIDADO' && estadoActual !== 'REQUIERE_CORRECCIONES' && (
           <>
+            <RevisionFormularioIA tramiteId={tramiteId} onUsarMensaje={setObservaciones} />
+
             <div>
               <Label htmlFor="observaciones">Observaciones (opcional si valida, obligatorio si requiere correcciones)</Label>
               <Textarea
@@ -130,7 +133,7 @@ export default function ValidacionTramite({
                 value={observaciones}
                 onChange={(e) => setObservaciones(e.target.value)}
                 placeholder="Ingresa observaciones sobre la información del formulario..."
-                rows={4}
+                rows={observaciones.length > 300 ? 12 : 4}
                 className="mt-1"
               />
             </div>

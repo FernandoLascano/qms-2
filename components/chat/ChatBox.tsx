@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Send, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Send, MessageCircle, ChevronDown, ChevronUp, Sparkles, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useSession } from 'next-auth/react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { pedirIA, mensajeDeError } from '@/lib/ai/pedir'
 
 interface Mensaje {
   id: string
@@ -152,6 +153,24 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
     }
   }
 
+  // Sólo para el equipo: propone una respuesta con el estado real del trámite.
+  // Queda en el cuadro de texto para corregirla; no se envía sola.
+  const [sugiriendo, setSugiriendo] = useState(false)
+  const sugerirRespuesta = async () => {
+    setSugiriendo(true)
+    try {
+      const { texto } = await pedirIA<{ texto: string }>(`/api/admin/tramites/${tramiteId}/ia`, {
+        accion: 'sugerir-chat',
+      })
+      setNuevoMensaje(texto.slice(0, 1000))
+    } catch (error) {
+      toast.error(mensajeDeError(error))
+    } finally {
+      setSugiriendo(false)
+    }
+  }
+  const clienteEscribio = mensajes.some((m) => !m.esAdmin)
+
   const mensajesNoLeidos = mensajes.filter(m => !m.leido && m.esAdmin !== isAdmin).length
 
   return (
@@ -257,9 +276,24 @@ export default function ChatBox({ tramiteId, mensajesIniciales }: ChatBoxProps) 
                 <Send className="h-4 w-4" />
               </Button>
             </form>
-            <p className="text-label text-ink-2 mt-2">
-              Los mensajes se actualizan automáticamente
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+              <p className="text-label text-ink-2">
+                Los mensajes se actualizan automáticamente
+              </p>
+              {isAdmin && clienteEscribio && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={sugerirRespuesta}
+                  disabled={sugiriendo}
+                  className="gap-2"
+                >
+                  {sugiriendo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  {sugiriendo ? 'Pensando…' : 'Sugerir respuesta'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}
