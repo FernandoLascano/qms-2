@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FileInput } from '@/components/ui/file-input'
-import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X } from 'lucide-react'
+import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X, Sparkles } from 'lucide-react'
+import { pedirIA, mensajeDeError } from '@/lib/ai/pedir'
 import { EmailHtml } from '@/components/admin/EmailHtml'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -60,6 +61,7 @@ export default function EmailDetailPage() {
   const [replyBcc, setReplyBcc] = useState('')
   const [replyAttachments, setReplyAttachments] = useState<File[]>([])
   const [sending, setSending] = useState(false)
+  const [sugiriendo, setSugiriendo] = useState(false)
   const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
   const [cargandoLead, setCargandoLead] = useState(false)
   // Quién recibe la respuesta: para saludarlo por el nombre y rellenar las
@@ -209,6 +211,24 @@ export default function EmailDetailPage() {
     setEmail({ ...email, status: newStatus })
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('admin-email-unread-refresh'))
+    }
+  }
+
+  // Borrador con el estado del trámite del remitente. Queda en el cuadro para
+  // corregirlo: los huecos «[Completar: …]» frenan el envío hasta llenarlos.
+  const sugerirRespuesta = async () => {
+    if (replyText.trim() && !window.confirm('Esto reemplaza lo que ya escribiste. ¿Seguir?')) return
+    setSugiriendo(true)
+    try {
+      const { texto, conTramite } = await pedirIA<{ texto: string; conTramite: boolean }>(
+        `/api/admin/emails/${id}/sugerir-respuesta`,
+      )
+      setReplyText(texto)
+      if (!conTramite) toast.info('No encontré un trámite de este remitente: es una respuesta general.')
+    } catch (error) {
+      toast.error(mensajeDeError(error))
+    } finally {
+      setSugiriendo(false)
     }
   }
 
@@ -570,6 +590,17 @@ export default function EmailDetailPage() {
                   {TEMPLATES.map((t) => <option key={t.key} value={t.key}>{t.name}</option>)}
                 </optgroup>
               </Select>
+            )}
+            {composerMode === 'reply' && email.direction === 'INBOUND' && (
+              <button
+                type="button"
+                onClick={sugerirRespuesta}
+                disabled={sugiriendo}
+                className="mb-3 flex items-center gap-2 px-3 h-9 border border-line rounded-control text-body-sm font-medium text-ink-2 bg-surface hover:bg-surface-3 transition cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+              >
+                {sugiriendo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {sugiriendo ? 'Redactando…' : 'Sugerir respuesta con IA'}
+              </button>
             )}
             <textarea
               value={replyText}
