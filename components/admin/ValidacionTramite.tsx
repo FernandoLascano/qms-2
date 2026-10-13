@@ -14,12 +14,15 @@ interface ValidacionTramiteProps {
   tramiteId: string
   estadoValidacion: string
   observacionesValidacion?: string | null
+  /** Revisión con IA hecha al llegar el formulario. */
+  revisionIA?: unknown
 }
 
 export default function ValidacionTramite({ 
   tramiteId, 
   estadoValidacion,
-  observacionesValidacion 
+  observacionesValidacion,
+  revisionIA
 }: ValidacionTramiteProps) {
   // Para trámites viejos que aún no tienen este campo en BD (null/undefined),
   // los tratamos como "pendiente de validación"
@@ -124,7 +127,7 @@ export default function ValidacionTramite({
             incluyendo casos antiguos donde estadoValidacion es null */}
         {estadoActual !== 'VALIDADO' && estadoActual !== 'REQUIERE_CORRECCIONES' && (
           <>
-            <RevisionFormularioIA tramiteId={tramiteId} onUsarMensaje={setObservaciones} />
+            <RevisionFormularioIA tramiteId={tramiteId} inicial={revisionIA} onUsarMensaje={setObservaciones} />
 
             <div>
               <Label htmlFor="observaciones">Observaciones (opcional si valida, obligatorio si requiere correcciones)</Label>

@@ -222,6 +222,8 @@ model Tramite {
   // Validación inicial del formulario
   estadoValidacion        EstadoValidacion @default(PENDIENTE_VALIDACION)
   observacionesValidacion String?          @db.Text
+  // Lo que marcó la IA al llegar el formulario (lib/ai/revision.ts)
+  revisionIA              Json?
 
   // Campos para recordatorios
   recordatorioEstancado     Boolean @default(false)

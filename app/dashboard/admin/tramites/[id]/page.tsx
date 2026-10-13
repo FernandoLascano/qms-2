@@ -245,6 +245,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
             tramiteId={tramite.id}
             estadoValidacion={tramite.estadoValidacion}
             observacionesValidacion={tramite.observacionesValidacion}
+            revisionIA={tramite.revisionIA}
           />
 
           <Card>

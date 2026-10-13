@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { adminConIA, cargarTramiteParaIA, respuestaErrorIA } from '@/lib/ai/rutas'
-import { explicarObservacion, revisarFormulario, sugerirRespuesta } from '@/lib/ai/tramite'
+import { explicarObservacion, sugerirRespuesta } from '@/lib/ai/tramite'
+import { revisarYGuardarFormulario } from '@/lib/ai/revision'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 120
@@ -10,8 +11,9 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-// Ayudas de IA sobre un trámite. Sólo leen: devuelven un borrador o una lectura
-// que el admin revisa. Nada se guarda ni se envía desde acá.
+// Ayudas de IA sobre un trámite: devuelven un borrador o una lectura que el
+// admin revisa. Nada se envía desde acá; sólo se guarda la revisión del
+// formulario, para no repetirla cada vez que se abre el trámite.
 export async function POST(request: Request, { params }: RouteParams) {
   const acceso = await adminConIA(request)
   if (acceso.error) return acceso.error
@@ -25,7 +27,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!datos) return NextResponse.json({ error: 'Trámite no encontrado' }, { status: 404 })
 
     if (accion === 'revisar-formulario') {
-      return NextResponse.json(await revisarFormulario(datos.tramite))
+      return NextResponse.json(await revisarYGuardarFormulario(id))
     }
 
     if (accion === 'explicar-observacion') {

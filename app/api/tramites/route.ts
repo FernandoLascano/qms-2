@@ -10,6 +10,11 @@ import { marcarLeadsGanados } from '@/lib/leads/ganado'
 import { marcarLeadGanadoPorEmail } from '@/lib/leads/capturar'
 import { getPublicConfig } from '@/lib/config'
 import { capitalMinimo } from '@/lib/precios'
+import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { revisarFormularioAlEnviar } from '@/lib/ai/revision'
+
+// Margen para la revisión del formulario con IA, que corre después de responder.
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
@@ -335,6 +340,10 @@ export async function POST(request: Request) {
     // El cliente envió el formulario: sus borradores anteriores dejan de ser
     // leads y quedan marcados como ganados. Sin esto la conversión nunca se
     // ve, porque el lead simplemente desaparecía de la pantalla.
+    // Primera lectura del formulario con IA: el admin la encuentra hecha.
+    const tramiteEnviadoId = tramite.id
+    enSegundoPlano('tramites: revisión IA', () => revisarFormularioAlEnviar(tramiteEnviadoId))
+
     await marcarLeadsGanados(usuario.id)
     await marcarLeadGanadoPorEmail(usuario.email)
 

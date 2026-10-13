@@ -14,17 +14,42 @@ const GRAVEDAD: Record<RevisionFormulario['observaciones'][number]['gravedad'], 
   sugerencia: { label: 'Sugerencia', tone: 'neutral' },
 }
 
+type Recomendacion = 'validar' | 'revisar' | 'corregir'
+
+const RECOMENDACION: Record<Recomendacion, { texto: string; clase: string }> = {
+  validar: { texto: 'Recomendación: validar', clase: 'border-success-line bg-success-soft text-success' },
+  revisar: { texto: 'Recomendación: mirar los puntos marcados antes de validar', clase: 'border-warning-line bg-warning-soft text-warning' },
+  corregir: { texto: 'Recomendación: no validar, pedir correcciones', clase: 'border-danger-line bg-danger-soft text-danger' },
+}
+
+// La recomendación sale de la gravedad de las observaciones, no de otra opinión
+// del modelo: así nunca contradice la lista que se muestra abajo.
+function recomendacion(revision: RevisionFormulario): Recomendacion {
+  if (revision.observaciones.some((o) => o.gravedad === 'bloqueante')) return 'corregir'
+  if (revision.observaciones.some((o) => o.gravedad === 'revisar')) return 'revisar'
+  return 'validar'
+}
+
+/** La revisión guardada llega como JSON de la base: se usa sólo si tiene la forma esperada. */
+function revisionValida(valor: unknown): RevisionFormulario | null {
+  const r = valor as RevisionFormulario | null
+  return r && typeof r === 'object' && typeof r.resumen === 'string' && Array.isArray(r.observaciones) ? r : null
+}
+
 interface Props {
   tramiteId: string
+  /** Revisión hecha al llegar el formulario, si ya está. */
+  inicial?: unknown
   /** Pasa el mensaje para el cliente al cuadro de observaciones. */
   onUsarMensaje?: (texto: string) => void
 }
 
-// Primera lectura del formulario hecha por IA. No valida ni pide nada: deja la
-// lista de lo que hay que mirar y un mensaje de correcciones para editar.
-export default function RevisionFormularioIA({ tramiteId, onUsarMensaje }: Props) {
+// Primera lectura del formulario hecha por IA. Corre sola cuando el cliente lo
+// envía (`inicial`); el botón la repite. No valida ni pide nada: deja una
+// recomendación, lo que hay que mirar y un mensaje de correcciones para editar.
+export default function RevisionFormularioIA({ tramiteId, inicial, onUsarMensaje }: Props) {
   const [cargando, setCargando] = useState(false)
-  const [revision, setRevision] = useState<RevisionFormulario | null>(null)
+  const [revision, setRevision] = useState<RevisionFormulario | null>(() => revisionValida(inicial))
 
   const revisar = async () => {
     setCargando(true)
@@ -46,7 +71,9 @@ export default function RevisionFormularioIA({ tramiteId, onUsarMensaje }: Props
             Revisión con IA
           </p>
           <p className="text-label text-ink-2">
-            Lee el formulario completo y marca lo que conviene mirar. Tarda unos 30 segundos.
+            {revision
+              ? 'Se hizo sola al llegar el formulario. Si cambiaste datos, volvé a revisar.'
+              : 'Lee el formulario completo y marca lo que conviene mirar. Tarda unos 30 segundos.'}
           </p>
         </div>
         <Button variant="secondary" size="sm" onClick={revisar} disabled={cargando} className="gap-2">
@@ -57,6 +84,9 @@ export default function RevisionFormularioIA({ tramiteId, onUsarMensaje }: Props
 
       {revision && (
         <div className="space-y-3">
+          <p className={`rounded-control border px-3 py-2 text-body-sm font-semibold ${RECOMENDACION[recomendacion(revision)].clase}`}>
+            {RECOMENDACION[recomendacion(revision)].texto}
+          </p>
           <p className="text-body-sm text-ink">{revision.resumen}</p>
 
           {revision.observaciones.length === 0 ? (
