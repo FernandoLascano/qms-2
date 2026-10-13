@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { esDocumentoDeQMS } from '@/lib/documentos'
+import LecturaComprobanteIA from '@/components/admin/ia/LecturaComprobanteIA'
 
 interface Documento {
   id: string
@@ -164,7 +165,7 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex max-w-xl flex-wrap items-center justify-end gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -224,6 +225,9 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                     
                     {doc.estado === 'PENDIENTE' || doc.estado === 'EN_REVISION' ? (
                       <>
+                        {(doc.tipo === 'COMPROBANTE_DEPOSITO' || doc.nombre.toLowerCase().includes('comprobante')) && (
+                          <LecturaComprobanteIA documentoId={doc.id} />
+                        )}
                         <Button
                           size="sm"
                           className="gap-2 bg-success-solid hover:bg-success-solid"
