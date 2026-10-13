@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { leerComprobanteAlSubir } from '@/lib/ai/comprobante'
+
+// Margen para la lectura del comprobante, que corre después de responder.
+export const maxDuration = 60
 
 export async function PATCH(
   req: NextRequest,
@@ -70,7 +74,7 @@ export async function PATCH(
     const fileUrl = uploadResult.url
 
     // Crear documento con el comprobante
-    await prisma.documento.create({
+    const documento = await prisma.documento.create({
       data: {
         nombre: `Comprobante - ${enlace.concepto}`,
         url: fileUrl,
@@ -82,6 +86,8 @@ export async function PATCH(
         userId: session.user.id
       }
     })
+
+    enSegundoPlano('enlaces-pago/[id]/confirmar-pago: lectura IA', () => leerComprobanteAlSubir(documento))
 
     // Actualizar el enlace: cambiar a PROCESANDO (esperando validación del admin)
     await prisma.enlacePago.update({

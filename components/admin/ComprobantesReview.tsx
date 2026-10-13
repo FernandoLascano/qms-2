@@ -19,6 +19,7 @@ interface Comprobante {
   fechaSubida: Date
   observaciones: string | null
   tipo: string | null
+  lecturaIA?: unknown
 }
 
 interface EnlacePago {
@@ -246,7 +247,7 @@ export default function ComprobantesReview({ tramiteId, comprobantes, enlacesPag
 
                   {(comprobante.estado === 'PENDIENTE' || comprobante.estado === 'EN_REVISION') && (
                     <>
-                      <LecturaComprobanteIA documentoId={comprobante.id} />
+                      <LecturaComprobanteIA documentoId={comprobante.id} inicial={comprobante.lecturaIA} />
                       <Button
                         size="sm"
                         className="gap-2 bg-success-solid hover:bg-success-solid"

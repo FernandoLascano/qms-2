@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { esDocumentoDeQMS } from '@/lib/documentos'
+import { esComprobanteDePago, esDocumentoDeQMS } from '@/lib/documentos'
 import LecturaComprobanteIA from '@/components/admin/ia/LecturaComprobanteIA'
 
 interface Documento {
@@ -21,6 +21,7 @@ interface Documento {
   fechaSubida: Date
   observaciones: string | null
   userId?: string
+  lecturaIA?: unknown
 }
 
 interface DocumentosReviewProps {
@@ -225,8 +226,8 @@ export default function DocumentosReview({ tramiteId, documentos }: DocumentosRe
                     
                     {doc.estado === 'PENDIENTE' || doc.estado === 'EN_REVISION' ? (
                       <>
-                        {(doc.tipo === 'COMPROBANTE_DEPOSITO' || doc.nombre.toLowerCase().includes('comprobante')) && (
-                          <LecturaComprobanteIA documentoId={doc.id} />
+                        {esComprobanteDePago(doc) && (
+                          <LecturaComprobanteIA documentoId={doc.id} inicial={doc.lecturaIA} />
                         )}
                         <Button
                           size="sm"

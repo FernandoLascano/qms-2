@@ -5,6 +5,10 @@ import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { leerComprobanteAlSubir } from '@/lib/ai/comprobante'
+
+// Margen para la lectura del comprobante, que corre después de responder.
+export const maxDuration = 60
 
 export async function POST(request: Request) {
   try {
@@ -114,6 +118,8 @@ export async function POST(request: Request) {
         estado: 'PENDIENTE'
       }
     })
+
+    enSegundoPlano('documentos/upload: lectura IA', () => leerComprobanteAlSubir(documento))
 
     // Determinar el tipo de notificación según el documento
     let notifTitulo = ''

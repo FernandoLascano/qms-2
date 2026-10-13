@@ -403,6 +403,9 @@ model Documento {
   // Recordatorios
   recordatorioEnviado Boolean @default(false)
 
+  // Comprobantes de pago: lo que leyó la IA al subirse (lib/ai/comprobante.ts)
+  lecturaIA Json?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

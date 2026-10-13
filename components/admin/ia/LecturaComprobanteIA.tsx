@@ -13,6 +13,14 @@ interface Resultado {
   control: ControlComprobante
 }
 
+/** La lectura guardada llega como JSON de la base: se usa sólo si tiene la forma esperada. */
+function lecturaValida(valor: unknown): Resultado | null {
+  const r = valor as Resultado | null
+  return r && typeof r === 'object' && r.lectura && r.control?.veredicto in VEREDICTO && Array.isArray(r.control.puntos)
+    ? r
+    : null
+}
+
 const VEREDICTO: Record<ControlComprobante['veredicto'], { texto: string; clase: string }> = {
   coincide: { texto: 'Coincide con lo esperado', clase: 'border-success-line bg-success-soft text-success' },
   no_coincide: { texto: 'No coincide: revisalo antes de aprobar', clase: 'border-danger-line bg-danger-soft text-danger' },
@@ -21,11 +29,12 @@ const VEREDICTO: Record<ControlComprobante['veredicto'], { texto: string; clase:
 
 const fecha = (iso: string | null) => (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso.split('-').reverse().join('/') : iso)
 
-// Lee el comprobante con IA y lo compara con el pago esperado. No aprueba nada:
-// el botón Aprobar sigue siendo la decisión del admin.
-export default function LecturaComprobanteIA({ documentoId }: { documentoId: string }) {
+// Muestra la lectura del comprobante contra el pago esperado. La lectura corre
+// sola cuando el cliente lo sube (`inicial`); el botón la repite. No aprueba
+// nada: el botón Aprobar sigue siendo la decisión del admin.
+export default function LecturaComprobanteIA({ documentoId, inicial }: { documentoId: string; inicial?: unknown }) {
   const [cargando, setCargando] = useState(false)
-  const [resultado, setResultado] = useState<Resultado | null>(null)
+  const [resultado, setResultado] = useState<Resultado | null>(() => lecturaValida(inicial))
 
   const leer = async () => {
     setCargando(true)
@@ -56,7 +65,7 @@ export default function LecturaComprobanteIA({ documentoId }: { documentoId: str
     <>
       <Button variant="outline" size="sm" className="gap-2" onClick={leer} disabled={cargando}>
         {cargando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-        {cargando ? 'Leyendo…' : 'Leer con IA'}
+        {cargando ? 'Leyendo…' : resultado ? 'Volver a leer' : 'Leer con IA'}
       </Button>
 
       {resultado && (

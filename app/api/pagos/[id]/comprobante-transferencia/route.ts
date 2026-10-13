@@ -5,12 +5,16 @@ import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { leerComprobanteAlSubir } from '@/lib/ai/comprobante'
 
 interface RouteParams {
   params: Promise<{
     id: string
   }>
 }
+
+// Margen para la lectura del comprobante, que corre después de responder.
+export const maxDuration = 60
 
 export async function POST(request: Request, { params }: RouteParams) {
   try {
@@ -122,6 +126,8 @@ export async function POST(request: Request, { params }: RouteParams) {
         estado: 'PROCESANDO' // Cambiar a procesando mientras se valida
       }
     })
+
+    enSegundoPlano('pagos/[id]/comprobante-transferencia: lectura IA', () => leerComprobanteAlSubir(documento))
 
     // Datos para los avisos: el trámite (con cliente) y los admins, en paralelo.
     const [tramite, admins] = await Promise.all([

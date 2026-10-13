@@ -27,3 +27,8 @@ export const WHERE_DOCUMENTOS_POR_APROBAR: Prisma.DocumentoWhereInput = {
     estadoGeneral: { notIn: ['COMPLETADO', 'CANCELADO'] },
   },
 }
+
+/** Si un documento es un comprobante de pago, por cómo lo sube la plataforma. */
+export function esComprobanteDePago(doc: { tipo?: string | null; nombre?: string | null }): boolean {
+  return doc.tipo === 'COMPROBANTE_DEPOSITO' || Boolean(doc.nombre?.toLowerCase().includes('comprobante'))
+}
