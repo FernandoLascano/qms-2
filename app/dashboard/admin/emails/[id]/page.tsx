@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FileInput } from '@/components/ui/file-input'
-import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, Loader2, Eye, EyeOff, Download, X, Sparkles } from 'lucide-react'
+import { ArrowLeft, Send, Archive, Inbox, Paperclip, Clock, User, Reply, ReplyAll, Loader2, Eye, EyeOff, Download, X, Sparkles } from 'lucide-react'
 import { pedirIA, mensajeDeError } from '@/lib/ai/pedir'
 import { EmailHtml } from '@/components/admin/EmailHtml'
 import { toast } from 'sonner'
@@ -44,6 +44,22 @@ interface EmailDetail {
   replies: { id: string; subject: string; from: string; to: string[]; createdAt: string; direction: string }[]
   contacto: ContactoEmail | null
   createdAt: string
+}
+
+// Direcciones propias: no se agregan en copia al responder a todos.
+const esPropia = (direccion: string) => /@quieromisas\.com$/i.test(direccion.trim())
+
+/** Los demás que recibieron el mail, sin nosotros ni quien va en «Para». */
+function otrosDestinatarios(email: EmailDetail, para: string): string[] {
+  const vistos = new Set([para.trim().toLowerCase()])
+  const out: string[] = []
+  for (const d of [email.from, ...email.to, ...email.cc]) {
+    const limpio = (d || '').trim().toLowerCase()
+    if (!limpio || vistos.has(limpio) || esPropia(limpio)) continue
+    vistos.add(limpio)
+    out.push(limpio)
+  }
+  return out
 }
 
 export default function EmailDetailPage() {
@@ -380,12 +396,30 @@ export default function EmailDetailPage() {
                   onClick={() => {
                     setComposerMode('reply')
                     setReplySubject(`Re: ${email.subject}`.replace(/^Re:\s*Re:/i, 'Re:'))
+                    if (email.direction === 'INBOUND') setReplyTo((email.replyTo || email.from).toLowerCase())
+                    setReplyCc('')
                     setShowReply(true)
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-control text-body-sm font-semibold hover:bg-primary-hover transition cursor-pointer"
                 >
                   <Reply className="w-4 h-4" />
                   Responder
+                </button>
+              )}
+              {email.direction === 'INBOUND' && otrosDestinatarios(email, email.replyTo || email.from).length > 0 && (
+                <button
+                  onClick={() => {
+                    const para = (email.replyTo || email.from).toLowerCase()
+                    setComposerMode('reply')
+                    setReplySubject(`Re: ${email.subject}`.replace(/^Re:\s*Re:/i, 'Re:'))
+                    setReplyTo(para)
+                    setReplyCc(otrosDestinatarios(email, para).join(', '))
+                    setShowReply(true)
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 border border-line rounded-control text-body-sm font-medium text-ink-2 hover:bg-surface-2 transition cursor-pointer"
+                >
+                  <ReplyAll className="w-4 h-4" />
+                  Responder a todos
                 </button>
               )}
               <button

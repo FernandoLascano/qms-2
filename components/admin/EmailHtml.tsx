@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 /**
  * Muestra el HTML de un email recibido, aislado del panel.
@@ -21,9 +21,28 @@ import { useEffect, useRef, useState } from 'react'
  * ajustar el marco. Es seguro justamente porque no hay `allow-scripts`: sin
  * JavaScript adentro, no hay nada que pueda aprovechar ese permiso.
  */
+/**
+ * Los enlaces se abren en una pestaña nueva: dentro del marco no se puede
+ * navegar. `noopener` corta el acceso de la página abierta a este marco.
+ */
+function conEnlacesAfuera(html: string): string {
+  if (typeof DOMParser === 'undefined') return html
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  doc.querySelectorAll('base').forEach((b) => b.remove())
+  doc.querySelectorAll('a[href], area[href]').forEach((a) => {
+    a.setAttribute('target', '_blank')
+    a.setAttribute('rel', 'noopener noreferrer')
+  })
+  const base = doc.createElement('base')
+  base.setAttribute('target', '_blank')
+  doc.head.prepend(base)
+  return '<!doctype html>' + doc.documentElement.outerHTML
+}
+
 export function EmailHtml({ html }: { html: string }) {
   const ref = useRef<HTMLIFrameElement>(null)
   const [alto, setAlto] = useState(320)
+  const contenido = useMemo(() => conEnlacesAfuera(html), [html])
 
   useEffect(() => {
     const marco = ref.current
@@ -51,13 +70,15 @@ export function EmailHtml({ html }: { html: string }) {
       clearTimeout(t)
       clearTimeout(t2)
     }
-  }, [html])
+  }, [contenido])
 
   return (
     <iframe
       ref={ref}
-      srcDoc={html}
-      sandbox="allow-same-origin"
+      srcDoc={contenido}
+      // allow-popups: que los enlaces abran pestaña nueva; escape-sandbox: que
+      // esa pestaña funcione como una normal y no herede las restricciones.
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       referrerPolicy="no-referrer"
       title="Contenido del email"
       className="w-full rounded-control border border-line bg-white"
