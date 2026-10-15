@@ -14,6 +14,7 @@ import {
   MapPin,
   MessageCircle,
   Settings,
+  Sparkles,
   Upload,
   UserSearch,
   Users,
@@ -219,6 +220,12 @@ export const NAV_ADMIN: NavGroup[] = [
         href: '/dashboard/admin/analytics',
         icon: BarChart3,
         description: 'Métricas del negocio y del sitio',
+      },
+      {
+        name: 'Consumo de IA',
+        href: '/dashboard/admin/consumo-ia',
+        icon: Sparkles,
+        description: 'Lo que gasta la IA, en dólares',
       },
       {
         name: 'Tiempos',

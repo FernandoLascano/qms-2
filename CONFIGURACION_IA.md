@@ -10,6 +10,7 @@ generación de artículos del blog) usan la API de Anthropic.
 | `ANTHROPIC_API_KEY` | ✅ Sí | La API key de Anthropic. Sin esto, todas las features de IA fallan. |
 | `ANTHROPIC_MODEL` | ⬜ Opcional | Modelo para el trabajo del equipo (revisar formularios, leer comprobantes, borradores, blog). Por defecto `claude-opus-5-5`. |
 | `ANTHROPIC_MODEL_CHAT` | ⬜ Opcional | Modelo para los chats (asistente público y asistente del cliente). Por defecto `claude-haiku-5-5`, más rápido y barato. |
+| `ANTHROPIC_ADMIN_KEY` | ⬜ Opcional | Clave de administración (`sk-ant-admin…`) de la consola de Anthropic. Sólo lee los reportes de uso y costo para la página **Consumo de IA** del admin; no genera nada. |
 
 Los modelos se pueden cambiar desde las variables de entorno de Vercel sin tocar
 código: cuando Anthropic retira un modelo (pasó con `claude-sonnet-4-20250514`
