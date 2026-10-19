@@ -380,7 +380,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
 
           <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
 
-          <EmailsTramite emails={tramite.emails} />
+          <EmailsTramite emails={tramite.emails} emailCliente={tramite.user.email} />
         </div>
       )}
 

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Mail, ChevronDown, ChevronUp, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { EmailHtml } from '@/components/admin/EmailHtml'
 
 interface EmailItem {
   id: string
@@ -17,11 +18,31 @@ interface EmailItem {
 
 interface EmailsTramiteProps {
   emails: EmailItem[]
+  /** Email de la cuenta del cliente: separa lo que le llegó a él de los avisos internos. */
+  emailCliente?: string | null
 }
 
-export default function EmailsTramite({ emails }: EmailsTramiteProps) {
+type Filtro = 'todos' | 'cliente' | 'equipo'
+
+const FILTROS: { id: Filtro; label: string }[] = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'cliente', label: 'Enviados al cliente' },
+  { id: 'equipo', label: 'Recibidos y avisos para vos' },
+]
+
+export default function EmailsTramite({ emails: todos, emailCliente }: EmailsTramiteProps) {
   const [abierto, setAbierto] = useState<string | null>(null)
   const [seccionAbierta, setSeccionAbierta] = useState(false)
+  const [filtro, setFiltro] = useState<Filtro>('todos')
+
+  // Al cliente: lo que salió hacia su dirección. El resto son los mails que
+  // escribió él y los avisos automáticos que la plataforma le manda al equipo.
+  const cliente = (emailCliente ?? '').trim().toLowerCase()
+  const alCliente = (e: EmailItem) =>
+    e.direction !== 'INBOUND' && (e.to ?? []).some((d) => d.trim().toLowerCase() === cliente)
+  const cuenta = { todos: todos.length, cliente: todos.filter(alCliente).length, equipo: 0 }
+  cuenta.equipo = cuenta.todos - cuenta.cliente
+  const emails = filtro === 'todos' ? todos : todos.filter((e) => (filtro === 'cliente') === alCliente(e))
 
   const formatFecha = (fecha: Date | string) => {
     try {
@@ -50,7 +71,7 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
               <Mail className="h-4 w-4 text-info" />
             </span>
             <span>Emails del Trámite</span>
-            <span className="ml-1 font-mono text-label text-ink-2">({emails.length})</span>
+            <span className="ml-1 font-mono text-label text-ink-2">({todos.length})</span>
             {seccionAbierta ? (
               <ChevronUp className="ml-auto h-5 w-5 text-ink-3" />
             ) : (
@@ -64,7 +85,29 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
       </button>
       {seccionAbierta && (
       <CardContent>
-        {emails.length === 0 ? (
+        {todos.length > 0 && cliente && (
+          <div className="mb-3 flex flex-wrap gap-2" role="tablist" aria-label="Filtrar emails">
+            {FILTROS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                role="tab"
+                aria-selected={filtro === f.id}
+                onClick={() => setFiltro(f.id)}
+                className={`rounded-full border px-3 py-1 text-label font-medium transition ${
+                  filtro === f.id
+                    ? 'border-primary bg-primary text-on-primary'
+                    : 'border-line text-ink-2 hover:bg-surface-2'
+                }`}
+              >
+                {f.label} <span className="font-mono opacity-80">({cuenta[f.id]})</span>
+              </button>
+            ))}
+          </div>
+        )}
+        {todos.length > 0 && emails.length === 0 ? (
+          <p className="text-body-sm text-ink-2">No hay emails en este grupo.</p>
+        ) : emails.length === 0 ? (
           <p className="text-body-sm text-ink-2">
             Todavía no hay emails registrados para este trámite. Los mails automáticos que se envíen de ahora en adelante van a aparecer acá.
           </p>
@@ -105,10 +148,7 @@ export default function EmailsTramite({ emails }: EmailsTramiteProps) {
                   {estaAbierto && (
                     <div className="border-t border-line bg-surface p-3">
                       {email.bodyHtml ? (
-                        <div
-                          className="text-body-sm text-ink max-w-none overflow-x-auto [&_a]:text-primary [&_a]:underline"
-                          dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
-                        />
+                        <EmailHtml html={email.bodyHtml} />
                       ) : email.bodyText ? (
                         <pre className="text-body-sm text-ink whitespace-pre-wrap font-sans">{email.bodyText}</pre>
                       ) : (
