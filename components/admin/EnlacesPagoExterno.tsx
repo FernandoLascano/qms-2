@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { Link as LinkIcon, Clock, Send, CheckCircle, XCircle } from 'lucide-react'
 import { Select } from '@/components/ui/select'
 import { formatearFecha } from '@/lib/fechas'
+import { NOMBRES_CONCEPTO } from '@/lib/etiquetas'
 
 interface EnlacePago {
   id: string
@@ -88,6 +89,21 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
     }
   }
 
+  const handleMarcarVencido = async (enlaceId: string) => {
+    try {
+      const response = await fetch(`/api/admin/enlaces-pago/${enlaceId}/marcar-vencido`, { method: 'PATCH' })
+      if (response.ok) {
+        toast.success('Enlace marcado como vencido: el cliente ya no lo ve')
+        router.refresh()
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.error || 'Error al marcar como vencido')
+      }
+    } catch {
+      toast.error('Error al marcar como vencido')
+    }
+  }
+
   const conceptosDisponibles = [
     { value: 'TASA_RESERVA_NOMBRE', label: 'Tasa Reserva de Nombre' },
     { value: 'TASA_RETRIBUTIVA', label: 'Tasa Retributiva (Final)' },
@@ -122,7 +138,7 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-body-sm text-ink">{enlace.concepto}</p>
+                      <p className="font-medium text-body-sm text-ink">{NOMBRES_CONCEPTO[enlace.concepto] ?? enlace.concepto}</p>
                       {enlace.estado === 'PAGADO' && (
                         <CheckCircle className="h-4 w-4 text-success" />
                       )}
@@ -141,6 +157,9 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                         Cliente reportó que el enlace está vencido
                       </p>
                     )}
+                    {enlace.estado === 'VENCIDO' && (
+                      <p className="text-label text-ink-2">Vencido: el cliente ya no lo ve para pagar.</p>
+                    )}
                     <a
                       href={enlace.enlace}
                       target="_blank"
@@ -151,13 +170,20 @@ export default function EnlacesPagoExterno({ tramiteId, enlaces }: EnlacesPagoEx
                     </a>
                   </div>
                   {enlace.estado !== 'PAGADO' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleMarcarPagado(enlace.id)}
-                      className="ml-2 bg-success-solid hover:bg-success-solid"
-                    >
-                      Marcar Pagado
-                    </Button>
+                    <div className="ml-2 flex shrink-0 flex-col items-stretch gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleMarcarPagado(enlace.id)}
+                        className="bg-success-solid hover:bg-success-solid"
+                      >
+                        Marcar Pagado
+                      </Button>
+                      {enlace.estado === 'PENDIENTE' && (
+                        <Button size="sm" variant="outline" onClick={() => handleMarcarVencido(enlace.id)}>
+                          Marcar vencido
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

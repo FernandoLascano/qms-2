@@ -44,6 +44,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Enlace no encontrado' }, { status: 404 })
     }
 
+    if (enlace.estado === 'VENCIDO' || enlace.estado === 'CANCELADO') {
+      return NextResponse.json(
+        { error: 'Este enlace ya no está vigente. Usá el último enlace que te enviamos.' },
+        { status: 409 },
+      )
+    }
+
     // Obtener el archivo del FormData
     const formData = await req.formData()
     const file = formData.get('comprobante') as File

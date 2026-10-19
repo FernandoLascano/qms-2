@@ -37,6 +37,16 @@ export async function POST(request: Request, { params }: RouteParams) {
       )
     }
 
+    // Un enlace nuevo de la misma tasa reemplaza al anterior sin pagar: si no,
+    // el cliente veía dos para pagar y no sabía cuál usar. «Otros» puede ser
+    // cualquier cosa, así que ahí no se toca nada.
+    if (concepto !== 'OTROS') {
+      await prisma.enlacePago.updateMany({
+        where: { tramiteId: id, concepto, estado: 'PENDIENTE' },
+        data: { estado: 'VENCIDO' },
+      })
+    }
+
     // Crear enlace de pago
     await prisma.enlacePago.create({
       data: {
