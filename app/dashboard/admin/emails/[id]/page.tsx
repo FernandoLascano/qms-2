@@ -78,6 +78,8 @@ export default function EmailDetailPage() {
   const [replyAttachments, setReplyAttachments] = useState<File[]>([])
   const [sending, setSending] = useState(false)
   const [sugiriendo, setSugiriendo] = useState(false)
+  // Idea del admin para guiar el borrador de la IA («decile que sí, que el viernes…»).
+  const [indicacionIA, setIndicacionIA] = useState('')
   const [dbTemplates, setDbTemplates] = useState<DbTemplate[]>([])
   const [cargandoLead, setCargandoLead] = useState(false)
   // Quién recibe la respuesta: para saludarlo por el nombre y rellenar las
@@ -238,6 +240,7 @@ export default function EmailDetailPage() {
     try {
       const { texto, conTramite } = await pedirIA<{ texto: string; conTramite: boolean }>(
         `/api/admin/emails/${id}/sugerir-respuesta`,
+        { indicacion: indicacionIA },
       )
       setReplyText(texto)
       if (!conTramite) toast.info('No encontré un trámite de este remitente: es una respuesta general.')
@@ -626,15 +629,32 @@ export default function EmailDetailPage() {
               </Select>
             )}
             {composerMode === 'reply' && email.direction === 'INBOUND' && (
-              <button
-                type="button"
-                onClick={sugerirRespuesta}
-                disabled={sugiriendo}
-                className="mb-3 flex items-center gap-2 px-3 h-9 border border-line rounded-control text-body-sm font-medium text-ink-2 bg-surface hover:bg-surface-3 transition cursor-pointer disabled:opacity-50 disabled:cursor-wait"
-              >
-                {sugiriendo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                {sugiriendo ? 'Redactando…' : 'Sugerir respuesta con IA'}
-              </button>
+              <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="text"
+                  value={indicacionIA}
+                  onChange={(e) => setIndicacionIA(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !sugiriendo) {
+                      e.preventDefault()
+                      sugerirRespuesta()
+                    }
+                  }}
+                  maxLength={2000}
+                  placeholder="Idea para la respuesta (opcional): «decile que el viernes ingresamos el trámite»"
+                  aria-label="Idea para la respuesta con IA"
+                  className="h-9 flex-1 px-3 border border-line rounded-control text-body-sm bg-surface text-ink placeholder:text-ink-3 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={sugerirRespuesta}
+                  disabled={sugiriendo}
+                  className="flex shrink-0 items-center justify-center gap-2 px-3 h-9 border border-line rounded-control text-body-sm font-medium text-ink-2 bg-surface hover:bg-surface-3 transition cursor-pointer disabled:opacity-50 disabled:cursor-wait"
+                >
+                  {sugiriendo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  {sugiriendo ? 'Redactando…' : indicacionIA.trim() ? 'Redactar con IA' : 'Sugerir respuesta con IA'}
+                </button>
+              </div>
             )}
             <textarea
               value={replyText}

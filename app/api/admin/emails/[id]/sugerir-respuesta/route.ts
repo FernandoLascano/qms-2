@@ -29,6 +29,8 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (acceso.error) return acceso.error
 
   const { id } = await params
+  const body = await request.json().catch(() => ({}))
+  const indicacion = typeof body?.indicacion === 'string' ? body.indicacion.slice(0, 2000) : null
 
   try {
     const email = await prisma.email.findUnique({
@@ -61,6 +63,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       conversacion: partes.join('\n\n'),
       nombreCliente: email.fromName?.split(' ')[0] ?? null,
       firma: acceso.session.user.name ?? null,
+      indicacion,
     })
 
     return NextResponse.json({ texto, conTramite: Boolean(datos) })
