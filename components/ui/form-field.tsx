@@ -18,6 +18,8 @@ interface FormFieldProps {
   helpText?: string
   validation?: 'success' | 'error' | 'none'
   className?: string
+  /** Clases sólo para el campo (p. ej. `font-mono` en un CBU), no para la etiqueta ni la ayuda. */
+  inputClassName?: string
   disabled?: boolean
   maxLength?: number
   min?: string | number
@@ -38,6 +40,7 @@ export function FormField({
   helpText,
   validation = 'none',
   className,
+  inputClassName,
   disabled,
   maxLength,
   min,
@@ -84,6 +87,7 @@ export function FormField({
           pattern={pattern}
           autoComplete={autoComplete}
           className={cn(
+            inputClassName,
             hasError && 'border-danger-solid focus:ring-ring focus:border-danger-solid',
             hasSuccess && 'border-success-solid focus:ring-success-solid focus:border-success-solid',
             !hasError && !hasSuccess && 'border-line-strong'

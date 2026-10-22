@@ -159,9 +159,14 @@ export default function NuevoTramitePage() {
   const [pasoActual, setPasoActual] = useState(1)
   // Hacia dónde se movió el formulario: el paso nuevo entra desde ese lado.
   const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante')
+  // El formulario se desplaza dentro del <main> del layout, no en la ventana:
+  // window.scrollTo(0, 0) no hacía nada y el paso nuevo arrancaba fuera de la
+  // vista, con el cliente mirando el final en vez del principio.
+  const inicioRef = useRef<HTMLDivElement>(null)
   const irAPaso = (paso: number) => {
     setDireccion(paso < pasoActual ? 'atras' : 'adelante')
     setPasoActual(paso)
+    inicioRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
   const [guardando, setGuardando] = useState(false)
   // Una vez enviado hay que cortar el auto-guardado: si sigue corriendo, el
@@ -769,14 +774,12 @@ export default function NuevoTramitePage() {
     }
     if (pasoActual < 7) {
       irAPaso(pasoActual + 1)
-      window.scrollTo(0, 0)
     }
   }
 
   const handleAnterior = () => {
     if (pasoActual > 1) {
       irAPaso(pasoActual - 1)
-      window.scrollTo(0, 0)
     }
   }
 
@@ -841,7 +844,7 @@ export default function NuevoTramitePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
+    <div ref={inicioRef} className="mx-auto w-full max-w-4xl scroll-mt-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -1423,139 +1426,138 @@ export default function NuevoTramitePage() {
                     <p className="mt-1 text-body text-ink-2">Monto del capital y datos bancarios</p>
                   </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Capital Social y CBU</h3>
-                  <p className="text-ink-2 mb-4">Definí el capital inicial de tu sociedad</p>
-                  <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
-                    <div>
-                      <p className="text-body-sm text-ink-2">
-                        El capital mínimo es de 2 salarios mínimos:{' '}
-                        <span className="font-semibold text-ink tnum">
-                          {pesos(capitalMinimo(smvm))}
-                        </span>
-                      </p>
-                      <p className="mt-0.5 text-label text-ink-3 tnum">
-                        Salario mínimo actual: {pesos(smvm)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Capital Social *</Label>
-                      <div className="space-y-3 mt-2">
-                        <label className="flex items-center gap-3 rounded-control border border-primary bg-primary-soft p-4 cursor-pointer">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial === String(capitalMinimo(smvm))} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(capitalMinimo(smvm)) }))} />
+                {/* Una sola escala de texto en todo el paso: títulos de sección en
+                    text-heading, opciones en text-body y explicaciones en
+                    text-body-sm. Antes convivían cinco tamaños y cuatro colores,
+                    y el CBU ponía en monoespaciada hasta la etiqueta. */}
+                <fieldset className="space-y-3">
+                  <legend className="text-heading font-semibold text-ink">Monto del capital</legend>
+                  <p className="text-body-sm text-ink-2">
+                    El mínimo legal es de 2 salarios mínimos (SMVM actual:{' '}
+                    <span className="tnum">{pesos(smvm)}</span>).
+                  </p>
+                  {(() => {
+                    const minimo = capitalMinimo(smvm)
+                    const esMinimo = formData.capitalSocial === String(minimo)
+                    const opcion = (activa: boolean) =>
+                      `flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer ${
+                        activa ? 'border-primary bg-primary-soft' : 'border-line hover:border-primary hover:bg-primary-soft/40'
+                      }`
+                    return (
+                      <>
+                        <label className={opcion(esMinimo)}>
+                          <input
+                            type="radio"
+                            name="capitalSocialOpcion"
+                            checked={esMinimo}
+                            onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(minimo) }))}
+                            className="mt-1"
+                          />
                           <div>
-                            <p className="font-medium text-ink">Capital Social Mínimo (2 SMVM: {pesos(capitalMinimo(smvm))})</p>
+                            <p className="font-medium text-ink">Capital mínimo</p>
+                            <p className="text-body-sm text-ink-2">
+                              <span className="tnum font-semibold text-ink">{pesos(minimo)}</span> · 2 salarios mínimos
+                            </p>
                           </div>
                         </label>
-                        <label className="flex items-center gap-3 rounded-control border border-line p-4 transition-colors cursor-pointer hover:border-primary hover:bg-primary-soft/40">
-                          <input type="radio" name="capitalSocialOpcion" checked={formData.capitalSocial !== String(capitalMinimo(smvm))} onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))} />
+                        <label className={opcion(!esMinimo)}>
+                          <input
+                            type="radio"
+                            name="capitalSocialOpcion"
+                            checked={!esMinimo}
+                            onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))}
+                            className="mt-1"
+                          />
                           <div>
                             <p className="font-medium text-ink">Otro monto</p>
+                            <p className="text-body-sm text-ink-2">Un capital mayor al mínimo</p>
                           </div>
                         </label>
-                      </div>
-                    </div>
-                    {formData.capitalSocial !== String(capitalMinimo(smvm)) && (
-                      <div>
-                        <Label htmlFor="capitalSocialCustom">Capital Social *</Label>
-                        <Input id="capitalSocialCustom" type="number" value={formData.capitalSocial} onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))} placeholder={`Mínimo: ${pesos(capitalMinimo(smvm))}`} min={capitalMinimo(smvm)} />
-                        {formData.capitalSocial && parseFloat(formData.capitalSocial) < capitalMinimo(smvm) && (
-                          <p className="text-label text-primary mt-1">El capital mínimo es {pesos(capitalMinimo(smvm))}</p>
+                        {!esMinimo && (
+                          <div className="pt-1">
+                            <Label htmlFor="capitalSocialCustom">Monto del capital *</Label>
+                            <Input
+                              id="capitalSocialCustom"
+                              type="number"
+                              value={formData.capitalSocial}
+                              onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))}
+                              placeholder={`Mínimo: ${pesos(minimo)}`}
+                              min={minimo}
+                              className="mt-2 tnum"
+                            />
+                            {formData.capitalSocial && parseFloat(formData.capitalSocial) < minimo && (
+                              <p className="mt-2 text-label text-danger">El capital mínimo es {pesos(minimo)}</p>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="border-t border-line pt-6">
-                  <h3 className="font-semibold text-heading text-ink mb-2">Depósito del Capital (CBU)</h3>
-                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
-                    <p className="text-body-sm text-primary mb-2">ℹ️ En Córdoba es obligatorio realizar un depósito en garantía del 25% del capital social. El mismo se realiza en una cuenta del Banco de la Provincia de Córdoba que se abre especialmente para el trámite. Una vez inscripta la Sociedad ese dinero será reintegrado a los CBU informados.</p>
-                    <p className="text-body-sm font-semibold text-primary mt-3">Requisitos de CBU:</p>
-                    <ul className="text-label text-ink-2 mt-2 space-y-1 ml-4">
-                      <li>• El CBU Principal deberá ser del Administrador Titular</li>
-                      <li>• El CBU Secundario deberá corresponder a otra cuenta del Administrador Titular o a otro Administrador</li>
-                      <li>• Las cuentas NO pueden ser CVU (Clave Virtual Uniforme)</li>
-                      <li>• Deben ser CBU (Clave Bancaria Uniforme)</li>
-                    </ul>
+                      </>
+                    )
+                  })()}
+                </fieldset>
+
+                <div className="space-y-3 border-t border-line pt-6">
+                  <h3 className="text-heading font-semibold text-ink">Depósito del 25% del capital</h3>
+                  <div className="flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+                    <div className="space-y-2 text-body-sm text-ink-2">
+                      <p>
+                        En Córdoba se deposita en garantía el 25% del capital en una cuenta del Banco de
+                        Córdoba que se abre para el trámite. Cuando la sociedad queda inscripta, ese dinero
+                        se reintegra a los CBU que cargues acá.
+                      </p>
+                      <ul className="list-disc space-y-1 pl-4">
+                        <li>El CBU principal tiene que ser del administrador titular.</li>
+                        <li>El secundario, de otra cuenta del titular o de otro administrador.</li>
+                        <li>Tienen que ser CBU bancarios: no se aceptan CVU de billeteras virtuales.</li>
+                      </ul>
+                    </div>
                   </div>
 
-                  <div className="mb-4">
-                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData(prev => ({ ...prev, cbuPrincipal: 'INFORMAR_LUEGO', cbuSecundario: 'INFORMAR_LUEGO' }))
-                          } else {
-                            setFormData(prev => ({ ...prev, cbuPrincipal: '', cbuSecundario: '' }))
-                          }
-                        }}
-                        className="mt-1"
-                      />
-                      <div>
-                        <p className="font-medium text-ink">Informar CBU más adelante</p>
-                        <p className="text-body-sm text-ink-2">Vas a poder cargar el CBU en otro momento del proceso</p>
-                      </div>
-                    </label>
-                  </div>
+                  <label
+                    className={`flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer ${
+                      formData.cbuPrincipal === 'INFORMAR_LUEGO' ? 'border-primary bg-primary-soft' : 'border-line hover:bg-surface-2'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData(prev => ({ ...prev, cbuPrincipal: 'INFORMAR_LUEGO', cbuSecundario: 'INFORMAR_LUEGO' }))
+                        } else {
+                          setFormData(prev => ({ ...prev, cbuPrincipal: '', cbuSecundario: '' }))
+                        }
+                      }}
+                      className="mt-1"
+                    />
+                    <div>
+                      <p className="font-medium text-ink">Informar los CBU más adelante</p>
+                      <p className="text-body-sm text-ink-2">Los podés cargar en otro momento del trámite</p>
+                    </div>
+                  </label>
 
-                      {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
-                    <div className="space-y-4">
-                      <FormField
-                        label="CBU Principal"
-                        name="cbuPrincipal"
-                        value={formData.cbuPrincipal}
-                        onChange={(e) => {
-                          handleInputChange(e)
-                          if (formData.jurisdiccion === 'CORDOBA') {
-                            // Validar CBU solo si es Córdoba
-                            const value = e.target.value.replace(/[.\-]/g, '')
-                            if (value.length === 22 && /^\d{22}$/.test(value)) {
-                              // CBU válido
-                            }
-                          }
-                        }}
-                        placeholder="0000000000000000000000"
-                        required={formData.jurisdiccion === 'CORDOBA'}
-                        helpText="22 dígitos sin espacios ni guiones"
-                        maxLength={22}
-                        pattern="\d{22}"
-                        className="font-mono"
-                        error={
-                          formData.cbuPrincipal ? validarCbu(formData.cbuPrincipal) || undefined : undefined
-                        }
-                        validation={
-                          formData.cbuPrincipal
-                            ? validarCbu(formData.cbuPrincipal) ? 'error' : 'success'
-                            : 'none'
-                        }
-                      />
-                      <FormField
-                        label="CBU Secundario"
-                        name="cbuSecundario"
-                        value={formData.cbuSecundario}
-                        onChange={(e) => {
-                          handleInputChange(e)
-                        }}
-                        placeholder="0000000000000000000000"
-                        required={formData.jurisdiccion === 'CORDOBA'}
-                        helpText="22 dígitos sin espacios ni guiones"
-                        maxLength={22}
-                        pattern="\d{22}"
-                        className="font-mono"
-                        error={
-                          formData.cbuSecundario ? validarCbu(formData.cbuSecundario) || undefined : undefined
-                        }
-                        validation={
-                          formData.cbuSecundario
-                            ? validarCbu(formData.cbuSecundario) ? 'error' : 'success'
-                            : 'none'
-                        }
-                      />
+                  {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
+                    <div className="space-y-4 pt-1">
+                      {([
+                        ['cbuPrincipal', 'CBU principal'],
+                        ['cbuSecundario', 'CBU secundario'],
+                      ] as const).map(([campo, etiqueta]) => (
+                        <FormField
+                          key={campo}
+                          label={etiqueta}
+                          name={campo}
+                          value={formData[campo]}
+                          onChange={handleInputChange}
+                          placeholder="22 dígitos"
+                          required={formData.jurisdiccion === 'CORDOBA'}
+                          helpText="22 dígitos, sin espacios ni guiones"
+                          maxLength={22}
+                          pattern="\d{22}"
+                          inputClassName="font-mono tnum"
+                          error={formData[campo] ? validarCbu(formData[campo]) || undefined : undefined}
+                          validation={formData[campo] ? (validarCbu(formData[campo]) ? 'error' : 'success') : 'none'}
+                        />
+                      ))}
                     </div>
                   )}
                 </div>

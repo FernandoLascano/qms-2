@@ -667,15 +667,15 @@ input[type="number"] {
 
 /* Pasos del formulario: el contenido entra desde el lado hacia el que vas. */
 @keyframes paso-desde-derecha {
-  from { opacity: 0; transform: translateX(18px); }
+  from { opacity: 0; transform: translateX(28px); }
   to   { opacity: 1; transform: none; }
 }
 @keyframes paso-desde-izquierda {
-  from { opacity: 0; transform: translateX(-18px); }
+  from { opacity: 0; transform: translateX(-28px); }
   to   { opacity: 1; transform: none; }
 }
-.paso-adelante { animation: paso-desde-derecha 0.32s var(--ease) both; }
-.paso-atras    { animation: paso-desde-izquierda 0.32s var(--ease) both; }
+.paso-adelante { animation: paso-desde-derecha 0.4s var(--ease) both; }
+.paso-atras    { animation: paso-desde-izquierda 0.4s var(--ease) both; }
 
 /* Segmentos de la fortaleza de contraseña: se llenan de izquierda a derecha. */
 .segmento-fortaleza > span {
