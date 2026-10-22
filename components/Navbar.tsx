@@ -17,9 +17,13 @@ export default function Navbar({ currentPage = 'home', hideAuthCtas = false }: N
       <nav className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center group">
+            {/* <img> y no next/image: el logo es chico y queda en caché, y next/image sumaba ~5 KB de JS a cada página. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/img/qms-logo-reg.png"
               alt="QuieroMiSAS Logo"
+              width={150}
+              height={56}
               className="h-12 md:h-14 w-auto transition-transform group-hover:scale-105"
             />
           </Link>

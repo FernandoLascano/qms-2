@@ -1,10 +1,7 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Clock, Tag, ArrowLeft, ArrowRight, User } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { RegistrarVista } from './RegistrarVista'
 import Navbar from '@/components/Navbar'
 
 interface PostData {
@@ -36,14 +33,6 @@ interface PostData {
 }
 
 export default function BlogPostContent({ post }: { post: PostData }) {
-  // Registrar la vista una sola vez por carga (conteo real por visita).
-  const vistaRegistrada = useRef(false)
-  useEffect(() => {
-    if (vistaRegistrada.current) return
-    vistaRegistrada.current = true
-    fetch(`/api/blog/${post.id}/vista`, { method: 'POST', keepalive: true }).catch(() => {})
-  }, [post.id])
-
   const renderSection = (section: { type: string; content?: string; text?: string; items?: string[] }, index: number) => {
     switch (section.type) {
       case 'h2':
@@ -88,17 +77,13 @@ export default function BlogPostContent({ post }: { post: PostData }) {
 
   return (
     <div className="min-h-screen bg-white">
+      <RegistrarVista postId={post.id} />
       <Navbar currentPage="blog" />
 
       {/* Breadcrumb */}
       <div className="bg-gray-50 border-b border-gray-100">
         <div className="container mx-auto px-4 py-4 max-w-4xl">
-          <motion.div
-            className="flex items-center gap-2 text-sm text-gray-500"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <Link href="/" className="hover:text-brand-700 transition">
               Inicio
             </Link>
@@ -108,18 +93,13 @@ export default function BlogPostContent({ post }: { post: PostData }) {
             </Link>
             <span>/</span>
             <span className="text-gray-900 truncate max-w-[200px]">{post.titulo}</span>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Hero Image */}
       {post.imagenHero && (
-        <motion.div
-          className="container mx-auto px-4 max-w-4xl mt-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="container mx-auto px-4 max-w-4xl mt-8">
           <div className="rounded-2xl overflow-hidden shadow-xl relative aspect-[16/9] w-full max-h-[480px]">
             <Image
               src={post.imagenHero}
@@ -130,17 +110,12 @@ export default function BlogPostContent({ post }: { post: PostData }) {
               priority
             />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Article Content */}
       <article className="container mx-auto px-4 py-10 md:py-16 max-w-4xl">
-        <motion.div
-          className="bg-white"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
+        <div className="rise bg-white">
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-4 mb-6">
             <span className="text-xs font-bold text-white bg-brand-700 px-4 py-2 rounded-full">
@@ -211,13 +186,7 @@ export default function BlogPostContent({ post }: { post: PostData }) {
           )}
 
           {/* CTA */}
-          <motion.div
-            className="mt-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white rounded-2xl p-8 md:p-10 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="mt-12 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white rounded-2xl p-8 md:p-10 text-center">
             <h3 className="text-2xl md:text-3xl font-black mb-3">¿Listo para constituir tu S.A.S.?</h3>
             <p className="text-lg mb-6 text-gray-300">
               Empezá tu trámite hoy y tené tu empresa lista en 5 días
@@ -229,7 +198,7 @@ export default function BlogPostContent({ post }: { post: PostData }) {
               Comenzar ahora
               <ArrowRight className="w-5 h-5" />
             </Link>
-          </motion.div>
+          </div>
 
           {/* Back to Blog */}
           <div className="mt-10 text-center">
@@ -241,7 +210,7 @@ export default function BlogPostContent({ post }: { post: PostData }) {
               Volver al blog
             </Link>
           </div>
-        </motion.div>
+        </div>
       </article>
 
       {/* Footer */}

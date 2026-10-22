@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { prisma } from '@/lib/prisma'
+import { getPublicConfig } from '@/lib/config'
 import { urlLogoPartner } from '@/lib/partner-logo'
 import PartnerLandingClient from './PartnerLandingClient'
 
@@ -116,13 +117,8 @@ export default async function PartnerPage({ params }: Props) {
     prisma.partner.findUnique({
       where: { slug, activo: true },
     }),
-    prisma.config.findFirst({
-      select: {
-        precioPlanBasico: true,
-        precioPlanEmprendedor: true,
-        precioPlanPremium: true,
-      },
-    }),
+    // Misma fuente cacheada que el layout raíz: sin consulta extra.
+    getPublicConfig(),
   ])
 
   if (!partner) {

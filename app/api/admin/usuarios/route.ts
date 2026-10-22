@@ -20,7 +20,10 @@ export async function GET() {
       )
     }
 
-    const usuarios = await prisma.user.findMany({
+    // La lista abarca a todos los usuarios, así que las otras dos consultas no
+    // necesitan filtrar por sus ids (un IN con miles de valores) y van en paralelo.
+    const [usuarios, ultimosTramites, protegidos] = await Promise.all([
+      prisma.user.findMany({
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -43,12 +46,9 @@ export async function GET() {
           }
         }
       }
-    })
-
-    // Obtener último trámite de cada usuario en UNA sola query (evita N+1)
-    const userIds = usuarios.map(u => u.id)
-    const ultimosTramites = await prisma.tramite.findMany({
-      where: { userId: { in: userIds } },
+      }),
+      // Último trámite de cada usuario en UNA sola query (evita N+1)
+      prisma.tramite.findMany({
       orderBy: { createdAt: 'desc' },
       distinct: ['userId'],
       select: {
@@ -57,15 +57,11 @@ export async function GET() {
         estadoGeneral: true,
         createdAt: true
       }
-    })
-
-    const tramiteMap = new Map(ultimosTramites.map(t => [t.userId, t]))
-
-    // Trámites que impiden borrar al usuario (misma regla que el DELETE), para
-    // que la pantalla deshabilite el botón y muestre el motivo.
-    const protegidos = await prisma.tramite.findMany({
+      }),
+      // Trámites que impiden borrar al usuario (misma regla que el DELETE), para
+      // que la pantalla deshabilite el botón y muestre el motivo.
+      prisma.tramite.findMany({
       where: {
-        userId: { in: userIds },
         OR: [
           { sociedadInscripta: true },
           { estadoGeneral: 'COMPLETADO' },
@@ -86,7 +82,10 @@ export async function GET() {
           },
         },
       },
-    })
+      }),
+    ])
+
+    const tramiteMap = new Map(ultimosTramites.map(t => [t.userId, t]))
     const protegidosPorUsuario = new Map<string, typeof protegidos>()
     for (const t of protegidos) {
       protegidosPorUsuario.set(t.userId, [...(protegidosPorUsuario.get(t.userId) ?? []), t])

@@ -34,16 +34,14 @@ export async function GET(
       return NextResponse.json({ error: 'Email no encontrado' }, { status: 404 })
     }
 
-    // Marcar como leído si es UNREAD
-    if (email.status === 'UNREAD') {
-      await prisma.email.update({
-        where: { id },
-        data: { status: 'READ' },
-      })
-    }
-
-    // Quién es la otra parte: cliente (con su trámite), lead o desconocido.
-    const contactos = await contactosDe([contraparteDe(email)])
+    // Marcar como leído si es UNREAD y, en paralelo, buscar quién es la otra
+    // parte: cliente (con su trámite), lead o desconocido.
+    const [contactos] = await Promise.all([
+      contactosDe([contraparteDe(email)]),
+      email.status === 'UNREAD'
+        ? prisma.email.update({ where: { id }, data: { status: 'READ' } })
+        : null,
+    ])
 
     return NextResponse.json({ ...email, contacto: contactos[contraparteDe(email)] ?? null })
   } catch {

@@ -2,6 +2,10 @@ import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/prisma'
 import { SITE_URL as baseUrl } from '@/lib/seo/site'
 
+// Se regenera cada hora: sin esto quedaba fijo desde el build y las notas nuevas
+// del blog no aparecían hasta el próximo deploy.
+export const revalidate = 3600
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Páginas estáticas

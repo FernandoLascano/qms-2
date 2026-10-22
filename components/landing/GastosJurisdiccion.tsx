@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState } from 'react'
+import { m, AnimatePresence } from 'framer-motion'
 import { MapPin, Info, CheckCircle2, AlertCircle } from 'lucide-react'
 
-interface Jurisdiccion {
+export interface Jurisdiccion {
   id: string
   jurisdiccion: string
   nombre: string
@@ -14,25 +14,12 @@ interface Jurisdiccion {
   orden: number
 }
 
-export function GastosJurisdiccion() {
-  const [jurisdicciones, setJurisdicciones] = useState<Jurisdiccion[]>([])
-  const [selected, setSelected] = useState(0)
-  const [loading, setLoading] = useState(true)
+/** Las jurisdicciones llegan del servidor (ISR de la home): sin fetch por visita. */
+export function GastosJurisdiccion({ jurisdicciones }: { jurisdicciones: Jurisdiccion[] }) {
+  // Seleccionar la primera habilitada por defecto
+  const [selected, setSelected] = useState(() => Math.max(0, jurisdicciones.findIndex((j) => j.habilitada)))
 
-  useEffect(() => {
-    fetch('/api/jurisdicciones')
-      .then(res => res.json())
-      .then(data => {
-        setJurisdicciones(data)
-        // Seleccionar la primera habilitada por defecto
-        const firstEnabled = data.findIndex((j: Jurisdiccion) => j.habilitada)
-        if (firstEnabled >= 0) setSelected(firstEnabled)
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [])
-
-  if (loading || jurisdicciones.length === 0) {
+  if (jurisdicciones.length === 0) {
     return null
   }
 
@@ -43,7 +30,7 @@ export function GastosJurisdiccion() {
     <section id="gastos" className="py-seccion md:py-seccion-lg bg-surface">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
+        <m.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -60,10 +47,10 @@ export function GastosJurisdiccion() {
           <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Además de nuestros honorarios, existen gastos de inscripción que varían según donde constituyas tu S.A.S.
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Selector de Jurisdicción */}
-        <motion.div
+        <m.div
           className="flex justify-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -77,19 +64,12 @@ export function GastosJurisdiccion() {
                 onClick={() => setSelected(index)}
                 className={`relative flex items-center gap-2 px-5 py-3 rounded-chip font-semibold text-sm transition-all duration-300 cursor-pointer ${
                   selected === index
-                    ? 'text-white'
+                    ? `text-white ${j.habilitada ? 'bg-brand-700' : 'bg-n-500'}`
                     : !j.habilitada
                       ? 'text-n-400'
                       : 'text-ink-2 hover:text-ink'
                 }`}
               >
-                {selected === index && (
-                  <motion.div
-                    layoutId="jurisdiccionBg"
-                    className={`absolute inset-0 rounded-chip ${j.habilitada ? 'bg-brand-700' : 'bg-n-500'}`}
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
                 <MapPin className="w-4 h-4 relative z-10" />
                 <span className="relative z-10">{j.nombre}</span>
                 {!j.habilitada && selected !== index && (
@@ -100,13 +80,13 @@ export function GastosJurisdiccion() {
               </button>
             ))}
           </div>
-        </motion.div>
+        </m.div>
 
         {/* Cards de Gastos */}
         <div className="max-w-6xl mx-auto">
           {/* Banner de no disponible */}
           {!current.habilitada && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6 p-4 bg-warning-soft border border-warning-line rounded-control flex items-start gap-3"
@@ -119,11 +99,11 @@ export function GastosJurisdiccion() {
                   Te recomendamos constituir en <strong>Córdoba (IPJ)</strong> donde tenemos operación activa y los costos son más accesibles.
                 </p>
               </div>
-            </motion.div>
+            </m.div>
           )}
 
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={current.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -132,7 +112,7 @@ export function GastosJurisdiccion() {
               className="space-y-4"
             >
               {gastos.map((gasto, index) => (
-                <motion.div
+                <m.div
                   key={gasto.concepto}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -155,12 +135,12 @@ export function GastosJurisdiccion() {
                       </span>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
               ))}
 
               {/* Total estimado */}
               {current.totalEstimado && (
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.3 }}
@@ -184,13 +164,13 @@ export function GastosJurisdiccion() {
                       <p className="text-n-400 text-xs mt-1">*Valores aproximados</p>
                     </div>
                   </div>
-                </motion.div>
+                </m.div>
               )}
-            </motion.div>
+            </m.div>
           </AnimatePresence>
 
           {/* Notas informativas */}
-          <motion.div
+          <m.div
             className="mt-10 grid md:grid-cols-2 gap-4"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -215,11 +195,11 @@ export function GastosJurisdiccion() {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </m.div>
 
           {/* Comparación rápida */}
           {jurisdicciones.length > 1 && (
-            <motion.div
+            <m.div
               className="mt-10 text-center"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -250,7 +230,7 @@ export function GastosJurisdiccion() {
               <p className="text-xs text-n-400 mt-3">
                 Los valores son aproximados y pueden variar según cuestiones particulares.
               </p>
-            </motion.div>
+            </m.div>
           )}
         </div>
       </div>

@@ -53,7 +53,8 @@ async function DashboardPage() {
   // Los admin no inician trámites: van directo a su panel.
   if (session.user.rol === 'ADMIN') redirect('/dashboard/admin')
 
-  const todosTramites = await prisma.tramite.findMany({
+  const [todosTramites, notificacionesNoLeidas] = await Promise.all([
+    prisma.tramite.findMany({
     where: { userId: session.user.id },
     include: {
       pagos: { where: { estado: 'PENDIENTE' }, select: { id: true, monto: true, concepto: true, estado: true, mercadoPagoLink: true } },
@@ -68,7 +69,9 @@ async function DashboardPage() {
     },
     orderBy: { createdAt: 'desc' },
     take: 20,
-  })
+    }),
+    prisma.notificacion.count({ where: { userId: session.user.id, leida: false } }),
+  ])
 
   // Deduplicar borrador + trámite enviado con la misma denominación.
   const porDenominacion = new Map<string, (typeof todosTramites)[number]>()
@@ -87,10 +90,6 @@ async function DashboardPage() {
   const tramites = Array.from(porDenominacion.values()).slice(0, 10)
   const activos = tramites.filter((t) => !t.sociedadInscripta)
   const sociedades = tramites.filter((t) => t.sociedadInscripta)
-
-  const notificacionesNoLeidas = await prisma.notificacion.count({
-    where: { userId: session.user.id, leida: false },
-  })
 
   const primerNombre = session.user.name?.split(' ')[0] || 'Hola'
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -30,6 +31,8 @@ export async function PATCH(
       data: updateData,
     })
 
+    // La home muestra los gastos con ISR: que el cambio se vea ya.
+    revalidatePath('/')
     return NextResponse.json(jurisdiccion)
   } catch {
     return NextResponse.json({ error: 'Error al actualizar' }, { status: 500 })

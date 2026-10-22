@@ -364,6 +364,11 @@ export async function GET(request: Request) {
       }
     })
 
+    // Los admins se leen una vez (antes era una consulta por trámite).
+    let adminsPromesa: Promise<{ email: string; name: string }[]> | null = null
+    const admins = () =>
+      (adminsPromesa ??= prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { email: true, name: true } }))
+
     await runWithConcurrency(tramitesConDenominacionPorVencer, EMAIL_CONCURRENCY, async (tramite) => {
       if (!tramite.denominacionReservadaFecha) return
 
@@ -374,9 +379,7 @@ export async function GET(request: Request) {
 
       if (diasParaVencer <= 5 && diasParaVencer > 0) {
         try {
-          const adminUsers = await prisma.user.findMany({
-            where: { rol: 'ADMIN' }
-          })
+          const adminUsers = await admins()
 
           await runWithConcurrency(adminUsers, EMAIL_CONCURRENCY, async (admin) => {
             await enviarAlertaDenominacion(

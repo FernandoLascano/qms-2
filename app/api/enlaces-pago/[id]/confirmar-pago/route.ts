@@ -126,18 +126,20 @@ export async function PATCH(
       select: { id: true, email: true, name: true }
     })
 
+    // Una sola consulta para todos los admins, en vez de una por admin.
+    await prisma.notificacion.createMany({
+      data: admins.map((admin) => ({
+        tipo: 'ACCION_REQUERIDA' as const,
+        titulo: 'Comprobante de Pago Recibido',
+        mensaje: `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.`,
+        userId: admin.id,
+        tramiteId: enlace.tramiteId,
+        link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`,
+        leida: false
+      }))
+    })
+
     for (const admin of admins) {
-      await prisma.notificacion.create({
-        data: {
-          tipo: 'ACCION_REQUERIDA',
-          titulo: 'Comprobante de Pago Recibido',
-          mensaje: `El cliente ha confirmado el pago de ${conceptoTexto} ($${enlace.monto.toLocaleString('es-AR')}) y adjuntó comprobante. Revisar y aprobar.`,
-          userId: admin.id,
-          tramiteId: enlace.tramiteId,
-          link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`,
-          leida: false
-        }
-      })
 
       // Enviar email al admin
       if (admin.email) {

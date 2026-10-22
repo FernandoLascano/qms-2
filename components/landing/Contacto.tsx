@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useTurnstileWidget } from '@/lib/hooks/use-turnstile-widget'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { MapPin, Phone, Mail, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import Script from 'next/script'
 import { leerAtribucion, registrarAtribucion } from '@/lib/leads/atribucion-cliente'
@@ -30,10 +30,14 @@ export function Contacto() {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const captchaRequired = process.env.NODE_ENV === 'production'
 
+  // Turnstile recién cuando alguien empieza a completar el formulario: la mayoría
+  // de las visitas no llega hasta acá y no tiene por qué bajar el script.
+  const [formularioActivo, setFormularioActivo] = useState(false)
+
   const onTurnstileToken = useCallback((token: string | null) => setTurnstileToken(token), [])
   const { setContainerRef, onScriptLoad } = useTurnstileWidget({
     siteKey,
-    captchaRequired,
+    captchaRequired: captchaRequired && formularioActivo,
     onTokenChange: onTurnstileToken,
   })
 
@@ -128,7 +132,7 @@ export function Contacto() {
   return (
     <section id="contacto" className="py-seccion md:py-seccion-lg bg-surface-2">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {siteKey && (
+        {siteKey && formularioActivo && (
           <Script
             src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
             strategy="afterInteractive"
@@ -137,7 +141,7 @@ export function Contacto() {
         )}
 
         {/* Header */}
-        <motion.div
+        <m.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -153,12 +157,12 @@ export function Contacto() {
           <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Escribinos y te responderemos a la brevedad
           </p>
-        </motion.div>
+        </m.div>
 
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Info de contacto */}
-            <motion.div
+            <m.div
               className="lg:col-span-2 space-y-6"
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -166,7 +170,7 @@ export function Contacto() {
               transition={{ duration: 0.5 }}
             >
               {contactInfo.map((item, index) => (
-                <motion.div
+                <m.div
                   key={item.title}
                   className="flex items-start gap-4"
                   initial={{ opacity: 0, y: 20 }}
@@ -200,11 +204,11 @@ export function Contacto() {
                       )
                     ))}
                   </div>
-                </motion.div>
+                </m.div>
               ))}
 
               {/* Horario */}
-              <motion.div
+              <m.div
                 className="mt-8 p-6 bg-surface rounded-card border border-line"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -226,11 +230,11 @@ export function Contacto() {
                     <span className="font-semibold text-ink-3">Cerrado</span>
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
 
             {/* Formulario */}
-            <motion.div
+            <m.div
               className="lg:col-span-3"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -239,7 +243,7 @@ export function Contacto() {
             >
               <div className="bg-surface rounded-card border border-line shadow-pop p-6 md:p-8">
                 {success ? (
-                  <motion.div
+                  <m.div
                     className="text-center py-12"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -256,18 +260,22 @@ export function Contacto() {
                     >
                       Enviar otro mensaje
                     </button>
-                  </motion.div>
+                  </m.div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form
+                    onSubmit={handleSubmit}
+                    onFocusCapture={() => setFormularioActivo(true)}
+                    className="space-y-5"
+                  >
                     {error && (
-                      <motion.div
+                      <m.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         className="flex items-center gap-3 bg-brand-50 border border-brand-200 text-brand-700 p-4 rounded-control text-sm"
                       >
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         {error}
-                      </motion.div>
+                      </m.div>
                     )}
 
                     {/* Honeypot */}
@@ -384,7 +392,7 @@ export function Contacto() {
                   </form>
                 )}
               </div>
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </div>

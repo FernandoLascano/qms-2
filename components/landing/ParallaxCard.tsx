@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { m, useScroll, useTransform } from 'framer-motion'
 import { useRef, ReactNode } from 'react'
 
 interface ParallaxCardProps {
@@ -25,8 +25,8 @@ export function ParallaxCard({ children, className = '', intensity = 0.15 }: Par
   ])
 
   return (
-    <motion.div ref={ref} style={{ y }} className={className}>
+    <m.div ref={ref} style={{ y }} className={className}>
       {children}
-    </motion.div>
+    </m.div>
   )
 }

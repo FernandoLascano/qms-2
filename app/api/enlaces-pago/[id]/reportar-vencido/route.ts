@@ -47,30 +47,30 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: {
         reportadoVencido: true,
         estado: 'VENCIDO'
-      },
-      include: {
-        tramite: true
       }
     })
 
     // Notificar a los admins (buscar usuarios admin)
     const admins = await prisma.user.findMany({
-      where: { rol: 'ADMIN' }
+      where: { rol: 'ADMIN' },
+      select: { id: true, email: true, name: true }
     })
 
     const mensajeAviso = `El cliente reportó que el enlace de ${enlace.concepto} está vencido. Genera y envía uno nuevo.`
 
+    // Una sola consulta para todos los admins, en vez de una por admin.
+    await prisma.notificacion.createMany({
+      data: admins.map((admin) => ({
+        userId: admin.id,
+        tramiteId: enlace.tramiteId,
+        tipo: 'ALERTA' as const,
+        titulo: '⚠️ Enlace de Pago Reportado como Vencido',
+        mensaje: mensajeAviso,
+        link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`
+      }))
+    })
+
     for (const admin of admins) {
-      await prisma.notificacion.create({
-        data: {
-          userId: admin.id,
-          tramiteId: enlace.tramiteId,
-          tipo: 'ALERTA',
-          titulo: '⚠️ Enlace de Pago Reportado como Vencido',
-          mensaje: mensajeAviso,
-          link: `/dashboard/admin/tramites/${enlace.tramiteId}?tab=pagos`
-        }
-      })
 
       // Enviar email al admin
       if (admin.email) {

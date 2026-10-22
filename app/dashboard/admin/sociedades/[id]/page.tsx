@@ -29,7 +29,9 @@ async function SociedadDetallePage({ params }: PageProps) {
 
   const { id } = await params
 
-  const tramite = await prisma.tramite.findFirst({
+  // El catálogo no depende del trámite: las dos consultas van en paralelo.
+  const [tramite, catalogo] = await Promise.all([
+    prisma.tramite.findFirst({
     where: {
       id: id,
       estadoGeneral: 'COMPLETADO',
@@ -59,18 +61,18 @@ async function SociedadDetallePage({ params }: PageProps) {
         orderBy: [{ estado: 'asc' }, { createdAt: 'desc' }]
       }
     }
-  })
+    }),
+    // El domicilio en sede tiene su propia pantalla: no se ofrece acá.
+    prisma.servicioCatalogo.findMany({
+      where: { activo: true, slug: { not: 'domicilio-sede' } },
+      orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
+      select: { id: true, nombre: true, modalidad: true, precioDesde: true }
+    }),
+  ])
 
   if (!tramite) {
     notFound()
   }
-
-  // El domicilio en sede tiene su propia pantalla: no se ofrece acá.
-  const catalogo = await prisma.servicioCatalogo.findMany({
-    where: { activo: true, slug: { not: 'domicilio-sede' } },
-    orderBy: [{ orden: 'asc' }, { nombre: 'asc' }],
-    select: { id: true, nombre: true, modalidad: true, precioDesde: true }
-  })
 
   const socios = (tramite.socios as any[]) || []
   const administradores = (tramite.administradores as any[]) || []

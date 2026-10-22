@@ -114,9 +114,12 @@ export function ServiceStatus() {
     const refresh = setInterval(() => {
       if (arrancado && document.visibilityState === 'visible') load()
     }, REFRESH_MS)
+    // El «hace Xs» se actualiza cada 10 s y sólo con la pestaña visible: cada
+    // tick re-renderiza la tarjeta entera, y por segundo era puro gasto.
     const tick = setInterval(() => {
-      if (lastFetch.current) setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
-    }, 1000)
+      if (lastFetch.current && document.visibilityState === 'visible')
+        setSecondsAgo(Math.round((Date.now() - lastFetch.current) / 1000))
+    }, 10_000)
     return () => {
       observador?.disconnect()
       clearInterval(refresh)

@@ -17,14 +17,14 @@ import {
   Instagram,
   Linkedin,
 } from 'lucide-react'
-import { motion, useInView } from 'framer-motion'
+import { LazyMotion, domAnimation, m, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { FAQ } from '@/components/landing/FAQ'
 import { Planes } from '@/components/landing/Planes'
 import { AsistenteChatGate } from '@/components/landing/AsistenteChatGate'
 import { Testimonios } from '@/components/landing/Testimonios'
 import { QueEsSAS } from '@/components/landing/QueEsSAS'
-import { GastosJurisdiccion } from '@/components/landing/GastosJurisdiccion'
+import { GastosJurisdiccion, type Jurisdiccion } from '@/components/landing/GastosJurisdiccion'
 import { NotasClient, type NotaCard } from '@/components/landing/NotasClient'
 import { Contacto } from '@/components/landing/Contacto'
 import { OtrosServicios } from '@/components/landing/OtrosServicios'
@@ -79,9 +79,11 @@ const PASOS = [
 export default function HomePage({
   destacadas = [],
   precios,
+  jurisdicciones = [],
 }: {
   destacadas?: NotaCard[]
   precios: PreciosPlanes
+  jurisdicciones?: Jurisdiccion[]
 }) {
   const stepsRef = useRef(null)
 
@@ -91,7 +93,11 @@ export default function HomePage({
 
 
 
+  // LazyMotion + `m`: sólo las funciones de animación que usa la portada
+  // (domAnimation), no framer-motion completo. `strict` avisa si alguien vuelve
+  // a usar `motion.` dentro, que traería todo el paquete de nuevo.
   return (
+    <LazyMotion features={domAnimation} strict>
     <div className="min-h-screen bg-surface">
       <Navbar currentPage="home" />
 
@@ -110,14 +116,14 @@ export default function HomePage({
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-7xl mx-auto">
 
             {/* Contenido Principal */}
-            <motion.div
+            <m.div
               className="text-center lg:text-left"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 40 }}
+              animate={{ y: 0 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             >
               {/* Badge de confianza */}
-              <motion.div
+              <m.div
                 className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-full px-4 py-2 mb-6"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -128,31 +134,31 @@ export default function HomePage({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
                 </span>
                 <span className="text-sm font-medium text-brand-800">+500 empresas constituidas</span>
-              </motion.div>
+              </m.div>
 
-              <motion.h1
+              <m.h1
                 className="text-display sm:text-display-lg md:text-6xl lg:text-7xl font-black text-ink mb-6 tracking-tight leading-[1.1]"
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ y: 24 }}
+                animate={{ y: 0 }}
                 transition={{ duration: 0.55, delay: 0.25 }}
               >
                 Constituí tu{' '}
                 <span className="underline decoration-brand-700 decoration-4 underline-offset-4">SAS</span>
                 <br />
                 en <span className="text-brand-700">5 días</span>
-              </motion.h1>
+              </m.h1>
 
               {/* Subtítulo con valor claro */}
-              <motion.p
+              <m.p
                 className="text-xl md:text-title text-ink-2 mb-4 font-medium"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
               >
                 Constituí tu S.A.S. 100% online
-              </motion.p>
+              </m.p>
 
-              <motion.p
+              <m.p
                 className="text-body-lg md:text-lead text-ink-3 mb-8 max-w-xl mx-auto lg:mx-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -160,17 +166,17 @@ export default function HomePage({
               >
                 Sin trámites presenciales. Sin complicaciones.
                 Tu sociedad lista para facturar.
-              </motion.p>
+              </m.p>
 
               {/* CTAs con diseño más prominente */}
-              <motion.div
+              <m.div
                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.7 }}
               >
                 <Link href="/registro">
-                  <motion.button
+                  <m.button
                     className="group relative h-[60px] bg-brand-700 text-on-primary px-8 rounded-control font-bold text-lead flex items-center justify-center gap-3 shadow-pop shadow-brand-200 overflow-hidden"
                     style={{ cursor: 'pointer' }}
                     whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
@@ -179,10 +185,10 @@ export default function HomePage({
                     <span className="relative z-10">Comenzar ahora</span>
                     <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
                     <div className="absolute inset-0 bg-gradient-to-r from-brand-700 to-brand-800 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                  </motion.button>
+                  </m.button>
                 </Link>
 
-                <motion.a
+                <m.a
                   href="#planes"
                   className="group h-[60px] border border-line-strong text-n-700 px-8 rounded-control font-semibold text-lead flex items-center justify-center gap-2 hover:border-brand-200 hover:bg-brand-50 transition-all"
                   whileHover={{ scale: 1.02 }}
@@ -190,11 +196,11 @@ export default function HomePage({
                 >
                   Ver precios
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </motion.a>
-              </motion.div>
+                </m.a>
+              </m.div>
 
               {/* Trust indicators con iconos */}
-              <motion.div
+              <m.div
                 className="mt-10 grid grid-cols-3 gap-4 max-w-md mx-auto lg:mx-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -205,7 +211,7 @@ export default function HomePage({
                   { icon: Zap, text: 'Rápido' },
                   { icon: Users, text: 'Soporte' }
                 ].map((item, index) => (
-                  <motion.div
+                  <m.div
                     key={item.text}
                     className="flex flex-col items-center gap-2 p-3 rounded-chip bg-surface border border-n-100 shadow-card"
                     initial={{ opacity: 0, y: 10 }}
@@ -215,20 +221,20 @@ export default function HomePage({
                   >
                     <item.icon className="w-5 h-5 text-brand-600" />
                     <span className="text-sm font-medium text-n-700">{item.text}</span>
-                  </motion.div>
+                  </m.div>
                 ))}
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
 
             {/* Ilustración Hero con efecto de profundidad */}
-            <motion.div
+            <m.div
               className="relative hidden lg:block"
-              initial={{ opacity: 0, x: 60, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
+              initial={{ x: 60, scale: 0.95 }}
+              animate={{ x: 0, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               {/* Card flotante con estadística */}
-              <motion.div
+              <m.div
                 className="absolute -left-8 top-1/4 bg-surface rounded-card shadow-pop p-4 border border-n-100 z-10"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -244,10 +250,10 @@ export default function HomePage({
                     <p className="text-lead font-bold text-ink">5 días</p>
                   </div>
                 </div>
-              </motion.div>
+              </m.div>
 
               {/* Card flotante con rating */}
-              <motion.div
+              <m.div
                 className="absolute -right-4 bottom-1/4 bg-surface rounded-card shadow-pop p-4 border border-n-100 z-10"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -263,7 +269,7 @@ export default function HomePage({
                   <span className="text-sm font-bold text-ink">4.9</span>
                 </div>
                 <p className="text-xs text-ink-3 mt-1">+200 reseñas</p>
-              </motion.div>
+              </m.div>
 
               <Image
                 src="/assets/img/img_ppal.png"
@@ -271,16 +277,16 @@ export default function HomePage({
                 width={960}
                 height={720}
                 priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="(max-width: 1023px) min(100vw, 384px), 50vw"
                 className="w-full h-auto relative z-0"
               />
-            </motion.div>
+            </m.div>
 
             {/* Mobile: Ilustración simplificada */}
-            <motion.div
+            <m.div
               className="lg:hidden mt-8"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ y: 30 }}
+              animate={{ y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <Image
@@ -288,10 +294,11 @@ export default function HomePage({
                 alt="Constitución de S.A.S. digital"
                 width={640}
                 height={480}
-                sizes="100vw"
+                priority
+                sizes="(max-width: 1023px) min(100vw, 384px), 50vw"
                 className="w-full h-auto max-w-sm mx-auto"
               />
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </section>
@@ -299,7 +306,7 @@ export default function HomePage({
       {/* Cómo Funciona - Timeline visual moderno */}
       <section id="procedimiento" className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface-2 to-surface" ref={stepsRef}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <m.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 30 }}
             animate={stepsInView ? { opacity: 1, y: 0 } : {}}
@@ -315,7 +322,7 @@ export default function HomePage({
             <p className="text-lead text-ink-3 max-w-2xl mx-auto">
               Un proceso diseñado para que sea lo más fácil posible
             </p>
-          </motion.div>
+          </m.div>
 
           {/* Timeline horizontal */}
           <div className="max-w-6xl mx-auto">
@@ -323,7 +330,7 @@ export default function HomePage({
             <div className="hidden md:block relative px-4">
               {/* Línea horizontal de fondo */}
               <div className="absolute top-[52px] left-[12.5%] right-[12.5%] h-1 bg-n-200 rounded-full">
-                <motion.div
+                <m.div
                   className="h-full bg-gradient-to-r from-brand-500 via-brand-600 to-brand-700 rounded-full origin-left"
                   initial={{ scaleX: 0 }}
                   animate={stepsInView ? { scaleX: 1 } : {}}
@@ -342,7 +349,7 @@ export default function HomePage({
                       sombra del sistema.
                     */}
                     <div className="relative mb-8 z-10">
-                      <motion.div
+                      <m.div
                         className="relative w-[104px] h-[104px] rounded-full bg-brand-600 flex items-center justify-center shadow-pop"
                         initial={{ scale: 0, rotate: -180 }}
                         animate={stepsInView ? { scale: 1, rotate: 0 } : {}}
@@ -351,21 +358,21 @@ export default function HomePage({
                         <div className="w-[88px] h-[88px] rounded-full bg-surface flex items-center justify-center">
                           <step.Icono className="w-9 h-9 text-brand-700" strokeWidth={1.75} />
                         </div>
-                      </motion.div>
+                      </m.div>
 
                       {/* Número */}
-                      <motion.div
+                      <m.div
                         className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-brand-700 flex items-center justify-center shadow-raise"
                         initial={{ scale: 0 }}
                         animate={stepsInView ? { scale: 1 } : {}}
                         transition={{ duration: 0.3, delay: 0.9 + index * 0.4, type: 'spring' }}
                       >
                         <span className="text-on-primary font-black text-label">{step.numero}</span>
-                      </motion.div>
+                      </m.div>
                     </div>
 
                     {/* Contenido */}
-                    <motion.div
+                    <m.div
                       className="w-full"
                       initial={{ opacity: 0, y: 20 }}
                       animate={stepsInView ? { opacity: 1, y: 0 } : {}}
@@ -373,11 +380,11 @@ export default function HomePage({
                     >
                       <h3 className="text-lead font-bold text-ink mb-2">{step.titulo}</h3>
                       <p className="text-ink-3 text-body leading-relaxed">{step.descripcion}</p>
-                    </motion.div>
+                    </m.div>
 
                     {/* Conector flecha (entre nodos, no en el último) */}
                     {index < 3 && (
-                      <motion.div
+                      <m.div
                         className="absolute hidden md:block"
                         style={{ left: `${(index + 1) * 25}%`, top: '44px', transform: 'translateX(-50%)' }}
                         initial={{ opacity: 0, scale: 0 }}
@@ -385,7 +392,7 @@ export default function HomePage({
                         transition={{ duration: 0.3, delay: 1 + index * 0.4 }}
                       >
                         <ChevronRight className="w-5 h-5 text-brand-400" />
-                      </motion.div>
+                      </m.div>
                     )}
                   </div>
                 ))}
@@ -396,7 +403,7 @@ export default function HomePage({
             <div className="md:hidden relative pl-8">
               {/* Línea vertical */}
               <div className="absolute left-[23px] top-0 bottom-0 w-0.5 bg-n-200">
-                <motion.div
+                <m.div
                   className="w-full bg-brand-600 origin-top"
                   initial={{ scaleY: 0 }}
                   animate={stepsInView ? { scaleY: 1 } : {}}
@@ -407,7 +414,7 @@ export default function HomePage({
 
               <div className="space-y-8">
                 {PASOS.map((step, index) => (
-                  <motion.div
+                  <m.div
                     key={step.numero}
                     className="flex items-start gap-5 relative"
                     initial={{ opacity: 0, x: -20 }}
@@ -415,14 +422,14 @@ export default function HomePage({
                     transition={{ duration: 0.5, delay: 0.3 + index * 0.2 }}
                   >
                     {/* Nodo */}
-                    <motion.div
+                    <m.div
                       className="w-12 h-12 rounded-full bg-brand-600 flex items-center justify-center shadow-pop flex-shrink-0 -ml-8 z-10"
                       initial={{ scale: 0 }}
                       animate={stepsInView ? { scale: 1 } : {}}
                       transition={{ duration: 0.4, delay: 0.4 + index * 0.2, type: 'spring' }}
                     >
                       <step.Icono className="w-5 h-5 text-on-primary" strokeWidth={2} />
-                    </motion.div>
+                    </m.div>
 
                     <div className="bg-surface rounded-control p-4 border border-n-100 shadow-card flex-1">
                       <span className="inline-block text-label font-black text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full mb-2">
@@ -431,21 +438,21 @@ export default function HomePage({
                       <h3 className="text-body-lg font-bold text-ink mb-1">{step.titulo}</h3>
                       <p className="text-ink-3 text-body">{step.descripcion}</p>
                     </div>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
             </div>
           </div>
 
           {/* CTA después de pasos */}
-          <motion.div
+          <m.div
             className="text-center mt-14"
             initial={{ opacity: 0, y: 20 }}
             animate={stepsInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5, delay: 1.8 }}
           >
             <Link href="/registro" className="inline-block">
-              <motion.button
+              <m.button
                 /* Era el único CTA principal en negro: los otros seis del sitio
                    van en el color de marca, y este cierra el recorrido más
                    importante de la página. */
@@ -455,9 +462,9 @@ export default function HomePage({
               >
                 Empezar mi trámite
                 <ArrowRight className="w-5 h-5" />
-              </motion.button>
+              </m.button>
             </Link>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -468,7 +475,7 @@ export default function HomePage({
       <Planes precios={precios} />
 
       {/* Gastos por Jurisdicción */}
-      <GastosJurisdiccion />
+      <GastosJurisdiccion jurisdicciones={jurisdicciones} />
 
       {/* Constituí desde cualquier provincia */}
       <DesdeTodasLasProvincias />
@@ -502,7 +509,7 @@ export default function HomePage({
                 <Image
                   src="/assets/img/qms-logo-white.png"
                   alt="QuieroMiSAS Logo"
-                  width={180}
+                  width={128}
                   height={48}
                   className="h-12 w-auto"
                 />
@@ -542,7 +549,7 @@ export default function HomePage({
                 <Image
                   src="/assets/img/grupo-mw.png"
                   alt="Part of Grupo MW"
-                  width={140}
+                  width={107}
                   height={32}
                   className="h-8 w-auto"
                 />
@@ -613,5 +620,6 @@ export default function HomePage({
         </div>
       </footer>
     </div>
+    </LazyMotion>
   )
 }

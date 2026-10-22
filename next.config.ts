@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
     "/api/admin/reportes/mensual": ["./lib/plantillas/**"],
   },
   images: {
+    formats: ["image/avif", "image/webp"],
+    // Las imágenes se versionan por URL (blog, partners): pueden quedar un mes en la caché del optimizador.
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",

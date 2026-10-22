@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 const STAGGER_DELAY = 0.12
 const baseDelay = 0.4
@@ -25,7 +25,7 @@ function WordSpan({
   delay: number
 }) {
   return (
-    <motion.span
+    <m.span
       className="inline-block"
       style={{ marginRight: '0.25em' }}
       initial={{ opacity: 0, y: 36 }}
@@ -40,7 +40,7 @@ function WordSpan({
         <span className="relative inline-block">
 <span className="text-brand-700">{word.text ?? ''}</span>
               <svg className="absolute -bottom-2 left-0 w-full text-brand-700" viewBox="0 0 200 12" fill="none">
-                <motion.path
+                <m.path
                   d="M2 8C50 2 150 2 198 8"
                   stroke="currentColor"
               strokeWidth="4"
@@ -56,7 +56,7 @@ function WordSpan({
       ) : (
         word.text ?? ''
       )}
-    </motion.span>
+    </m.span>
   )
 }
 

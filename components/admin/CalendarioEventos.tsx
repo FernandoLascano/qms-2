@@ -2,9 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { Calendar, momentLocalizer, Views, type View, type Formats, type Messages } from 'react-big-calendar'
-import moment from 'moment'
-import 'moment/locale/es'
+import { Calendar, dateFnsLocalizer, Views, type View, type Formats, type Messages } from 'react-big-calendar'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import '@/styles/calendar-rbc.css'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -14,28 +12,40 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
+import {
+  addDays,
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getDay,
+  parse,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Select } from '@/components/ui/select'
 
-const localizer = momentLocalizer(moment)
-
-// El localizer de moment formatea con el locale que le pasemos en `culture`
-// (nombres de meses y días, y la semana arranca el lunes).
+// date-fns en vez de moment: ya es dependencia del proyecto y moment sumaba
+// ~70 KB sólo para esta pantalla. El locale `es` pone los nombres de meses y
+// días, y la semana arranca el lunes.
+const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales: { es } })
 const CULTURA = 'es'
+const SEMANA = { locale: es }
 
 const capitalizar = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
 
 const FORMATOS: Formats = {
-  monthHeaderFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'MMMM [de] YYYY', cultura)),
-  dayHeaderFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'dddd D [de] MMMM [de] YYYY', cultura)),
+  monthHeaderFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, "MMMM 'de' yyyy", cultura)),
+  dayHeaderFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, "EEEE d 'de' MMMM 'de' yyyy", cultura)),
   dayRangeHeaderFormat: ({ start, end }, cultura, loc) =>
-    `${loc!.format(start, 'D [de] MMMM', cultura)} – ${loc!.format(end, 'D [de] MMMM [de] YYYY', cultura)}`,
+    `${loc!.format(start, "d 'de' MMMM", cultura)} – ${loc!.format(end, "d 'de' MMMM 'de' yyyy", cultura)}`,
   agendaHeaderFormat: ({ start, end }, cultura, loc) =>
-    `${loc!.format(start, 'D [de] MMMM', cultura)} – ${loc!.format(end, 'D [de] MMMM [de] YYYY', cultura)}`,
-  weekdayFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'dddd', cultura)),
-  dayFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'ddd D/M', cultura)),
-  agendaDateFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'ddd D [de] MMM', cultura)),
+    `${loc!.format(start, "d 'de' MMMM", cultura)} – ${loc!.format(end, "d 'de' MMMM 'de' yyyy", cultura)}`,
+  weekdayFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'EEEE', cultura)),
+  dayFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, 'EEE d/M', cultura)),
+  agendaDateFormat: (fecha, cultura, loc) => capitalizar(loc!.format(fecha, "EEE d 'de' MMM", cultura)),
   timeGutterFormat: 'HH:mm',
   agendaTimeFormat: 'HH:mm',
   eventTimeRangeFormat: ({ start, end }, cultura, loc) =>
@@ -72,22 +82,21 @@ const INICIO_JORNADA = new Date(1970, 0, 1, 8, 0)
 // Rango que se ve en pantalla en cada vista. En Mes incluye los días de los
 // meses vecinos que completan la grilla, y el último día entra completo.
 function rangoVisible(fecha: Date, vista: View): { desde: Date; hasta: Date } {
-  const m = moment(fecha).locale(CULTURA)
   switch (vista) {
     case Views.DAY:
-      return { desde: m.clone().startOf('day').toDate(), hasta: m.clone().endOf('day').toDate() }
+      return { desde: startOfDay(fecha), hasta: endOfDay(fecha) }
     case Views.WEEK:
     case Views.WORK_WEEK:
-      return { desde: m.clone().startOf('week').toDate(), hasta: m.clone().endOf('week').toDate() }
+      return { desde: startOfWeek(fecha, SEMANA), hasta: endOfWeek(fecha, SEMANA) }
     case Views.AGENDA:
       return {
-        desde: m.clone().startOf('day').toDate(),
-        hasta: m.clone().add(DIAS_AGENDA, 'days').endOf('day').toDate()
+        desde: startOfDay(fecha),
+        hasta: endOfDay(addDays(fecha, DIAS_AGENDA))
       }
     default:
       return {
-        desde: m.clone().startOf('month').startOf('week').toDate(),
-        hasta: m.clone().endOf('month').endOf('week').toDate()
+        desde: startOfWeek(startOfMonth(fecha), SEMANA),
+        hasta: endOfWeek(endOfMonth(fecha), SEMANA)
       }
   }
 }

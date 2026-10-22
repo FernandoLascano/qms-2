@@ -81,10 +81,13 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
   const tabParam = (await searchParams)?.tab
   const tab: TabId = TABS.includes(tabParam as TabId) ? (tabParam as TabId) : 'gestion'
 
-  const tramite = await prisma.tramite.findUnique({
+  // Los emails traen el cuerpo completo (pueden pesar cientos de KB cada uno):
+  // sólo se leen cuando se abre la pestaña que los muestra.
+  const [tramite, emails] = await Promise.all([
+    prisma.tramite.findUnique({
     where: { id },
     include: {
-      user: true,
+      user: { select: { id: true, name: true, email: true, phone: true } },
       documentos: {
         include: { user: { select: { id: true, rol: true } } },
         orderBy: { createdAt: 'desc' },
@@ -96,9 +99,16 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
         include: { user: { select: { name: true, email: true } } },
         orderBy: { createdAt: 'asc' },
       },
-      emails: { orderBy: { createdAt: 'desc' } },
     },
-  })
+    }),
+    tab === 'comunicacion'
+      ? prisma.email.findMany({
+          where: { tramiteId: id },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, subject: true, to: true, from: true, direction: true, bodyHtml: true, bodyText: true, createdAt: true },
+        })
+      : Promise.resolve([]),
+  ])
 
   if (!tramite) notFound()
 
@@ -380,7 +390,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
 
           <ObservacionesForm tramiteId={tramite.id} userId={tramite.userId} />
 
-          <EmailsTramite emails={tramite.emails} emailCliente={tramite.user.email} />
+          <EmailsTramite emails={emails} emailCliente={tramite.user.email} />
         </div>
       )}
 

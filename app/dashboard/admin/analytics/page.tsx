@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { 
   FileText, 
   Users, 
@@ -11,22 +12,36 @@ import {
   FileCheck,
 } from 'lucide-react'
 import { MetricCard } from '@/components/admin/analytics/MetricCard'
-import { TramitesPorMesChart } from '@/components/admin/analytics/TramitesPorMesChart'
 import { EstadosTramitesChart } from '@/components/admin/analytics/EstadosTramitesChart'
 import { ConversionFunnel } from '@/components/admin/analytics/ConversionFunnel'
 import { AlertasPanel } from '@/components/admin/analytics/AlertasPanel'
-import { IngresosPorMesChart } from '@/components/admin/analytics/IngresosPorMesChart'
 import { ComparativaCard } from '@/components/admin/analytics/ComparativaCard'
 import { TiemposPromedioPanel } from '@/components/admin/analytics/TiemposPromedioPanel'
 import { ExportButton } from '@/components/admin/analytics/ExportButton'
 import { TendenciasChart } from '@/components/admin/analytics/TendenciasChart'
-import { Ga4WebPanel, type Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
+import type { Ga4DashboardData } from '@/components/admin/analytics/Ga4WebPanel'
 import { pesos } from '@/components/admin/analytics/tema'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { ReporteMensualPdf } from '@/components/admin/reportes/ReporteMensualPdf'
 import { PageHeader } from '@/components/ui/page-header'
 import { Select } from '@/components/ui/select'
+
+// Los gráficos usan recharts (el chunk más pesado del panel): se descargan en
+// paralelo con los datos en vez de bloquear la hidratación de la página.
+const cargandoGrafico = () => <div className="h-[300px] animate-skeleton rounded-card bg-surface-2" />
+const TramitesPorMesChart = dynamic(
+  () => import('@/components/admin/analytics/TramitesPorMesChart').then((m) => m.TramitesPorMesChart),
+  { loading: cargandoGrafico },
+)
+const IngresosPorMesChart = dynamic(
+  () => import('@/components/admin/analytics/IngresosPorMesChart').then((m) => m.IngresosPorMesChart),
+  { loading: cargandoGrafico },
+)
+const Ga4WebPanel = dynamic(
+  () => import('@/components/admin/analytics/Ga4WebPanel').then((m) => m.Ga4WebPanel),
+  { loading: cargandoGrafico },
+)
 
 interface ErrorData {
   error: string

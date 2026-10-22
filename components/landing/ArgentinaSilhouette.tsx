@@ -1,12 +1,12 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 
 export function ArgentinaSilhouette() {
   return (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden py-4">
       {/* Mapa de Argentina - usando una imagen con filtro para silueta blanca */}
-      <motion.div
+      <m.div
         className="relative w-full h-full max-h-[350px] flex items-center justify-center"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -16,15 +16,19 @@ export function ArgentinaSilhouette() {
         <img
           src="/assets/img/ar.svg"
           alt=""
+          width={1000}
+          height={1000}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full max-h-[350px] object-contain"
           style={{
             filter: 'brightness(0) invert(1) opacity(0.18)',
           }}
         />
-      </motion.div>
+      </m.div>
 
       {/* Punto pulsante en Córdoba - basado en label_point cx=500.2 cy=279.7 sobre viewBox 1000x1000 = 50%, 28% */}
-      <motion.div
+      <m.div
         className="absolute"
         style={{ top: '38%', left: '50%' }}
         initial={{ scale: 0, opacity: 0 }}
@@ -32,12 +36,12 @@ export function ArgentinaSilhouette() {
         transition={{ delay: 1, duration: 0.5, type: 'spring', bounce: 0.5 }}
       >
         {/* Pulsos animados */}
-        <motion.div
+        <m.div
           className="absolute w-16 h-16 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface/20"
           animate={{ scale: [1, 3, 1], opacity: [0.5, 0, 0.5] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut' }}
         />
-        <motion.div
+        <m.div
           className="absolute w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface/30"
           animate={{ scale: [1, 2.5, 1], opacity: [0.7, 0, 0.7] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: 'easeOut', delay: 0.4 }}
@@ -49,7 +53,7 @@ export function ArgentinaSilhouette() {
         </div>
 
         {/* Label */}
-        <motion.div
+        <m.div
           className="absolute left-6 top-1/2 -translate-y-1/2 whitespace-nowrap"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -58,8 +62,8 @@ export function ArgentinaSilhouette() {
           <div className="bg-surface/15 backdrop-blur-sm rounded-chip px-3 py-1.5 border border-surface/20">
             <p className="text-white font-bold text-sm">Córdoba</p>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
   )
 }

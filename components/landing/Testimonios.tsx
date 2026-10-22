@@ -1,7 +1,7 @@
 'use client'
 
 import { Star, Quote, TrendingUp, Clock, HeadphonesIcon, Building2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 
@@ -47,7 +47,7 @@ export function Testimonios() {
     <section ref={sectionRef} className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface via-surface-2 to-surface overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header con diseño más impactante */}
-        <motion.div
+        <m.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -63,12 +63,12 @@ export function Testimonios() {
           <p className="text-lead text-ink-3 max-w-2xl mx-auto">
             Emprendedores que confiaron en nosotros y hoy tienen su empresa funcionando
           </p>
-        </motion.div>
+        </m.div>
 
         {/* Testimonios con diseño de cards elevadas */}
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto mb-20">
           {testimonios.map((testimonio, index) => (
-            <motion.div
+            <m.div
               key={index}
               initial={{ opacity: 0, y: 40 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -130,12 +130,12 @@ export function Testimonios() {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           ))}
         </div>
 
         {/* Estadísticas con diseño premium */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.5 }}
@@ -144,7 +144,7 @@ export function Testimonios() {
           <div className="bg-gradient-to-r from-ink via-n-800 to-ink rounded-modal p-8 md:p-12 shadow-modal">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
               {stats.map((stat, index) => (
-                <motion.div
+                <m.div
                   key={index}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={isInView ? { opacity: 1, scale: 1 } : {}}
@@ -160,21 +160,21 @@ export function Testimonios() {
                   <div className="text-n-400 text-sm font-medium">
                     {stat.label}
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* CTA sutil */}
-        <motion.p
+        <m.p
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.5, delay: 0.8 }}
           className="text-center mt-10 text-ink-3 text-sm"
         >
           Unite a los más de 500 emprendedores que ya eligieron QuieroMiSAS
-        </motion.p>
+        </m.p>
       </div>
     </section>
   )

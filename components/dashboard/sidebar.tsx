@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { LogOut, Menu, X, ExternalLink, Plus } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
@@ -75,7 +75,12 @@ export function Sidebar() {
     }
   }, [isAdmin, refrescarEmails])
 
+  // Al navegar por la bandeja se refresca el contador. En el primer render no:
+  // el polling de arriba ya lo pidió (antes salían dos pedidos iguales).
+  const rutaAnterior = useRef(pathname)
   useEffect(() => {
+    if (rutaAnterior.current === pathname) return
+    rutaAnterior.current = pathname
     if (!isAdmin || !pathname?.startsWith('/dashboard/admin/emails')) return
     refrescarEmails()
   }, [pathname, isAdmin, refrescarEmails])
@@ -105,9 +110,12 @@ export function Sidebar() {
           className="group flex items-center rounded-control"
           onClick={() => setMobileOpen(false)}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- ver Navbar */}
           <img
             src="/assets/img/qms-logo-reg.png"
             alt="QuieroMiSAS — ir al sitio"
+            width={118}
+            height={44}
             className="h-11 w-auto transition-transform group-hover:scale-105"
           />
         </Link>

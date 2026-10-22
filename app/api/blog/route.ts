@@ -78,14 +78,9 @@ export async function GET(request: NextRequest) {
       select: publicoSolo ? publicListSelect : undefined,
     })
 
-    const res = NextResponse.json(posts)
-    if (publicoSolo) {
-      res.headers.set(
-        'Cache-Control',
-        'public, s-maxage=300, stale-while-revalidate=600'
-      )
-    }
-    return res
+    // Sin caché de CDN: la clave de caché ignora las cookies, y el admin (borradores
+    // incluidos) pide la misma URL que un anónimo. Las páginas públicas leen por Prisma.
+    return NextResponse.json(posts, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (err) {
     console.error('[GET /api/blog]', err)
     const fallback = emptyPublicListDevFallback(publicoSolo)

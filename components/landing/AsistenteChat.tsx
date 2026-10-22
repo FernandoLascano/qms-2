@@ -15,9 +15,9 @@ interface Message {
 const mensajeInicial =
   'Hola, soy el Asistente QMS. Respondo consultas sobre constitución de S.A.S. y nuestro servicio. ¿En qué puedo ayudarte?'
 
-export function AsistenteChat() {
+export function AsistenteChat({ abiertoInicial = false }: { abiertoInicial?: boolean }) {
   const { data: session } = useSession()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(abiertoInicial)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,9 +63,10 @@ export function AsistenteChat() {
   const captchaRequired = process.env.NODE_ENV === 'production' && !session?.user
 
   const onTurnstileToken = useCallback((token: string | null) => setTurnstileToken(token), [])
+  // Turnstile sólo con el chat abierto: no hace falta el script mientras nadie escribe.
   const { setContainerRef, onScriptLoad } = useTurnstileWidget({
     siteKey,
-    captchaRequired,
+    captchaRequired: captchaRequired && open,
     onTokenChange: onTurnstileToken,
   })
 
@@ -130,7 +131,7 @@ export function AsistenteChat() {
 
   return (
     <>
-      {siteKey && captchaRequired && (
+      {open && siteKey && captchaRequired && (
         <Script
           src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
           strategy="afterInteractive"

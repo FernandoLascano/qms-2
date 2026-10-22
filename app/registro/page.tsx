@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
 import { validarPassword } from '@/lib/validaciones'
@@ -112,7 +111,7 @@ export default function RegistroPage() {
       <header className="border-b border-line bg-surface/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" aria-label="Ir al inicio" className="inline-flex min-h-10 items-center">
-            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" className="h-9 w-auto" />
+            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" width={96} height={36} className="h-9 w-auto" />
           </Link>
           <Link
             href="/"
@@ -135,36 +134,27 @@ export default function RegistroPage() {
         )}
 
         {/* Logo y Header */}
-        <motion.div
-          className="text-center mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="rise text-center mb-6">
           <h1 className="text-title font-semibold text-ink mb-1">
             Crear <span className="text-primary">cuenta</span>
           </h1>
           <p className="text-body-sm text-ink-2">
             Registrate para comenzar tu trámite
           </p>
-        </motion.div>
+        </div>
 
         {/* Card de Registro */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="bg-surface rounded-card border border-line shadow-pop p-8"
+        <div
+          style={{ animationDelay: '100ms' }}
+          className="rise bg-surface rounded-card border border-line shadow-pop p-8"
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-primary-soft border border-primary-line text-primary p-4 rounded-control text-body-sm font-medium"
+              <div
+                className="rise bg-primary-soft border border-primary-line text-primary p-4 rounded-control text-body-sm font-medium"
               >
                 {error}
-              </motion.div>
+              </div>
             )}
 
             <GoogleSignInButton disabled={loading} label="Registrarse con Google" />
@@ -331,7 +321,7 @@ export default function RegistroPage() {
               </p>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
       </main>
     </div>

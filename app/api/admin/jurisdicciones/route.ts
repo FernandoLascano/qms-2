@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // La home muestra los gastos con ISR: que el cambio se vea ya.
+    revalidatePath('/')
     return NextResponse.json(nueva, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Error al crear jurisdicción' }, { status: 500 })

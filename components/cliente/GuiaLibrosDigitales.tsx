@@ -19,7 +19,7 @@ function Captura({ src, alt }: { src: string; alt: string }) {
   return (
     <figure className="my-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className="w-full rounded-control border border-line shadow-raise" />
+      <img src={src} alt={alt} loading="lazy" decoding="async" className="w-full rounded-control border border-line shadow-raise" />
       <figcaption className="text-label text-ink-3 mt-1 text-center">{alt}</figcaption>
     </figure>
   )

@@ -273,7 +273,7 @@ export default function LoginPage() {
       <header className="border-b border-line bg-surface/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" aria-label="Ir al inicio" className="inline-flex min-h-10 items-center">
-            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" className="h-9 w-auto" />
+            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" width={96} height={36} className="h-9 w-auto" />
           </Link>
           <Link
             href="/"

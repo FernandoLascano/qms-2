@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   }
 
   return (
-    <SessionGate>
+    <SessionGate session={session}>
       <div className="flex h-screen overflow-hidden bg-surface">
         <Sidebar />
 

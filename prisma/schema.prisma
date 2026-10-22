@@ -560,6 +560,7 @@ model MovimientoComision {
 
   @@index([fecha])
   @@index([originador])
+  @@index([tramiteId])
 }
 
 // Marca de liquidación efectiva por período y beneficiario (snapshot del monto pagado).
@@ -718,6 +719,9 @@ model CuentaBancaria {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Ya existe en la base (migración add_config_table); faltaba declararlo.
+  @@index([tramiteId])
 }
 
 // NOTIFICACIONES
@@ -740,6 +744,9 @@ model Notificacion {
   @@index([userId, leida])
   @@index([userId])
   @@index([createdAt])
+  // Polling cada 60 s: no leídas del usuario, más nuevas primero (y el contador).
+  @@index([userId, leida, createdAt])
+  @@index([tramiteId])
 }
 
 enum TipoNotificacion {
@@ -766,6 +773,7 @@ model Mensaje {
   createdAt DateTime @default(now())
 
   @@index([tramiteId])
+  @@index([tramiteId, createdAt])
 }
 
 // HISTORIAL DE ESTADOS
@@ -944,6 +952,7 @@ model Lead {
   @@unique([email])
   @@index([estado, createdAt])
   @@index([origen])
+  @@index([userId])
 }
 
 enum LeadOrigen {
@@ -1083,6 +1092,9 @@ model Evento {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([fechaInicio])
+  @@index([tramiteId])
 }
 
 enum TipoEvento {
@@ -1272,6 +1284,8 @@ model Email {
   @@index([from])
   @@index([createdAt])
   @@index([tramiteId])
+  @@index([direction, status])
+  @@index([parentEmailId])
 }
 
 model EmailAttachment {

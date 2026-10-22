@@ -17,7 +17,7 @@ export default async function NuevoTramiteLayout({
   }
 
   return (
-    <SessionGate>
+    <SessionGate session={session}>
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <Sidebar />

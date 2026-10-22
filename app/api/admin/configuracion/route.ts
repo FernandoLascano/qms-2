@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { TAG_CONFIG } from '@/lib/config'
 import { erroresConfig } from '@/lib/schemas/configuracion'
 
 // GET - Obtener configuración
@@ -108,6 +109,8 @@ export async function PUT(request: NextRequest) {
     // - layout raíz: JSON-LD SEO, metadata y opengraph-image leen la config en el servidor
     revalidatePath('/api/config')
     revalidatePath('/', 'layout')
+    // getPublicConfig guarda la config entre requests: vencerla ya.
+    revalidateTag(TAG_CONFIG, { expire: 0 })
 
     return NextResponse.json(config)
   } catch {

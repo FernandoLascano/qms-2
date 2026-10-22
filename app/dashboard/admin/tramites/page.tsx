@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { WHERE_DOCUMENTOS_POR_APROBAR } from '@/lib/documentos'
 import { WHERE_ENLACES_PAGADOS, WHERE_PAGOS_APROBADOS } from '@/lib/tramites/eliminacion'
+import { SELECT_ESTADO_DERIVADO } from '@/lib/tramites/estado'
 import { PageHeader } from '@/components/ui/page-header'
 import TramitesLista from '@/components/admin/TramitesLista'
 
@@ -16,7 +17,17 @@ async function AdminTramitesPage() {
   // gestionan como leads en /dashboard/admin/leads.
   const tramites = await prisma.tramite.findMany({
     where: { formularioCompleto: true },
-    include: {
+    // Sólo lo que muestra la lista: el trámite completo (socios, objeto, revisión IA…)
+    // viajaba entero al cliente por cada fila.
+    select: {
+      id: true,
+      denominacionSocial1: true,
+      denominacionAprobada: true,
+      jurisdiccion: true,
+      plan: true,
+      createdAt: true,
+      updatedAt: true,
+      ...SELECT_ESTADO_DERIVADO,
       user: { select: { name: true, email: true, phone: true } },
       _count: {
         select: {

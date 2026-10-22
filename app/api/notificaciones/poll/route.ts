@@ -17,7 +17,8 @@ export async function GET() {
   const userId = session.user.id
 
   try {
-    const notificaciones = await prisma.notificacion.findMany({
+    const [notificaciones, count] = await Promise.all([
+      prisma.notificacion.findMany({
       where: {
         userId,
         leida: false,
@@ -33,7 +34,9 @@ export async function GET() {
           },
         },
       },
-    })
+      }),
+      prisma.notificacion.count({ where: { userId, leida: false } }),
+    ])
 
     const notifications = notificaciones.map((notif) => ({
       id: notif.id,
@@ -53,10 +56,6 @@ export async function GET() {
           }
         : null,
     }))
-
-    const count = await prisma.notificacion.count({
-      where: { userId, leida: false },
-    })
 
     return NextResponse.json({
       type: 'notifications' as const,

@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import { getPublicConfig } from '@/lib/config'
 import { reemplazarPreciosBlog } from '@/lib/blog-precios'
@@ -19,25 +20,13 @@ export async function generateStaticParams() {
   return slugs.map((p) => ({ slug: p.slug }))
 }
 
+// La metadata y la página leen el mismo post: una sola consulta por render.
+const leerPost = cache((slug: string) => prisma.post.findUnique({ where: { slug, publicado: true } }))
+
 // Generar metadata dinámica para SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const postGuardado = await prisma.post.findUnique({
-    where: { slug, publicado: true },
-    select: {
-      titulo: true,
-      descripcion: true,
-      metaTitle: true,
-      metaDescription: true,
-      keywords: true,
-      canonical: true,
-      imagenHero: true,
-      imagenAlt: true,
-      categoria: true,
-      autor: true,
-      fechaPublicacion: true,
-    }
-  })
+  const postGuardado = await leerPost(slug)
 
   if (!postGuardado) {
     return {
@@ -81,9 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const { slug } = await params
-  const postGuardado = await prisma.post.findUnique({
-    where: { slug, publicado: true },
-  })
+  const postGuardado = await leerPost(slug)
 
   if (!postGuardado) {
     notFound()

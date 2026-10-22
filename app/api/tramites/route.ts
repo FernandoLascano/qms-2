@@ -388,21 +388,20 @@ export async function POST(request: Request) {
 
     // Notificar a todos los admins sobre el nuevo trámite pendiente de validación
     const admins = await prisma.user.findMany({
-      where: { rol: 'ADMIN' }
+      where: { rol: 'ADMIN' },
+      select: { id: true, email: true, name: true }
     })
 
-    await Promise.all(admins.map(admin => 
-      prisma.notificacion.create({
-        data: {
-          userId: admin.id,
-          tramiteId: tramite.id,
-          tipo: 'ACCION_REQUERIDA',
-          titulo: 'Nuevo trámite pendiente de validación',
-          mensaje: `El cliente ${usuario.name} ha completado el formulario para "${data.denominacion1}". Requiere validación inicial.`,
-          link: `/dashboard/admin/tramites/${tramite.id}`
-        }
-      })
-    ))
+    await prisma.notificacion.createMany({
+      data: admins.map((admin) => ({
+        userId: admin.id,
+        tramiteId: tramite.id,
+        tipo: 'ACCION_REQUERIDA' as const,
+        titulo: 'Nuevo trámite pendiente de validación',
+        mensaje: `El cliente ${usuario.name} ha completado el formulario para "${data.denominacion1}". Requiere validación inicial.`,
+        link: `/dashboard/admin/tramites/${tramite.id}`
+      }))
+    })
 
     // Los emails (al cliente y a cada admin) se mandan en segundo plano: dentro
     // del request demoraban ~10 s la respuesta del formulario. waitUntil mantiene

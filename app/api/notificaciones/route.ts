@@ -30,12 +30,15 @@ export async function GET(request: NextRequest) {
       where.leida = false
     }
 
-    // Obtener todas las notificaciones con información del trámite
-    const notificaciones = await prisma.notificacion.findMany({
+    // Las últimas 200 con información del trámite (la lista crecía sin tope), y en
+    // paralelo el contador de no leídas.
+    const [notificaciones, count] = await Promise.all([
+      prisma.notificacion.findMany({
       where,
       orderBy: {
         createdAt: 'desc'
       },
+      take: 200,
       include: {
         tramite: {
           select: {
@@ -45,7 +48,9 @@ export async function GET(request: NextRequest) {
           }
         }
       }
-    })
+      }),
+      prisma.notificacion.count({ where: { userId: session.user.id, leida: false } }),
+    ])
 
     // Formatear notificaciones con información del trámite
     const notificacionesFormateadas = notificaciones.map(notif => ({
@@ -61,14 +66,6 @@ export async function GET(request: NextRequest) {
         denominacion: notif.tramite.denominacionAprobada || notif.tramite.denominacionSocial1 || 'Trámite'
       } : null
     }))
-
-    // Contar notificaciones no leídas
-    const count = await prisma.notificacion.count({
-      where: {
-        userId: session.user.id,
-        leida: false
-      }
-    })
 
     return NextResponse.json({
       notificaciones: notificacionesFormateadas,

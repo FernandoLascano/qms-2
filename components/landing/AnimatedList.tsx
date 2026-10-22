@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { useRef, ReactNode, Children } from 'react'
 
 const container = {
@@ -35,8 +35,8 @@ export function AnimatedList({ children, className = '', asList = false }: Anima
   const isInView = useInView(ref, { once: true, margin: '-80px' })
   const items = Children.toArray(children)
 
-  const Wrapper = asList ? motion.ul : motion.div
-  const ItemWrapper = asList ? motion.li : motion.div
+  const Wrapper = asList ? m.ul : m.div
+  const ItemWrapper = asList ? m.li : m.div
 
   return (
     <Wrapper

@@ -4,7 +4,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Calendar, Clock, ArrowRight, BookOpen, Search } from 'lucide-react'
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import Navbar from '@/components/Navbar'
 
 interface Post {
@@ -20,7 +19,7 @@ interface Post {
 }
 
 export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[] }) {
-  const [posts] = useState<Post[]>(initialPosts)
+  const posts = initialPosts
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredPosts = posts.filter(post =>
@@ -36,12 +35,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
       {/* Hero del Blog */}
       <section className="bg-gradient-to-b from-brand-50 to-white py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          <div className="rise text-center mb-12">
             <span className="inline-block text-brand-700 font-semibold text-sm tracking-wider uppercase mb-4">
               Blog
             </span>
@@ -67,7 +61,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
                 />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -75,12 +69,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
           {filteredPosts.length === 0 ? (
-            <motion.div
-              className="text-center py-20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
+            <div className="rise text-center py-20">
               <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="w-10 h-10 text-gray-400" />
               </div>
@@ -90,16 +79,14 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
               <p className="text-gray-400">
                 {searchTerm ? 'Intentá con otros términos de búsqueda' : '¡Volvé pronto!'}
               </p>
-            </motion.div>
+            </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {filteredPosts.map((post, index) => (
-                <motion.article
+                <article
                   key={post.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-brand-200 hover:shadow-xl transition-all duration-300"
+                  style={{ animationDelay: `${Math.min(index, 5) * 100}ms` }}
+                  className="rise group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-brand-200 hover:shadow-xl transition-all duration-300"
                 >
                   {/* Imagen */}
                   <div className="h-52 bg-gradient-to-br from-brand-50 to-orange-50 overflow-hidden relative">
@@ -160,7 +147,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
                       <ArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
                     </Link>
                   </div>
-                </motion.article>
+                </article>
               ))}
             </div>
           )}
@@ -170,11 +157,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
       {/* CTA */}
       <section className="py-16 md:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+          <div
             className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white rounded-3xl p-10 md:p-14 text-center shadow-2xl"
           >
             <h2 className="text-3xl md:text-4xl font-black mb-4">
@@ -190,7 +173,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
               Comenzar ahora
               <ArrowRight className="w-5 h-5" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 

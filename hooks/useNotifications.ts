@@ -38,7 +38,7 @@ export function useNotifications() {
   const isInitialLoadRef = useRef<boolean>(true)
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return
     }
 
@@ -125,7 +125,7 @@ export function useNotifications() {
       prevCountRef.current = 0
       isInitialLoadRef.current = true
     }
-  }, [session?.user])
+  }, [session?.user?.id])
 
   const markAsRead = useCallback(async (notificationId: string) => {
     try {

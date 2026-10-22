@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown, HelpCircle, MessageCircle } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m, AnimatePresence } from 'framer-motion'
 import { useAlAparecer } from '@/components/landing/al-aparecer'
 
 import { faqs } from '@/lib/faqs'
@@ -72,7 +72,7 @@ export function FAQ() {
                 </button>
                 <AnimatePresence>
                   {openIndex === index && (
-                    <motion.div
+                    <m.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -92,7 +92,7 @@ export function FAQ() {
                           )}
                         </div>
                       </div>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>

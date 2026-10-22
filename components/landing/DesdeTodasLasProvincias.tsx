@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { m, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { MapPin, Zap, DollarSign, Monitor, FileCheck, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ export function DesdeTodasLasProvincias() {
     <section className="py-seccion md:py-seccion-lg bg-gradient-to-b from-surface to-surface-2" ref={ref}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <motion.div
+          <m.div
             className="bg-surface rounded-modal border-2 border-brand-100 shadow-pop overflow-hidden"
             initial={{ opacity: 0, y: 40 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -30,7 +30,7 @@ export function DesdeTodasLasProvincias() {
             <div className="grid lg:grid-cols-2">
               {/* Columna izquierda - Contenido */}
               <div className="p-8 md:p-12">
-                <motion.div
+                <m.div
                   className="inline-flex items-center gap-2 bg-brand-50 border border-brand-100 rounded-full px-4 py-2 mb-6"
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={inView ? { opacity: 1, scale: 1 } : {}}
@@ -38,9 +38,9 @@ export function DesdeTodasLasProvincias() {
                 >
                   <MapPin className="w-4 h-4 text-brand-700" />
                   <span className="text-sm font-semibold text-brand-800">Válido en todo el país</span>
-                </motion.div>
+                </m.div>
 
-                <motion.h2
+                <m.h2
                   className="text-3xl md:text-display font-black text-ink mb-4 leading-tight"
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -48,9 +48,9 @@ export function DesdeTodasLasProvincias() {
                 >
                   ¿No sos de Córdoba?{' '}
                   <span className="text-brand-700">No importa.</span>
-                </motion.h2>
+                </m.h2>
 
-                <motion.p
+                <m.p
                   className="text-lead text-ink-2 mb-6 leading-relaxed"
                   initial={{ opacity: 0, y: 20 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -60,9 +60,9 @@ export function DesdeTodasLasProvincias() {
                   <strong className="text-ink">válida en todo el territorio argentino</strong>.
                   Podés operar, facturar y tributar desde cualquier provincia.
                   Solo necesitás declarar tu domicilio fiscal donde tengas tu actividad comercial.
-                </motion.p>
+                </m.p>
 
-                <motion.div
+                <m.div
                   className="space-y-3 mb-8"
                   initial={{ opacity: 0 }}
                   animate={inView ? { opacity: 1 } : {}}
@@ -70,7 +70,7 @@ export function DesdeTodasLasProvincias() {
                 >
                   <p className="text-sm font-bold text-ink uppercase tracking-wider">¿Por qué Córdoba?</p>
                   {ventajas.map((v, i) => (
-                    <motion.div
+                    <m.div
                       key={i}
                       className="flex items-center gap-3"
                       initial={{ opacity: 0, x: -20 }}
@@ -81,26 +81,26 @@ export function DesdeTodasLasProvincias() {
                         <v.icon className="w-4 h-4 text-success" />
                       </div>
                       <span className="text-sm text-n-700">{v.text}</span>
-                    </motion.div>
+                    </m.div>
                   ))}
-                </motion.div>
+                </m.div>
 
-                <motion.div
+                <m.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={inView ? { opacity: 1, y: 0 } : {}}
                   transition={{ duration: 0.5, delay: 1 }}
                 >
                   <Link href="/registro">
-                    <motion.button
+                    <m.button
                       className="group bg-brand-700 text-white px-8 py-4 rounded-control font-bold text-body-lg flex items-center gap-3 shadow-pop shadow-brand-200 cursor-pointer"
                       whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(185, 28, 28, 0.4)" }}
                       whileTap={{ scale: 0.98 }}
                     >
                       Constituir mi SAS en Córdoba
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </motion.button>
+                    </m.button>
                   </Link>
-                </motion.div>
+                </m.div>
               </div>
 
               {/* Columna derecha - Mapa de Argentina */}
@@ -110,7 +110,7 @@ export function DesdeTodasLasProvincias() {
                 {/* Stats superpuestos */}
                 <div className="absolute bottom-8 left-8 right-8">
                   <div className="grid grid-cols-2 gap-3">
-                    <motion.div
+                    <m.div
                       className="bg-surface/15 rounded-control p-4 backdrop-blur-sm border border-surface/10 text-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -118,8 +118,8 @@ export function DesdeTodasLasProvincias() {
                     >
                       <p className="text-3xl font-black text-white">5</p>
                       <p className="text-white/70 text-xs mt-1">días hábiles</p>
-                    </motion.div>
-                    <motion.div
+                    </m.div>
+                    <m.div
                       className="bg-surface/15 rounded-control p-4 backdrop-blur-sm border border-surface/10 text-center"
                       initial={{ opacity: 0, y: 20 }}
                       animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -127,12 +127,12 @@ export function DesdeTodasLasProvincias() {
                     >
                       <p className="text-3xl font-black text-white">50%</p>
                       <p className="text-white/70 text-xs mt-1">más económico</p>
-                    </motion.div>
+                    </m.div>
                   </div>
                 </div>
 
                 {/* Textos superpuestos */}
-                <motion.div
+                <m.div
                   className="absolute top-8 left-8 right-8 text-center"
                   initial={{ opacity: 0 }}
                   animate={inView ? { opacity: 1 } : {}}
@@ -140,10 +140,10 @@ export function DesdeTodasLasProvincias() {
                 >
                   <p className="text-white/90 text-lead font-bold">Inscribí en Córdoba</p>
                   <p className="text-white/60 text-sm">Operá en todo Argentina</p>
-                </motion.div>
+                </m.div>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>
