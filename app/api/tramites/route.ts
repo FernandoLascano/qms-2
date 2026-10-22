@@ -10,6 +10,7 @@ import { marcarLeadsGanados } from '@/lib/leads/ganado'
 import { marcarLeadGanadoPorEmail } from '@/lib/leads/capturar'
 import { getPublicConfig } from '@/lib/config'
 import { capitalMinimo } from '@/lib/precios'
+import { parsearMonto } from '@/lib/montos'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 import { revisarFormularioAlEnviar } from '@/lib/ai/revision'
 
@@ -46,6 +47,10 @@ export async function POST(request: Request) {
     if (!data.denominacion1?.trim()) erroresValidacion.push('Primera opción de denominación social')
     if (!data.denominacion2?.trim()) erroresValidacion.push('Segunda opción de denominación social')
     if (!data.denominacion3?.trim()) erroresValidacion.push('Tercera opción de denominación social')
+    {
+      const opciones = [data.denominacion1, data.denominacion2, data.denominacion3].map((d: unknown) => String(d ?? '').trim().toLowerCase())
+      if (opciones.every(Boolean) && new Set(opciones).size < 3) erroresValidacion.push('Tres opciones de denominación distintas')
+    }
 
     // Validar objeto social y domicilio del paso 3
     if (!data.objetoSocial?.trim() && !data.objetoPersonalizado?.trim()) {
@@ -60,7 +65,7 @@ export async function POST(request: Request) {
     // Validar capital social del paso 4 (mínimo 2 SMVM, misma fuente que el formulario)
     const { smvm } = await getPublicConfig()
     const capitalMin = capitalMinimo(smvm)
-    if (!data.capitalSocial || parseFloat(String(data.capitalSocial).replace(/\./g, '').replace(',', '.')) < capitalMin) {
+    if (parsearMonto(data.capitalSocial) < capitalMin) {
       erroresValidacion.push(`Capital social (debe ser mayor o igual a $${capitalMin.toLocaleString('es-AR')})`)
     }
 
@@ -75,12 +80,22 @@ export async function POST(request: Request) {
         if (!socio.dni?.trim()) erroresValidacion.push(`DNI del socio ${index + 1}`)
         if (!socio.cuit?.trim()) erroresValidacion.push(`CUIT del socio ${index + 1}`)
         if (!socio.domicilio?.trim()) erroresValidacion.push(`Domicilio del socio ${index + 1}`)
+        if (!socio.ciudad?.trim()) erroresValidacion.push(`Ciudad del socio ${index + 1}`)
+        if (!socio.departamento?.trim()) erroresValidacion.push(`Departamento del socio ${index + 1}`)
+        if (!socio.provincia?.trim()) erroresValidacion.push(`Provincia del socio ${index + 1}`)
         if (!socio.estadoCivil) erroresValidacion.push(`Estado civil del socio ${index + 1}`)
         if (!socio.profesion?.trim()) erroresValidacion.push(`Profesión del socio ${index + 1}`)
-        if (!socio.aporteCapital || parseFloat(String(socio.aporteCapital).replace(/\./g, '').replace(',', '.')) <= 0) {
+        if (parsearMonto(socio.aporteCapital) <= 0) {
           erroresValidacion.push(`Aporte de capital del socio ${index + 1}`)
         }
       })
+      // Los aportes tienen que sumar el capital (antes sólo lo controlaba el
+      // formulario, y un capital cambiado después dejaba montos que no sumaban).
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const suma = data.socios.reduce((total: number, s: any) => total + parsearMonto(s.aporteCapital), 0)
+      if (Math.abs(suma - parsearMonto(data.capitalSocial)) > 1) {
+        erroresValidacion.push(`Aportes que sumen el capital social (suman $${suma.toLocaleString('es-AR')})`)
+      }
     }
 
     // Validar administradores del paso 6
@@ -94,6 +109,9 @@ export async function POST(request: Request) {
         if (!admin.dni?.trim()) erroresValidacion.push(`DNI del administrador ${index + 1}`)
         if (!admin.cuit?.trim()) erroresValidacion.push(`CUIT del administrador ${index + 1}`)
         if (!admin.domicilio?.trim()) erroresValidacion.push(`Domicilio del administrador ${index + 1}`)
+        if (!admin.ciudad?.trim()) erroresValidacion.push(`Ciudad del administrador ${index + 1}`)
+        if (!admin.departamento?.trim()) erroresValidacion.push(`Departamento del administrador ${index + 1}`)
+        if (!admin.provincia?.trim()) erroresValidacion.push(`Provincia del administrador ${index + 1}`)
         if (!admin.estadoCivil) erroresValidacion.push(`Estado civil del administrador ${index + 1}`)
         if (!admin.profesion?.trim()) erroresValidacion.push(`Profesión del administrador ${index + 1}`)
       })
@@ -168,6 +186,8 @@ export async function POST(request: Request) {
       // paso del domicilio: hoy estaba vacío en 24 de 25 borradores.
       provinciaResidencia: data.provinciaResidencia || '',
       sinDomicilio: data.sinDomicilio || false,
+      // La dirección tal cual la escribió (domicilioLegal la combina con ciudad y provincia)
+      domicilio: data.domicilio || '',
       objetoSocial: data.objetoSocial || 'PRE_APROBADO',
       objetoPersonalizado: data.objetoPersonalizado || '',
       // A qué se va a dedicar la sociedad (se pide aunque elija el pre-aprobado)
@@ -175,31 +195,12 @@ export async function POST(request: Request) {
     }
 
     // Preparar capital social
-    let capitalSocial = 0
-    try {
-      const capitalStr = String(data.capitalSocial || '0')
-      capitalSocial = parseFloat(capitalStr.replace(/\./g, '').replace(',', '.'))
-    } catch {
-      capitalSocial = capitalMin
-    }
+    const capitalSocial = parsearMonto(data.capitalSocial)
 
     // Preparar socios como JSON
     const sociosJSON = data.socios && data.socios.length > 0 
       ? data.socios.map((socio: any, index: number) => {
-          let aporteCapital = 0
-          try {
-            // El aporteCapital puede venir como string o número
-            // Si viene como string, puede tener formato con puntos o comas
-            const aporteStr = String(socio.aporteCapital || '0')
-            // Remover puntos (separadores de miles) y reemplazar coma por punto (decimal)
-            aporteCapital = parseFloat(aporteStr.replace(/\./g, '').replace(',', '.'))
-            // Validar que no sea NaN
-            if (isNaN(aporteCapital)) {
-              aporteCapital = 0
-            }
-          } catch {
-            aporteCapital = 0
-          }
+          const aporteCapital = parsearMonto(socio.aporteCapital)
           
           // Calcular porcentaje correctamente
           const porcentajeCalculado = capitalSocial > 0 

@@ -1,9 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { ChevronLeft, ChevronRight, Check, Cloud, CloudOff, Loader2, User, Building2, Target, DollarSign, Users, Briefcase, Calendar, ExternalLink, Info } from 'lucide-react'
+import {
+  AlertCircle, Briefcase, Building2, Calendar, Check, ChevronLeft, ChevronRight, Cloud, CloudOff, Copy,
+  DollarSign, ExternalLink, Loader2, Pencil, Plus, RotateCw, Target, Trash2, User, UserCheck, Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import { PrecioDual } from '@/components/PrecioDual'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -11,8 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FormField } from '@/components/ui/form-field'
+import { Aviso } from '@/components/ui/aviso'
 import { useFormValidation, validators } from '@/hooks/useFormValidation'
-import { HelpTooltip } from '@/components/ui/help-tooltip'
 import JurisdiccionSelector from '@/components/JurisdiccionSelector'
 import { Select } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,21 +23,36 @@ import { toast } from 'sonner'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { trackEvent } from '@/lib/analytics'
 import { capitalMinimo } from '@/lib/precios'
-import {
-  ACTIVIDAD_PRINCIPAL_MIN_CARACTERES,
-  validarActividadPrincipal,
-  validarCbu,
-  validarCuit,
-  validarDenominacion,
-  validarDni,
-  validarEmail,
-  validarFechaCierre,
-  validarTelefono,
-} from '@/lib/validaciones'
+import { parsearMonto } from '@/lib/montos'
+import { esObjetoPreAprobado } from '@/lib/objeto-social'
+import { ACTIVIDAD_PRINCIPAL_MIN_CARACTERES, soloDigitos, validarDenominacion } from '@/lib/validaciones'
 import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 import { EtiquetaCarga } from '@/components/ui/etiqueta-carga'
+import { cn } from '@/lib/utils'
+import {
+  CIUDADES_CORDOBA,
+  DEPARTAMENTOS_CORDOBA,
+  TOTAL_PASOS,
+  aporteDe,
+  datosParaGuardar,
+  departamentoDeCiudad,
+  erroresDelPaso,
+  personaVacia,
+  primerPasoConErrores,
+  repartirEnPartesIguales,
+  sinRelleno,
+  socioVacio,
+  totalAportes,
+  type Errores,
+  type FormData,
+  type Persona,
+  type Socio,
+} from './formulario'
+import { CampoSelect, LISTA_CIUDADES, PersonaCampos, TarjetaPersona } from './PersonaCampos'
+import { CampoMonto } from './CampoMonto'
 
-const PROVINCIAS_AR = [
+// Dónde vive quien completa el formulario (paso 1): no es la sede.
+const PROVINCIAS_RESIDENCIA = [
   'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
   'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones',
   'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
@@ -45,102 +63,17 @@ const PROVINCIAS_AR = [
 const SMVM_POR_DEFECTO = 317800
 
 const PASOS = [
-  { id: 1, nombre: 'Datos', descripcion: 'Información personal y plan', icon: User },
-  { id: 2, nombre: 'Nombre', descripcion: 'Marca de la sociedad', icon: Building2 },
-  { id: 3, nombre: 'Objeto', descripcion: 'Actividad y domicilio', icon: Target },
-  { id: 4, nombre: 'Capital', descripcion: 'Capital social y CBU', icon: DollarSign },
-  { id: 5, nombre: 'Socios', descripcion: 'Accionistas', icon: Users },
-  { id: 6, nombre: 'Administración', descripcion: 'Administradores', icon: Briefcase },
-  { id: 7, nombre: 'Cierre', descripcion: 'Ejercicio económico', icon: Calendar },
+  { id: 1, nombre: 'Datos', icon: User },
+  { id: 2, nombre: 'Nombre', icon: Building2 },
+  { id: 3, nombre: 'Objeto', icon: Target },
+  { id: 4, nombre: 'Capital', icon: DollarSign },
+  { id: 5, nombre: 'Socios', icon: Users },
+  { id: 6, nombre: 'Administración', icon: Briefcase },
+  { id: 7, nombre: 'Cierre', icon: Calendar },
 ]
 
-// Ciudades y Departamentos de Córdoba
-const DEPARTAMENTOS_CORDOBA = [
-  'Capital', 'Colón', 'Río Cuarto', 'General Roca', 'San Justo', 'Tercero Arriba', 
-  'Unión', 'Marcos Juárez', 'Minas', 'Pocho', 'Punilla', 'San Alberto', 'San Javier',
-  'Santa María', 'Sobremonte', 'Tulumba', 'Totoral', 'Río Segundo', 'Río Primero',
-  'Presidente Roque Sáenz Peña', 'Juárez Celman', 'Ischilín', 'General San Martín',
-  'Cruz del Eje', 'Calamuchita'
-]
-
-const CIUDADES_CORDOBA = [
-  'Córdoba', 'Villa Carlos Paz', 'Río Cuarto', 'Villa María', 'San Francisco', 
-  'Villa Allende', 'Jesús María', 'La Calera', 'Arroyito', 'Marcos Juárez',
-  'Bell Ville', 'Leones', 'Monte Cristo', 'Morteros', 'Villa Dolores', 'Cruz del Eje',
-  'Deán Funes', 'Villa General Belgrano', 'La Falda', 'Cosquín',
-  'Villa Giardino', 'Unquillo', 'Salsipuedes', 'Río Tercero', 'Villa Mercedes',
-  'General Cabrera', 'Huinca Renancó', 'Laboulaye', 'Rufino', 'Villa Huidobro'
-]
-
-interface FormData {
-  // Paso 1: Datos
-  nombre: string
-  apellido: string
-  dni: string
-  telefono: string
-  email: string
-  plan: 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'
-  jurisdiccion: 'CORDOBA' | 'CABA'
-  
-  // Paso 2: Nombre
-  denominacion1: string
-  denominacion2: string
-  denominacion3: string
-  marcaRegistrada: boolean
-  
-  // Paso 3: Objeto
-  objetoSocial: 'PREAPROBADO' | 'PERSONALIZADO'
-  objetoPersonalizado: string
-  actividadPrincipal: string
-  sinDomicilio: boolean
-  provinciaResidencia: string
-  domicilio: string
-  ciudad: string
-  departamento: string
-  provincia: string
-  
-  // Paso 4: Capital
-  capitalSocial: string
-  cbuPrincipal: string
-  cbuSecundario: string
-  
-  // Paso 5: Socios
-  numeroSocios: number
-  socios: Array<{
-    nombre: string
-    apellido: string
-    dni: string
-    cuit: string
-    domicilio: string
-    ciudad: string
-    departamento: string
-    provincia: string
-    estadoCivil: string
-    profesion: string
-    aporteCapital: string
-    tipoAporte: 'MONTO' | 'PORCENTAJE'
-    aportePorcentaje: string
-  }>
-  
-  // Paso 6: Administradores
-  numeroAdministradores: number
-  administradores: Array<{
-    nombre: string
-    apellido: string
-    dni: string
-    cuit: string
-    domicilio: string
-    ciudad: string
-    departamento: string
-    provincia: string
-    estadoCivil: string
-    profesion: string
-  }>
-  
-  // Paso 7: Cierre
-  fechaCierre: string
-  asesoramientoContable: boolean
-}
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const DIAS_POR_MES = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 // ¿El cliente ya escribió algo en el formulario? (los valores por defecto no cuentan)
 function tieneDatosCargados(data: FormData): boolean {
@@ -153,26 +86,95 @@ function tieneDatosCargados(data: FormData): boolean {
   return campos.some(c => String(c || '').trim() !== '')
 }
 
+/** Mensaje de error bajo un campo que no es FormField (textareas, opciones). */
+function ErrorDe({ mensaje, id }: { mensaje?: string; id?: string }) {
+  return (
+    <div className="mensaje-campo" data-visible={!!mensaje}>
+      <div>
+        <p id={id} className="pt-2 text-label text-danger flex items-center gap-1" aria-live="polite">
+          <AlertCircle className="h-3 w-3 shrink-0" />
+          {mensaje}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/** Cabecera de cada paso: número, título y una línea de qué se pide. */
+function CabeceraPaso({ numero, titulo, bajada }: { numero: number; titulo: string; bajada: string }) {
+  return (
+    <div className="flex items-center gap-4 pb-4 border-b border-line">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
+        <span className="text-title text-primary">{numero}</span>
+      </div>
+      <div className="min-w-0">
+        <h2 className="text-title text-ink">{titulo}</h2>
+        <p className="mt-1 text-body text-ink-2">{bajada}</p>
+      </div>
+    </div>
+  )
+}
+
+/** Opción elegible (radio o casilla) con título y descripción. */
+function Opcion({
+  activa,
+  children,
+  className,
+}: {
+  activa: boolean
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <label
+      className={cn(
+        'flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer',
+        activa ? 'border-primary bg-primary-soft' : 'border-line hover:border-primary hover:bg-primary-soft/40',
+        className,
+      )}
+    >
+      {children}
+    </label>
+  )
+}
+
+/** Bloque del resumen final, con su botón para volver a editar. */
+function BloqueResumen({ titulo, onEditar, children }: { titulo: string; onEditar: () => void; children: ReactNode }) {
+  return (
+    <section className="rounded-control border border-line p-4">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h4 className="text-body-sm font-semibold text-ink">{titulo}</h4>
+        <button type="button" onClick={onEditar} className="inline-flex min-h-8 items-center gap-1 text-label font-semibold text-primary hover:underline">
+          <Pencil className="h-3.5 w-3.5" aria-hidden /> Editar
+        </button>
+      </div>
+      <div className="space-y-1 text-body-sm text-ink-2">{children}</div>
+    </section>
+  )
+}
+
+const nombreCompleto = (p: { nombre: string; apellido: string }) => `${p.nombre} ${p.apellido}`.trim()
+
 export default function NuevoTramitePage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [pasoActual, setPasoActual] = useState(1)
+  // Hasta dónde llegó: los pasos ya visitados se pueden abrir desde el indicador.
+  const [pasoMaximo, setPasoMaximo] = useState(1)
   // Hacia dónde se movió el formulario: el paso nuevo entra desde ese lado.
   const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante')
   // El formulario se desplaza dentro del <main> del layout, no en la ventana:
   // window.scrollTo(0, 0) no hacía nada y el paso nuevo arrancaba fuera de la
   // vista, con el cliente mirando el final en vez del principio.
   const inicioRef = useRef<HTMLDivElement>(null)
-  const irAPaso = (paso: number) => {
-    setDireccion(paso < pasoActual ? 'atras' : 'adelante')
-    setPasoActual(paso)
-    inicioRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
   const [guardando, setGuardando] = useState(false)
   // Una vez enviado hay que cortar el auto-guardado: si sigue corriendo, el
   // borrador ya no existe (quedó marcado como completo) y crea un trámite duplicado.
   const [enviado, setEnviado] = useState(false)
   const [cargandoBorrador, setCargandoBorrador] = useState(true)
+  // Si el borrador no se pudo cargar, no se guarda nada: el formulario quedaría
+  // en blanco y el auto-guardado pisaría los datos reales con vacíos.
+  const [cargaFallida, setCargaFallida] = useState(false)
   // Id del borrador que se está editando. Arranca con el de la URL (retomar) y,
   // si es un trámite nuevo, lo completa el primer auto-guardado. Todo guardado
   // posterior y el envío final usan este id: así nunca se pisa otro borrador.
@@ -181,9 +183,9 @@ export default function NuevoTramitePage() {
   // borradores si el primero todavía no devolvió el id.
   const guardadoEnCursoRef = useRef<Promise<void> | null>(null)
   const [mostrarObjetoPreAprobado, setMostrarObjetoPreAprobado] = useState(false)
-  // El error de la fecha de cierre se muestra recién cuando el cliente deja el
-  // campo o intenta enviar, no apenas entra al paso
-  const [fechaCierreTocada, setFechaCierreTocada] = useState(false)
+  // Errores por campo (clave = ruta del campo). Se muestran al lado de cada
+  // uno: antes eran sólo avisos flotantes que no decían qué campo faltaba.
+  const [errores, setErrores] = useState<Errores>({})
   const [smvm, setSmvm] = useState(SMVM_POR_DEFECTO)
   const [precios, setPrecios] = useState({
     precioPlanBasico: 285000,
@@ -199,12 +201,10 @@ export default function NuevoTramitePage() {
     email: session?.user?.email || '',
     plan: 'EMPRENDEDOR',
     jurisdiccion: 'CORDOBA',
-    
     denominacion1: '',
     denominacion2: '',
     denominacion3: '',
     marcaRegistrada: false,
-    
     objetoSocial: 'PREAPROBADO',
     objetoPersonalizado: '',
     actividadPrincipal: '',
@@ -214,34 +214,13 @@ export default function NuevoTramitePage() {
     ciudad: '',
     departamento: '',
     provincia: 'Córdoba',
-    
     capitalSocial: String(capitalMinimo(smvm)),
+    numeroSocios: 1,
+    socios: [socioVacio()],
+    numeroAdministradores: 2,
+    administradores: [personaVacia(), personaVacia()],
     cbuPrincipal: '',
     cbuSecundario: '',
-    
-    numeroSocios: 1,
-    socios: [{
-      nombre: '',
-      apellido: '',
-      dni: '',
-      cuit: '',
-      domicilio: '',
-      ciudad: '',
-      departamento: '',
-      provincia: '',
-      estadoCivil: '',
-      profesion: '',
-      aporteCapital: '0',
-      tipoAporte: 'MONTO',
-      aportePorcentaje: '0'
-    }],
-    
-    numeroAdministradores: 2,
-    administradores: [
-      { nombre: '', apellido: '', dni: '', cuit: '', domicilio: '', ciudad: '', departamento: '', provincia: '', estadoCivil: '', profesion: '' },
-      { nombre: '', apellido: '', dni: '', cuit: '', domicilio: '', ciudad: '', departamento: '', provincia: '', estadoCivil: '', profesion: '' }
-    ],
-    
     fechaCierre: '31-12',
     asesoramientoContable: false
   })
@@ -286,214 +265,131 @@ export default function NuevoTramitePage() {
           })
         }
       })
-      .catch(err => console.error('Error al cargar configuración:', err))
+      .catch(() => {})
   }, [])
 
   // Cargar borrador al iniciar - SOLO si es un borrador sin terminar
   useEffect(() => {
     if (status === 'authenticated') {
-      // Verificar si hay un tramiteId en la URL (viene del dashboard)
-      const urlParams = new URLSearchParams(window.location.search)
-      const tramiteIdFromUrl = urlParams.get('tramiteId')
-      
-      // Si hay un tramiteId en la URL, cargar ese trámite específico
-      if (tramiteIdFromUrl) {
-        tramiteIdRef.current = tramiteIdFromUrl
-        fetch(`/api/tramites/${tramiteIdFromUrl}`)
-          .then(res => res.json())
-          .then(data => {
-            console.log('Respuesta del API para tramiteId:', tramiteIdFromUrl, {
-              tieneTramite: !!data.tramite,
-              formularioCompleto: data.tramite?.formularioCompleto,
-              estadoGeneral: data.tramite?.estadoGeneral,
-              tieneDatosUsuario: !!data.tramite?.datosUsuario,
-              plan: data.tramite?.plan,
-              jurisdiccion: data.tramite?.jurisdiccion,
-              denominacion1: data.tramite?.denominacionSocial1,
-              capitalSocial: data.tramite?.capitalSocial,
-              tieneSocios: Array.isArray(data.tramite?.socios) && data.tramite.socios.length > 0
-            })
-            
-            if (data.tramite && data.tramite.formularioCompleto === false && data.tramite.estadoGeneral === 'INICIADO') {
-              const draft = data.tramite
-              const socios = Array.isArray(draft.socios) ? draft.socios : []
-              const administradores = Array.isArray(draft.administradores) ? draft.administradores : []
-              
-              // Detectar si es objeto pre-aprobado
-              const esPreAprobado = draft.objetoSocial?.includes('Construcción de todo tipo de obras') || 
-                                    draft.objetoSocial?.includes('La sociedad tiene por objeto realizar')
-              
-              // Cargar datos del usuario desde datosUsuario JSON
-              // Si no está disponible, intentar cargar desde otros campos o usar valores por defecto
-              let datosUsuario: any = {}
-              if (draft.datosUsuario && typeof draft.datosUsuario === 'object') {
-                datosUsuario = draft.datosUsuario as any
-              } else {
-                // Si datosUsuario no está disponible, usar valores por defecto de la sesión
-                console.warn('datosUsuario no disponible en el trámite, usando valores por defecto')
-                datosUsuario = {
-                  nombre: session?.user?.name?.split(' ')[0] || '',
-                  apellido: session?.user?.name?.split(' ').slice(1).join(' ') || '',
-                  email: session?.user?.email || '',
-                  telefono: '',
-                  dni: '',
-                  marcaRegistrada: false,
-                  cbuPrincipal: '',
-                  cbuSecundario: '',
-                  fechaCierre: '31-12',
-                  asesoramientoContable: false,
-                  ciudad: '',
-                  departamento: ''
-                }
-              }
-              
-              // Parsear domicilio legal
-              let domicilioParsed = ''
-              let ciudadParsed = ''
-              let departamentoParsed = ''
-              
-              if (draft.domicilioLegal && draft.domicilioLegal !== 'A informar') {
-                const partesDomicilio = draft.domicilioLegal.split(',').map((p: string) => p.trim())
-                domicilioParsed = partesDomicilio[0] || ''
-                ciudadParsed = datosUsuario.ciudad || partesDomicilio[1] || ''
-                departamentoParsed = datosUsuario.departamento || partesDomicilio[2] || ''
-              }
-              
-              console.log('Cargando datos del trámite:', {
-                tieneDatosUsuario: !!draft.datosUsuario,
-                datosUsuarioKeys: datosUsuario ? Object.keys(datosUsuario) : [],
-                nombre: datosUsuario.nombre,
-                apellido: datosUsuario.apellido,
-                email: datosUsuario.email,
-                plan: draft.plan,
-                jurisdiccion: draft.jurisdiccion,
-                denominacion1: draft.denominacionSocial1
-              })
-              
-              // Construir el objeto completo de formData (no mezclar con prev para evitar problemas)
-              const nuevoFormData: FormData = {
-                // Datos del usuario (desde datosUsuario JSON guardado o valores por defecto)
-                nombre: datosUsuario.nombre || session?.user?.name?.split(' ')[0] || '',
-                apellido: datosUsuario.apellido || session?.user?.name?.split(' ').slice(1).join(' ') || '',
-                dni: datosUsuario.dni || '',
-                telefono: datosUsuario.telefono || '',
-                email: datosUsuario.email || session?.user?.email || '',
-                marcaRegistrada: datosUsuario.marcaRegistrada !== undefined ? datosUsuario.marcaRegistrada : false,
-                // Datos del trámite (estos SÍ deberían estar guardados)
-                plan: draft.plan || 'EMPRENDEDOR',
-                jurisdiccion: draft.jurisdiccion || 'CORDOBA',
-                denominacion1: draft.denominacionSocial1 || '',
-                denominacion2: draft.denominacionSocial2 || '',
-                denominacion3: draft.denominacionSocial3 || '',
-                objetoSocial: esPreAprobado ? 'PREAPROBADO' : 'PERSONALIZADO',
-                objetoPersonalizado: esPreAprobado ? '' : (draft.objetoSocial || ''),
-                actividadPrincipal: datosUsuario.actividadPrincipal || '',
-                sinDomicilio: draft.domicilioLegal === 'A informar' || draft.domicilioLegal === '',
-                provinciaResidencia: datosUsuario.provinciaResidencia || '',
-                domicilio: domicilioParsed,
-                ciudad: ciudadParsed,
-                departamento: departamentoParsed,
-                provincia: draft.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires',
-                capitalSocial: String(draft.capitalSocial || capitalMinimo(smvm)),
-                cbuPrincipal: datosUsuario.cbuPrincipal || '',
-                cbuSecundario: datosUsuario.cbuSecundario || '',
-                fechaCierre: datosUsuario.fechaCierre || '31-12',
-                asesoramientoContable: datosUsuario.asesoramientoContable !== undefined ? datosUsuario.asesoramientoContable : false,
-                numeroSocios: socios.length || 1,
-                socios: socios.length > 0 ? socios.map((s: any) => {
-                  const capitalTotal = parseFloat(String(draft.capitalSocial || capitalMinimo(smvm)))
-                  const aporteCapital = parseFloat(String(s.aporteCapital || '0'))
-                  const porcentajeCalculado = capitalTotal > 0 ? ((aporteCapital / capitalTotal) * 100).toFixed(2) : '0'
-                  
-                  return {
-                    nombre: s.nombre || '',
-                    apellido: s.apellido || '',
-                    dni: s.dni || '',
-                    cuit: s.cuit || '',
-                    domicilio: s.domicilio || '',
-                    ciudad: s.ciudad || '',
-                    departamento: s.departamento || '',
-                    provincia: s.provincia || '',
-                    estadoCivil: s.estadoCivil || '',
-                    profesion: s.profesion || '',
-                    aporteCapital: String(s.aporteCapital || '0'),
-                    tipoAporte: s.tipoAporte || 'MONTO',
-                    aportePorcentaje: s.aportePorcentaje || s.porcentaje || porcentajeCalculado
-                  }
-                }) : [{
-                  nombre: '',
-                  apellido: '',
-                  dni: '',
-                  cuit: '',
-                  domicilio: '',
-                  ciudad: '',
-                  departamento: '',
-                  provincia: '',
-                  estadoCivil: '',
-                  profesion: '',
-                  aporteCapital: '0',
-                  tipoAporte: 'MONTO',
-                  aportePorcentaje: '0'
-                }],
-                numeroAdministradores: administradores.length || 2,
-                administradores: administradores.length > 0 ? administradores.map((a: any) => ({
-                  nombre: a.nombre || '',
-                  apellido: a.apellido || '',
-                  dni: a.dni || '',
-                  cuit: a.cuit || '',
-                  domicilio: a.domicilio || '',
-                  ciudad: a.ciudad || '',
-                  departamento: a.departamento || '',
-                  provincia: a.provincia || '',
-                  estadoCivil: a.estadoCivil || '',
-                  profesion: a.profesion || ''
-                })) : [
-                  { nombre: '', apellido: '', dni: '', cuit: '', domicilio: '', ciudad: '', departamento: '', provincia: '', estadoCivil: '', profesion: '' },
-                  { nombre: '', apellido: '', dni: '', cuit: '', domicilio: '', ciudad: '', departamento: '', provincia: '', estadoCivil: '', profesion: '' }
-                ]
-              }
-              
-              console.log('Datos que se van a cargar en el formulario:', {
-                plan: nuevoFormData.plan,
-                jurisdiccion: nuevoFormData.jurisdiccion,
-                denominacion1: nuevoFormData.denominacion1,
-                capitalSocial: nuevoFormData.capitalSocial,
-                nombre: nuevoFormData.nombre,
-                apellido: nuevoFormData.apellido,
-                email: nuevoFormData.email,
-                numeroSocios: nuevoFormData.numeroSocios,
-                numeroAdministradores: nuevoFormData.numeroAdministradores
-              })
-              
-              setFormData(nuevoFormData)
-              // Volver al paso donde había quedado (se guarda con el borrador)
-              const pasoGuardado = Number(datosUsuario.pasoActual)
-              if (Number.isInteger(pasoGuardado) && pasoGuardado >= 1 && pasoGuardado <= 7) {
-                setPasoActual(pasoGuardado)
-              }
-              toast.success('Trámite cargado para continuar')
-            } else {
-              // No es un borrador editable: no seguir guardando sobre ese id
-              tramiteIdRef.current = null
-              window.history.replaceState({}, '', window.location.pathname)
-              toast.error('Este trámite ya está completado o no existe')
-            }
-            setCargandoBorrador(false)
-          })
-          .catch(err => {
-            console.error('Error al cargar trámite:', err)
-            toast.error('Error al cargar el trámite')
-            setCargandoBorrador(false)
-          })
-      } else {
-        // Si no hay tramiteId, NO cargar ningún borrador automáticamente
-        // Solo se carga cuando el usuario hace clic en un trámite específico desde el dashboard
-        // Esto asegura que un nuevo trámite empiece en blanco
+      const tramiteIdFromUrl = new URLSearchParams(window.location.search).get('tramiteId')
+
+      // Sin id en la URL el formulario empieza en blanco (un trámite nuevo).
+      if (!tramiteIdFromUrl) {
         setCargandoBorrador(false)
+        return
       }
+
+      tramiteIdRef.current = tramiteIdFromUrl
+      fetch(`/api/tramites/${tramiteIdFromUrl}`)
+        .then(async res => {
+          // Un error del servidor no es «el trámite no existe»: no hay que
+          // soltar el id ni empezar uno nuevo encima.
+          if (res.status >= 500) throw new Error(`HTTP ${res.status}`)
+          return res.json()
+        })
+        .then(data => {
+          if (data.tramite && data.tramite.formularioCompleto === false && data.tramite.estadoGeneral === 'INICIADO') {
+            const draft = data.tramite
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const crudos = (lista: unknown): any[] => (Array.isArray(lista) ? lista : [])
+            const du: Record<string, unknown> =
+              draft.datosUsuario && typeof draft.datosUsuario === 'object' ? draft.datosUsuario : {}
+            const txt = (v: unknown) => (typeof v === 'string' ? v : '')
+
+            // Objeto: se guarda la elección en datosUsuario. En borradores
+            // anteriores se deduce comparando con el texto pre-aprobado (antes
+            // se buscaba la frase de apertura, que también tiene un objeto propio).
+            const elegido = du.objetoSocial === 'PERSONALIZADO' || du.objetoSocial === 'PREAPROBADO' ? du.objetoSocial : null
+            const objetoSocial: FormData['objetoSocial'] =
+              elegido ?? (esObjetoPreAprobado(draft.objetoSocial) ? 'PREAPROBADO' : 'PERSONALIZADO')
+            const objetoPersonalizado = sinRelleno(
+              txt(du.objetoPersonalizado) || (objetoSocial === 'PERSONALIZADO' ? txt(draft.objetoSocial) : ''),
+            )
+
+            // Sede: la dirección cruda está en datosUsuario. En borradores
+            // anteriores sólo queda la combinada «calle, ciudad, depto, provincia»:
+            // se le sacan las tres últimas partes en vez de quedarse con la
+            // primera (que cortaba «Av. Colón 123, Piso 2, Dpto. A»).
+            const domicilioLegal = txt(draft.domicilioLegal)
+            const sinDomicilio = typeof du.sinDomicilio === 'boolean'
+              ? du.sinDomicilio
+              : domicilioLegal === 'A informar' || domicilioLegal === ''
+            const partes = domicilioLegal.split(',').map(p => p.trim())
+            const domicilio = txt(du.domicilio) || (sinDomicilio ? '' : partes.slice(0, Math.max(1, partes.length - 3)).join(', '))
+
+            const capital = parsearMonto(draft.capitalSocial) || capitalMinimo(smvm)
+            const socios: Socio[] = crudos(draft.socios).map((s) => ({
+              ...personaVacia(),
+              nombre: txt(s.nombre), apellido: txt(s.apellido), dni: txt(s.dni), cuit: txt(s.cuit),
+              domicilio: txt(s.domicilio), ciudad: txt(s.ciudad), departamento: txt(s.departamento),
+              provincia: txt(s.provincia), estadoCivil: txt(s.estadoCivil), profesion: txt(s.profesion),
+              tipoAporte: s.tipoAporte === 'PORCENTAJE' ? 'PORCENTAJE' : 'MONTO',
+              aporteCapital: String(parsearMonto(s.aporteCapital)),
+              aportePorcentaje: String(s.aportePorcentaje || s.porcentaje || (capital > 0 ? ((parsearMonto(s.aporteCapital) / capital) * 100).toFixed(2) : '0')),
+            }))
+            const administradores: Persona[] = crudos(draft.administradores).map((a) => ({
+              nombre: txt(a.nombre), apellido: txt(a.apellido), dni: txt(a.dni), cuit: txt(a.cuit),
+              domicilio: txt(a.domicilio), ciudad: txt(a.ciudad), departamento: txt(a.departamento),
+              provincia: txt(a.provincia), estadoCivil: txt(a.estadoCivil), profesion: txt(a.profesion),
+            }))
+            while (administradores.length < 2) administradores.push(personaVacia())
+
+            setFormData({
+              nombre: txt(du.nombre) || session?.user?.name?.split(' ')[0] || '',
+              apellido: txt(du.apellido) || session?.user?.name?.split(' ').slice(1).join(' ') || '',
+              dni: txt(du.dni),
+              telefono: txt(du.telefono),
+              email: txt(du.email) || session?.user?.email || '',
+              marcaRegistrada: du.marcaRegistrada === true,
+              plan: draft.plan || 'EMPRENDEDOR',
+              jurisdiccion: draft.jurisdiccion || 'CORDOBA',
+              // «Pendiente de definir» es relleno del servidor, no un nombre propuesto.
+              denominacion1: sinRelleno(draft.denominacionSocial1),
+              denominacion2: sinRelleno(draft.denominacionSocial2),
+              denominacion3: sinRelleno(draft.denominacionSocial3),
+              objetoSocial,
+              objetoPersonalizado,
+              actividadPrincipal: txt(du.actividadPrincipal),
+              sinDomicilio,
+              provinciaResidencia: txt(du.provinciaResidencia),
+              domicilio,
+              ciudad: txt(du.ciudad) || (sinDomicilio ? '' : partes.at(-3) ?? ''),
+              departamento: txt(du.departamento) || (sinDomicilio ? '' : partes.at(-2) ?? ''),
+              provincia: draft.jurisdiccion === 'CABA' ? 'Ciudad Autónoma de Buenos Aires' : 'Córdoba',
+              capitalSocial: String(capital),
+              numeroSocios: socios.length || 1,
+              socios: socios.length > 0 ? socios : [socioVacio()],
+              numeroAdministradores: administradores.length,
+              administradores,
+              cbuPrincipal: txt(du.cbuPrincipal),
+              cbuSecundario: txt(du.cbuSecundario),
+              fechaCierre: txt(du.fechaCierre) || '31-12',
+              asesoramientoContable: du.asesoramientoContable === true,
+            })
+            // Volver al paso donde había quedado (se guarda con el borrador)
+            const pasoGuardado = Number(du.pasoActual)
+            if (Number.isInteger(pasoGuardado) && pasoGuardado >= 1 && pasoGuardado <= TOTAL_PASOS) {
+              setPasoActual(pasoGuardado)
+              setPasoMaximo(pasoGuardado)
+            }
+            toast.success('Retomamos tu trámite donde lo dejaste')
+          } else {
+            // No es un borrador editable: no seguir guardando sobre ese id
+            tramiteIdRef.current = null
+            window.history.replaceState({}, '', window.location.pathname)
+            toast.error('Este trámite ya fue enviado o no existe')
+          }
+          setCargandoBorrador(false)
+        })
+        .catch(() => {
+          setCargaFallida(true)
+          setCargandoBorrador(false)
+        })
     } else if (status === 'unauthenticated') {
       setCargandoBorrador(false)
     }
+    // Se carga una vez, cuando la sesión está lista.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status])
 
   // Auto-guardado
@@ -503,294 +399,162 @@ export default function NuevoTramitePage() {
     // el formulario y no tocar nada no deja un borrador vacío
     if (!tramiteId && !tieneDatosCargados(data)) return
     // Sin id el servidor crea un borrador nuevo; con id actualiza sólo ese
-    const dataToSave = tramiteId ? { ...data, tramiteId } : data
+    const cuerpo = { ...datosParaGuardar(data), pasoActual: data.pasoActual }
+    const dataToSave = tramiteId ? { ...cuerpo, tramiteId } : cuerpo
 
     const response = await fetch('/api/tramites/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataToSave)
+      body: JSON.stringify(dataToSave),
+      // Que el guardado llegue aunque la pestaña se esté cerrando.
+      keepalive: true,
     })
 
-    if (response.ok) {
-      const result = await response.json()
-      // Si se creó un borrador nuevo, recordar su id y dejarlo en la URL
-      // (así una recarga lo retoma en lugar de empezar otro)
-      if (result.tramiteId && !tramiteIdRef.current) {
-        tramiteIdRef.current = result.tramiteId
-        window.history.replaceState({}, '', `${window.location.pathname}?tramiteId=${result.tramiteId}`)
-      }
+    // Un error tiene que llegar al indicador: antes se mostraba «Guardado» igual.
+    if (!response.ok) throw new Error(`No se pudo guardar el borrador (HTTP ${response.status})`)
+    const result = await response.json()
+    // Si se creó un borrador nuevo, recordar su id y dejarlo en la URL
+    // (así una recarga lo retoma en lugar de empezar otro)
+    if (result.tramiteId && !tramiteIdRef.current) {
+      tramiteIdRef.current = result.tramiteId
+      window.history.replaceState({}, '', `${window.location.pathname}?tramiteId=${result.tramiteId}`)
     }
   }, [])
 
   const handleAutoSave = useCallback(async (data: FormData & { pasoActual: number }) => {
     if (status !== 'authenticated' || enviado) return
-
-    try {
-      // Esperar el guardado anterior (puede ser el que trae el id del borrador)
-      if (guardadoEnCursoRef.current) await guardadoEnCursoRef.current.catch(() => {})
-      const guardado = guardarBorrador(data)
-      guardadoEnCursoRef.current = guardado
-      await guardado
-    } catch (error) {
-      console.error('Error en auto-guardado:', error)
-    }
+    // Esperar el guardado anterior (puede ser el que trae el id del borrador)
+    if (guardadoEnCursoRef.current) await guardadoEnCursoRef.current.catch(() => {})
+    const guardado = guardarBorrador(data)
+    guardadoEnCursoRef.current = guardado
+    await guardado
   }, [status, enviado, guardarBorrador])
 
   // Se guarda también el paso en el que está, para volver ahí al recargar
   const datosAutoGuardado = useMemo(() => ({ ...formData, pasoActual }), [formData, pasoActual])
 
-  const { isSaving, lastSaved } = useAutoSave({
+  const { isSaving, lastSaved, error: errorGuardado, guardarAhora } = useAutoSave({
     data: datosAutoGuardado,
     onSave: handleAutoSave,
-    delay: 5000, // 5 segundos
-    enabled: status === 'authenticated' && pasoActual >= 1 && !enviado // Habilitar desde el paso 1, cortar al enviar
+    delay: 5000,
+    // No guardar mientras carga el borrador ni si la carga falló.
+    enabled: status === 'authenticated' && !cargandoBorrador && !cargaFallida && !enviado,
   })
 
-  // Validación en tiempo real para el paso 1
+  const irAPaso = (paso: number) => {
+    setDireccion(paso < pasoActual ? 'atras' : 'adelante')
+    setPasoActual(paso)
+    setPasoMaximo((m) => Math.max(m, paso))
+    inicioRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Al cambiar de paso se guarda ya, sin esperar los 5 segundos.
+    void guardarAhora()
+  }
+
+  // Validación en vivo de los pasos 1 y 2 (después de tocar cada campo)
   const paso1Validation = useFormValidation({
-    nombre: [validators.required('El nombre es obligatorio')],
-    apellido: [validators.required('El apellido es obligatorio')],
+    nombre: [validators.required('Completá tu nombre')],
+    apellido: [validators.required('Completá tu apellido')],
     dni: [
       validators.required('El DNI es obligatorio'),
       validators.dni('El DNI tiene que tener 7 u 8 dígitos, sin puntos')
     ],
     telefono: [
-      validators.required('El teléfono es obligatorio'),
+      validators.required('Completá tu teléfono'),
       validators.phone('Ingresá un teléfono válido, con código de área')
     ],
     email: [
-      validators.required('El email es obligatorio'),
+      validators.required('Completá tu email'),
       validators.email('Ingresá un email válido (por ejemplo, nombre@gmail.com)')
     ]
   }, formData)
 
-  // Validación en tiempo real para el paso 2 (mismo criterio que el servidor)
   const reglaDenominacion = {
     validator: (value: string) => validarDenominacion(value) ?? true,
     message: 'La denominación no es válida'
   }
   const paso2Validation = useFormValidation({
-    denominacion1: [
-      validators.required('La primera opción de denominación es obligatoria'),
-      reglaDenominacion
-    ],
-    denominacion2: [
-      validators.required('La segunda opción de denominación es obligatoria'),
-      reglaDenominacion
-    ],
-    denominacion3: [
-      validators.required('La tercera opción de denominación es obligatoria'),
-      reglaDenominacion
-    ]
+    denominacion1: [validators.required('Completá esta opción'), reglaDenominacion],
+    denominacion2: [validators.required('Completá esta opción'), reglaDenominacion],
+    denominacion3: [validators.required('Completá esta opción'), reglaDenominacion]
   }, formData)
 
-  const errorFechaCierre = fechaCierreTocada ? validarFechaCierre(formData.fechaCierre) : null
+  /** Saca de la lista los errores de los campos que se acaban de cambiar. */
+  const limpiarErrores = (claves: string[]) => {
+    setErrores((prev) => {
+      if (!claves.some((k) => k in prev)) return prev
+      const sig = { ...prev }
+      for (const k of claves) delete sig[k]
+      return sig
+    })
+  }
+
+  const actualizar = <K extends keyof FormData>(campo: K, valor: FormData[K]) => {
+    setFormData((prev) => ({ ...prev, [campo]: valor }))
+    limpiarErrores([campo as string])
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    actualizar(name as keyof FormData, (type === 'checkbox' ? checked : value) as never)
   }
 
-  // Validar campos obligatorios por paso
+  const actualizarSocio = (i: number, cambios: Partial<Socio>) => {
+    setFormData((prev) => ({ ...prev, socios: prev.socios.map((s, j) => (j === i ? { ...s, ...cambios } : s)) }))
+    const claves = Object.keys(cambios).map((k) => `socios.${i}.${k}`)
+    if ('aporteCapital' in cambios || 'aportePorcentaje' in cambios || 'tipoAporte' in cambios) claves.push(`socios.${i}.aporte`, 'aportes')
+    limpiarErrores(claves)
+  }
+
+  const actualizarAdmin = (i: number, cambios: Partial<Persona>) => {
+    setFormData((prev) => ({
+      ...prev,
+      administradores: prev.administradores.map((a, j) => (j === i ? { ...a, ...cambios } : a)),
+    }))
+    limpiarErrores(Object.keys(cambios).map((k) => `administradores.${i}.${k}`))
+  }
+
+  /** Lleva al primer campo con error: lo centra en pantalla y le pone el foco. */
+  const enfocarCampo = (clave: string) => {
+    setTimeout(() => {
+      const el = document.getElementById(clave) ?? document.querySelector<HTMLElement>(`[data-campo="${clave}"]`)
+      if (!el) return
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.focus?.({ preventScroll: true })
+    }, 80)
+  }
+
   const validarPaso = (paso: number): boolean => {
-    switch (paso) {
-      case 1:
-        if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.dni.trim() || 
-            !formData.telefono.trim() || !formData.email.trim() || !formData.plan || !formData.jurisdiccion) {
-          toast.error('Completá todos los campos obligatorios')
-          return false
-        }
-        {
-          // Mismo criterio que los mensajes en línea: si hay un error de formato no se avanza
-          const errorFormato = validarDni(formData.dni) || validarTelefono(formData.telefono) || validarEmail(formData.email)
-          if (errorFormato) {
-            toast.error(errorFormato)
-            return false
-          }
-        }
-        return true
-      case 2:
-        if (!formData.denominacion1.trim() || !formData.denominacion2.trim() || !formData.denominacion3.trim()) {
-          toast.error('Completá las tres opciones de denominación')
-          return false
-        }
-        {
-          const opciones = [formData.denominacion1, formData.denominacion2, formData.denominacion3]
-          for (let i = 0; i < opciones.length; i++) {
-            const error = validarDenominacion(opciones[i])
-            if (error) {
-              toast.error(`Opción ${i + 1}: ${error}`)
-              return false
-            }
-          }
-        }
-        return true
-      case 3:
-        if (!formData.objetoSocial) {
-          toast.error('Seleccioná el tipo de objeto social')
-          return false
-        }
-        if (formData.objetoSocial === 'PERSONALIZADO' && !formData.objetoPersonalizado.trim()) {
-          toast.error('Completá el objeto social personalizado')
-          return false
-        }
-        if (formData.objetoSocial === 'PREAPROBADO') {
-          const errorActividad = validarActividadPrincipal(formData.actividadPrincipal)
-          if (errorActividad) {
-            toast.error(errorActividad)
-            return false
-          }
-        }
-        if (!formData.sinDomicilio) {
-          if (!formData.domicilio.trim() || !formData.ciudad.trim() || !formData.departamento.trim()) {
-            toast.error('Completá el domicilio (calle, ciudad y departamento)')
-            return false
-          }
-        }
-        return true
-      case 4:
-        const capitalMin = capitalMinimo(smvm)
-        if (!formData.capitalSocial.trim() || parseFloat(formData.capitalSocial) < capitalMin) {
-          toast.error(`El capital social mínimo es de ${pesos(capitalMin)} (2 SMVM = ${pesos(smvm)} cada uno)`)
-          return false
-        }
-        if (formData.jurisdiccion === 'CORDOBA' && (!formData.cbuPrincipal.trim() || !formData.cbuSecundario.trim())) {
-          toast.error('Completá los dos CBU')
-          return false
-        }
-        // "INFORMAR_LUEGO" es la opción de cargarlos más adelante
-        if (formData.cbuPrincipal !== 'INFORMAR_LUEGO') {
-          const cbus: Array<[string, string]> = [['principal', formData.cbuPrincipal], ['secundario', formData.cbuSecundario]]
-          for (const [cual, cbu] of cbus) {
-            const error = cbu.trim() ? validarCbu(cbu) : null
-            if (error) {
-              toast.error(`CBU ${cual}: ${error}`)
-              return false
-            }
-          }
-        }
-        return true
-      case 5:
-        if (formData.socios.length === 0) {
-          toast.error('Debe haber al menos un socio')
-          return false
-        }
-        for (let i = 0; i < formData.socios.length; i++) {
-          const socio = formData.socios[i]
-          if (!socio.nombre.trim() || !socio.apellido.trim() || !socio.dni.trim() || 
-              !socio.cuit.trim() || !socio.domicilio.trim() || !socio.ciudad.trim() || 
-              !socio.departamento.trim() || !socio.provincia.trim() || !socio.estadoCivil || !socio.profesion.trim()) {
-            toast.error(`Completá todos los campos del Socio ${i + 1} (incluyendo ciudad, departamento y provincia)`)
-            return false
-          }
-          const errorSocio = validarDni(socio.dni) || validarCuit(socio.cuit)
-          if (errorSocio) {
-            toast.error(`Socio ${i + 1}: ${errorSocio}`)
-            return false
-          }
-          // Validar que tenga aporte de capital
-          if (!socio.aporteCapital || parseFloat(socio.aporteCapital || '0') <= 0) {
-            toast.error(`El Socio ${i + 1} debe tener un aporte de capital mayor a 0`)
-            return false
-          }
-        }
-        // Validar que todo el capital esté asignado
-        // Parsear capital social correctamente (remover puntos de miles)
-        const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
-        const capitalTotal = parseFloat(capitalStr) || 0
-        
-        // Calcular total de aportes correctamente, considerando si viene de porcentaje o monto
-        const totalAportes = formData.socios.reduce((sum, s) => {
-          if (s.tipoAporte === 'PORCENTAJE') {
-            // Si es porcentaje, calcular desde el porcentaje
-            const porcentaje = parseFloat(String(s.aportePorcentaje || '0').replace(',', '.')) || 0
-            return sum + (capitalTotal * porcentaje / 100)
-          } else {
-            // Si es monto, parsear el monto
-            const aporteStr = String(s.aporteCapital || '0').replace(/\./g, '').replace(',', '.')
-            return sum + (parseFloat(aporteStr) || 0)
-          }
-        }, 0)
-        const diferencia = Math.abs(capitalTotal - totalAportes)
-        if (diferencia > 1) { // Permitir diferencia de hasta $1 por redondeo
-          toast.error(`El total de aportes (${pesos(Math.round(totalAportes))}) debe ser igual al capital social (${pesos(capitalTotal)}). Falta asignar: ${pesos(Math.round(capitalTotal - totalAportes))}`)
-          return false
-        }
-        return true
-      case 6:
-        if (formData.administradores.length < 2) {
-          toast.error('Debe haber al menos 2 administradores')
-          return false
-        }
-        for (let i = 0; i < formData.administradores.length; i++) {
-          const admin = formData.administradores[i]
-          if (!admin.nombre.trim() || !admin.apellido.trim() || !admin.dni.trim() ||
-              !admin.cuit.trim() || !admin.domicilio.trim() || !admin.estadoCivil || !admin.profesion.trim()) {
-            toast.error(`Completá todos los campos del Administrador ${i + 1}`)
-            return false
-          }
-          const errorAdmin = validarDni(admin.dni) || validarCuit(admin.cuit)
-          if (errorAdmin) {
-            toast.error(`Administrador ${i + 1}: ${errorAdmin}`)
-            return false
-          }
-        }
-        // Validar que el Titular y Suplente no sean la misma persona
-        if (formData.administradores[0].dni === formData.administradores[1].dni) {
-          toast.error('El Administrador Titular y el Suplente deben ser personas diferentes (tienen el mismo DNI)')
-          return false
-        }
-        // Validar que no haya DNIs duplicados entre todos los administradores
-        const dnisAdmin = formData.administradores.map(a => a.dni.trim())
-        const dnisUnicos = new Set(dnisAdmin)
-        if (dnisUnicos.size !== dnisAdmin.length) {
-          toast.error('Cada administrador debe ser una persona diferente. Hay DNIs duplicados.')
-          return false
-        }
-        return true
-      case 7:
-        {
-          const errorFecha = validarFechaCierre(formData.fechaCierre)
-          if (errorFecha) {
-            setFechaCierreTocada(true)
-            toast.error(errorFecha)
-            return false
-          }
-        }
-        return true
-      default:
-        return true
-    }
+    const encontrados = erroresDelPaso(paso, formData, smvm)
+    setErrores(encontrados)
+    const claves = Object.keys(encontrados)
+    if (claves.length === 0) return true
+    toast.error(claves.length === 1 ? 'Revisá el campo marcado' : `Revisá los ${claves.length} campos marcados`)
+    enfocarCampo(claves[0])
+    return false
   }
 
   const handleSiguiente = () => {
-    if (!validarPaso(pasoActual)) {
-      return
-    }
-    if (pasoActual < 7) {
-      irAPaso(pasoActual + 1)
-    }
+    if (!validarPaso(pasoActual)) return
+    if (pasoActual < TOTAL_PASOS) irAPaso(pasoActual + 1)
   }
 
   const handleAnterior = () => {
     if (pasoActual > 1) {
+      setErrores({})
       irAPaso(pasoActual - 1)
     }
   }
 
   const handleSubmit = async () => {
-    // Validar TODOS los pasos antes de enviar
-    for (let paso = 1; paso <= 7; paso++) {
-      if (!validarPaso(paso)) {
-        toast.error(`Revisá los datos del paso ${paso}`)
-        irAPaso(paso) // Llevar al usuario al paso con error
-        return
-      }
+    // Validar TODOS los pasos antes de enviar y llevar al primero con errores
+    const pendiente = primerPasoConErrores(formData, smvm)
+    if (pendiente) {
+      toast.error(`Falta revisar el paso ${pendiente.paso}`)
+      irAPaso(pendiente.paso)
+      setErrores(pendiente.errores)
+      enfocarCampo(Object.keys(pendiente.errores)[0])
+      return
     }
 
     setGuardando(true)
@@ -805,14 +569,14 @@ export default function NuevoTramitePage() {
         headers: { 'Content-Type': 'application/json' },
         // El id del borrador hace que se complete ese mismo trámite (no se
         // busca por denominación, que el cliente pudo haber cambiado)
-        body: JSON.stringify({ ...formData, tramiteId: tramiteIdRef.current })
+        body: JSON.stringify({ ...datosParaGuardar(formData), tramiteId: tramiteIdRef.current })
       })
 
       const result = await response.json()
 
       if (response.ok && result.success) {
         setEnviado(true)
-        toast.success('¡Trámite creado exitosamente! Redirigiendo...')
+        toast.success('¡Listo! Recibimos tu formulario. Te llevamos a tu panel para seguir el trámite.')
         trackEvent.enviarTramite({
           tramite_id: result.tramite?.id,
           plan: formData.plan,
@@ -820,17 +584,98 @@ export default function NuevoTramitePage() {
         })
         router.push('/dashboard')
       } else {
-        console.error('Error del servidor:', result)
-        toast.error(result.details || 'Error al crear el trámite')
+        toast.error(result.details || 'No pudimos enviar el formulario. Probá de nuevo.')
         setGuardando(false)
       }
-    } catch (error) {
-      console.error('Error al enviar el formulario:', error)
-      toast.error('Error al enviar el formulario')
+    } catch {
+      toast.error('No pudimos enviar el formulario. Revisá tu conexión y probá de nuevo.')
       setGuardando(false)
     }
     // No ponemos setGuardando(false) en el caso exitoso para evitar que el usuario pueda hacer click de nuevo
   }
+
+  // ── Socios y administradores ─────────────────────────────────────────────
+
+  const capital = parsearMonto(formData.capitalSocial)
+  const asignado = totalAportes(formData.socios, capital)
+  const faltaAsignar = capital - asignado
+
+  const agregarSocio = () => {
+    setFormData((prev) => ({ ...prev, socios: [...prev.socios, socioVacio()], numeroSocios: prev.socios.length + 1 }))
+  }
+
+  /** Quita un socio puntual (antes «−» borraba siempre el último) y deja deshacerlo. */
+  const quitarSocio = (i: number) => {
+    const quitado = formData.socios[i]
+    setFormData((prev) => {
+      const socios = prev.socios.filter((_, j) => j !== i)
+      return { ...prev, socios, numeroSocios: socios.length }
+    })
+    setErrores((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith('socios.'))))
+    toast(`Quitaste a ${nombreCompleto(quitado) || `el socio ${i + 1}`}`, {
+      action: {
+        label: 'Deshacer',
+        onClick: () =>
+          setFormData((prev) => {
+            const socios = [...prev.socios.slice(0, i), quitado, ...prev.socios.slice(i)]
+            return { ...prev, socios, numeroSocios: socios.length }
+          }),
+      },
+    })
+  }
+
+  const agregarAdmin = () => {
+    setFormData((prev) => ({
+      ...prev,
+      administradores: [...prev.administradores, personaVacia()],
+      numeroAdministradores: prev.administradores.length + 1,
+    }))
+  }
+
+  const quitarAdmin = (i: number) => {
+    const quitado = formData.administradores[i]
+    setFormData((prev) => {
+      const administradores = prev.administradores.filter((_, j) => j !== i)
+      return { ...prev, administradores, numeroAdministradores: administradores.length }
+    })
+    setErrores((prev) => Object.fromEntries(Object.entries(prev).filter(([k]) => !k.startsWith('administradores.'))))
+    toast(`Quitaste a ${nombreCompleto(quitado) || `el administrador ${i + 1}`}`, {
+      action: {
+        label: 'Deshacer',
+        onClick: () =>
+          setFormData((prev) => {
+            const administradores = [...prev.administradores.slice(0, i), quitado, ...prev.administradores.slice(i)]
+            return { ...prev, administradores, numeroAdministradores: administradores.length }
+          }),
+      },
+    })
+  }
+
+  /** «Soy yo»: el socio 1 casi siempre es quien completa el formulario. */
+  const socioSoyYo = () =>
+    actualizarSocio(0, { nombre: formData.nombre, apellido: formData.apellido, dni: soloDigitos(formData.dni) })
+
+  /** Copia los datos de un socio en un administrador (sin pisar el resto del formulario). */
+  const copiarSocioEnAdmin = (adminIndex: number, socioIndex: number) => {
+    const s = formData.socios[socioIndex]
+    if (!s) return
+    actualizarAdmin(adminIndex, {
+      nombre: s.nombre, apellido: s.apellido, dni: s.dni, cuit: s.cuit, domicilio: s.domicilio,
+      ciudad: s.ciudad, departamento: s.departamento, provincia: s.provincia, estadoCivil: s.estadoCivil, profesion: s.profesion,
+    })
+  }
+
+  const titular = formData.administradores[0]
+  const [diaCierre, mesCierre] = (() => {
+    const m = /^(\d{1,2})-(\d{1,2})$/.exec(formData.fechaCierre.trim())
+    return m ? [Number(m[1]), Number(m[2])] : [31, 12]
+  })()
+  const cambiarCierre = (dia: number, mes: number) => {
+    const diaValido = Math.min(dia, DIAS_POR_MES[mes - 1])
+    actualizar('fechaCierre', `${String(diaValido).padStart(2, '0')}-${String(mes).padStart(2, '0')}`)
+  }
+  // Para el resumen del último paso: qué falta revisar antes de enviar.
+  const pendienteDeRevisar = pasoActual === TOTAL_PASOS ? primerPasoConErrores(formData, smvm) : null
 
   if (cargandoBorrador) {
     return (
@@ -843,8 +688,33 @@ export default function NuevoTramitePage() {
     )
   }
 
+  if (cargaFallida) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center space-y-4">
+        <CloudOff className="mx-auto h-10 w-10 text-ink-3" aria-hidden />
+        <h1 className="text-title text-ink">No pudimos abrir tu trámite</h1>
+        <p className="text-body text-ink-2">
+          Tus datos están guardados. Puede ser la conexión: probá de nuevo en un momento.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <Button onClick={() => window.location.reload()} className="gap-2">
+            <RotateCw className="h-4 w-4" /> Reintentar
+          </Button>
+          <Button variant="outline" onClick={() => router.push('/dashboard')}>Volver al panel</Button>
+        </div>
+      </div>
+    )
+  }
+
+  const errorDe = (campo: string) => errores[campo]
+
   return (
     <div ref={inicioRef} className="mx-auto w-full max-w-4xl scroll-mt-6 space-y-6">
+        {/* Sugerencias de ciudad (la ciudad se escribe libre). */}
+        <datalist id={LISTA_CIUDADES}>
+          {CIUDADES_CORDOBA.map((c) => <option key={c} value={c} />)}
+        </datalist>
+
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -852,168 +722,142 @@ export default function NuevoTramitePage() {
               Constituí tu <span className="text-primary">S.A.S.</span>
             </h1>
             <p className="mt-2 max-w-2xl text-body text-ink-2">
-              Son 7 pasos y podés guardar para seguir después.
+              Son 7 pasos. Lo que cargás se guarda solo: podés seguir después.
             </p>
           </div>
-          {/* Auto-save indicator */}
-          {status === 'authenticated' && pasoActual >= 2 && (
-            <div className="flex items-center gap-2 text-body-sm bg-surface px-4 py-2 rounded-control border border-line shadow-raise">
-                {isSaving ? (
+          {/* Indicador de guardado */}
+          {status === 'authenticated' && (lastSaved || isSaving || errorGuardado) && (
+            <div
+              className={cn(
+                'flex items-center gap-2 text-body-sm bg-surface px-4 py-2 rounded-control border shadow-raise',
+                errorGuardado ? 'border-warning-line' : 'border-line',
+              )}
+              aria-live="polite"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <span className="text-ink-2">Guardando…</span>
+                </>
+              ) : errorGuardado ? (
+                <>
+                  <CloudOff className="h-4 w-4 text-warning" />
+                  <span className="text-warning">No se pudo guardar</span>
+                  <button type="button" onClick={() => void guardarAhora()} className="font-semibold text-primary hover:underline">
+                    Reintentar
+                  </button>
+                </>
+              ) : lastSaved ? (
+                <>
+                  <Cloud className="h-4 w-4 text-success" />
+                  <span className="text-ink-2">
+                    Guardado {new Date(lastSaved).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </>
+              ) : null}
+            </div>
+          )}
+        </div>
+
+        {/* Pasos */}
+        <div className="bg-surface p-4 md:p-6 rounded-card border border-line shadow-raise">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <span className="text-body-sm font-semibold text-ink-2">
+              Paso {pasoActual} de {TOTAL_PASOS} · {PASOS[pasoActual - 1].nombre}
+            </span>
+            <span className="text-label text-ink-3 tnum">
+              {Math.round(((pasoActual - 1) / TOTAL_PASOS) * 100)}% completado
+            </span>
+          </div>
+          <div className="mb-5 h-2 w-full rounded-full bg-n-200">
+            <div
+              className="h-2 rounded-full bg-primary transition-all duration-500 ease-out"
+              style={{ width: `${((pasoActual - 1) / TOTAL_PASOS) * 100}%` }}
+            />
+          </div>
+
+          {/* En el teléfono los siete pasos no entran: se desplaza el indicador, no la página. */}
+          <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+            <ol className="flex min-w-max md:min-w-0 items-start justify-between gap-2">
+              {PASOS.map((paso) => {
+                const Icon = paso.icon
+                const hecho = pasoActual > paso.id
+                const activo = pasoActual === paso.id
+                // Los pasos ya visitados se pueden abrir desde acá.
+                const abrible = paso.id !== pasoActual && paso.id <= pasoMaximo
+                const contenido = (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <span className="text-ink-2">Guardando...</span>
-                  </>
-                ) : lastSaved ? (
-                  <>
-                    <Cloud className="h-4 w-4 text-success" />
-                    <span className="text-ink-2">
-                      Guardado {new Date(lastSaved).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                    <span
+                      className={cn(
+                        'flex h-10 w-10 items-center justify-center rounded-full transition-all',
+                        hecho ? 'bg-success-solid text-on-primary' : activo ? 'bg-primary text-on-primary ring-4 ring-primary-soft' : 'bg-surface-3 text-ink-3',
+                      )}
+                    >
+                      {hecho ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                    </span>
+                    <span className={cn('text-label md:text-body-sm font-semibold', activo ? 'text-primary' : 'text-ink-2')}>
+                      {paso.nombre}
                     </span>
                   </>
-                ) : (
-                  <>
-                    <CloudOff className="h-4 w-4 text-ink-3" />
-                    <span className="text-ink-2">Sin guardar</span>
-                  </>
-                )}
-              </div>
-            )}
-        </div>
-
-        {/* Progress Steps */}
-        <div className="mb-6 md:mb-8 bg-surface p-4 md:p-6 rounded-card border-line shadow-raise">
-          {/* Barra de progreso superior */}
-          <div className="mb-6 pb-4 border-b border-line">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-body-sm font-semibold text-ink-2">Progreso del formulario</span>
-              </div>
-              <span className="text-heading font-semibold text-primary">
-                {Math.round((pasoActual / 7) * 100)}%
-              </span>
-            </div>
-            <div className="w-full bg-n-200 rounded-full h-3">
-              <div
-                className="bg-primary h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
-                style={{ width: `${(pasoActual / 7) * 100}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-2 text-label text-ink-2">
-              <span>Paso {pasoActual} de 7</span>
-              <span>{Math.round((pasoActual / 7) * 100)}% completado</span>
-            </div>
-          </div>
-
-          {/* Pasos */}
-          <div className="flex items-start justify-between min-w-max md:min-w-0 overflow-x-auto pt-2">
-            {PASOS.map((paso, index) => {
-              const Icon = paso.icon
-              const isCompleted = pasoActual > paso.id
-              const isActive = pasoActual === paso.id
-              const isPending = pasoActual < paso.id
-              
-              return (
-                <div key={paso.id} className="flex items-start flex-1 min-w-0">
-                  {/* Step Content */}
-                  <div className="flex flex-col items-center w-full">
-                    {/* Icon Container - Fixed position */}
-                    <div className="relative mb-3 md:mb-4 h-12 md:h-14 flex items-center justify-center">
-                      <div
-                        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0 ${
-                          isCompleted
-                            ? 'bg-success-solid text-on-primary'
-                            : isActive
-                            ? 'bg-primary text-on-primary ring-4 ring-primary-soft md:scale-110'
-                            : 'bg-surface-3 text-ink-3'
-                        }`}
+                )
+                return (
+                  <li key={paso.id} className="flex min-w-16 flex-1 justify-center">
+                    {abrible ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setErrores({})
+                          irAPaso(paso.id)
+                        }}
+                        className="flex flex-col items-center gap-2 rounded-control p-1 hover:bg-surface-2"
+                        aria-label={`Ir al paso ${paso.id}: ${paso.nombre}`}
                       >
-                        {isCompleted ? (
-                          <Check className="h-4 w-4 md:h-5 md:w-5" />
-                        ) : (
-                          <Icon className={`h-4 w-4 md:h-5 md:w-5 ${isActive ? 'text-on-primary' : 'text-ink-3'}`} />
-                        )}
+                        {contenido}
+                      </button>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 p-1" aria-current={activo ? 'step' : undefined}>
+                        {contenido}
                       </div>
-                    </div>
-                    
-                    {/* Labels - Fixed height for alignment */}
-                    <div className="text-center w-full h-8 md:h-10 flex items-center justify-center">
-                      <p className={`text-label md:text-body-sm font-semibold transition-colors ${
-                        isActive ? 'text-primary' : isCompleted ? 'text-ink-2' : 'text-ink-2'
-                      }`}>
-                        {paso.nombre}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Connector Line - Fixed width for symmetry */}
-                  {index < PASOS.length - 1 && (
-                    <div className="flex-shrink-0 mx-1 md:mx-2 relative" style={{ marginTop: '20px', alignSelf: 'flex-start' }}>
-                      <div className={`w-6 md:w-8 lg:w-10 h-0.5 md:h-1 rounded-full transition-all duration-500 ${
-                        isCompleted ? 'bg-primary' : 'bg-n-200'
-                      }`} />
-                      {/* Animated progress dot */}
-                      {isActive && (
-                        <div className="absolute top-1/2 left-0 w-2 h-2 md:w-3 md:h-3 bg-primary rounded-full transform -translate-y-1/2 animate-pulse" />
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
           </div>
         </div>
 
-        {/* Form Content */}
-        {/* La tarjeta del formulario va más angosta que el stepper: un campo de
-            "Nombre" de 450px de ancho es incómodo de leer y de completar. A
-            768px el recorrido del ojo entre etiqueta y campo es corto. */}
         <Card>
           <CardContent className="p-card sm:p-8">
             {/* El key reinicia la animación de entrada en cada cambio de paso. */}
             <div key={pasoActual} className={direccion === 'atras' ? 'paso-atras' : 'paso-adelante'}>
-            {/* Paso 1: Datos */}
+
+            {/* ── Paso 1: Datos ── */}
             {pasoActual === 1 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">1</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Datos Personales</h2>
-                    <p className="mt-1 text-body text-ink-2">Información del solicitante y plan elegido</p>
-                  </div>
-                </div>
+                <CabeceraPaso numero={1} titulo="Tus datos" bajada="Quién hace el trámite, el plan y la jurisdicción" />
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <FormField
                     label="Nombre"
                     name="nombre"
                     value={formData.nombre}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      paso1Validation.setFieldTouched('nombre')
-                    }}
+                    onChange={(e) => { handleInputChange(e); paso1Validation.setFieldTouched('nombre') }}
                     placeholder="Juan"
                     required
-                    error={paso1Validation.errors.nombre || undefined}
+                    autoComplete="given-name"
+                    error={errorDe('nombre') || paso1Validation.errors.nombre || undefined}
                     validation={paso1Validation.getFieldValidation('nombre')}
-                    helpText="Tu nombre de pila"
                   />
                   <FormField
                     label="Apellido"
                     name="apellido"
                     value={formData.apellido}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      paso1Validation.setFieldTouched('apellido')
-                    }}
+                    onChange={(e) => { handleInputChange(e); paso1Validation.setFieldTouched('apellido') }}
                     placeholder="Pérez"
                     required
-                    error={paso1Validation.errors.apellido || undefined}
+                    autoComplete="family-name"
+                    error={errorDe('apellido') || paso1Validation.errors.apellido || undefined}
                     validation={paso1Validation.getFieldValidation('apellido')}
-                    helpText="Tu apellido completo"
                   />
                 </div>
 
@@ -1022,1361 +866,742 @@ export default function NuevoTramitePage() {
                     label="DNI"
                     name="dni"
                     value={formData.dni}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      paso1Validation.setFieldTouched('dni')
-                    }}
+                    onChange={(e) => { actualizar('dni', soloDigitos(e.target.value)); paso1Validation.setFieldTouched('dni') }}
                     placeholder="12345678"
                     required
-                    error={paso1Validation.errors.dni || undefined}
+                    inputMode="numeric"
+                    inputClassName="tnum"
+                    error={errorDe('dni') || paso1Validation.errors.dni || undefined}
                     validation={paso1Validation.getFieldValidation('dni')}
-                    helpText="Sin puntos ni guiones, solo números"
-                    maxLength={8}
+                    helpText="Sin puntos"
                   />
                   <FormField
                     label="Teléfono"
                     name="telefono"
                     value={formData.telefono}
-                    onChange={(e) => {
-                      handleInputChange(e)
-                      paso1Validation.setFieldTouched('telefono')
-                    }}
-                    placeholder="+54 9 11 1234-5678"
+                    onChange={(e) => { handleInputChange(e); paso1Validation.setFieldTouched('telefono') }}
+                    placeholder="351 123 4567"
                     required
-                    error={paso1Validation.errors.telefono || undefined}
-                    validation={paso1Validation.getFieldValidation('telefono')}
-                    helpText="Incluí el código de área"
                     type="tel"
+                    autoComplete="tel"
+                    error={errorDe('telefono') || paso1Validation.errors.telefono || undefined}
+                    validation={paso1Validation.getFieldValidation('telefono')}
+                    helpText="Con código de área"
                   />
                   <div className="sm:col-span-2 lg:col-span-1">
                     <FormField
                       label="Email"
                       name="email"
                       value={formData.email}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        paso1Validation.setFieldTouched('email')
-                      }}
+                      onChange={(e) => { handleInputChange(e); paso1Validation.setFieldTouched('email') }}
                       placeholder="correo@ejemplo.com"
                       required
-                      error={paso1Validation.errors.email || undefined}
-                      validation={paso1Validation.getFieldValidation('email')}
-                      helpText="Vamos a usar este email para avisarte novedades"
                       type="email"
                       autoComplete="email"
+                      error={errorDe('email') || paso1Validation.errors.email || undefined}
+                      validation={paso1Validation.getFieldValidation('email')}
+                      helpText="Te avisamos las novedades acá"
                     />
-                  </div>
-
-                  {/* Dónde vive la persona, no dónde va la sede.
-                      Es opcional a propósito: sirve para anticipar la
-                      conversación del domicilio —el paso donde se cae casi todo
-                      el mundo— sin agregar una fricción más al formulario. */}
-                  <div className="sm:col-span-2 lg:col-span-1">
-                    <Label htmlFor="provinciaResidencia">¿En qué provincia vivís?</Label>
-                    <Select
-                      id="provinciaResidencia"
-                      name="provinciaResidencia"
-                      value={formData.provinciaResidencia}
-                      onChange={handleInputChange}
-                    >
-                      <option value="">Prefiero no decirlo</option>
-                      {PROVINCIAS_AR.map((prov) => (
-                        <option key={prov} value={prov}>{prov}</option>
-                      ))}
-                    </Select>
-                    <p className="mt-1 text-label text-ink-2">
-                      No hace falta vivir en Córdoba para constituir acá. Nos sirve para
-                      saber si vas a necesitar que te demos el domicilio.
-                    </p>
                   </div>
                 </div>
 
+                {/* Dónde vive la persona, no dónde va la sede. Es opcional a
+                    propósito: sirve para anticipar la conversación del
+                    domicilio sin agregar una fricción más. */}
+                <div className="max-w-sm space-y-2">
+                  <Label htmlFor="provinciaResidencia" className="block text-body-sm font-semibold">¿En qué provincia vivís?</Label>
+                  <Select id="provinciaResidencia" name="provinciaResidencia" value={formData.provinciaResidencia} onChange={handleInputChange}>
+                    <option value="">Prefiero no decirlo</option>
+                    {PROVINCIAS_RESIDENCIA.map((prov) => <option key={prov} value={prov}>{prov}</option>)}
+                  </Select>
+                  <p className="text-label text-ink-2">
+                    No hace falta vivir en Córdoba para constituir acá. Nos sirve para saber si vas a necesitar que te demos el domicilio.
+                  </p>
+                </div>
+
                 <div className="border-t border-line pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-heading text-primary">Seleccioná tu plan</h3>
-                    <Link href="/#planes" target="_blank">
-                      <Button variant="outline" size="sm" className="h-10 sm:h-8 gap-2 text-primary border-primary-line hover:bg-primary-soft">
-                        Ver Comparativa
-                      </Button>
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <h3 className="text-heading font-semibold text-ink">Elegí tu plan</h3>
+                    <Link href="/#planes" target="_blank" className="text-body-sm font-semibold text-primary hover:underline">
+                      Comparar planes
                     </Link>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[
-                      { id: 'BASICO', nombre: 'Básico', transferencia: precios.precioPlanBasico, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales'] },
-                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', transferencia: precios.precioPlanEmprendedor, destacado: true, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar'] },
-                      { id: 'PREMIUM', nombre: 'Premium', transferencia: precios.precioPlanPremium, features: ['Constitución de Sociedad', 'Obtención de CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar', 'Alta de Libros Digitales', 'Una reunión de asesoría societaria al mes'] }
-                    ].map(plan => (
-                      <div
+                    {([
+                      { id: 'BASICO', nombre: 'Básico', transferencia: precios.precioPlanBasico, features: ['Constitución de la sociedad', 'Obtención del CUIT', 'Guía de uso de Libros Digitales'] },
+                      { id: 'EMPRENDEDOR', nombre: 'Emprendedor', transferencia: precios.precioPlanEmprendedor, features: ['Constitución de la sociedad', 'Obtención del CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar'] },
+                      { id: 'PREMIUM', nombre: 'Premium', transferencia: precios.precioPlanPremium, features: ['Constitución de la sociedad', 'Obtención del CUIT', 'Guía de uso de Libros Digitales', 'Lista para facturar', 'Alta de Libros Digitales', 'Una reunión de asesoría societaria al mes'] },
+                    ] as const).map(plan => (
+                      <button
+                        type="button"
                         key={plan.id}
-                        onClick={() => setFormData(prev => ({ ...prev, plan: plan.id as any }))}
-                        className={`flex h-full flex-col rounded-card border p-card cursor-pointer transition-all ${
-                          formData.plan === plan.id
-                            ? 'border-primary-line bg-primary-soft shadow-raise'
-                            : 'border-line hover:border-line-strong bg-surface hover:shadow-raise'
-                        }`}
+                        onClick={() => actualizar('plan', plan.id)}
+                        aria-pressed={formData.plan === plan.id}
+                        className={cn(
+                          'flex h-full flex-col rounded-card border p-card text-left transition-all',
+                          formData.plan === plan.id ? 'border-primary bg-primary-soft shadow-raise' : 'border-line bg-surface hover:border-line-strong hover:shadow-raise',
+                        )}
                       >
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-semibold text-heading text-primary">{plan.nombre}</h4>
-                          {formData.plan === plan.id && (
-                            <Check className="h-6 w-6 text-primary flex-shrink-0" />
-                          )}
-                        </div>
-                        <div className="my-2">
+                        <span className="flex w-full items-center justify-between mb-2">
+                          <span className="text-heading font-semibold text-ink">{plan.nombre}</span>
+                          {formData.plan === plan.id && <Check className="h-5 w-5 text-primary shrink-0" />}
+                        </span>
+                        <span className="my-2 block">
                           <PrecioDual transferencia={plan.transferencia} precioClassName="text-title font-semibold text-primary" gastos />
-                        </div>
+                        </span>
                         <ul className="text-body-sm text-ink-2 space-y-1">
                           {plan.features.map(feature => (
-                            <li key={feature}>✓ {feature}</li>
+                            <li key={feature} className="flex items-start gap-1.5">
+                              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" aria-hidden /> {feature}
+                            </li>
                           ))}
                         </ul>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <div className="border-t border-line pt-6">
-                  <h3 className="font-semibold text-heading text-ink mb-4">Jurisdicción *</h3>
+                  <h3 className="text-heading font-semibold text-ink mb-4">Jurisdicción</h3>
                   <JurisdiccionSelector
                     value={formData.jurisdiccion}
-                    onChange={(id, provincia) => setFormData(prev => ({ ...prev, jurisdiccion: id as any, provincia }))}
+                    onChange={(id, provincia) => setFormData(prev => ({ ...prev, jurisdiccion: id as FormData['jurisdiccion'], provincia }))}
                   />
                 </div>
               </div>
             )}
 
-            {/* Paso 2: Nombre */}
+            {/* ── Paso 2: Nombre ── */}
             {pasoActual === 2 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">2</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Denominación Social</h2>
-                    <p className="mt-1 text-body text-ink-2">Nombre de tu sociedad</p>
-                  </div>
+                <CabeceraPaso numero={2} titulo="Nombre de la sociedad" bajada="Tres opciones, en orden de preferencia" />
+
+                <Aviso>
+                  Antes de presentar el trámite revisamos que el nombre no esté tomado (examen de homonimia) y te
+                  decimos cuál de las tres es la más viable para registrar.
+                </Aviso>
+
+                <div className="space-y-4">
+                  {([
+                    ['denominacion1', 'Opción 1 (la que preferís)', 'Ej.: Lumen Servicios SAS'],
+                    ['denominacion2', 'Opción 2', 'Ej.: Lumen Digital SAS'],
+                    ['denominacion3', 'Opción 3', 'Ej.: Grupo Lumen SAS'],
+                  ] as const).map(([campo, label, placeholder]) => (
+                    <FormField
+                      key={campo}
+                      label={label}
+                      name={campo}
+                      value={formData[campo]}
+                      onChange={(e) => { handleInputChange(e); paso2Validation.setFieldTouched(campo) }}
+                      placeholder={placeholder}
+                      required
+                      error={errorDe(campo) || paso2Validation.errors[campo] || undefined}
+                      validation={paso2Validation.getFieldValidation(campo)}
+                    />
+                  ))}
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Nombre de la Sociedad</h3>
-                  <p className="text-ink-2 mb-4">
-                    Proponé 3 opciones de nombre para tu SAS
-                  </p>
-                  
-                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
-                    <p className="text-body-sm text-primary">
-                      <span className="font-semibold">Importante:</span> Proponé tres opciones en orden de preferencia. Después de un examen de homonimia te vamos a informar cuál creemos que es la más viable para registrar.
-                    </p>
+                <Opcion activa={formData.marcaRegistrada}>
+                  <input type="checkbox" name="marcaRegistrada" checked={formData.marcaRegistrada} onChange={handleInputChange} className="mt-1" />
+                  <div>
+                    <p className="font-medium text-ink">El nombre es una marca registrada en el INPI</p>
+                    <p className="text-body-sm text-ink-2">Si la marca es tuya, tenés prioridad para que aprueben ese nombre.</p>
                   </div>
-
-                  <div className="space-y-4">
-                    <FormField
-                      label="Opción 1 (Preferida)"
-                      name="denominacion1"
-                      value={formData.denominacion1}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        paso2Validation.setFieldTouched('denominacion1')
-                      }}
-                      placeholder="Denominacion1 SAS"
-                      required
-                      error={paso2Validation.errors.denominacion1 || undefined}
-                      validation={paso2Validation.getFieldValidation('denominacion1')}
-                      helpText="Tu primera opción de nombre para la sociedad"
-                    />
-                    <FormField
-                      label="Opción 2"
-                      name="denominacion2"
-                      value={formData.denominacion2}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        paso2Validation.setFieldTouched('denominacion2')
-                      }}
-                      placeholder="Denominacion2 SAS"
-                      required
-                      error={paso2Validation.errors.denominacion2 || undefined}
-                      validation={paso2Validation.getFieldValidation('denominacion2')}
-                      helpText="Segunda opción en caso de que la primera no esté disponible"
-                    />
-                    <FormField
-                      label="Opción 3"
-                      name="denominacion3"
-                      value={formData.denominacion3}
-                      onChange={(e) => {
-                        handleInputChange(e)
-                        paso2Validation.setFieldTouched('denominacion3')
-                      }}
-                      placeholder="Denominacion3 SAS"
-                      required
-                      error={paso2Validation.errors.denominacion3 || undefined}
-                      validation={paso2Validation.getFieldValidation('denominacion3')}
-                      helpText="Tercera opción como respaldo"
-                    />
-                  </div>
-
-                  <div className="mt-4">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        name="marcaRegistrada"
-                        checked={formData.marcaRegistrada}
-                        onChange={handleInputChange}
-                        className="rounded"
-                      />
-                      <span className="text-body-sm font-medium text-ink">La marca está registrada</span>
-                    </label>
-                    <p className="text-label text-ink-2 ml-6">
-                      Si la marca está registrada en el INPI, vas a tener prioridad en la aprobación del nombre.
-                    </p>
-                  </div>
-                </div>
+                </Opcion>
               </div>
             )}
 
-            {/* PASO 3: Objeto */}
+            {/* ── Paso 3: Objeto y sede ── */}
             {pasoActual === 3 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">3</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Objeto y Domicilio Social</h2>
-                    <p className="mt-1 text-body text-ink-2">Actividad y domicilio legal</p>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Objeto y Domicilio</h3>
-                  <p className="text-ink-2 mb-4">Definí el propósito de tu sociedad y su domicilio legal</p>
-                  <div className="space-y-4">
+                <CabeceraPaso numero={3} titulo="Actividad y sede" bajada="A qué se va a dedicar la sociedad y dónde tiene la sede" />
+
+                <fieldset className="space-y-3">
+                  <legend className="text-heading font-semibold text-ink mb-3">Objeto social</legend>
+                  <Opcion activa={formData.objetoSocial === 'PREAPROBADO'}>
+                    <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-medium text-ink">Objeto pre-aprobado</p>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMostrarObjetoPreAprobado(true) }}
+                          className="inline-flex min-h-8 items-center gap-1 text-label font-semibold text-primary hover:underline"
+                        >
+                          Leer el texto <ExternalLink className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <p className="text-body-sm text-ink-2">El texto estándar, que cubre la mayoría de las actividades comerciales. Es el más rápido de aprobar.</p>
+                    </div>
+                  </Opcion>
+                  <Opcion activa={formData.objetoSocial === 'PERSONALIZADO'}>
+                    <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
                     <div>
-                      <Label>Objeto Social *</Label>
-                      <div className="space-y-3 mt-2">
-                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
-                          <input type="radio" name="objetoSocial" value="PREAPROBADO" checked={formData.objetoSocial === 'PREAPROBADO'} onChange={handleInputChange} className="mt-1" />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <p className="font-medium text-ink">Objeto pre-aprobado</p>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                className="h-10 sm:h-8 gap-1 text-label text-primary border-primary-line hover:bg-primary-soft"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  setMostrarObjetoPreAprobado(true)
-                                }}
-                              >
-                                Ver objeto
-                                <ExternalLink className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            <p className="text-body-sm text-ink-2">Objeto social estándar que cubre la mayoría de las actividades comerciales</p>
-                          </div>
-                        </label>
-                        <label className="flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer border-line hover:border-primary hover:bg-primary-soft/40">
-                          <input type="radio" name="objetoSocial" value="PERSONALIZADO" checked={formData.objetoSocial === 'PERSONALIZADO'} onChange={handleInputChange} className="mt-1" />
-                          <div>
-                            <p className="font-medium text-ink">Objeto personalizado</p>
-                            <p className="text-body-sm text-ink-2">Definí actividades específicas para tu sociedad</p>
-                          </div>
-                        </label>
-                      </div>
+                      <p className="font-medium text-ink">Objeto a medida</p>
+                      <p className="text-body-sm text-ink-2">Describís vos las actividades de la sociedad.</p>
                     </div>
-                    {formData.objetoSocial === 'PREAPROBADO' && (
-                      <div>
-                        <Label htmlFor="actividadPrincipal">¿Cuál va a ser la actividad principal de la sociedad? *</Label>
-                        <p className="mt-1 text-body-sm text-ink-2">
-                          El objeto pre-aprobado abarca muchas actividades; contanos a qué se va a dedicar la sociedad en concreto.
-                        </p>
-                        <textarea
-                          id="actividadPrincipal"
-                          value={formData.actividadPrincipal}
-                          onChange={(e) => setFormData(prev => ({ ...prev, actividadPrincipal: e.target.value }))}
-                          className="mt-2 flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
-                          rows={3}
-                          placeholder="Ej.: Desarrollo de software a medida y venta de licencias para comercios"
-                        />
-                        <p className={`mt-1 text-label ${formData.actividadPrincipal.trim().length >= ACTIVIDAD_PRINCIPAL_MIN_CARACTERES ? 'text-ink-3' : 'text-warning'}`}>
-                          {formData.actividadPrincipal.trim().length} / {ACTIVIDAD_PRINCIPAL_MIN_CARACTERES} caracteres mínimos
-                        </p>
-                      </div>
-                    )}
-                    {formData.objetoSocial === 'PERSONALIZADO' && (
-                      <div>
-                        <Label htmlFor="objetoPersonalizado">Describí tu objeto social *</Label>
-                        <textarea id="objetoPersonalizado" value={formData.objetoPersonalizado} onChange={(e) => setFormData(prev => ({ ...prev, objetoPersonalizado: e.target.value }))} className="flex w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-body-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent" rows={4} placeholder="Describí las actividades específicas..." />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="border-t border-line pt-6">
-                  <h3 className="font-semibold text-heading text-ink mb-2">Domicilio Social</h3>
+                  </Opcion>
 
-                  {/* La explicación va ANTES de pedir la dirección, no escondida
-                      detrás de una casilla que hay que descubrir.
-                      Medido sobre los borradores abandonados: de 8 personas que
-                      eligen denominación, sólo 1 llega a cargar un domicilio.
-                      Es el acantilado más grande del formulario, y la causa es
-                      que alguien de otra provincia ve que le piden una dirección
-                      en Córdoba y se va creyendo que el trámite no es para él. */}
-                  <div className="mb-4 flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
-                    <div className="space-y-1">
-                      <p className="text-body-sm text-ink">
-                        La sede social tiene que estar en{' '}
-                        <span className="font-semibold">
-                          {formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}
-                        </span>
-                        , pero <span className="font-semibold">no hace falta que vivas ahí</span>.
-                      </p>
-                      <p className="text-body-sm text-ink-2">
-                        Si no tenés una dirección para fijarla, te la damos nosotros y
-                        seguís sin problema. Tu empresa después puede operar en todo el
-                        país, sin importar dónde se constituyó.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mb-4 space-y-2">
-                    <p className="text-body-sm font-medium text-ink">¿Tenés una dirección para la sede?</p>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-control border border-line bg-surface p-3 hover:border-primary-line">
-                      <input
-                        type="radio"
-                        name="sinDomicilio"
-                        checked={!formData.sinDomicilio}
-                        onChange={() => setFormData(prev => ({ ...prev, sinDomicilio: false }))}
-                        className="mt-0.5"
+                  {formData.objetoSocial === 'PREAPROBADO' && (
+                    <div className="pt-2 space-y-2">
+                      <Label htmlFor="actividadPrincipal" className="block text-body-sm font-semibold">¿A qué se va a dedicar la sociedad? <span className="text-danger">*</span></Label>
+                      <p className="text-body-sm text-ink-2">El objeto pre-aprobado abarca muchas actividades: contanos cuál es la principal.</p>
+                      <textarea
+                        id="actividadPrincipal"
+                        value={formData.actividadPrincipal}
+                        onChange={(e) => actualizar('actividadPrincipal', e.target.value)}
+                        aria-invalid={!!errorDe('actividadPrincipal') || undefined}
+                        className={cn(
+                          'flex w-full rounded-control border bg-surface px-3 py-2 text-body text-ink focus:outline-none focus:ring-2 focus:ring-ring',
+                          errorDe('actividadPrincipal') ? 'border-danger-solid' : 'border-line-strong',
+                        )}
+                        rows={3}
+                        placeholder="Ej.: Desarrollo de software a medida y venta de licencias para comercios"
                       />
-                      <span>
-                        <span className="block text-body-sm font-medium text-ink">Sí, tengo una</span>
-                        <span className="block text-label text-ink-2">La cargo acá abajo</span>
-                      </span>
-                    </label>
-                    <label className="flex cursor-pointer items-start gap-3 rounded-control border border-line bg-surface p-3 hover:border-primary-line">
-                      <input
-                        type="radio"
-                        name="sinDomicilio"
-                        checked={formData.sinDomicilio}
-                        onChange={() => setFormData(prev => ({ ...prev, sinDomicilio: true }))}
-                        className="mt-0.5"
-                      />
-                      <span>
-                        <span className="block text-body-sm font-medium text-ink">No tengo, quiero que me la den ustedes</span>
-                        <span className="block text-label text-ink-2">
-                          Es un servicio anual. Te decimos cuánto sale antes de cobrarte nada,
-                          y no te frena para terminar el formulario.
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                  {!formData.sinDomicilio && (
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="domicilio">Domicilio completo *</Label>
-                        <p className="text-label text-ink-2 mb-2">Se requiere que sea completo con indicación de piso, departamento, lote o manzana si correspondiera.</p>
-                        <Input id="domicilio" name="domicilio" value={formData.domicilio} onChange={handleInputChange} placeholder="Av. Colón 123, Piso 2, Dpto. A" />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="ciudad">Ciudad *</Label>
-                          <Select id="ciudad" name="ciudad" value={formData.ciudad} onChange={handleInputChange}>
-                            <option value="">Seleccionar ciudad...</option>
-                            {CIUDADES_CORDOBA.map(ciudad => (
-                              <option key={ciudad} value={ciudad}>{ciudad}</option>
-                            ))}
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="departamento">Departamento *</Label>
-                          <Select id="departamento" name="departamento" value={formData.departamento} onChange={handleInputChange}>
-                            <option value="">Seleccionar departamento...</option>
-                            {DEPARTAMENTOS_CORDOBA.map(depto => (
-                              <option key={depto} value={depto}>{depto}</option>
-                            ))}
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="provincia">Provincia *</Label>
-                          <Input 
-                            id="provincia" 
-                            name="provincia" 
-                            value={formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'} 
-                            disabled
-                            className="bg-surface-3"
-                          />
-                        </div>
-                      </div>
+                      <p className={cn('text-label tnum', formData.actividadPrincipal.trim().length >= ACTIVIDAD_PRINCIPAL_MIN_CARACTERES ? 'text-ink-3' : 'text-ink-2')}>
+                        {formData.actividadPrincipal.trim().length} de {ACTIVIDAD_PRINCIPAL_MIN_CARACTERES} caracteres como mínimo
+                      </p>
+                      <ErrorDe mensaje={errorDe('actividadPrincipal')} />
                     </div>
                   )}
-                </div>
-              </div>
-            )}
-
-            {/* PASO 4: Capital */}
-            {pasoActual === 4 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">4</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Capital Social</h2>
-                    <p className="mt-1 text-body text-ink-2">Monto del capital y datos bancarios</p>
-                  </div>
-                </div>
-                {/* Una sola escala de texto en todo el paso: títulos de sección en
-                    text-heading, opciones en text-body y explicaciones en
-                    text-body-sm. Antes convivían cinco tamaños y cuatro colores,
-                    y el CBU ponía en monoespaciada hasta la etiqueta. */}
-                <fieldset className="space-y-3">
-                  <legend className="text-heading font-semibold text-ink">Monto del capital</legend>
-                  <p className="text-body-sm text-ink-2">
-                    El mínimo legal es de 2 salarios mínimos (SMVM actual:{' '}
-                    <span className="tnum">{pesos(smvm)}</span>).
-                  </p>
-                  {(() => {
-                    const minimo = capitalMinimo(smvm)
-                    const esMinimo = formData.capitalSocial === String(minimo)
-                    const opcion = (activa: boolean) =>
-                      `flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer ${
-                        activa ? 'border-primary bg-primary-soft' : 'border-line hover:border-primary hover:bg-primary-soft/40'
-                      }`
-                    return (
-                      <>
-                        <label className={opcion(esMinimo)}>
-                          <input
-                            type="radio"
-                            name="capitalSocialOpcion"
-                            checked={esMinimo}
-                            onChange={() => setFormData(prev => ({ ...prev, capitalSocial: String(minimo) }))}
-                            className="mt-1"
-                          />
-                          <div>
-                            <p className="font-medium text-ink">Capital mínimo</p>
-                            <p className="text-body-sm text-ink-2">
-                              <span className="tnum font-semibold text-ink">{pesos(minimo)}</span> · 2 salarios mínimos
-                            </p>
-                          </div>
-                        </label>
-                        <label className={opcion(!esMinimo)}>
-                          <input
-                            type="radio"
-                            name="capitalSocialOpcion"
-                            checked={!esMinimo}
-                            onChange={() => setFormData(prev => ({ ...prev, capitalSocial: '' }))}
-                            className="mt-1"
-                          />
-                          <div>
-                            <p className="font-medium text-ink">Otro monto</p>
-                            <p className="text-body-sm text-ink-2">Un capital mayor al mínimo</p>
-                          </div>
-                        </label>
-                        {!esMinimo && (
-                          <div className="pt-1">
-                            <Label htmlFor="capitalSocialCustom">Monto del capital *</Label>
-                            <Input
-                              id="capitalSocialCustom"
-                              type="number"
-                              value={formData.capitalSocial}
-                              onChange={(e) => setFormData(prev => ({ ...prev, capitalSocial: e.target.value }))}
-                              placeholder={`Mínimo: ${pesos(minimo)}`}
-                              min={minimo}
-                              className="mt-2 tnum"
-                            />
-                            {formData.capitalSocial && parseFloat(formData.capitalSocial) < minimo && (
-                              <p className="mt-2 text-label text-danger">El capital mínimo es {pesos(minimo)}</p>
-                            )}
-                          </div>
+                  {formData.objetoSocial === 'PERSONALIZADO' && (
+                    <div className="pt-2 space-y-2">
+                      <Label htmlFor="objetoPersonalizado" className="block text-body-sm font-semibold">Describí las actividades <span className="text-danger">*</span></Label>
+                      <textarea
+                        id="objetoPersonalizado"
+                        value={formData.objetoPersonalizado}
+                        onChange={(e) => actualizar('objetoPersonalizado', e.target.value)}
+                        aria-invalid={!!errorDe('objetoPersonalizado') || undefined}
+                        className={cn(
+                          'flex w-full rounded-control border bg-surface px-3 py-2 text-body text-ink focus:outline-none focus:ring-2 focus:ring-ring',
+                          errorDe('objetoPersonalizado') ? 'border-danger-solid' : 'border-line-strong',
                         )}
-                      </>
-                    )
-                  })()}
+                        rows={4}
+                        placeholder="Ej.: Comercialización de indumentaria, importación de textiles…"
+                      />
+                      <ErrorDe mensaje={errorDe('objetoPersonalizado')} />
+                    </div>
+                  )}
                 </fieldset>
 
-                <div className="space-y-3 border-t border-line pt-6">
-                  <h3 className="text-heading font-semibold text-ink">Depósito del 25% del capital</h3>
-                  <div className="flex items-start gap-3 rounded-control border border-line bg-surface-2 p-4">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden />
-                    <div className="space-y-2 text-body-sm text-ink-2">
-                      <p>
-                        En Córdoba se deposita en garantía el 25% del capital en una cuenta del Banco de
-                        Córdoba que se abre para el trámite. Cuando la sociedad queda inscripta, ese dinero
-                        se reintegra a los CBU que cargues acá.
-                      </p>
-                      <ul className="list-disc space-y-1 pl-4">
-                        <li>El CBU principal tiene que ser del administrador titular.</li>
-                        <li>El secundario, de otra cuenta del titular o de otro administrador.</li>
-                        <li>Tienen que ser CBU bancarios: no se aceptan CVU de billeteras virtuales.</li>
-                      </ul>
-                    </div>
-                  </div>
+                <fieldset className="space-y-3 border-t border-line pt-6">
+                  <legend className="sr-only">Sede social</legend>
+                  <h3 className="text-heading font-semibold text-ink">Sede social</h3>
+                  {/* La explicación va ANTES de pedir la dirección. Medido sobre
+                      los borradores abandonados: de 8 personas que eligen
+                      denominación, sólo 1 llega a cargar un domicilio, porque
+                      quien es de otra provincia cree que el trámite no es para él. */}
+                  <Aviso>
+                    <p className="text-ink">
+                      La sede tiene que estar en <span className="font-semibold">{formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</span>,
+                      pero <span className="font-semibold">no hace falta que vivas ahí</span>.
+                    </p>
+                    <p>
+                      Si no tenés una dirección para fijarla, te la damos nosotros y seguís sin problema. La sociedad
+                      después puede operar en todo el país.
+                    </p>
+                  </Aviso>
 
-                  <label
-                    className={`flex items-start gap-3 rounded-control border p-4 transition-colors cursor-pointer ${
-                      formData.cbuPrincipal === 'INFORMAR_LUEGO' ? 'border-primary bg-primary-soft' : 'border-line hover:bg-surface-2'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFormData(prev => ({ ...prev, cbuPrincipal: 'INFORMAR_LUEGO', cbuSecundario: 'INFORMAR_LUEGO' }))
-                        } else {
-                          setFormData(prev => ({ ...prev, cbuPrincipal: '', cbuSecundario: '' }))
-                        }
-                      }}
-                      className="mt-1"
-                    />
+                  <p className="text-body-sm font-semibold text-ink-2 pt-1">¿Tenés una dirección para la sede?</p>
+                  <Opcion activa={!formData.sinDomicilio}>
+                    <input type="radio" name="sinDomicilio" checked={!formData.sinDomicilio} onChange={() => actualizar('sinDomicilio', false)} className="mt-1" />
                     <div>
-                      <p className="font-medium text-ink">Informar los CBU más adelante</p>
-                      <p className="text-body-sm text-ink-2">Los podés cargar en otro momento del trámite</p>
+                      <p className="font-medium text-ink">Sí, tengo una</p>
+                      <p className="text-body-sm text-ink-2">La cargás acá abajo.</p>
                     </div>
-                  </label>
+                  </Opcion>
+                  <Opcion activa={formData.sinDomicilio}>
+                    <input type="radio" name="sinDomicilio" checked={formData.sinDomicilio} onChange={() => actualizar('sinDomicilio', true)} className="mt-1" />
+                    <div>
+                      <p className="font-medium text-ink">No, quiero que me la den ustedes</p>
+                      <p className="text-body-sm text-ink-2">Es un servicio anual. Te decimos cuánto sale antes de cobrarte nada, y no te frena para terminar el formulario.</p>
+                    </div>
+                  </Opcion>
 
-                  {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
-                    <div className="space-y-4 pt-1">
-                      {([
-                        ['cbuPrincipal', 'CBU principal'],
-                        ['cbuSecundario', 'CBU secundario'],
-                      ] as const).map(([campo, etiqueta]) => (
+                  {!formData.sinDomicilio && (
+                    <div className="space-y-4 pt-2">
+                      <FormField
+                        label="Dirección"
+                        name="domicilio"
+                        value={formData.domicilio}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Av. Colón 123, piso 2, dpto. A"
+                        helpText="Completa: con piso, departamento, lote o manzana si corresponde"
+                        error={errorDe('domicilio')}
+                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <FormField
-                          key={campo}
-                          label={etiqueta}
-                          name={campo}
-                          value={formData[campo]}
-                          onChange={handleInputChange}
-                          placeholder="22 dígitos"
-                          required={formData.jurisdiccion === 'CORDOBA'}
-                          helpText="22 dígitos, sin espacios ni guiones"
-                          maxLength={22}
-                          pattern="\d{22}"
-                          inputClassName="font-mono tnum"
-                          error={formData[campo] ? validarCbu(formData[campo]) || undefined : undefined}
-                          validation={formData[campo] ? (validarCbu(formData[campo]) ? 'error' : 'success') : 'none'}
+                          label="Ciudad"
+                          name="ciudad"
+                          value={formData.ciudad}
+                          onChange={(e) => {
+                            const ciudad = e.target.value
+                            actualizar('ciudad', ciudad)
+                            // Ciudad conocida: el departamento se completa solo.
+                            const depto = departamentoDeCiudad(ciudad)
+                            if (depto && !formData.departamento) actualizar('departamento', depto)
+                          }}
+                          required
+                          list={LISTA_CIUDADES}
+                          error={errorDe('ciudad')}
                         />
-                      ))}
+                        <CampoSelect
+                          id="departamento"
+                          label="Departamento"
+                          value={formData.departamento}
+                          onChange={(departamento) => actualizar('departamento', departamento)}
+                          opciones={DEPARTAMENTOS_CORDOBA}
+                          error={errorDe('departamento')}
+                        />
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between"><Label htmlFor="provincia" className="text-body-sm font-semibold">Provincia</Label></div>
+                          <Input id="provincia" value={formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'} disabled className="bg-surface-3" />
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
+                </fieldset>
               </div>
             )}
 
-            {/* Paso 5: Socios */}
+            {/* ── Paso 4: Capital ── */}
+            {pasoActual === 4 && (
+              <div className="space-y-6">
+                <CabeceraPaso numero={4} titulo="Capital social" bajada="Con cuánto capital arranca la sociedad" />
+                {(() => {
+                  const minimo = capitalMinimo(smvm)
+                  const esMinimo = formData.capitalSocial === String(minimo)
+                  return (
+                    <fieldset className="space-y-3">
+                      <legend className="text-body-sm text-ink-2 mb-3">
+                        El mínimo legal es de 2 salarios mínimos (SMVM actual: <span className="tnum">{pesos(smvm)}</span>).
+                      </legend>
+                      <Opcion activa={esMinimo}>
+                        <input type="radio" name="capitalSocialOpcion" checked={esMinimo} onChange={() => actualizar('capitalSocial', String(minimo))} className="mt-1" />
+                        <div>
+                          <p className="font-medium text-ink">Capital mínimo</p>
+                          <p className="text-body-sm text-ink-2">
+                            <span className="tnum font-semibold text-ink">{pesos(minimo)}</span> · 2 salarios mínimos
+                          </p>
+                        </div>
+                      </Opcion>
+                      <Opcion activa={!esMinimo}>
+                        <input type="radio" name="capitalSocialOpcion" checked={!esMinimo} onChange={() => actualizar('capitalSocial', '')} className="mt-1" />
+                        <div>
+                          <p className="font-medium text-ink">Otro monto</p>
+                          <p className="text-body-sm text-ink-2">Un capital mayor al mínimo</p>
+                        </div>
+                      </Opcion>
+                      {!esMinimo && (
+                        <div className="max-w-xs pt-1 space-y-2">
+                          <Label htmlFor="capitalSocial" className="block text-body-sm font-semibold">Monto del capital <span className="text-danger">*</span></Label>
+                          <CampoMonto
+                            id="capitalSocial"
+                            value={formData.capitalSocial}
+                            onChange={(v) => actualizar('capitalSocial', v)}
+                            placeholder={`Mínimo ${minimo.toLocaleString('es-AR')}`}
+                            error={errorDe('capitalSocial')}
+                          />
+                        </div>
+                      )}
+                    </fieldset>
+                  )
+                })()}
+
+                {formData.jurisdiccion === 'CORDOBA' && (
+                  <Aviso titulo="Depósito del 25% en garantía">
+                    En Córdoba se deposita el 25% del capital ({pesos(Math.round(capital * 0.25))}) en una cuenta del Banco de
+                    Córdoba que se abre para el trámite. Cuando la sociedad queda inscripta, se te devuelve. Las cuentas para
+                    el reintegro las cargás en el paso de Administración.
+                  </Aviso>
+                )}
+              </div>
+            )}
+
+            {/* ── Paso 5: Socios ── */}
             {pasoActual === 5 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">5</span>
+                <CabeceraPaso numero={5} titulo="Socios" bajada="Quiénes son los accionistas y cuánto aporta cada uno" />
+
+                <Aviso tono="atencion" titulo="Antes de firmar, cada persona va a necesitar">
+                  <ul className="list-disc space-y-1 pl-4">
+                    {formData.jurisdiccion === 'CORDOBA' && (
+                      <li>
+                        <span className="font-semibold">Ciudadano Digital nivel 2</span> (socios y administradores).{' '}
+                        <a href="/assets/img/CiudadanoDigital.jpeg" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2">
+                          Cómo obtenerlo
+                        </a>
+                      </li>
+                    )}
+                    <li>El <span className="font-semibold">CUIT habilitado</span> y el domicilio fiscal registrado en ARCA (ex AFIP).</li>
+                  </ul>
+                </Aviso>
+
+                {/* Cuánto falta asignar, con atajos para los casos comunes. */}
+                <div data-campo="aportes" tabIndex={-1} className={cn('rounded-control border p-4', errorDe('aportes') ? 'border-danger-line bg-danger-soft' : 'border-line bg-surface-2')}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="text-body-sm text-ink-2 space-y-0.5">
+                      <p>Capital: <span className="tnum font-semibold text-ink">{pesos(capital)}</span> · Asignado: <span className="tnum font-semibold text-ink">{pesos(asignado)}</span></p>
+                      <p className={cn('font-semibold', Math.abs(faltaAsignar) <= 1 ? 'text-success' : faltaAsignar > 0 ? 'text-ink' : 'text-danger')}>
+                        {Math.abs(faltaAsignar) <= 1
+                          ? '✓ Todo el capital está asignado'
+                          : faltaAsignar > 0
+                            ? `Falta asignar ${pesos(faltaAsignar)}`
+                            : `Te pasaste por ${pesos(-faltaAsignar)}`}
+                      </p>
+                    </div>
+                    {Math.abs(faltaAsignar) > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, socios: repartirEnPartesIguales(prev.socios, capital) }))
+                          limpiarErrores(['aportes', ...formData.socios.map((_, i) => `socios.${i}.aporte`)])
+                        }}
+                      >
+                        {formData.socios.length === 1 ? 'Asignar todo el capital' : 'Repartir en partes iguales'}
+                      </Button>
+                    )}
                   </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Socios</h2>
-                    <p className="mt-1 text-body text-ink-2">Datos de los accionistas</p>
-                  </div>
+                  <ErrorDe mensaje={errorDe('aportes')} />
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Socios / Accionistas</h3>
-                  <p className="text-ink-2 mb-4">
-                    Definí quiénes van a ser los socios y su participación en el capital
-                  </p>
+                {formData.socios.map((socio, index) => {
+                  const aporte = aporteDe(socio, capital)
+                  const pct = capital > 0 ? (aporte / capital) * 100 : 0
+                  return (
+                    <TarjetaPersona
+                      key={index}
+                      titulo={`Socio ${index + 1}`}
+                      acciones={
+                        <>
+                          {index === 0 && (
+                            <Button type="button" variant="outline" size="sm" onClick={socioSoyYo} disabled={!formData.nombre.trim()} className="gap-1.5">
+                              <UserCheck className="h-4 w-4" /> Soy yo
+                            </Button>
+                          )}
+                          {formData.socios.length > 1 && (
+                            <Button type="button" variant="ghost" size="sm" onClick={() => quitarSocio(index)} className="gap-1.5 text-ink-2">
+                              <Trash2 className="h-4 w-4" /> Quitar
+                            </Button>
+                          )}
+                        </>
+                      }
+                    >
+                      <PersonaCampos
+                        persona={socio}
+                        prefijo={`socios.${index}`}
+                        errores={errores}
+                        onCambio={(cambios) => actualizarSocio(index, cambios)}
+                      />
 
-                  <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
-                    <p className="text-body-sm text-warning">
-                      🪪 <strong>Importante:</strong> para avanzar con el trámite, todas las personas que intervengan en la Sociedad (como socias o administradoras) deberán tener <strong>Ciudadano Digital Nivel 2</strong>. Es un requisito del sistema.{' '}
-                      {/* En otra pestaña: acá la persona está a mitad del formulario. */}
-                      <a
-                        href="/assets/img/CiudadanoDigital.jpeg"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold underline underline-offset-2 hover:text-ink"
-                      >
-                        Ver el instructivo para obtenerlo
-                      </a>
-                    </p>
-                  </div>
-
-                  <div className="bg-surface-3 p-4 rounded-control mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-body-sm font-medium text-ink-2">Número de socios:</span>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (formData.numeroSocios > 1) {
-                              setFormData(prev => ({
-                                ...prev,
-                                numeroSocios: prev.numeroSocios - 1,
-                                socios: prev.socios.slice(0, -1)
-                              }))
-                            }
-                          }}
-                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
-                        >
-                          −
-                        </button>
-                        <span className="text-heading font-semibold text-ink w-8 text-center">{formData.numeroSocios}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              numeroSocios: prev.numeroSocios + 1,
-                              socios: [...prev.socios, {
-                                nombre: '',
-                                apellido: '',
-                                dni: '',
-                                cuit: '',
-                                domicilio: '',
-                                ciudad: '',
-                                departamento: '',
-                                provincia: '',
-                                estadoCivil: '',
-                                profesion: '',
-                                aporteCapital: '0',
-                                tipoAporte: 'MONTO',
-                                aportePorcentaje: '0'
-                              }]
-                            }))
-                          }}
-                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-primary text-on-primary border-primary-line hover:bg-primary hover:border-primary-line flex items-center justify-center font-semibold text-heading shadow-raise transition-colors"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-body-sm space-y-1">
-                      <p className="text-ink-2">
-                        <span className="font-semibold text-ink">Capital Social:</span> {pesos(parseFloat(formData.capitalSocial || '0'))}
-                      </p>
-                      <p className="text-ink-2">
-                        <span className="font-semibold text-ink">Total de Aportes:</span>{' '}
-                        {(() => {
-                          // Parsear capital social correctamente (remover puntos de miles)
-                          const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
-                          const capitalTotal = parseFloat(capitalStr) || 0
-                          // Calcular total de aportes correctamente, considerando si viene de porcentaje o monto
-                          const totalAportes = formData.socios.reduce((sum, s) => {
-                            if (s.tipoAporte === 'PORCENTAJE') {
-                              // Si es porcentaje, calcular desde el porcentaje
-                              const porcentaje = parseFloat(String(s.aportePorcentaje || '0').replace(',', '.')) || 0
-                              return sum + (capitalTotal * porcentaje / 100)
-                            } else {
-                              // Si es monto, parsear el monto
-                              const aporteStr = String(s.aporteCapital || '0').replace(/\./g, '').replace(',', '.')
-                              return sum + (parseFloat(aporteStr) || 0)
-                            }
-                          }, 0)
-                          return pesos(totalAportes)
-                        })()}
-                      </p>
-                      {(() => {
-                        // Parsear capital social correctamente (remover puntos de miles)
-                        const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
-                        const capitalTotal = parseFloat(capitalStr) || 0
-                        // Calcular total de aportes correctamente, considerando si viene de porcentaje o monto
-                        const totalAportes = formData.socios.reduce((sum, s) => {
-                          if (s.tipoAporte === 'PORCENTAJE') {
-                            // Si es porcentaje, calcular desde el porcentaje
-                            const porcentaje = parseFloat(String(s.aportePorcentaje || '0').replace(',', '.')) || 0
-                            return sum + (capitalTotal * porcentaje / 100)
-                          } else {
-                            // Si es monto, parsear el monto
-                            const aporteStr = String(s.aporteCapital || '0').replace(/\./g, '').replace(',', '.')
-                            return sum + (parseFloat(aporteStr) || 0)
-                          }
-                        }, 0)
-                        const faltaAsignar = capitalTotal - totalAportes
-                        const diferencia = Math.abs(faltaAsignar)
-                        return (
-                          <p className={diferencia <= 1 ? 'text-success font-medium' : 'text-primary font-medium'}>
-                            <span className="font-semibold">{diferencia <= 1 ? '✓ Capital completo' : 'Falta asignar'}:</span>{' '}
-                            {pesos(diferencia <= 1 ? 0 : faltaAsignar)}
-                          </p>
-                        )
-                      })()}
-                    </div>
-                  </div>
-
-                  <div className="bg-primary-soft border border-primary-line rounded-control p-3 mb-4">
-                    <p className="text-label text-primary">
-                      💡 <strong>Requisitos importantes:</strong> Es fundamental que los accionistas designados tengan un domicilio fiscal registrado ante ARCA y su CUIT habilitado. En caso de no cumplir con estos requisitos, deberá regularizarse la situación para continuar con el trámite.
-                    </p>
-                  </div>
-
-                  {formData.socios.map((socio, index) => (
-                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
-                      <h4 className="font-semibold text-ink text-heading mb-4">Socio {index + 1}</h4>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>Nombre *</Label>
-                          <Input
-                            value={socio.nombre}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].nombre = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Juan"
-                          />
-                        </div>
-                        <div>
-                          <Label>Apellido *</Label>
-                          <Input
-                            value={socio.apellido}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].apellido = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Pérez"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <FormField
-                          label="DNI"
-                          name={`socio-${index}-dni`}
-                          value={socio.dni}
-                          onChange={(e) => {
-                            const newSocios = [...formData.socios]
-                            newSocios[index].dni = e.target.value.replace(/[.\-]/g, '')
-                            setFormData(prev => ({ ...prev, socios: newSocios }))
-                          }}
-                          placeholder="12345678"
-                          required
-                          helpText="Sin puntos ni guiones, solo números"
-                          maxLength={8}
-                          error={socio.dni ? validarDni(socio.dni) || undefined : undefined}
-                          validation={
-                            socio.dni
-                              ? validarDni(socio.dni) ? 'error' : 'success'
-                              : 'none'
-                          }
-                        />
-                        <FormField
-                          label="CUIT"
-                          name={`socio-${index}-cuit`}
-                          value={socio.cuit}
-                          onChange={(e) => {
-                            const newSocios = [...formData.socios]
-                            newSocios[index].cuit = e.target.value.replace(/[.\-]/g, '')
-                            setFormData(prev => ({ ...prev, socios: newSocios }))
-                          }}
-                          placeholder="20123456789"
-                          required
-                          helpText="11 dígitos sin guiones"
-                          maxLength={11}
-                          error={socio.cuit ? validarCuit(socio.cuit) || undefined : undefined}
-                          validation={
-                            socio.cuit
-                              ? validarCuit(socio.cuit) ? 'error' : 'success'
-                              : 'none'
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <Label>Domicilio completo *</Label>
-                        <p className="text-label text-ink-2 mb-2">Incluí calle, número, piso, departamento, lote o manzana si correspondiera</p>
-                        <Input
-                          value={socio.domicilio}
-                          onChange={(e) => {
-                            const newSocios = [...formData.socios]
-                            newSocios[index].domicilio = e.target.value
-                            setFormData(prev => ({ ...prev, socios: newSocios }))
-                          }}
-                          placeholder="Av. Córdoba 1234, Piso 2, Dpto. A"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <Label>Ciudad *</Label>
-                          <Input
-                            value={socio.ciudad}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].ciudad = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Córdoba"
-                          />
-                        </div>
-                        <div>
-                          <Label>Departamento *</Label>
-                          <Input
-                            value={socio.departamento}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].departamento = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Capital"
-                          />
-                        </div>
-                        <div>
-                          <Label>Provincia *</Label>
-                          <Input
-                            value={socio.provincia}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].provincia = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Córdoba"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>Estado civil *</Label>
-                          <Select
-                            value={socio.estadoCivil}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].estadoCivil = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                          >
-                            <option value="">Seleccionar</option>
-                            <option value="Soltero/a">Soltero/a</option>
-                            <option value="Casado/a">Casado/a</option>
-                            <option value="Divorciado/a">Divorciado/a</option>
-                            <option value="Viudo/a">Viudo/a</option>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Profesión *</Label>
-                          <Input
-                            value={socio.profesion}
-                            onChange={(e) => {
-                              const newSocios = [...formData.socios]
-                              newSocios[index].profesion = e.target.value
-                              setFormData(prev => ({ ...prev, socios: newSocios }))
-                            }}
-                            placeholder="Comerciante"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label>Aporte de capital *</Label>
-                        <div className="space-y-3">
-                          {/* Selector de tipo */}
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newSocios = [...formData.socios]
-                                newSocios[index].tipoAporte = 'MONTO'
-                                setFormData(prev => ({ ...prev, socios: newSocios }))
-                              }}
-                              className={`min-h-10 sm:min-h-0 px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
-                                socio.tipoAporte === 'MONTO'
-                                  ? 'border-primary-line bg-primary-soft text-primary font-medium'
-                                  : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
-                              }`}
-                            >
-                              Monto ($)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newSocios = [...formData.socios]
-                                newSocios[index].tipoAporte = 'PORCENTAJE'
-                                setFormData(prev => ({ ...prev, socios: newSocios }))
-                              }}
-                              className={`min-h-10 sm:min-h-0 px-3 py-1.5 text-body-sm rounded-control border transition-colors ${
-                                socio.tipoAporte === 'PORCENTAJE'
-                                  ? 'border-primary-line bg-primary-soft text-primary font-medium'
-                                  : 'border-line-strong bg-surface text-ink-2 hover:border-line-strong'
-                              }`}
-                            >
-                              Porcentaje (%)
-                            </button>
+                      <div className="mt-4 border-t border-line pt-4 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="text-body-sm font-semibold text-ink">Aporte de capital <span className="text-danger">*</span></p>
+                          <div className="inline-flex rounded-control border border-line p-0.5" role="group" aria-label="Cómo indicar el aporte">
+                            {(['MONTO', 'PORCENTAJE'] as const).map((tipo) => (
+                              <button
+                                key={tipo}
+                                type="button"
+                                aria-pressed={socio.tipoAporte === tipo}
+                                onClick={() =>
+                                  // Al cambiar de modo se conserva el mismo aporte, expresado en el otro.
+                                  actualizarSocio(index, tipo === 'MONTO'
+                                    ? { tipoAporte: 'MONTO', aporteCapital: String(aporte) }
+                                    : { tipoAporte: 'PORCENTAJE', aportePorcentaje: pct ? pct.toFixed(2).replace(/\.?0+$/, '') : '' })
+                                }
+                                className={cn(
+                                  'min-h-8 rounded-[6px] px-3 text-body-sm transition-colors',
+                                  socio.tipoAporte === tipo ? 'bg-primary-soft font-semibold text-primary' : 'text-ink-2 hover:text-ink',
+                                )}
+                              >
+                                {tipo === 'MONTO' ? 'En pesos' : 'En porcentaje'}
+                              </button>
+                            ))}
                           </div>
-                          
-                          {/* Input según el tipo */}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
                           {socio.tipoAporte === 'MONTO' ? (
-                            <div>
-                              <Input
-                                type="number"
-                                value={socio.aporteCapital}
-                                onChange={(e) => {
-                                  const newSocios = [...formData.socios]
-                                  const monto = parseFloat(e.target.value) || 0
-                                  // Parsear capital social correctamente (remover puntos de miles)
-                                  const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
-                                  const capitalTotal = parseFloat(capitalStr) || 0
-                                  const porcentaje = capitalTotal > 0 ? ((monto / capitalTotal) * 100).toFixed(2) : '0'
-                                  newSocios[index].aporteCapital = e.target.value
-                                  newSocios[index].aportePorcentaje = porcentaje
-                                  setFormData(prev => ({ ...prev, socios: newSocios }))
-                                }}
-                                placeholder="0"
-                                min="0"
-                              />
-                              {socio.aportePorcentaje && parseFloat(socio.aportePorcentaje) > 0 && (
-                                <p className="text-label text-ink-2 mt-1">
-                                  Equivale al {socio.aportePorcentaje}% del capital social
-                                </p>
-                              )}
-                            </div>
+                            <CampoMonto
+                              id={`socios.${index}.aporte`}
+                              aria-label={`Aporte del socio ${index + 1} en pesos`}
+                              value={socio.aporteCapital === '0' ? '' : socio.aporteCapital}
+                              onChange={(v) => actualizarSocio(index, { aporteCapital: v })}
+                              placeholder="0"
+                              error={errorDe(`socios.${index}.aporte`)}
+                            />
                           ) : (
                             <div>
-                              <Input
-                                type="number"
-                                value={socio.aportePorcentaje}
-                                onChange={(e) => {
-                                  const newSocios = [...formData.socios]
-                                  const porcentaje = parseFloat(e.target.value) || 0
-                                  // Parsear capital social correctamente (remover puntos de miles)
-                                  const capitalStr = String(formData.capitalSocial || '0').replace(/\./g, '').replace(',', '.')
-                                  const capitalTotal = parseFloat(capitalStr) || 0
-                                  const monto = (capitalTotal * porcentaje) / 100
-                                  newSocios[index].aportePorcentaje = e.target.value
-                                  // Guardar el monto sin decimales para evitar problemas de precisión
-                                  newSocios[index].aporteCapital = Math.round(monto).toString()
-                                  setFormData(prev => ({ ...prev, socios: newSocios }))
-                                }}
-                                placeholder="0"
-                                min="0"
-                                max="100"
-                                step="0.01"
-                              />
-                              {socio.aporteCapital && parseFloat(socio.aporteCapital) > 0 && (
-                                <p className="text-label text-ink-2 mt-1">
-                                  Equivale a {pesos(parseFloat(socio.aporteCapital))}
-                                </p>
-                              )}
+                              <div className="relative">
+                                <Input
+                                  id={`socios.${index}.aporte`}
+                                  aria-label={`Aporte del socio ${index + 1} en porcentaje`}
+                                  inputMode="decimal"
+                                  value={socio.aportePorcentaje === '0' ? '' : socio.aportePorcentaje}
+                                  onChange={(e) => actualizarSocio(index, { aportePorcentaje: e.target.value.replace(/[^\d.,]/g, '') })}
+                                  placeholder="0"
+                                  aria-invalid={!!errorDe(`socios.${index}.aporte`) || undefined}
+                                  className={cn('pr-8 tnum', errorDe(`socios.${index}.aporte`) && 'border-danger-solid')}
+                                />
+                                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-3">%</span>
+                              </div>
+                              <ErrorDe mensaje={errorDe(`socios.${index}.aporte`)} />
                             </div>
                           )}
+                          <p className="text-body-sm text-ink-2 sm:pt-2.5 tnum">
+                            {aporte > 0
+                              ? socio.tipoAporte === 'MONTO'
+                                ? `Equivale al ${pct.toLocaleString('es-AR', { maximumFractionDigits: 2 })}% del capital`
+                                : `Equivale a ${pesos(aporte)}`
+                              : ' '}
+                          </p>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    </TarjetaPersona>
+                  )
+                })}
+
+                <Button type="button" variant="outline" onClick={agregarSocio} className="w-full gap-2 border-dashed">
+                  <Plus className="h-4 w-4" /> Agregar otro socio
+                </Button>
               </div>
             )}
 
-            {/* Paso 6: Administración */}
+            {/* ── Paso 6: Administración y CBU ── */}
             {pasoActual === 6 && (
               <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">6</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Administración</h2>
-                    <p className="mt-1 text-body text-ink-2">Órgano de administración</p>
-                  </div>
-                </div>
+                <CabeceraPaso numero={6} titulo="Administración" bajada="Quiénes administran la sociedad y la cuenta para el reintegro" />
 
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Órgano de Administración</h3>
-                  <p className="text-ink-2 mb-4">
-                    Definí quiénes van a administrar la sociedad
-                  </p>
+                <Aviso>
+                  Hace falta un administrador titular y uno suplente, que tienen que ser personas distintas. Pueden ser
+                  socios o no.
+                </Aviso>
 
-                  <div className="bg-primary-soft border-primary-line rounded-control p-4 mb-4">
-                    <p className="text-body-sm text-primary">
-                      ℹ️ <strong>Requisitos de administradores:</strong> Es obligatoria la designación de como mínimo un Administrador Titular y un Suplente. Los Administradores pueden o no ser socios de la Sociedad.
-                    </p>
-                  </div>
+                {formData.administradores.map((admin, index) => {
+                  const sociosConNombre = formData.socios
+                    .map((s, i) => ({ s, i }))
+                    .filter(({ s }) => nombreCompleto(s))
+                  return (
+                    <TarjetaPersona
+                      key={index}
+                      titulo={index === 0 ? 'Administrador titular' : index === 1 ? 'Administrador suplente' : `Administrador ${index + 1}`}
+                      acciones={
+                        <>
+                          {sociosConNombre.length > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <Copy className="h-4 w-4 text-ink-3" aria-hidden />
+                              <Select
+                                size="sm"
+                                value=""
+                                aria-label={`Copiar datos de un socio en el administrador ${index + 1}`}
+                                onChange={(e) => copiarSocioEnAdmin(index, Number(e.target.value))}
+                                className="max-w-[14rem]"
+                              >
+                                <option value="">Copiar datos de un socio…</option>
+                                {sociosConNombre.map(({ s, i }) => {
+                                  // Titular y suplente tienen que ser personas distintas.
+                                  const usado = s.dni && formData.administradores.some((a, j) => j !== index && a.dni === s.dni)
+                                  return (
+                                    <option key={i} value={i} disabled={!!usado}>
+                                      {nombreCompleto(s)}{usado ? ' (ya es administrador)' : ''}
+                                    </option>
+                                  )
+                                })}
+                              </Select>
+                            </div>
+                          )}
+                          {index >= 2 && (
+                            <Button type="button" variant="ghost" size="sm" onClick={() => quitarAdmin(index)} className="gap-1.5 text-ink-2">
+                              <Trash2 className="h-4 w-4" /> Quitar
+                            </Button>
+                          )}
+                        </>
+                      }
+                    >
+                      <PersonaCampos
+                        persona={admin}
+                        prefijo={`administradores.${index}`}
+                        errores={errores}
+                        onCambio={(cambios) => actualizarAdmin(index, cambios)}
+                      />
+                    </TarjetaPersona>
+                  )
+                })}
 
-                  <div className="bg-surface-3 p-4 rounded-control mb-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-body-sm font-medium text-ink-2">Número de administradores:</span>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (formData.numeroAdministradores > 2) {
-                              setFormData(prev => ({
-                                ...prev,
-                                numeroAdministradores: prev.numeroAdministradores - 1,
-                                administradores: prev.administradores.slice(0, -1)
-                              }))
-                            }
-                          }}
-                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
-                          disabled={formData.numeroAdministradores <= 2}
-                        >
-                          −
-                        </button>
-                        <span className="text-heading font-semibold text-ink w-8 text-center">{formData.numeroAdministradores}</span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFormData(prev => ({
-                              ...prev,
-                              numeroAdministradores: prev.numeroAdministradores + 1,
-                              administradores: [...prev.administradores, {
-                                nombre: '',
-                                apellido: '',
-                                dni: '',
-                                cuit: '',
-                                domicilio: '',
-                                ciudad: '',
-                                departamento: '',
-                                provincia: '',
-                                estadoCivil: '',
-                                profesion: ''
-                              }]
-                            }))
-                          }}
-                          className="w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-surface border border-line-strong hover:bg-surface-2 flex items-center justify-center"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                <Button type="button" variant="outline" onClick={agregarAdmin} className="w-full gap-2 border-dashed">
+                  <Plus className="h-4 w-4" /> Agregar otro administrador
+                </Button>
 
-                  <div className="bg-warning-soft border border-warning-line rounded-control p-3 mb-4">
-                    <p className="text-label text-warning">
-                      💡 Podés autocompletar los datos de un administrador seleccionando un socio existente
-                    </p>
-                  </div>
+                {/* El CBU va acá y no en Capital: tiene que ser del titular, que se elige en este paso. */}
+                {formData.jurisdiccion === 'CORDOBA' && (
+                  <div className="space-y-3 border-t border-line pt-6">
+                    <h3 className="text-heading font-semibold text-ink">Cuentas para el reintegro del depósito</h3>
+                    <Aviso>
+                      <p>
+                        Cuando la sociedad queda inscripta, el Banco de Córdoba devuelve el 25% del capital depositado
+                        ({pesos(Math.round(capital * 0.25))}) a estas cuentas.
+                      </p>
+                      <ul className="list-disc space-y-1 pl-4">
+                        <li>
+                          La <span className="font-semibold">principal</span> tiene que ser del administrador titular
+                          {nombreCompleto(titular) ? <>: <span className="font-semibold text-ink">{nombreCompleto(titular)}</span></> : ''}.
+                        </li>
+                        <li>La <span className="font-semibold">secundaria</span>, de otra cuenta del titular o de otro administrador.</li>
+                        <li>Tienen que ser CBU de un banco: no se aceptan CVU de billeteras virtuales (Mercado Pago, Ualá, Brubank, etc.).</li>
+                      </ul>
+                    </Aviso>
 
-                  {formData.administradores.map((admin, index) => (
-                    <div key={index} className="border-line rounded-card p-6 mb-4 bg-surface shadow-raise hover:shadow-raise transition-shadow">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-semibold text-ink text-heading">
-                          {index === 0 ? 'Administrador Titular' : index === 1 ? 'Administrador Suplente' : `Administrador ${index + 1}`}
-                        </h4>
-                        
-                        {formData.socios.length > 0 && (
-                          <Select
-                            value=""
-                            onChange={(e) => {
-                              const socioIndex = parseInt(e.target.value)
-                              if (!isNaN(socioIndex)) {
-                                const socio = formData.socios[socioIndex]
-                                // Verificar si este DNI ya está siendo usado por otro administrador (Titular vs Suplente)
-                                const dniYaUsado = formData.administradores.some((admin, adminIdx) =>
-                                  adminIdx !== index &&
-                                  admin.dni &&
-                                  admin.dni === socio.dni
-                                )
-                                if (dniYaUsado) {
-                                  alert('Este socio ya está seleccionado como otro administrador. El Administrador Titular y el Suplente deben ser personas diferentes.')
-                                  return
-                                }
-                                const newAdmins = [...formData.administradores]
-                                newAdmins[index] = {
-                                  nombre: socio.nombre,
-                                  apellido: socio.apellido,
-                                  dni: socio.dni,
-                                  cuit: socio.cuit,
-                                  domicilio: socio.domicilio,
-                                  ciudad: socio.ciudad,
-                                  departamento: socio.departamento,
-                                  provincia: socio.provincia,
-                                  estadoCivil: socio.estadoCivil,
-                                  profesion: socio.profesion
-                                }
-                                setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                              }
-                            }}
-                            className="text-body-sm max-w-xs"
-                          >
-                            <option value="">Autocompletar desde socio...</option>
-                            {formData.socios.map((socio, idx) => {
-                              // Deshabilitar si el socio ya está usado como otro administrador
-                              const yaUsado = formData.administradores.some((admin, adminIdx) =>
-                                adminIdx !== index &&
-                                admin.dni &&
-                                admin.dni === socio.dni
-                              )
-                              return (
-                                <option
-                                  key={idx}
-                                  value={idx}
-                                  disabled={yaUsado}
-                                >
-                                  {socio.nombre} {socio.apellido}{yaUsado ? ' (ya asignado)' : ''}
-                                </option>
-                              )
-                            })}
-                          </Select>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label>Nombre *</Label>
-                          <Input
-                            value={admin.nombre}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].nombre = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="Juan"
-                          />
-                        </div>
-                        <div>
-                          <Label>Apellido *</Label>
-                          <Input
-                            value={admin.apellido}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].apellido = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="Pérez"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <FormField
-                          label="DNI"
-                          name={`admin-${index}-dni`}
-                          value={admin.dni}
-                          onChange={(e) => {
-                            const newAdmins = [...formData.administradores]
-                            newAdmins[index].dni = e.target.value.replace(/[.\-]/g, '')
-                            setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                          }}
-                          placeholder="12345678"
-                          required
-                          helpText="Sin puntos ni guiones, solo números"
-                          maxLength={8}
-                          error={admin.dni ? validarDni(admin.dni) || undefined : undefined}
-                          validation={
-                            admin.dni
-                              ? validarDni(admin.dni) ? 'error' : 'success'
-                              : 'none'
-                          }
-                        />
-                        <FormField
-                          label="CUIT"
-                          name={`admin-${index}-cuit`}
-                          value={admin.cuit}
-                          onChange={(e) => {
-                            const newAdmins = [...formData.administradores]
-                            newAdmins[index].cuit = e.target.value.replace(/[.\-]/g, '')
-                            setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                          }}
-                          placeholder="20123456789"
-                          required
-                          helpText="11 dígitos sin guiones"
-                          maxLength={11}
-                          error={admin.cuit ? validarCuit(admin.cuit) || undefined : undefined}
-                          validation={
-                            admin.cuit
-                              ? validarCuit(admin.cuit) ? 'error' : 'success'
-                              : 'none'
-                          }
-                        />
-                      </div>
-
-                      <div className="mb-4">
-                        <Label>Domicilio completo *</Label>
-                        <p className="text-label text-ink-2 mb-2">Incluí calle, número, piso, departamento, lote o manzana si correspondiera</p>
-                        <Input
-                          value={admin.domicilio}
-                          onChange={(e) => {
-                            const newAdmins = [...formData.administradores]
-                            newAdmins[index].domicilio = e.target.value
-                            setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                          }}
-                          placeholder="Av. Córdoba 1234, Piso 2, Dpto. A"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <Label>Ciudad *</Label>
-                          <Input
-                            value={admin.ciudad}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].ciudad = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="Ej: Córdoba, Buenos Aires, Rosario..."
-                            required
-                          />
-                          <p className="text-label text-ink-2 mt-1">Puede ser de cualquier provincia de Argentina</p>
-                        </div>
-                        <div>
-                          <Label>Departamento *</Label>
-                          <Input
-                            value={admin.departamento}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].departamento = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="Ej: Capital, La Matanza, Rosario..."
-                            required
-                          />
-                          <p className="text-label text-ink-2 mt-1">Puede ser de cualquier provincia de Argentina</p>
-                        </div>
-                        <div>
-                          <Label>Provincia *</Label>
-                          <Select
-                            value={admin.provincia || ''}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].provincia = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            required
-                          >
-                            <option value="">Seleccionar provincia...</option>
-                            <option value="Buenos Aires">Buenos Aires</option>
-                            <option value="Catamarca">Catamarca</option>
-                            <option value="Chaco">Chaco</option>
-                            <option value="Chubut">Chubut</option>
-                            <option value="Córdoba">Córdoba</option>
-                            <option value="Corrientes">Corrientes</option>
-                            <option value="Entre Ríos">Entre Ríos</option>
-                            <option value="Formosa">Formosa</option>
-                            <option value="Jujuy">Jujuy</option>
-                            <option value="La Pampa">La Pampa</option>
-                            <option value="La Rioja">La Rioja</option>
-                            <option value="Mendoza">Mendoza</option>
-                            <option value="Misiones">Misiones</option>
-                            <option value="Neuquén">Neuquén</option>
-                            <option value="Río Negro">Río Negro</option>
-                            <option value="Salta">Salta</option>
-                            <option value="San Juan">San Juan</option>
-                            <option value="San Luis">San Luis</option>
-                            <option value="Santa Cruz">Santa Cruz</option>
-                            <option value="Santa Fe">Santa Fe</option>
-                            <option value="Santiago del Estero">Santiago del Estero</option>
-                            <option value="Tierra del Fuego">Tierra del Fuego</option>
-                            <option value="Tucumán">Tucumán</option>
-                            <option value="Ciudad Autónoma de Buenos Aires">Ciudad Autónoma de Buenos Aires</option>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label>Estado civil *</Label>
-                          <Select
-                            value={admin.estadoCivil}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].estadoCivil = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                          >
-                            <option value="">Seleccionar</option>
-                            <option value="Soltero/a">Soltero/a</option>
-                            <option value="Casado/a">Casado/a</option>
-                            <option value="Divorciado/a">Divorciado/a</option>
-                            <option value="Viudo/a">Viudo/a</option>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Profesión *</Label>
-                          <Input
-                            value={admin.profesion}
-                            onChange={(e) => {
-                              const newAdmins = [...formData.administradores]
-                              newAdmins[index].profesion = e.target.value
-                              setFormData(prev => ({ ...prev, administradores: newAdmins }))
-                            }}
-                            placeholder="Comerciante"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Paso 7: Cierre */}
-            {pasoActual === 7 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-4 mb-6 pb-4 border-b border-line">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft ring-1 ring-primary-line">
-                    <span className="text-title text-primary">7</span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-title text-ink">Cierre de Ejercicio</h2>
-                    <p className="mt-1 text-body text-ink-2">Fecha de cierre contable</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-heading text-ink mb-2">Cierre de Ejercicio Económico</h3>
-                  <p className="text-ink-2 mb-4">
-                    Definí la fecha de cierre del ejercicio económico
-                  </p>
-
-                  <div className="bg-surface-2 border-line rounded-control p-4 mb-4">
-                    <p className="text-body-sm text-ink-2">
-                      El cierre de ejercicio es la fecha anual en la que se cierran los libros contables y se preparan los estados financieros. La fecha más común es el 31 de diciembre (31-12).
-                    </p>
-                  </div>
-
-                  <div className="mb-6">
-                    <Label htmlFor="fechaCierre">Fecha de cierre de ejercicio (día-mes) *</Label>
-                    <Input
-                      id="fechaCierre"
-                      name="fechaCierre"
-                      value={formData.fechaCierre}
-                      onChange={handleInputChange}
-                      onBlur={() => setFechaCierreTocada(true)}
-                      placeholder="31-12"
-                      pattern="\d{2}-\d{2}"
-                      required
-                      aria-invalid={!!errorFechaCierre}
-                      className="max-w-xs"
-                    />
-                    {errorFechaCierre && (
-                      <p className="text-label text-danger mt-1">{errorFechaCierre}</p>
-                    )}
-                    <p className="text-label text-ink-2 mt-1">
-                      Ingresá el día y el mes de cierre (formato: dd-mm). Ejemplo: 31-12 para el 31 de diciembre
-                    </p>
-                  </div>
-
-                  <div className="border-t border-line pt-6">
-                    <label className="flex items-start gap-3 p-4 border border-line rounded-control cursor-pointer hover:bg-surface-2">
+                    <Opcion activa={formData.cbuPrincipal === 'INFORMAR_LUEGO'}>
                       <input
                         type="checkbox"
-                        name="asesoramientoContable"
-                        checked={formData.asesoramientoContable}
-                        onChange={handleInputChange}
+                        checked={formData.cbuPrincipal === 'INFORMAR_LUEGO'}
+                        onChange={(e) => {
+                          const valor = e.target.checked ? 'INFORMAR_LUEGO' : ''
+                          setFormData(prev => ({ ...prev, cbuPrincipal: valor, cbuSecundario: valor }))
+                          limpiarErrores(['cbuPrincipal', 'cbuSecundario'])
+                        }}
                         className="mt-1"
                       />
                       <div>
-                        <p className="font-medium text-ink">Deseo recibir asesoramiento contable adicional</p>
-                        <p className="text-body-sm text-ink-2">
-                          Recibí ayuda profesional con la gestión contable y fiscal de tu sociedad
-                        </p>
+                        <p className="font-medium text-ink">Los cargo más adelante</p>
+                        <p className="text-body-sm text-ink-2">Te los vamos a pedir antes de hacer el depósito.</p>
                       </div>
-                    </label>
-                  </div>
+                    </Opcion>
 
-                  <div className="mt-8 bg-success-soft border-success-line rounded-card p-6">
-                    <h4 className="font-semibold text-success text-title mb-3">¡Todo listo para enviar!</h4>
-                    <p className="text-success mb-4">
-                      Completaste todos los pasos del formulario. Revisá la información y, cuando estés listo, hacé clic en &quot;Enviar Formulario&quot; para iniciar tu trámite de constitución.
-                    </p>
-                    <div className="bg-surface rounded-control p-4 text-ink-2 space-y-2 border border-success-line">
-                      <p><span className="font-semibold">Plan seleccionado:</span> {nombrePlan(formData.plan)}</p>
-                      <p><span className="font-semibold">Jurisdicción:</span> {nombreJurisdiccion(formData.jurisdiccion)}</p>
-                      <p><span className="font-semibold">Capital Social:</span> {pesos((parseFloat(String(formData.capitalSocial).replace(/\./g, '').replace(',', '.')) || 0))}</p>
-                      <p><span className="font-semibold">Socios:</span> {formData.numeroSocios}</p>
-                      <p><span className="font-semibold">Administradores:</span> {formData.numeroAdministradores}</p>
+                    {formData.cbuPrincipal !== 'INFORMAR_LUEGO' && (
+                      <div className="grid grid-cols-1 gap-4 pt-1">
+                        {([
+                          ['cbuPrincipal', 'CBU principal (del titular)'],
+                          ['cbuSecundario', 'CBU secundario'],
+                        ] as const).map(([campo, etiqueta]) => (
+                          <FormField
+                            key={campo}
+                            label={etiqueta}
+                            name={campo}
+                            value={formData[campo]}
+                            onChange={(e) => actualizar(campo, soloDigitos(e.target.value))}
+                            placeholder="22 dígitos"
+                            required
+                            inputMode="numeric"
+                            helpText="Lo encontrás en la app o el homebanking de tu banco"
+                            inputClassName="font-mono tnum"
+                            error={errorDe(campo)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Paso 7: Cierre y resumen ── */}
+            {pasoActual === 7 && (
+              <div className="space-y-6">
+                <CabeceraPaso numero={7} titulo="Cierre y revisión" bajada="La fecha de cierre del ejercicio y un repaso de todo antes de enviar" />
+
+                <fieldset className="space-y-3">
+                  <legend className="text-heading font-semibold text-ink mb-3">Cierre del ejercicio económico</legend>
+                  <Aviso>
+                    Es el día del año en que se cierran los libros contables y se preparan los balances. Lo más común es el
+                    31 de diciembre.
+                  </Aviso>
+                  <div className="flex flex-wrap items-end gap-3" data-campo="fechaCierre">
+                    <div className="space-y-2">
+                      <Label htmlFor="fechaCierre-dia" className="block text-body-sm font-semibold">Día</Label>
+                      <Select id="fechaCierre-dia" value={String(diaCierre)} onChange={(e) => cambiarCierre(Number(e.target.value), mesCierre)} className="w-24">
+                        {Array.from({ length: DIAS_POR_MES[mesCierre - 1] ?? 31 }, (_, i) => i + 1).map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </Select>
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fechaCierre-mes" className="block text-body-sm font-semibold">Mes</Label>
+                      <Select id="fechaCierre-mes" value={String(mesCierre)} onChange={(e) => cambiarCierre(diaCierre, Number(e.target.value))} className="w-40">
+                        {MESES.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+                      </Select>
+                    </div>
+                  </div>
+                  <ErrorDe mensaje={errorDe('fechaCierre')} />
+                </fieldset>
+
+                <Opcion activa={formData.asesoramientoContable}>
+                  <input type="checkbox" name="asesoramientoContable" checked={formData.asesoramientoContable} onChange={handleInputChange} className="mt-1" />
+                  <div>
+                    <p className="font-medium text-ink">Quiero asesoramiento contable para la sociedad</p>
+                    <p className="text-body-sm text-ink-2">Te contactamos para ayudarte con la gestión contable e impositiva.</p>
+                  </div>
+                </Opcion>
+
+                {/* Resumen: todo lo cargado, con «Editar» en cada parte. */}
+                <div className="space-y-3 border-t border-line pt-6">
+                  <h3 className="text-heading font-semibold text-ink">Revisá antes de enviar</h3>
+                  {pendienteDeRevisar ? (
+                    <Aviso tono="atencion" titulo={`Falta revisar el paso ${pendienteDeRevisar.paso}: ${PASOS[pendienteDeRevisar.paso - 1].nombre}`}>
+                      <p>{Object.values(pendienteDeRevisar.errores)[0]}.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          irAPaso(pendienteDeRevisar.paso)
+                          setErrores(pendienteDeRevisar.errores)
+                          enfocarCampo(Object.keys(pendienteDeRevisar.errores)[0])
+                        }}
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        Ir a corregirlo
+                      </button>
+                    </Aviso>
+                  ) : (
+                    <div className="flex items-start gap-3 rounded-control border border-success-line bg-success-soft p-4 text-body-sm text-success">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+                      <p><span className="font-semibold">Está todo completo.</span> Si los datos están bien, enviá el formulario y empezamos.</p>
+                    </div>
+                  )}
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <BloqueResumen titulo="Tus datos" onEditar={() => irAPaso(1)}>
+                      <p className="text-ink">{nombreCompleto(formData)}</p>
+                      <p>DNI {formData.dni || '—'} · {formData.telefono || '—'}</p>
+                      <p className="break-all">{formData.email}</p>
+                      <p>Plan {nombrePlan(formData.plan)} · {nombreJurisdiccion(formData.jurisdiccion)}</p>
+                    </BloqueResumen>
+                    <BloqueResumen titulo="Nombre de la sociedad" onEditar={() => irAPaso(2)}>
+                      {[formData.denominacion1, formData.denominacion2, formData.denominacion3].map((d, i) => (
+                        <p key={i}><span className="text-ink-3">{i + 1}.</span> {d || '—'}</p>
+                      ))}
+                    </BloqueResumen>
+                    <BloqueResumen titulo="Actividad y sede" onEditar={() => irAPaso(3)}>
+                      <p>{formData.objetoSocial === 'PREAPROBADO' ? 'Objeto pre-aprobado' : 'Objeto a medida'}</p>
+                      <p className="line-clamp-2">{formData.objetoSocial === 'PREAPROBADO' ? formData.actividadPrincipal : formData.objetoPersonalizado}</p>
+                      <p>
+                        {formData.sinDomicilio
+                          ? 'Sede: la damos nosotros'
+                          : `Sede: ${[formData.domicilio, formData.ciudad].filter(Boolean).join(', ') || '—'}`}
+                      </p>
+                    </BloqueResumen>
+                    <BloqueResumen titulo="Capital" onEditar={() => irAPaso(4)}>
+                      <p className="text-ink tnum">{pesos(capital)}</p>
+                      {formData.jurisdiccion === 'CORDOBA' && <p className="tnum">Depósito del 25%: {pesos(Math.round(capital * 0.25))}</p>}
+                    </BloqueResumen>
+                    <BloqueResumen titulo={`Socios (${formData.socios.length})`} onEditar={() => irAPaso(5)}>
+                      {formData.socios.map((s, i) => (
+                        <p key={i} className="tnum">
+                          {nombreCompleto(s) || `Socio ${i + 1}`} · {capital > 0 ? `${((aporteDe(s, capital) / capital) * 100).toLocaleString('es-AR', { maximumFractionDigits: 2 })}%` : '—'}
+                        </p>
+                      ))}
+                    </BloqueResumen>
+                    <BloqueResumen titulo="Administración" onEditar={() => irAPaso(6)}>
+                      {formData.administradores.map((a, i) => (
+                        <p key={i}>
+                          <span className="text-ink-3">{i === 0 ? 'Titular' : i === 1 ? 'Suplente' : `Adm. ${i + 1}`}:</span> {nombreCompleto(a) || '—'}
+                        </p>
+                      ))}
+                      {formData.jurisdiccion === 'CORDOBA' && (
+                        <p>CBU: {formData.cbuPrincipal === 'INFORMAR_LUEGO' ? 'los cargás más adelante' : formData.cbuPrincipal ? `terminado en ${formData.cbuPrincipal.slice(-4)}` : '—'}</p>
+                      )}
+                    </BloqueResumen>
                   </div>
                 </div>
               </div>
@@ -2385,7 +1610,7 @@ export default function NuevoTramitePage() {
             </div>
 
             {/* Navegación */}
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-8 pt-6 border-t border-line">
+            <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8 pt-6 border-t border-line">
               <Button
                 variant="outline"
                 onClick={handleAnterior}
@@ -2396,8 +1621,8 @@ export default function NuevoTramitePage() {
                 Anterior
               </Button>
 
-              {pasoActual < 7 ? (
-                <Button onClick={handleSiguiente} className="gap-2 bg-primary hover:bg-primary-hover w-full sm:w-auto rounded-control shadow-raise h-12 px-6 font-semibold">
+              {pasoActual < TOTAL_PASOS ? (
+                <Button onClick={handleSiguiente} className="gap-2 w-full sm:w-auto rounded-control shadow-raise h-12 px-6 font-semibold">
                   Siguiente
                   <ChevronRight className="h-5 w-5" />
                 </Button>
@@ -2408,7 +1633,7 @@ export default function NuevoTramitePage() {
                   className="gap-2 bg-success-solid hover:bg-success-solid w-full sm:w-auto rounded-control shadow-raise h-12 px-8 font-semibold"
                 >
                   <EtiquetaCarga cargando={guardando} textoCargando="Enviando...">
-                    Enviar Formulario
+                    Enviar formulario
                     <ChevronRight className="h-5 w-5" />
                   </EtiquetaCarga>
                 </Button>

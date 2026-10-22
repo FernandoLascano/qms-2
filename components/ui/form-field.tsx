@@ -26,6 +26,10 @@ interface FormFieldProps {
   max?: string | number
   pattern?: string
   autoComplete?: string
+  /** Teclado del celular: `numeric` para DNI, CUIT o CBU. */
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode']
+  /** Id de un <datalist> con sugerencias (se puede escribir otra cosa). */
+  list?: string
 }
 
 export function FormField({
@@ -46,7 +50,9 @@ export function FormField({
   min,
   max,
   pattern,
-  autoComplete
+  autoComplete,
+  inputMode,
+  list,
 }: FormFieldProps) {
   const hasError = validation === 'error' || !!error
   // El último error se sigue mostrando mientras el mensaje se cierra; si no,
@@ -86,6 +92,9 @@ export function FormField({
           max={max}
           pattern={pattern}
           autoComplete={autoComplete}
+          inputMode={inputMode}
+          list={list}
+          aria-invalid={hasError || undefined}
           className={cn(
             inputClassName,
             hasError && 'border-danger-solid focus:ring-ring focus:border-danger-solid',

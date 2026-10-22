@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/auth'
 import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
 import { getPublicConfig } from '@/lib/config'
 import { capitalMinimo } from '@/lib/precios'
+import { parsearMonto } from '@/lib/montos'
 
 // Guardar borrador del formulario
 export async function POST(request: Request) {
@@ -72,24 +73,14 @@ export async function POST(request: Request) {
 
     // Mínimo por defecto: 2 SMVM de la config (misma fuente que el formulario)
     const capitalMin = capitalMinimo((await getPublicConfig()).smvm)
-    let capitalSocial = 0
-    try {
-      const capitalStr = String(data.capitalSocial || '0')
-      capitalSocial = parseFloat(capitalStr.replace(/\./g, '').replace(',', '.'))
-    } catch (err) {
-      capitalSocial = capitalMin
-    }
+    // Misma lectura que el formulario (lib/montos): antes un «700000.5» se
+    // guardaba como 7.000.005.
+    const capitalSocial = parsearMonto(data.capitalSocial)
 
     const sociosJSON = data.socios && data.socios.length > 0 
       ? data.socios.map((socio: any, index: number) => {
-          let aporteCapital = 0
-          try {
-            const aporteStr = String(socio.aporteCapital || '0')
-            aporteCapital = parseFloat(aporteStr.replace(/\./g, '').replace(',', '.'))
-          } catch (err) {
-            aporteCapital = 0
-          }
-          
+          const aporteCapital = parsearMonto(socio.aporteCapital)
+
           return {
             id: index + 1,
             nombre: socio.nombre || '',
@@ -141,6 +132,14 @@ export async function POST(request: Request) {
       asesoramientoContable: data.asesoramientoContable || false,
       ciudad: data.ciudad || '',
       departamento: data.departamento || '',
+      // Lo que el cliente escribió tal cual, para retomarlo igual. Antes se
+      // reconstruía desde domicilioLegal («calle, ciudad, depto, provincia») y
+      // una dirección con comas («Av. Colón 123, Piso 2») volvía cortada; y un
+      // objeto a medida que arrancaba como el pre-aprobado se perdía.
+      domicilio: data.domicilio || '',
+      sinDomicilio: data.sinDomicilio === true,
+      objetoSocial: data.objetoSocial === 'PERSONALIZADO' ? 'PERSONALIZADO' : 'PREAPROBADO',
+      objetoPersonalizado: data.objetoPersonalizado || '',
       // Dónde vive la persona (no es la sede de la sociedad)
       provinciaResidencia: data.provinciaResidencia || '',
       // A qué se va a dedicar la sociedad (se pide aunque elija el pre-aprobado)
