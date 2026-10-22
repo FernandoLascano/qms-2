@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
 import { pesos } from '@/lib/etiquetas'
+import { CopyButton, DatoCopiable, montoParaCopiar } from '@/components/ui/copy-button'
 
 interface DepositoCapitalClienteProps {
   tramiteId: string
@@ -183,9 +184,12 @@ export default function DepositoCapitalCliente({
             <strong>{pesos(capitalSocial)}</strong>
           </p>
           {montoTexto && (
-            <p>
-              Monto a depositar: <strong>{montoTexto}</strong>
-            </p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="flex-1">
+                Monto a depositar: <strong>{montoTexto}</strong>
+              </p>
+              <CopyButton valor={montoParaCopiar(montoEsperado)} descripcion="Copiar monto a depositar" />
+            </div>
           )}
         </div>
 
@@ -218,18 +222,8 @@ export default function DepositoCapitalCliente({
                   <span className="text-ink">{banco}</span>
                 </div>
               )}
-              {cbu && (
-                <div className="flex items-start gap-2">
-                  <span className="font-medium text-ink-2 min-w-[80px]">CBU:</span>
-                  <span className="text-ink font-mono">{cbu}</span>
-                </div>
-              )}
-              {alias && (
-                <div className="flex items-start gap-2">
-                  <span className="font-medium text-ink-2 min-w-[80px]">Alias:</span>
-                  <span className="text-ink">{alias}</span>
-                </div>
-              )}
+              {cbu && <DatoCopiable etiqueta="CBU" valor={cbu} mono />}
+              {alias && <DatoCopiable etiqueta="Alias" valor={alias} />}
               {titular && (
                 <div className="flex items-start gap-2">
                   <span className="font-medium text-ink-2 min-w-[80px]">Titular:</span>

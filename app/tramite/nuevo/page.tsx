@@ -32,6 +32,7 @@ import {
   validarTelefono,
 } from '@/lib/validaciones'
 import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
+import { EtiquetaCarga } from '@/components/ui/etiqueta-carga'
 
 const PROVINCIAS_AR = [
   'Buenos Aires', 'CABA', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
@@ -156,6 +157,12 @@ export default function NuevoTramitePage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [pasoActual, setPasoActual] = useState(1)
+  // Hacia dónde se movió el formulario: el paso nuevo entra desde ese lado.
+  const [direccion, setDireccion] = useState<'adelante' | 'atras'>('adelante')
+  const irAPaso = (paso: number) => {
+    setDireccion(paso < pasoActual ? 'atras' : 'adelante')
+    setPasoActual(paso)
+  }
   const [guardando, setGuardando] = useState(false)
   // Una vez enviado hay que cortar el auto-guardado: si sigue corriendo, el
   // borrador ya no existe (quedó marcado como completo) y crea un trámite duplicado.
@@ -761,14 +768,14 @@ export default function NuevoTramitePage() {
       return
     }
     if (pasoActual < 7) {
-      setPasoActual(pasoActual + 1)
+      irAPaso(pasoActual + 1)
       window.scrollTo(0, 0)
     }
   }
 
   const handleAnterior = () => {
     if (pasoActual > 1) {
-      setPasoActual(pasoActual - 1)
+      irAPaso(pasoActual - 1)
       window.scrollTo(0, 0)
     }
   }
@@ -778,7 +785,7 @@ export default function NuevoTramitePage() {
     for (let paso = 1; paso <= 7; paso++) {
       if (!validarPaso(paso)) {
         toast.error(`Revisá los datos del paso ${paso}`)
-        setPasoActual(paso) // Llevar al usuario al paso con error
+        irAPaso(paso) // Llevar al usuario al paso con error
         return
       }
     }
@@ -961,6 +968,8 @@ export default function NuevoTramitePage() {
             768px el recorrido del ojo entre etiqueta y campo es corto. */}
         <Card>
           <CardContent className="p-card sm:p-8">
+            {/* El key reinicia la animación de entrada en cada cambio de paso. */}
+            <div key={pasoActual} className={direccion === 'atras' ? 'paso-atras' : 'paso-adelante'}>
             {/* Paso 1: Datos */}
             {pasoActual === 1 && (
               <div className="space-y-6">
@@ -2371,6 +2380,8 @@ export default function NuevoTramitePage() {
               </div>
             )}
 
+            </div>
+
             {/* Navegación */}
             <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 mt-8 pt-6 border-t border-line">
               <Button
@@ -2394,8 +2405,10 @@ export default function NuevoTramitePage() {
                   disabled={guardando}
                   className="gap-2 bg-success-solid hover:bg-success-solid w-full sm:w-auto rounded-control shadow-raise h-12 px-8 font-semibold"
                 >
-                  {guardando ? 'Enviando...' : 'Enviar Formulario'}
-                  <ChevronRight className="h-5 w-5" />
+                  <EtiquetaCarga cargando={guardando} textoCargando="Enviando...">
+                    Enviar Formulario
+                    <ChevronRight className="h-5 w-5" />
+                  </EtiquetaCarga>
                 </Button>
               )}
             </div>

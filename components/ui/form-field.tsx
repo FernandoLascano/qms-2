@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, CheckCircle, HelpCircle } from 'lucide-react'
@@ -45,6 +46,10 @@ export function FormField({
   autoComplete
 }: FormFieldProps) {
   const hasError = validation === 'error' || !!error
+  // El último error se sigue mostrando mientras el mensaje se cierra; si no,
+  // el texto desaparecería antes que el espacio que ocupa.
+  const [ultimoError, setUltimoError] = useState(error)
+  if (error && error !== ultimoError) setUltimoError(error)
   const hasSuccess = validation === 'success' && value && !hasError
 
   return (
@@ -89,18 +94,27 @@ export function FormField({
         )}
       </div>
 
-      {error && (
-        <p className="text-label text-danger flex items-center gap-1">
-          <AlertCircle className="h-3 w-3" />
-          {error}
-        </p>
-      )}
+      {/* Error y ayuda comparten lugar: se despliegan y se cruzan con la altura
+          justa en vez de empujar el formulario de golpe (idea de interior.dev
+          «inline-validation», MIT; ver `.mensaje-campo` en globals.css). */}
+      <div className="mensaje-campo -mt-2" data-visible={!!error}>
+        <div>
+          <p className="pt-2 text-label text-danger flex items-center gap-1" aria-live="polite">
+            <AlertCircle className="h-3 w-3" />
+            {ultimoError}
+          </p>
+        </div>
+      </div>
 
-      {!error && helpText && (
-        <p className="text-label text-ink-2 flex items-start gap-1">
-          <HelpCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-          <span>{helpText}</span>
-        </p>
+      {helpText && (
+        <div className="mensaje-campo -mt-2" data-visible={!error}>
+          <div>
+            <p className="pt-2 text-label text-ink-2 flex items-start gap-1">
+              <HelpCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+              <span>{helpText}</span>
+            </p>
+          </div>
+        </div>
       )}
     </div>
   )

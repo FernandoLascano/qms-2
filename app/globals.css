@@ -626,3 +626,61 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* ── Microinteracciones ──────────────────────────────────────────────────
+   Ideas tomadas de interior.dev (MIT, https://www.interior.dev), rehechas en
+   CSS: el panel no carga framer-motion y estas transiciones no lo necesitan.
+   Ver components/ui/{copy-button,etiqueta-carga,password-strength}.tsx.      */
+
+/* Estados apilados en la misma celda: el ancho es el del más largo, así que
+   cambiar de «Copiar» a «Copiado» o de «Enviar» a «Enviando…» no mueve nada. */
+.apilado { display: inline-grid; }
+.apilado > * {
+  grid-area: 1 / 1;
+  transition: opacity 0.22s var(--ease), transform 0.22s var(--ease), filter 0.22s var(--ease);
+}
+.apilado > [data-activo="false"] {
+  opacity: 0;
+  transform: translateY(3px);
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+/* Tilde que se dibuja (stroke-dasharray en el path). */
+.tilde-dibujo path {
+  stroke-dasharray: 14;
+  stroke-dashoffset: 14;
+  transition: stroke-dashoffset 0.26s var(--ease) 0.04s;
+}
+.tilde-dibujo[data-activo="true"] path { stroke-dashoffset: 0; }
+
+/* Mensaje bajo un campo: se abre y se cierra con la altura justa, en vez de
+   aparecer de golpe y empujar el formulario. */
+.mensaje-campo {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.24s var(--ease), opacity 0.18s var(--ease);
+}
+.mensaje-campo > * { overflow: hidden; min-height: 0; }
+.mensaje-campo[data-visible="true"] { grid-template-rows: 1fr; opacity: 1; }
+
+/* Pasos del formulario: el contenido entra desde el lado hacia el que vas. */
+@keyframes paso-desde-derecha {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes paso-desde-izquierda {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: none; }
+}
+.paso-adelante { animation: paso-desde-derecha 0.32s var(--ease) both; }
+.paso-atras    { animation: paso-desde-izquierda 0.32s var(--ease) both; }
+
+/* Segmentos de la fortaleza de contraseña: se llenan de izquierda a derecha. */
+.segmento-fortaleza > span {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.28s var(--ease), background-color 0.2s var(--ease);
+}
+.segmento-fortaleza[data-lleno="true"] > span { transform: scaleX(1); }

@@ -25,6 +25,7 @@ import { Progress, LabeledProgress } from '@/components/ui/progress'
 import { StatCard } from '@/components/ui/stat-card'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { EmptyState, ErrorState, Skeleton, InlineLoading } from '@/components/ui/states'
+import { DemoMicrointeracciones } from '@/components/ui/demo-microinteracciones'
 
 export const metadata = { title: 'Sistema de diseño · QMS' }
 
@@ -438,6 +439,13 @@ export default async function DesignSystemPage() {
           />
         </Card>
         <ErrorState />
+      </Bloque>
+
+      <Bloque
+        titulo="Microinteracciones"
+        nota="Ideas de interior.dev (MIT) rehechas en CSS: copiar datos, fortaleza de contraseña, errores que se despliegan y pasos con dirección."
+      >
+        <DemoMicrointeracciones />
       </Bloque>
     </div>
   )

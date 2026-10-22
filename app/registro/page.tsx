@@ -4,7 +4,9 @@ import { useCallback, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Mail, Phone, Lock, ArrowLeft, UserPlus, Loader2 } from 'lucide-react'
+import { User, Mail, Phone, Lock, ArrowLeft, UserPlus } from 'lucide-react'
+import { PasswordStrength } from '@/components/ui/password-strength'
+import { EtiquetaCarga } from '@/components/ui/etiqueta-carga'
 import { trackEvent } from '@/lib/analytics'
 import { validarPassword } from '@/lib/validaciones'
 const GoogleSignInButton = dynamic(
@@ -43,6 +45,8 @@ export default function RegistroPage() {
     captchaRequired,
     onTokenChange: onTurnstileToken,
   })
+
+  const coinciden = formData.confirmPassword.length > 0 && formData.confirmPassword === formData.password
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -256,10 +260,21 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
+                  autoComplete="new-password"
+                  aria-describedby="password-fortaleza"
                   className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
-              <p className="text-label text-ink-3 pl-1">Debe tener al menos 6 caracteres</p>
+              {/* Vacía: el requisito en una línea. Al escribir, la guía completa
+                  se despliega con la altura justa en vez de saltar. */}
+              {!formData.password && (
+                <p className="text-label text-ink-3 pl-1">Debe tener al menos 6 caracteres</p>
+              )}
+              <div className="mensaje-campo" data-visible={formData.password.length > 0}>
+                <div id="password-fortaleza">
+                  <PasswordStrength valor={formData.password} className="pt-1" />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -279,8 +294,18 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   disabled={loading}
+                  autoComplete="new-password"
                   className="w-full h-12 pl-12 pr-4 text-body text-ink placeholder:text-ink-3 border border-line rounded-control focus:border-primary-line focus:ring-2 focus:ring-ring outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
+              </div>
+              {/* Avisa si coinciden mientras escribís, no recién al enviar. */}
+              <div className="mensaje-campo" data-visible={formData.confirmPassword.length > 0}>
+                <p
+                  aria-live="polite"
+                  className={`text-label pl-1 ${coinciden ? 'text-success' : 'text-ink-3'}`}
+                >
+                  {coinciden ? '✓ Las contraseñas coinciden' : 'Todavía no coinciden'}
+                </p>
               </div>
             </div>
 
@@ -299,17 +324,10 @@ export default function RegistroPage() {
               disabled={loading || (captchaRequired && (!siteKey || !turnstileToken))}
               className="w-full h-12 bg-primary hover:bg-primary-hover text-on-primary font-semibold text-body rounded-control shadow-raise hover:shadow-pop transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-6"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Creando cuenta...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-5 h-5" />
-                  Crear cuenta
-                </>
-              )}
+              <EtiquetaCarga cargando={loading} textoCargando="Creando cuenta...">
+                <UserPlus className="w-5 h-5" />
+                Crear cuenta
+              </EtiquetaCarga>
             </button>
 
             <div className="text-center pt-5 border-t border-line">

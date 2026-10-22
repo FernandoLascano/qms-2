@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
 import { pesos } from '@/lib/etiquetas'
+import { CopyButton, DatoCopiable, montoParaCopiar } from '@/components/ui/copy-button'
 
 interface Pago {
   id: string
@@ -200,9 +201,12 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                               Precio promocional
                             </span>
                           </div>
-                          <p className="text-title font-semibold text-success mb-1">
-                            {pesos(pago.montoTransferencia)}
-                          </p>
+                          <div className="flex items-center gap-3 mb-1">
+                            <p className="text-title font-semibold text-success">
+                              {pesos(pago.montoTransferencia)}
+                            </p>
+                            <CopyButton valor={montoParaCopiar(pago.montoTransferencia)} descripcion="Copiar monto a transferir" />
+                          </div>
                           <p className="text-label text-ink-2 line-through mb-1">
                             {pesos(pago.monto)}
                           </p>
@@ -215,11 +219,11 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                       {/* Datos Bancarios */}
                       <div className="bg-surface-2 rounded-control p-3 mb-3">
                         <p className="text-label font-semibold text-ink-2 mb-2">Datos para Transferencia:</p>
-                        <div className="space-y-1 text-label text-ink-2">
+                        <div className="space-y-1.5 text-label text-ink-2">
                           <p><strong>Banco:</strong> {pago.datosBancarios.banco}</p>
-                          <p><strong>CBU:</strong> {pago.datosBancarios.cbu}</p>
+                          <DatoCopiable etiqueta="CBU" valor={pago.datosBancarios.cbu} mono />
                           {pago.datosBancarios.alias && (
-                            <p><strong>Alias:</strong> {pago.datosBancarios.alias}</p>
+                            <DatoCopiable etiqueta="Alias" valor={pago.datosBancarios.alias} />
                           )}
                           <p><strong>Titular:</strong> {pago.datosBancarios.titular}</p>
                         </div>
