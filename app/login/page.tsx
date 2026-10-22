@@ -28,6 +28,7 @@ import {
   Users,
 } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import { ReenviarVerificacion } from '@/components/auth/reenviar-verificacion'
 import { controlBase } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
@@ -61,6 +62,8 @@ function LoginForm() {
   // campos: marcarlos en rojo mandaría a corregir algo que está bien. Sólo se
   // marcan cuando el rechazo vino del formulario.
   const [credencialesMal, setCredencialesMal] = useState(false)
+  // La contraseña era correcta pero falta verificar el email: se ofrece reenviarlo.
+  const [faltaVerificar, setFaltaVerificar] = useState(false)
 
   const isFromRegistration = searchParams.get('registered') === 'true'
   const isFromVerification = searchParams.get('verified') === 'true'
@@ -103,6 +106,7 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setFaltaVerificar(false)
     setCredencialesMal(false)
     setLoading(true)
 
@@ -118,7 +122,8 @@ function LoginForm() {
       if (result?.error) {
         console.error('Error de login:', result.error)
         if (result.error === 'EMAIL_NOT_VERIFIED') {
-          setError('Te falta verificar el email. Revisá tu casilla y abrí el link de confirmación.')
+          setError('Te falta verificar el email. Revisá tu casilla (y el spam) y abrí el link de confirmación.')
+          setFaltaVerificar(true)
         } else if (result.error === 'TOO_MANY_ATTEMPTS') {
           setError('Demasiados intentos. Probá de nuevo en unos minutos.')
         } else {
@@ -177,6 +182,7 @@ function LoginForm() {
           className="rise bg-danger-soft border border-danger-line text-danger p-4 rounded-control text-body-sm font-medium"
         >
           {error}
+          {faltaVerificar && <ReenviarVerificacion email={email.trim().toLowerCase()} className="mt-2" />}
         </div>
       )}
 

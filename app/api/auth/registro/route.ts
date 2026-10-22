@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     const turnstile = await verifyTurnstileToken({ token: turnstileToken, remoteip })
     if (!turnstile.ok) {
       return NextResponse.json(
-        { error: "Anti-spam", details: turnstile.error, codes: turnstile.codes },
+        { error: "Anti-spam", details: turnstile.error, codes: turnstile.codes, codigo: "ANTISPAM" },
         { status: 400 }
       )
     }
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "El email ya está registrado" },
+        { error: "El email ya está registrado", codigo: "EMAIL_EXISTENTE" },
         { status: 400 }
       )
     }
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
       return NextResponse.json(
-        { error: "El email ya está registrado" },
+        { error: "El email ya está registrado", codigo: "EMAIL_EXISTENTE" },
         { status: 400 }
       )
     }
