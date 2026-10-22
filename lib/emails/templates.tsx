@@ -627,6 +627,39 @@ export const emailVerificarCuenta = ({ nombre, verifyUrl }: EmailTemplateProps) 
   })
 }
 
+// 1b. Recuperar la contraseña
+export const emailRecuperarPassword = ({ nombre, resetUrl }: EmailTemplateProps) => {
+  const content = `
+    <div style="line-height: 0; margin: 0 0 12px 0;">${Icono('shield-check-brand', 30)}</div>
+    <h2 style="margin: 0 0 12px 0; color: ${colors.dark}; ${type.title}">
+      Elegí una contraseña nueva
+    </h2>
+    <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; ${type.body}">
+      Recibimos un pedido para cambiar la contraseña de tu cuenta. Tocá el botón para elegir una nueva.
+    </p>
+
+    ${CTAButton('Cambiar contraseña', resetUrl)}
+
+    <div style="background-color: ${colors.background}; border: 1px solid ${colors.border}; border-radius: ${radius.control}; padding: 16px; margin-top: 16px;">
+      <p style="margin: 0; color: ${colors.textMuted}; ${type.bodySm}">
+        Si el botón no funciona, copiá y pegá este link en tu navegador:
+        <br />
+        <span style="word-break: break-all; color: ${colors.primary}; font-weight: 600;">${resetUrl}</span>
+      </p>
+    </div>
+
+    <p style="margin: 16px 0 0 0; color: ${colors.textMuted}; ${type.label} font-weight: 400;">
+      El link sirve una sola vez y vence en 1 hora. Si no pediste el cambio, ignorá este email: tu contraseña sigue siendo la misma.
+    </p>
+  `
+
+  return EmailLayout({
+    children: content,
+    nombre,
+    preheader: 'Cambiá la contraseña de tu cuenta de QuieroMiSAS.'
+  })
+}
+
 // 2. Email cuando se envía un trámite
 export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTemplateProps) => {
   const content = `

@@ -67,6 +67,7 @@ function LoginForm() {
 
   const isFromRegistration = searchParams.get('registered') === 'true'
   const isFromVerification = searchParams.get('verified') === 'true'
+  const vieneDeRestablecer = searchParams.get('restablecida') === 'true'
   const oauthError = searchParams.get('error')
 
   useEffect(() => {
@@ -164,6 +165,13 @@ function LoginForm() {
         </div>
       )}
 
+      {vieneDeRestablecer && (
+        <div className="rise flex items-start gap-3 bg-success-soft border border-success-line text-success p-4 rounded-control text-body-sm font-medium">
+          <CircleCheck className="h-5 w-5 shrink-0 mt-px" />
+          <span>Listo, cambiaste la contraseña. Ya podés ingresar con la nueva.</span>
+        </div>
+      )}
+
       {isFromRegistration && (
         <div className="rise flex items-start gap-3 bg-success-soft border border-success-line text-success p-4 rounded-control text-body-sm font-medium">
           <CircleCheck className="h-5 w-5 shrink-0 mt-px" />
@@ -212,9 +220,18 @@ function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="block text-body-sm font-semibold text-ink-2">
-          Contraseña
-        </label>
+        <div className="flex items-center justify-between gap-2">
+          <label htmlFor="password" className="block text-body-sm font-semibold text-ink-2">
+            Contraseña
+          </label>
+          {/* Antes no había forma de recuperarla: quien la olvidaba quedaba afuera. */}
+          <Link
+            href={email.trim() ? `/recuperar-contrasena?email=${encodeURIComponent(email.trim())}` : '/recuperar-contrasena'}
+            className="text-body-sm font-medium text-primary hover:underline"
+          >
+            ¿La olvidaste?
+          </Link>
+        </div>
         <div className="relative">
           <Lock className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-3" />
           <input

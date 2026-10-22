@@ -342,9 +342,16 @@ export default function RegistroPage() {
                           <p className="pt-1 pl-1 text-label text-ink-2" role={emailExistente ? 'alert' : undefined}>
                             Ya hay una cuenta con este email.{' '}
                             <Link href="/login" className="font-semibold text-primary hover:underline">
-                              Ingresá con tu contraseña
+                              Ingresá
                             </Link>{' '}
-                            o con Google si te registraste así.
+                            o, si no te acordás la contraseña,{' '}
+                            <Link
+                              href={`/recuperar-contrasena?email=${encodeURIComponent(datos.email.trim())}`}
+                              className="font-semibold text-primary hover:underline"
+                            >
+                              recuperala
+                            </Link>
+                            .
                           </p>
                         </div>
                       </div>

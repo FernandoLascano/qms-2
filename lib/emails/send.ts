@@ -120,6 +120,15 @@ export async function enviarEmailVerificacionCuenta(params: { email: string; nom
   })
 }
 
+export async function enviarEmailRecuperarPassword(params: { email: string; nombre: string; resetUrl: string }) {
+  return sendEmail({
+    to: params.email,
+    subject: 'Cambiá tu contraseña de QuieroMiSAS',
+    template: 'emailRecuperarPassword',
+    data: { nombre: params.nombre, resetUrl: params.resetUrl },
+  })
+}
+
 export async function enviarEmailTramiteEnviado(
   email: string,
   nombre: string,

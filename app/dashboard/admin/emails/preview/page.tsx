@@ -20,6 +20,7 @@ const GRUPOS = [
     items: [
       { id: 'emailBienvenida', label: 'Bienvenida', cuando: 'Al registrarse' },
       { id: 'emailVerificarCuenta', label: 'Verificar email', cuando: 'Al pedir activación' },
+      { id: 'emailRecuperarPassword', label: 'Recuperar contraseña', cuando: 'Al pedir cambiarla' },
     ],
   },
   {

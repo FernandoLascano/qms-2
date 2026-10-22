@@ -29,6 +29,12 @@ export const EJEMPLOS_EMAIL: EjemploEmail[] = [
     datos: { nombre: 'Fernando', verifyUrl: `${SITE_URL}/verificar-email?token=ejemplo` },
   },
   {
+    template: 'emailRecuperarPassword',
+    etiqueta: 'Recuperar contraseña',
+    asunto: 'Cambiá tu contraseña de QuieroMiSAS',
+    datos: { nombre: 'Fernando', resetUrl: `${SITE_URL}/restablecer-contrasena?token=ejemplo` },
+  },
+  {
     template: 'emailTramiteEnviado',
     etiqueta: 'Trámite recibido',
     asunto: '✅ Trámite recibido - Mi Empresa S.A.S.',

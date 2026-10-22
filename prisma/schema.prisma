@@ -38,6 +38,7 @@ model User {
   partnerConversions   PartnerConversion[]
 
   emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
   leadSeguimientos        LeadSeguimiento[]
   leads                   Lead[]
   leadContactos           LeadContacto[]
@@ -79,6 +80,21 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// Links de «olvidé mi contraseña». Se guarda el hash del token, nunca el token.
+model PasswordResetToken {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model EmailVerificationToken {
