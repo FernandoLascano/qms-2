@@ -34,6 +34,8 @@ import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/t
 import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
 import { cn } from '@/lib/utils'
 import { nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
+import { SUGERIDOS_EN_CURSO, SUGERIDOS_INSCRIPTA } from '@/lib/servicios'
+import { ServiciosSugeridos } from '@/components/cliente/ServiciosSugeridos'
 
 const ICONOS: Record<IconoAccion, LucideIcon> = {
   pago: CreditCard,
@@ -53,7 +55,7 @@ async function DashboardPage() {
   // Los admin no inician trámites: van directo a su panel.
   if (session.user.rol === 'ADMIN') redirect('/dashboard/admin')
 
-  const [todosTramites, notificacionesNoLeidas] = await Promise.all([
+  const [todosTramites, notificacionesNoLeidas, catalogo, contratados] = await Promise.all([
     prisma.tramite.findMany({
     where: { userId: session.user.id },
     include: {
@@ -71,6 +73,15 @@ async function DashboardPage() {
     take: 20,
     }),
     prisma.notificacion.count({ where: { userId: session.user.id, leida: false } }),
+    // Para sugerir otros servicios (y no ofrecer lo que ya contrató).
+    prisma.servicioCatalogo.findMany({
+      where: { activo: true, slug: { in: [...SUGERIDOS_INSCRIPTA, ...SUGERIDOS_EN_CURSO] } },
+      select: { id: true, slug: true, nombre: true, descripcion: true, icono: true, modalidad: true, precioDesde: true, precioTexto: true },
+    }),
+    prisma.servicioContratado.findMany({
+      where: { tramite: { userId: session.user.id }, estado: 'ACTIVO' },
+      select: { servicio: { select: { slug: true } } },
+    }),
   ])
 
   // Deduplicar borrador + trámite enviado con la misma denominación.
@@ -92,6 +103,15 @@ async function DashboardPage() {
   const sociedades = tramites.filter((t) => t.sociedadInscripta)
 
   const primerNombre = session.user.name?.split(' ')[0] || 'Hola'
+
+  // Servicios para ofrecer según el momento: con la sociedad inscripta,
+  // contabilidad, marca y libros; mientras tanto, lo que conviene adelantar.
+  const slugsContratados = contratados.map((c) => c.servicio.slug)
+  const inscripta = sociedades.length > 0
+  const sugeridos = (inscripta ? SUGERIDOS_INSCRIPTA : SUGERIDOS_EN_CURSO)
+    .filter((slug) => !slugsContratados.includes(slug))
+    .map((slug) => catalogo.find((c) => c.slug === slug))
+    .filter((c): c is (typeof catalogo)[number] => !!c)
 
   // El trámite en curso más reciente define el bloque protagonista.
   const foco = activos[0] ?? tramites[0]
@@ -268,6 +288,11 @@ async function DashboardPage() {
                   ))}
                 </div>
               </section>
+            )}
+
+            {/* Tramites con formulario enviado: recién ahí tiene sentido ofrecer más. */}
+            {tramites.some((t) => t.formularioCompleto) && (
+              <ServiciosSugeridos servicios={sugeridos} inscripta={inscripta} contratados={slugsContratados} />
             )}
           </div>
 

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
 import { pesos } from '@/lib/etiquetas'
 import { CopyButton, DatoCopiable, montoParaCopiar } from '@/components/ui/copy-button'
+import { formatearFecha, hoyParaInput } from '@/lib/fechas'
 
 interface DepositoCapitalClienteProps {
   tramiteId: string
@@ -100,7 +101,10 @@ export default function DepositoCapitalCliente({
   const fechaActivacion = cuenta?.fechaActivacion || null
   
   // Verificar si la cuenta aún no está activa
-  const cuentaNoActiva = fechaActivacion && new Date(fechaActivacion) > new Date()
+  // La fecha es un día del calendario («2026-10-24»): se compara como día
+  // argentino. Con `new Date()` el navegador la leía a las 00:00 UTC, que en
+  // Argentina es el día anterior, y mostraba «operativa desde hoy».
+  const cuentaNoActiva = !!fechaActivacion && String(fechaActivacion).slice(0, 10) > hoyParaInput()
 
   const handleFileChange = (file: File | null) => {
     if (!file) {
@@ -203,12 +207,7 @@ export default function DepositoCapitalCliente({
                 <p className="text-body-sm font-semibold text-warning mb-1">Importante: Cuenta aún no activa</p>
                 <p className="text-label text-warning">
                   Esta cuenta estará operativa recién a partir del{' '}
-                  <strong>{new Date(fechaActivacion!).toLocaleDateString('es-AR', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</strong>.
+                  <strong>{formatearFecha(fechaActivacion, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</strong>.
                 </p>
                 <p className="text-label text-warning mt-1 font-semibold">
                   No realices la transferencia antes de esa fecha, ya que no será procesada.

@@ -861,10 +861,10 @@ function pasosSegunPlan(plan?: string) {
   const quedaPendiente = ['Descargá la Resolución de Inscripción y tu CUIT desde el panel']
   const yaIncluido: string[] = []
 
+  // El alta de la actividad en ARCA y el punto de venta no se menciona en este
+  // email (pedido de Fernando, 23/10/2026): no se promete como incluido.
   if (esBasico) {
     quedaPendiente.push('Dar de alta la actividad en ARCA y habilitar el punto de venta')
-  } else {
-    yaIncluido.push('El alta de la actividad en ARCA y el punto de venta: te contactamos para hacerlo')
   }
 
   if (esPremium) {
@@ -1300,7 +1300,7 @@ export const emailValidacionTramite = ({ nombre, denominacion, validado, observa
       <strong>¿Cómo seguimos?</strong> Un Agente de QuieroMiSAS se va a contactar con vos por <strong>WhatsApp o email</strong> para despejar dudas y coordinar el <strong>pago de los honorarios</strong>, y así avanzar con la constitución de tu Sociedad.
     </p>
     <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
-      Mientras tanto, para no perder tiempo, ya podés ir gestionando <strong>Ciudadano Digital Nivel 2</strong> para todas las personas que integren la Sociedad (es un requisito del sistema). Podés ver el instructivo <a href="${BASE_URL}/assets/img/CiudadanoDigital.jpeg" style="color: ${colors.primary}; font-weight: 600;">acá</a>.
+      Mientras tanto, para no perder tiempo, ya podés ir gestionando <strong>Ciudadano Digital Nivel 2</strong> para todas las personas que integren la Sociedad (es un requisito del sistema). Seguí la guía paso a paso <a href="${BASE_URL}/guias/ciudadano-digital" style="color: ${colors.primary}; font-weight: 600;">acá</a>.
     </p>
 
     ${CTAButton('Ver mi trámite', `${BASE_URL}/dashboard/tramites/${tramiteId || ''}`)}

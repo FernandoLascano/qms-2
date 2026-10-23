@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
+import { mensajeVisible } from '@/lib/notificaciones'
 
 interface Notificacion {
   id: string
@@ -24,6 +25,13 @@ interface NotificationsState {
 }
 
 const POLL_MS = 60_000
+
+/** Primeras ~140 letras del mensaje visible, cortadas en una palabra. */
+function resumenNotificacion(mensaje: string): string {
+  const texto = mensajeVisible(mensaje).replace(/\s+/g, ' ')
+  if (texto.length <= 140) return texto
+  return texto.slice(0, 140).replace(/\s+\S*$/, '') + '…'
+}
 
 export function useNotifications() {
   const { data: session } = useSession()
@@ -62,7 +70,8 @@ export function useNotifications() {
           const ultimaNotificacion = nuevasNotificaciones[0]
 
           toast.info(ultimaNotificacion.titulo, {
-            description: ultimaNotificacion.mensaje,
+            // Sin el bloque de datos internos y cortado: el texto completo está en Notificaciones.
+            description: resumenNotificacion(ultimaNotificacion.mensaje),
             duration: 5000,
             action: ultimaNotificacion.link
               ? {

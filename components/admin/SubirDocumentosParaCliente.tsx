@@ -39,14 +39,14 @@ const SLOTS = [
     tipo: 'DOCUMENTO_PARA_FIRMAR',
     label: 'Declaración Jurada ARCA',
     instruccion:
-      'Debe firmarla la persona designada como Administrador Titular. Imprimí el documento, firmalo y escanealo correctamente (en PDF, no fotos).'
+      'La firma la persona designada como Administrador Titular. Podés imprimirla, firmarla y escanearla (en PDF, no fotos), o firmarla digitalmente con Ciudadano Digital (CiDi), como el estatuto.'
   },
   {
     key: 'pep',
     tipo: 'DOCUMENTO_PARA_FIRMAR',
     label: 'Declaraciones Juradas PEP',
     instruccion:
-      'Imprimí las declaraciones. Cada persona designada como Administrador firma la que le corresponde. Completá SOLO los campos "Lugar y Fecha", "Firma" y "Aclaración". No completes ningún otro campo.'
+      'Imprimí las declaraciones. Cada persona designada como Administrador firma la que le corresponde. Completá SOLO los campos "Lugar y Fecha", "Firma" y "Aclaración". No completes ningún otro campo. Cuando estén todas firmadas, unilas en un solo PDF y subí ese único archivo.'
   }
 ] as const
 

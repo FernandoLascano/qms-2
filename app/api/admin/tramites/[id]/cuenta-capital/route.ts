@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { formatearFecha } from '@/lib/fechas'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { soloDigitos, validarCbu } from '@/lib/validaciones'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
@@ -130,24 +131,17 @@ export async function POST(request: Request, { params }: RouteParams) {
     // Construir mensaje con advertencia de fecha de activación si existe
     let mensajeAdvertencia = ''
     if (fechaActivacion) {
-      const fecha = new Date(fechaActivacion)
-      const fechaFormateada = fecha.toLocaleDateString('es-AR', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })
-      mensajeAdvertencia = `\n\n⚠️ IMPORTANTE: La cuenta estará operativa recién a partir del ${fechaFormateada}. No realices la transferencia antes de esa fecha, ya que no será procesada.\n`
+      // Fecha civil: se formatea como día argentino (lib/fechas), no en la hora del servidor.
+      const fechaFormateada = formatearFecha(fechaActivacion, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      mensajeAdvertencia = `La cuenta funciona recién desde el ${fechaFormateada}: no transfieras antes, porque no se procesa.`
     }
 
-    const mensajeNotificacion = `Ya podés realizar el depósito en garantía del 25% del capital social. Es un requisito obligatorio del trámite: el dinero queda en garantía en una cuenta que se abre especialmente y se te reintegra a los CBU informados una vez inscripta la Sociedad.\n\n` +
-      `💰 Monto a depositar: $${monto.toLocaleString('es-AR')}\n\n` +
-      `🏦 Datos de la cuenta:\n` +
-      `Banco: ${banco}\n` +
-      `CBU: ${cbu}\n` +
-      `${alias ? `Alias: ${alias}\n` : ''}` +
-      `Titular: ${titular}${mensajeAdvertencia}\n\n` +
-      `Una vez hecho el depósito, subí el comprobante desde tu panel y nosotros lo verificamos.`
+    // Corto: la notificación se ve en una burbuja. Los datos de la cuenta, con
+    // botón para copiarlos, están en la sección de depósito del trámite.
+    const mensajeNotificacion =
+      `Ya podés hacer el depósito en garantía de $${monto.toLocaleString('es-AR')} (25% del capital). ` +
+      `Los datos de la cuenta están en tu trámite, en «Depósito del capital».` +
+      (mensajeAdvertencia ? ` ${mensajeAdvertencia}` : '')
 
     // Guardar notificación con datos estructurados en el mensaje (formato JSON al inicio para fácil parsing)
     const metadata = JSON.stringify({ 
@@ -193,9 +187,7 @@ export async function POST(request: Request, { params }: RouteParams) {
               ...(alias ? [{ etiqueta: 'Alias', valor: alias, mono: true }] : []),
               { etiqueta: 'Titular', valor: titular },
             ],
-            aviso: mensajeAdvertencia
-              ? mensajeAdvertencia.replace('⚠️ IMPORTANTE: ', '').trim()
-              : undefined,
+            aviso: mensajeAdvertencia || undefined,
             pasos: [
               { titulo: 'Transferí el monto exacto', detalle: 'Desde cualquier cuenta, a los datos de arriba.' },
               { titulo: 'Subí el comprobante', detalle: 'Desde tu panel, en la sección del depósito.' },

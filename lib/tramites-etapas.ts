@@ -83,12 +83,57 @@ export async function marcarEtapaPagada(tramiteId: string, etapa: EtapaPago): Pr
         tramite.user.email,
         tramite.user.name || 'Usuario',
         'Requisito: Ciudadano Digital Nivel 2',
-        `Para avanzar con el trámite necesitamos que todas las personas que integren la Sociedad (como socias o administradoras) tengan Ciudadano Digital Nivel 2. Es un requisito del sistema.\n\nPodés ver el instructivo para obtenerlo acá: ${BASE_URL}/assets/img/CiudadanoDigital.jpeg\n\nCuando lo tengas listo, confirmalo desde tu panel. Ante cualquier duda, escribinos por WhatsApp.`,
+        `Para avanzar con el trámite necesitamos que todas las personas que integren la Sociedad (como socias o administradoras) tengan Ciudadano Digital Nivel 2. Es un requisito del sistema.\n\nSeguí la guía paso a paso para obtenerlo: ${BASE_URL}/guias/ciudadano-digital\n\nCuando lo tengas listo, confirmalo desde tu panel. Ante cualquier duda, escribinos por WhatsApp.`,
         tramiteId,
         { tono: 'accion' }
       )
     }
   })
 
+  return true
+}
+
+// Tipos de los documentos que se le mandan al cliente para firmar.
+const TIPOS_PARA_FIRMAR = ['ESTATUTO_PARA_FIRMAR', 'ACTA_PARA_FIRMAR', 'DOCUMENTO_PARA_FIRMAR'] as const
+
+/**
+ * Si ya están aprobados los firmados de TODOS los documentos que se mandaron a
+ * firmar, marca la etapa «Documentos firmados». Antes había que tildarla a mano
+ * después de aprobar uno por uno. El firmado se reconoce igual que en el panel
+ * del cliente: su descripción dice «correspondiente a: <nombre del original>».
+ * Devuelve true si la marcó ahora.
+ */
+export async function marcarDocumentosFirmadosSiCorresponde(tramiteId: string): Promise<boolean> {
+  const tramite = await prisma.tramite.findUnique({
+    where: { id: tramiteId },
+    select: { userId: true, documentosFirmados: true, documentos: { select: { tipo: true, nombre: true, descripcion: true, estado: true } } },
+  })
+  if (!tramite || tramite.documentosFirmados) return false
+
+  const paraFirmar = tramite.documentos.filter((d) => (TIPOS_PARA_FIRMAR as readonly string[]).includes(d.tipo ?? ''))
+  if (paraFirmar.length === 0) return false
+
+  const firmadoAprobado = (nombre: string) =>
+    tramite.documentos.some((d) => {
+      if ((TIPOS_PARA_FIRMAR as readonly string[]).includes(d.tipo ?? '') || d.estado !== 'APROBADO') return false
+      const descripcion = (d.descripcion ?? '').toLowerCase()
+      return descripcion.includes('correspondiente a') && descripcion.includes(nombre.toLowerCase())
+    })
+  if (!paraFirmar.every((d) => firmadoAprobado(d.nombre))) return false
+
+  await prisma.tramite.update({
+    where: { id: tramiteId },
+    data: { documentosFirmados: true, fechaDocumentosFirmados: new Date() },
+  })
+  await prisma.notificacion.create({
+    data: {
+      userId: tramite.userId,
+      tramiteId,
+      tipo: 'EXITO',
+      titulo: 'Etapa completada: Documentos firmados',
+      mensaje: 'Ya tenemos todos tus documentos firmados y revisados. El próximo paso es ingresar el trámite en el organismo: te avisamos apenas lo hagamos.',
+      link: `/dashboard/tramites/${tramiteId}`,
+    },
+  })
   return true
 }

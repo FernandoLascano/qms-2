@@ -65,7 +65,8 @@ export async function POST(request: Request, { params }: RouteParams) {
     })
 
     // Un solo aviso al cliente
-    const mensaje = 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención y, si está todo correcto, aprobalo desde tu panel para que preparemos la versión final para la firma.'
+    const mensaje = 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención y, si está todo correcto, aprobalo desde tu panel para que preparemos la versión final para la firma. ' +
+      'Tené en cuenta que casi todas las cláusulas vienen del modelo pre-aprobado y no se pueden modificar: lo que sí podemos corregir es el objeto social y los datos personales de quienes intervienen.'
     try {
       await prisma.notificacion.create({
         data: {

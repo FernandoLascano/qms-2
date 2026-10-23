@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
-import { etapaPorConcepto, marcarEtapaPagada } from '@/lib/tramites-etapas'
+import { etapaPorConcepto, marcarDocumentosFirmadosSiCorresponde, marcarEtapaPagada } from '@/lib/tramites-etapas'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 
 interface RouteParams {
@@ -289,6 +289,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
           link: `/dashboard/tramites/${documento.tramiteId}`
         }
       })
+      // Al aprobar el último firmado, la etapa «Documentos firmados» se marca sola.
+      if (documento.tramiteId) {
+        try {
+          await marcarDocumentosFirmadosSiCorresponde(documento.tramiteId)
+        } catch (e) {
+          console.error('[aprobar] marcar documentos firmados', e)
+        }
+      }
     }
 
     return NextResponse.json({ success: true })

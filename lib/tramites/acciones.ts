@@ -142,7 +142,7 @@ export function calcularAcciones({
       link: null,
       confirmar: 'ciudadano_digital',
       ayuda: [
-        { label: 'Ver el instructivo', href: '/assets/img/CiudadanoDigital.jpeg' },
+        { label: 'Ver la guía paso a paso', href: '/guias/ciudadano-digital' },
         {
           label: 'Tengo dudas — hablar por WhatsApp',
           href: 'https://wa.me/5493512136212?text=Hola!%20Tengo%20una%20consulta%20sobre%20Ciudadano%20Digital%20Nivel%202%20para%20mi%20tr%C3%A1mite.',
@@ -232,7 +232,9 @@ export function calcularAcciones({
       tipo: 'CONTROLAR_BORRADOR',
       titulo: 'Controlá el borrador',
       descripcion:
-        'Te enviamos el borrador de los documentos. Revisalo con atención y, si está todo correcto, aprobalo para que preparemos la versión final para la firma.',
+        'Te enviamos el borrador de los documentos. Revisalo con atención y, si está todo correcto, aprobalo para que preparemos la versión final para la firma. ' +
+        // Evita pedidos de cambio que el organismo no admite en el modelo pre-aprobado.
+        'Tené en cuenta que casi todas las cláusulas vienen del modelo pre-aprobado y no se pueden modificar: lo que sí podemos corregir es el objeto social y los datos personales de quienes intervienen.',
       urgencia: 'alta',
       responsable: 'cliente',
       icono: 'documento',

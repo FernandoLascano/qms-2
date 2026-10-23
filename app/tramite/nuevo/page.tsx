@@ -1229,7 +1229,7 @@ export default function NuevoTramitePage() {
                     {formData.jurisdiccion === 'CORDOBA' && (
                       <li>
                         <span className="font-semibold">Ciudadano Digital nivel 2</span> (socios y administradores).{' '}
-                        <a href="/assets/img/CiudadanoDigital.jpeg" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2">
+                        <a href="/guias/ciudadano-digital" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-2">
                           Cómo obtenerlo
                         </a>
                       </li>

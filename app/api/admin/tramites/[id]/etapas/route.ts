@@ -44,6 +44,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       'sociedadInscripta'
     ]
 
+    // La inscripción se marca desde Cierre (datos-finales), con CUIT, matrícula
+    // y resolución. Marcarla acá dejaba la sociedad «inscripta» sin esos datos.
+    if (etapa === 'sociedadInscripta' && valor === true) {
+      return NextResponse.json(
+        { error: 'La inscripción se marca desde la pestaña Cierre, cargando los datos de la resolución' },
+        { status: 400 }
+      )
+    }
+
     if (!etapasValidas.includes(etapa)) {
       return NextResponse.json(
         { error: 'Etapa no válida' },
@@ -153,7 +162,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         denominacionReservada: 'La denominación de tu sociedad fue reservada. Próximamente te vamos a enviar el enlace de pago de la tasa retributiva de servicios de IPJ y los datos para realizar el depósito en garantía del 25% del capital. Ese depósito se hace en una cuenta que se abre especialmente para el trámite y se restituye a los CBU informados una vez inscripta la Sociedad.',
         capitalDepositado: 'Se ha confirmado el depósito del 25% del capital social.',
         tasaPagada: 'El pago de la tasa retributiva ha sido confirmado.',
-        borradorEnviado: 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención desde tu panel y, si está todo correcto, aprobalo. Con tu aprobación preparamos la versión final para la firma.',
+        borradorEnviado: 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención desde tu panel y, si está todo correcto, aprobalo. Con tu aprobación preparamos la versión final para la firma. Tené en cuenta que casi todas las cláusulas vienen del modelo pre-aprobado y no se pueden modificar: lo que sí podemos corregir es el objeto social y los datos personales de quienes intervienen.',
         tramiteIngresado: '¡Tu sociedad está cada vez más cerca! Ya ingresamos formalmente el trámite en el organismo. Normalmente la resolución de inscripción sale dentro de los 1 a 4 días hábiles. Te avisamos apenas esté lista.',
         tramiteObservado: 'El organismo observó el trámite. Ya lo estamos gestionando; te mantendremos al tanto.',
         sociedadInscripta: '¡Felicitaciones! Tu sociedad ha sido inscripta exitosamente.'
@@ -177,7 +186,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             userId: tramite.userId,
             tramiteId: id,
             tipo: etapa === 'sociedadInscripta' ? 'EXITO' : 'INFO',
-            titulo: `Etapa completada: ${etapa.replace(/([A-Z])/g, ' $1').trim()}`,
+            // Nombre legible («Trámite ingresado»), no la clave partida («tramite Ingresado»).
+            titulo: `Etapa completada: ${nombresEtapas[etapa] ?? etapa}`,
             mensaje: mensajesEtapas[etapa],
             link: `/dashboard/tramites/${id}`
           }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FileText, Download, Upload, AlertCircle, CheckCircle, Clock } from 'lucide-react'
@@ -23,6 +24,19 @@ interface Documento {
 interface DocumentosParaFirmarProps {
   documentos: Documento[]
   tramiteId: string
+}
+
+/** Notas de firma que no estaban en las instrucciones guardadas con el documento. */
+function notasDeFirma(doc: { nombre: string; descripcion?: string | null }): string[] {
+  const instrucciones = doc.descripcion ?? ''
+  const notas: string[] = []
+  if (/\bpep\b/i.test(doc.nombre) && !/un solo pdf/i.test(instrucciones)) {
+    notas.push('Cuando estén todas firmadas, uní las declaraciones en un solo PDF y subí ese único archivo.')
+  }
+  if (/arca/i.test(doc.nombre) && !/ciudadano digital/i.test(instrucciones)) {
+    notas.push('Si preferís, también la podés firmar digitalmente con Ciudadano Digital (CiDi), como el estatuto.')
+  }
+  return notas
 }
 
 export default function DocumentosParaFirmar({ documentos, tramiteId }: DocumentosParaFirmarProps) {
@@ -367,8 +381,6 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
     // Verificar que realmente existe un documento firmado aprobado
     const tieneAprobado = tieneFirmadoAprobado(doc)
     
-    console.log('✅ Verificando documento aprobado:', doc.nombre, 'tipo:', doc.tipo, 'estado:', doc.estado, 'tieneAprobado:', tieneAprobado)
-    
     return tieneAprobado
   })
   
@@ -474,15 +486,19 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                   <p className="text-body-sm text-info font-semibold bg-surface/50 p-2 rounded border border-info-line italic">
                     {doc.descripcion || 'Firmar en todas las páginas indicadas'}
                   </p>
-                  {doc.tipo === 'ESTATUTO_PARA_FIRMAR' && (
-                    <a
-                      href="/assets/img/InstructivoFirma.jpeg"
+                  {/* Aclaraciones que faltaban en las instrucciones de los documentos ya
+                      enviados (las nuevas ya las traen desde el panel del admin). */}
+                  {notasDeFirma(doc).map((nota) => (
+                    <p key={nota} className="mt-2 text-body-sm text-ink-2">{nota}</p>
+                  ))}
+                  {(doc.tipo === 'ESTATUTO_PARA_FIRMAR' || /arca/i.test(doc.nombre)) && (
+                    <Link
+                      href="/guias/firma-ciudadano-digital"
                       target="_blank"
-                      rel="noopener noreferrer"
                       className="mt-2 inline-flex items-center gap-2 text-body-sm font-medium text-primary underline hover:text-primary"
                     >
-                      Ver instructivo de firma digital (Ciudadano Digital)
-                    </a>
+                      Cómo firmar con Ciudadano Digital, paso a paso
+                    </Link>
                   )}
                 </div>
               </div>

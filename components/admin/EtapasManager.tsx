@@ -46,6 +46,13 @@ export default function EtapasManager({
   const [guardandoTextos, setGuardandoTextos] = useState(false)
 
   const handleToggleEtapa = async (etapa: string, valorActual: boolean) => {
+    // La inscripción se marca en Cierre, cargando CUIT, matrícula y resolución:
+    // ahí se guardan los datos, se sube la resolución y sale el email final.
+    if (etapa === 'sociedadInscripta' && !valorActual) {
+      toast.info('Cargá los datos de la inscripción para marcarla')
+      router.push(`/dashboard/admin/tramites/${tramiteId}?tab=cierre`)
+      return
+    }
     setActualizando(etapa)
 
     try {
