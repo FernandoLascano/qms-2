@@ -74,7 +74,7 @@ export default function NotificationBell() {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={count > 0 ? `Notificaciones: ${count} sin leer` : 'Notificaciones'}
-        className="relative flex h-9 w-9 items-center justify-center rounded-control text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
+        className="relative flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-control text-ink-2 transition-colors hover:bg-surface-3 hover:text-ink"
       >
         <Bell className="h-5 w-5" aria-hidden />
         {count > 0 && (

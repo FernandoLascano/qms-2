@@ -664,7 +664,7 @@ export const emailRecuperarPassword = ({ nombre, resetUrl }: EmailTemplateProps)
 export const emailTramiteEnviado = ({ nombre, tramiteId, denominacion }: EmailTemplateProps) => {
   const content = `
     <p style="margin: 0 0 24px 0; color: ${colors.text}; ${type.body}">
-      Hemos recibido tu solicitud de constitución. Te mantendremos informado en cada etapa del proceso.
+      Recibimos tu solicitud de constitución. Te vamos a mantener al tanto en cada etapa del proceso.
     </p>
 
     ${Hero(

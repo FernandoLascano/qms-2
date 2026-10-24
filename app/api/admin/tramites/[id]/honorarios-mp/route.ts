@@ -180,8 +180,8 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Notificar al usuario
     const mensajeNotificacion = montoTransferencia 
-      ? `Ya puedes abonar ${conceptoTexto}. Tienes dos opciones:\n- Mercado Pago: $${parseFloat(monto).toLocaleString('es-AR')}\n- Transferencia: $${parseFloat(montoTransferencia).toLocaleString('es-AR')} (precio diferencial)\n\nIngresa a tu panel para ver los detalles.`
-      : `Ya puedes abonar ${conceptoTexto} por $${parseFloat(monto).toLocaleString('es-AR')}. Ingresa a tu panel para ver el link de pago de Mercado Pago.`
+      ? `Ya podés abonar ${conceptoTexto}. Tenés dos opciones:\n- Mercado Pago: $${parseFloat(monto).toLocaleString('es-AR')}\n- Transferencia: $${parseFloat(montoTransferencia).toLocaleString('es-AR')} (precio diferencial)\n\nIngresá a tu panel para ver los detalles.`
+      : `Ya podés abonar ${conceptoTexto} por $${parseFloat(monto).toLocaleString('es-AR')}. Ingresá a tu panel para ver el link de pago de Mercado Pago.`
 
     await prisma.notificacion.create({
       data: {

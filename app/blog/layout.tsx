@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     title: 'Blog sobre SAS y Sociedades en Argentina | QuieroMiSAS',
     description: 'Guías, comparativas y novedades sobre constitución de SAS, SRL y SA en Argentina. Requisitos, costos y plazos.',
     type: 'website',
+    url: '/blog',
     images: [
       {
         url: 'https://www.quieromisas.com/assets/img/og-image.png',

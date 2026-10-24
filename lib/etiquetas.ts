@@ -78,6 +78,11 @@ const NOMBRES_ETAPA: Record<string, string> = {
   tramiteObservado: 'Trámite observado',
   sociedadInscripta: 'Sociedad inscripta',
 }
+/** Nombre legible de una etapa a partir de su clave de la base (`tramiteIngresado`). */
+export function nombreEtapa(clave: string): string {
+  return NOMBRES_ETAPA[clave] ?? clave
+}
+
 const ETAPA_POR_CLAVE = new Map(Object.entries(NOMBRES_ETAPA).map(([k, v]) => [k.toLowerCase(), v]))
 
 /**

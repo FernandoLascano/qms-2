@@ -17,6 +17,7 @@ import {
 
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getPublicConfig } from '@/lib/config'
 import { getObjetoSocialTexto } from '@/lib/constants'
 import { esObjetoPreAprobado } from '@/lib/objeto-social'
 import { esDocumentoDeQMS } from '@/lib/documentos'
@@ -83,7 +84,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
 
   // Los emails traen el cuerpo completo (pueden pesar cientos de KB cada uno):
   // sólo se leen cuando se abre la pestaña que los muestra.
-  const [tramite, emails] = await Promise.all([
+  const [tramite, emails, configPublica] = await Promise.all([
     prisma.tramite.findUnique({
     where: { id },
     include: {
@@ -108,6 +109,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
           select: { id: true, subject: true, to: true, from: true, direction: true, bodyHtml: true, bodyText: true, createdAt: true },
         })
       : Promise.resolve([]),
+    getPublicConfig(),
   ])
 
   if (!tramite) notFound()
@@ -322,6 +324,7 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
               tramiteId={tramite.id}
               pagos={tramite.pagos}
               plan={tramite.plan}
+              precios={configPublica}
             />
             <EnlacesPagoExterno tramiteId={tramite.id} enlaces={tramite.enlacesPago} />
           </div>

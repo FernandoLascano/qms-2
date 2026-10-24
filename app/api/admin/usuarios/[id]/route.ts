@@ -133,7 +133,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     // No permitir eliminarse a sí mismo
     if (usuario.id === session.user.id) {
       return NextResponse.json(
-        { error: 'No puedes eliminarte a ti mismo' },
+        { error: 'No podés eliminarte a vos mismo' },
         { status: 400 }
       )
     }
@@ -240,7 +240,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       // No permitir cambiar el rol de uno mismo
       if (id === session.user.id) {
         return NextResponse.json(
-          { error: 'No puedes cambiar tu propio rol' },
+          { error: 'No podés cambiar tu propio rol' },
           { status: 400 }
         )
       }

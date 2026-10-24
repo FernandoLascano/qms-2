@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: 'article',
+      url: post.canonical || `/blog/${slug}`,
       locale: 'es_AR',
       siteName: 'QuieroMiSAS',
       publishedTime: post.fechaPublicacion.toISOString(),

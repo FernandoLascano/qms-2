@@ -98,6 +98,7 @@ interface AnalyticsData {
       inscripcion: number | null
     }
     muestra: number
+    objetivo: number | null
   }
   leads?: {
     consultas: number
@@ -142,6 +143,9 @@ const JURISDICCION_LABEL: Record<string, string> = { CORDOBA: 'Córdoba', CABA: 
 
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null)
+  // La hora se fija en el cliente al recibir los datos: calcularla en el render
+  // daba una hora distinta en el server y en el navegador (error de hidratación).
+  const [actualizado, setActualizado] = useState<Date | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<ErrorData | null>(null)
   const [periodo, setPeriodo] = useState('mes')
@@ -205,6 +209,7 @@ export default function AnalyticsPage() {
       }
       
       setData(result)
+      setActualizado(new Date())
       setError(null)
     } catch (err: any) {
       console.error('Error al cargar analytics:', err)
@@ -221,7 +226,7 @@ export default function AnalyticsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Analytics"
-        description={`Última actualización: ${format(new Date(), "d 'de' MMMM, HH:mm", { locale: es })}`}
+        description={actualizado ? `Última actualización: ${format(actualizado, "d 'de' MMMM, HH:mm", { locale: es })}` : 'Cargando…'}
         breadcrumbs={[{ label: 'Hoy', href: '/dashboard/admin' }, { label: 'Analytics' }]}
         actions={
           <>
@@ -451,6 +456,7 @@ export default function AnalyticsPage() {
             desdeValidacion={data.tiemposPromedio.desdeValidacion}
             porEtapa={data.tiemposPromedio.porEtapa}
             muestra={data.tiemposPromedio.muestra}
+            objetivo={data.tiemposPromedio.objetivo}
           />
         )}
       </div>

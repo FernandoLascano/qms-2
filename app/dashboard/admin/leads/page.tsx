@@ -41,7 +41,28 @@ export default async function AdminLeadsPage() {
   const [borradores, consultas] = await Promise.all([
     prisma.tramite.findMany({
       where: { formularioCompleto: false },
-      include: {
+      // Sólo lo que usa la lista: el trámite tiene decenas de columnas
+      // (pagos, fechas de cada etapa, textos largos) que acá no hacen falta.
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        datosUsuario: true,
+        socios: true,
+        administradores: true,
+        denominacionSocial1: true,
+        domicilioLegal: true,
+        jurisdiccion: true,
+        plan: true,
+        originador: true,
+        originadorRegistradoEn: true,
+        leadEstado: true,
+        leadMotivoPerdida: true,
+        leadMotivoNota: true,
+        leadUltimoContacto: true,
+        leadProximoContacto: true,
+        leadToquesEnviados: true,
+        leadUltimoToque: true,
         user: { select: { name: true, email: true, phone: true, partnerId: true } },
         leadSeguimientos: {
           include: { admin: { select: { name: true } } },

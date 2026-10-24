@@ -11,18 +11,18 @@ type EtapaPago = 'honorariosPagados' | 'capitalDepositado' | 'tasaPagada'
 const ETAPAS_PAGO: Record<EtapaPago, { fechas: string[]; nombre: string; mensaje: string }> = {
   honorariosPagados: {
     fechas: ['fechaHonorariosPagados'],
-    nombre: 'Honorarios Pagados',
+    nombre: 'Honorarios pagados',
     mensaje: 'Confirmamos el pago de los honorarios. ¡Seguimos avanzando con tu trámite!'
   },
   capitalDepositado: {
     fechas: ['fechaCapitalDepositado', 'fechaDepositoCapital'],
-    nombre: 'Capital Depositado',
-    mensaje: 'Se ha confirmado el depósito del 25% del capital social.'
+    nombre: 'Capital depositado',
+    mensaje: 'Confirmamos el depósito del 25% del capital social.'
   },
   tasaPagada: {
     fechas: ['fechaTasaPagada', 'fechaPagoTasa'],
-    nombre: 'Tasa Pagada',
-    mensaje: 'El pago de la tasa retributiva ha sido confirmado.'
+    nombre: 'Tasa pagada',
+    mensaje: 'Confirmamos el pago de la tasa retributiva.'
   }
 }
 

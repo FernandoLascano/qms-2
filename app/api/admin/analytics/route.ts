@@ -191,6 +191,7 @@ export async function GET(request: Request) {
       leadsBorrador,
       perdidosPorMotivo,
       leadsSinCuenta,
+      configObjetivo,
     ] = await Promise.all([
       prisma.tramite.count({ where: jurisdiccionFilter }),
       prisma.tramite.count({ where: { estadoGeneral: filtroEnCurso, ...jurisdiccionFilter } }),
@@ -284,6 +285,7 @@ export async function GET(request: Request) {
         _count: { _all: true },
       }),
       leadsSinCuentaP,
+      prisma.config.findFirst({ select: { objetivoDiasTramite: true } }),
     ])
 
     // 5. ALERTAS
@@ -408,7 +410,9 @@ export async function GET(request: Request) {
         firmaEstatuto: promedio(ts.map(t => dias(t.fechaCapitalDepositado, t.fechaDocumentosFirmados))),
         inscripcion: promedio(ts.map(t => dias(t.fechaDocumentosFirmados, t.fechaSociedadInscripta)))
       },
-      muestra: ts.length
+      muestra: ts.length,
+      // 0 en Config = sin objetivo cargado.
+      objetivo: configObjetivo?.objetivoDiasTramite || null
     }
 
     return NextResponse.json({

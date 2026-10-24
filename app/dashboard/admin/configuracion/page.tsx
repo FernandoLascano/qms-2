@@ -71,6 +71,7 @@ interface ConfigData {
   domicilioSedeDirecciones: string[]
   domicilioSedePrecioAnual: number
   domicilioSedeDiasAlerta: number
+  objetivoDiasTramite: number
   contratoDomicilioMultaDiaria: string
   contratoDomicilioFianzaMaxima: string
   prestadorRepresentante: string
@@ -118,6 +119,7 @@ export default function ConfiguracionAdminPage() {
     domicilioSedeDirecciones: [],
     domicilioSedePrecioAnual: 0,
     domicilioSedeDiasAlerta: 30,
+    objetivoDiasTramite: 0,
     contratoDomicilioMultaDiaria: '',
     contratoDomicilioFianzaMaxima: '',
     prestadorRepresentante: '',
@@ -343,6 +345,22 @@ export default function ConfiguracionAdminPage() {
               />
               <p className="text-body-sm text-ink-2">
                 Días sin actividad antes de marcar un trámite como estancado
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="objetivoDiasTramite">Objetivo interno del trámite (días corridos)</Label>
+              <Input
+                id="objetivoDiasTramite"
+                type="number"
+                className="max-w-40"
+                value={valorInput(config.objetivoDiasTramite)}
+                onChange={(e) => setConfig({ ...config, objetivoDiasTramite: aNumero(e.target.value) })}
+                min={0}
+                max={365}
+              />
+              <p className="text-body-sm text-ink-2">
+                Desde la reserva de nombre hasta la inscripción. Analytics compara el tiempo promedio contra este número. 0 = sin objetivo.
               </p>
             </div>
           </CardContent>

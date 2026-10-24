@@ -30,7 +30,9 @@ export async function contactosDe(direcciones: string[]): Promise<Record<string,
 
   const [usuarios, leads] = await Promise.all([
     prisma.user.findMany({
-      where: { email: { in: emails, mode: 'insensitive' } },
+      // Los emails se guardan en minúscula (registro y perfil): la comparación
+      // exacta usa el índice único de email; 'insensitive' lo salteaba.
+      where: { email: { in: emails } },
       select: {
         email: true,
         name: true,
