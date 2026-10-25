@@ -6,63 +6,17 @@ import { AlertTriangle, Check, ChevronDown } from 'lucide-react'
 import { Card, CardBody } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { formatearFecha } from '@/lib/fechas'
+import { pasosCliente } from '@/lib/tramites/pasos-cliente'
 
 /**
  * Línea de tiempo del trámite, vista por el cliente.
  *
- * Antes mostraba las 7 etapas viejas (ETAPAS) mientras el porcentaje salía de
- * los 14 pasos del flujo, y buscaba fechas en campos que ya no se completan.
- * Ahora sigue los pasos que el cliente ve (los internos, como el análisis de
- * homonimia o la apertura de la cuenta, no se muestran), con la fecha real de
- * cada uno y quién tiene que moverse en el paso actual.
+ * Sigue los pasos que ve el cliente (lib/tramites/pasos-cliente), con la
+ * fecha real de cada uno y quién tiene que moverse en el paso actual.
  */
 
-type Responsable = 'cliente' | 'qms'
-interface PasoCliente {
-  campos: string[] // hecho cuando están todos
-  label: string
-  hecho: string
-  pendiente: string
-  responsable: Responsable
-  fecha: string
-}
-
-const PASOS: PasoCliente[] = [
-  { campos: ['formularioCompleto'], label: 'Formulario', hecho: 'Datos de la sociedad cargados', pendiente: 'Completá el formulario', responsable: 'cliente', fecha: 'fechaFormularioCompleto' },
-  { campos: ['honorariosPagados'], label: 'Honorarios', hecho: 'Pago de honorarios confirmado', pendiente: 'Te contactamos para coordinar el pago', responsable: 'cliente', fecha: 'fechaHonorariosPagados' },
-  { campos: ['ciudadanoDigitalOk'], label: 'Ciudadano Digital', hecho: 'Tenés Ciudadano Digital Nivel 2', pendiente: 'Obtené Ciudadano Digital Nivel 2 y avisanos', responsable: 'cliente', fecha: 'fechaCiudadanoDigitalOk' },
-  { campos: ['denominacionReservada'], label: 'Nombre reservado', hecho: 'La denominación quedó reservada', pendiente: 'Estamos reservando el nombre de tu sociedad', responsable: 'qms', fecha: 'fechaDenominacionReservada' },
-  { campos: ['capitalDepositado'], label: 'Depósito del capital', hecho: '25% del capital depositado', pendiente: 'Depositá el 25% del capital', responsable: 'cliente', fecha: 'fechaCapitalDepositado' },
-  { campos: ['tasaPagada'], label: 'Tasa', hecho: 'Tasa retributiva abonada', pendiente: 'Pagá la tasa del organismo', responsable: 'cliente', fecha: 'fechaTasaPagada' },
-  { campos: ['borradorEnviado', 'borradorAprobadoCliente'], label: 'Borrador', hecho: 'Aprobaste el borrador', pendiente: 'Revisá y aprobá el borrador', responsable: 'cliente', fecha: 'fechaBorradorAprobadoCliente' },
-  { campos: ['documentosFirmados'], label: 'Firma', hecho: 'Documentos firmados', pendiente: 'Firmá los documentos con Ciudadano Digital', responsable: 'cliente', fecha: 'fechaDocumentosFirmados' },
-  { campos: ['tramiteIngresado'], label: 'Ingreso al organismo', hecho: 'Trámite presentado', pendiente: 'Estamos presentando el trámite', responsable: 'qms', fecha: 'fechaTramiteIngresado' },
-  { campos: ['sociedadInscripta'], label: 'Sociedad inscripta', hecho: 'CUIT y matrícula asignados', pendiente: 'Esperamos la resolución (1 a 4 días hábiles)', responsable: 'qms', fecha: 'fechaSociedadInscripta' },
-]
-
-// Pasos que dependen de algo que el cliente no puede hacer todavía.
-const ESPERA_QMS: Record<string, string> = {
-  borradorEnviado: 'Estamos preparando el borrador',
-  documentosRevisados: 'Estamos preparando los documentos para firmar',
-}
-
 export default function TimelineProgreso({ tramite }: { tramite: Record<string, unknown> }) {
-  const inscripta = Boolean(tramite.sociedadInscripta)
-  const pasos = PASOS.map((p) => {
-    const completado = inscripta || p.campos.every((c) => Boolean(tramite[c]))
-    const valorFecha = tramite[p.fecha]
-    const fecha = valorFecha ? new Date(valorFecha as string) : null
-    // El borrador y la firma arrancan del lado de QMS hasta que manda los archivos.
-    let pendiente = p.pendiente
-    let responsable = p.responsable
-    if (p.label === 'Borrador' && !tramite.borradorEnviado) [pendiente, responsable] = [ESPERA_QMS.borradorEnviado, 'qms']
-    if (p.label === 'Firma' && !tramite.documentosRevisados) [pendiente, responsable] = [ESPERA_QMS.documentosRevisados, 'qms']
-    return { ...p, completado, fecha, pendiente, responsable }
-  })
-
-  const hechos = pasos.filter((p) => p.completado).length
-  const porcentaje = Math.round((hechos / pasos.length) * 100)
-  const indiceActual = pasos.findIndex((p) => !p.completado)
+  const { pasos, porcentaje, indiceActual, inscripta } = pasosCliente(tramite)
   const observado = Boolean(tramite.tramiteObservado) && !inscripta
 
   // Lo ya hecho se pliega para que el paso actual quede a la vista.
@@ -114,7 +68,7 @@ export default function TimelineProgreso({ tramite }: { tramite: Record<string, 
             const deVos = actual && paso.responsable === 'cliente'
 
             return (
-              <li key={paso.label} className={cn('relative flex gap-3', !ultimo && 'pb-4')}>
+              <li key={paso.key} className={cn('relative flex gap-3', !ultimo && 'pb-4')}>
                 {!ultimo && (
                   <span
                     className={cn('absolute bottom-0 left-[11px] top-6 w-0.5', paso.completado ? 'bg-success-solid/40' : 'bg-line')}
@@ -173,7 +127,7 @@ export default function TimelineProgreso({ tramite }: { tramite: Record<string, 
                       {deVos ? 'Te toca a vos' : 'Lo estamos haciendo nosotros'}
                     </span>
                   )}
-                  {actual && observado && paso.label === 'Sociedad inscripta' && (
+                  {actual && observado && paso.key === 'inscripcion' && (
                     <p className="mt-2 flex items-start gap-1.5 text-body-sm text-warning">
                       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                       El organismo hizo una observación. Ya la estamos resolviendo.

@@ -1,7 +1,7 @@
 import { sendEmail as sendEmailNodemailer } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
 import { interpolar } from './render-template'
-import { detalleEtapas } from '@/lib/tramites/estado'
+import { pasosCliente } from '@/lib/tramites/pasos-cliente'
 import * as templates from './templates'
 import { EmailLayout, type OpcionesNotificacion } from './templates'
 
@@ -186,11 +186,12 @@ export async function enviarEmailEtapaCompletada(
   try {
     const tramite = await prisma.tramite.findUnique({ where: { id: tramiteId } })
     if (tramite) {
-      const etapas = detalleEtapas(tramite as unknown as Record<string, unknown>)
-      const pendiente = etapas.find((e) => !e.completada)
+      // Los mismos pasos que ve el cliente en su panel (lib/tramites/pasos-cliente).
+      const { pasos } = pasosCliente(tramite as unknown as Record<string, unknown>)
+      const pendiente = pasos.find((p) => !p.completado)
       avance = {
-        etapas: etapas.map((e) => ({ label: e.label, completada: e.completada })),
-        proximo: pendiente ? pendiente.esperandoCliente + '.' : null,
+        etapas: pasos.map((p) => ({ label: p.label, completada: p.completado })),
+        proximo: pendiente ? pendiente.pendiente + '.' : null,
       }
     }
   } catch {

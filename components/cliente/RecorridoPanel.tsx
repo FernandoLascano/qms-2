@@ -37,6 +37,8 @@ export function RecorridoPanel() {
   const [recorte, setRecorte] = useState<Recorte | null>(null)
 
   useEffect(() => {
+    // Sólo en computadora: en el teléfono el recorte y la tarjeta tapan casi todo.
+    if (window.innerWidth < 1024) return
     try {
       if (window.localStorage.getItem(CLAVE)) return
     } catch {
@@ -73,7 +75,10 @@ export function RecorridoPanel() {
     if (!el) return setRecorte(null)
     const r = el.getBoundingClientRect()
     const m = 8
-    setRecorte({ top: r.top - m, left: r.left - m, width: r.width + m * 2, height: r.height + m * 2 })
+    // Un elemento más alto que la pantalla se recorta a lo visible.
+    const top = Math.max(8, r.top - m)
+    const bottom = Math.min(window.innerHeight - 8, r.bottom + m)
+    setRecorte({ top, left: r.left - m, width: r.width + m * 2, height: Math.max(0, bottom - top) })
   }, [indice])
 
   useLayoutEffect(() => {
@@ -114,10 +119,23 @@ export function RecorridoPanel() {
     }
   }
 
-  // La tarjeta va debajo del recorte si entra; si no, arriba. En el teléfono, abajo de todo.
-  const esMovil = window.innerWidth < 640
-  const abajo = recorte ? recorte.top + recorte.height + 16 : 0
-  const ponerArriba = recorte ? abajo + 220 > window.innerHeight : false
+  // La tarjeta va debajo del recorte si entra, si no arriba, y si tampoco
+  // (elemento muy alto) a un costado. Nunca puede quedar fuera de la pantalla:
+  // así se trababa el recorrido, con el botón «Siguiente» fuera de vista.
+  const ALTO_TARJETA = 230
+  let posicion: React.CSSProperties | undefined
+  if (conRecorte && recorte) {
+    const abajo = recorte.top + recorte.height + 16
+    const espacioArriba = recorte.top - 16
+    if (abajo + ALTO_TARJETA <= window.innerHeight) {
+      posicion = { top: abajo, left: Math.min(Math.max(16, recorte.left), window.innerWidth - 400) }
+    } else if (espacioArriba >= ALTO_TARJETA) {
+      posicion = { top: espacioArriba - ALTO_TARJETA + 16, left: Math.min(Math.max(16, recorte.left), window.innerWidth - 400) }
+    } else {
+      const aLaIzquierda = recorte.left > window.innerWidth / 2
+      posicion = { top: Math.max(16, Math.min(recorte.top, window.innerHeight - ALTO_TARJETA - 16)), left: aLaIzquierda ? Math.max(16, recorte.left - 400) : Math.min(recorte.left + recorte.width + 16, window.innerWidth - 400) }
+    }
+  }
 
   // Portal al <body>: dentro del panel hay ancestros con transform (animaciones
   // de entrada) y un `position: fixed` adentro de ellos deja de ser fijo.
@@ -135,17 +153,10 @@ export function RecorridoPanel() {
 
       <div
         className={cn(
-          'fixed left-1/2 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-card border border-line bg-surface p-5 shadow-modal',
-          !conRecorte && 'top-1/2 -translate-y-1/2',
-          conRecorte && esMovil && 'bottom-4',
+          'fixed w-96 rounded-card border border-line bg-surface p-5 shadow-modal transition-[top,left] duration-300 ease-out',
+          !posicion && 'left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
         )}
-        style={
-          conRecorte && recorte && !esMovil
-            ? ponerArriba
-              ? { top: Math.max(16, recorte.top - 16), transform: 'translate(-50%, -100%)' }
-              : { top: abajo }
-            : undefined
-        }
+        style={posicion}
       >
         <button type="button" onClick={cerrar} aria-label="Cerrar el recorrido" className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-control text-ink-3 hover:bg-surface-2 hover:text-ink">
           <X className="h-4 w-4" />
