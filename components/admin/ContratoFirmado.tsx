@@ -318,6 +318,7 @@ export default function ContratoFirmadoTramite({ tramiteId }: { tramiteId: strin
         onSubido={cargar}
       />
       <ConfirmDialog
+        deslizar
         open={!!quitando}
         onOpenChange={(o) => !o && setQuitando(null)}
         title="¿Quitar el contrato firmado?"

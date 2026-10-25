@@ -7,6 +7,7 @@ import { DollarSign, ExternalLink, CheckCircle, Clock, Upload, Building2, Credit
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
+import { subirConProgreso } from '@/lib/subir'
 import { pesos } from '@/lib/etiquetas'
 import { CopyButton, DatoCopiable, montoParaCopiar } from '@/components/ui/copy-button'
 
@@ -33,6 +34,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
   const router = useRouter()
   const [mostrarTransferencia, setMostrarTransferencia] = useState<Record<string, boolean>>({})
   const [subiendoComprobante, setSubiendoComprobante] = useState<Record<string, boolean>>({})
+  const [progreso, setProgreso] = useState<Record<string, number>>({})
   const [archivoComprobante, setArchivoComprobante] = useState<Record<string, File | null>>({})
 
   const pagosHonorarios = pagos.filter(p => 
@@ -69,10 +71,9 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
       formData.append('file', file)
       formData.append('pagoId', pagoId)
 
-      const response = await fetch(`/api/pagos/${pagoId}/comprobante-transferencia`, {
-        method: 'POST',
-        body: formData
-      })
+      const response = await subirConProgreso(`/api/pagos/${pagoId}/comprobante-transferencia`, formData, (p) =>
+        setProgreso((prev) => ({ ...prev, [pagoId]: p })),
+      )
 
       if (response.ok) {
         toast.success('Comprobante subido correctamente. El pago será validado por el administrador.')
@@ -250,6 +251,7 @@ export default function HonorariosPagoCliente({ pagos }: HonorariosPagoClientePr
                               archivo={archivoComprobante[pago.id] ?? null}
                               onArchivo={(f) => handleFileChange(pago.id, f)}
                               disabled={subiendoComprobante[pago.id]}
+                              progreso={subiendoComprobante[pago.id] ? progreso[pago.id] ?? 0 : null}
                               compacto
                               label="Elegí el comprobante o arrastralo acá"
                               ayuda="JPG, PNG o PDF · hasta 5 MB"

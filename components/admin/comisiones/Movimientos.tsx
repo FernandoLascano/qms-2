@@ -293,6 +293,7 @@ export function MovimientosTab({
       />
 
       <ConfirmDialog
+        deslizar
         open={!!aQuitar}
         onOpenChange={(o) => !o && setAQuitar(null)}
         loading={quitando}

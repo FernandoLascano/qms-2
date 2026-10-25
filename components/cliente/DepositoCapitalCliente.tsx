@@ -8,6 +8,7 @@ import { DollarSign, Upload, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
+import { subirConProgreso } from '@/lib/subir'
 import { pesos } from '@/lib/etiquetas'
 import { CopyButton, DatoCopiable, montoParaCopiar } from '@/components/ui/copy-button'
 import { formatearFecha, hoyParaInput } from '@/lib/fechas'
@@ -38,6 +39,7 @@ export default function DepositoCapitalCliente({
   const router = useRouter()
   const [archivo, setArchivo] = useState<File | null>(null)
   const [subiendo, setSubiendo] = useState(false)
+  const [progreso, setProgreso] = useState(0)
   const [cuenta, setCuenta] = useState<CuentaBancaria | null>(null)
   const [cargando, setCargando] = useState(true)
 
@@ -146,10 +148,8 @@ export default function DepositoCapitalCliente({
         `Comprobante de depósito del 25% del capital social${montoEsperado > 0 ? ` (${pesos(montoEsperado)})` : ''}`
       )
 
-      const response = await fetch('/api/documentos/upload', {
-        method: 'POST',
-        body: data
-      })
+      setProgreso(0)
+      const response = await subirConProgreso('/api/documentos/upload', data, setProgreso)
 
       const result = await response.json()
 
@@ -282,6 +282,7 @@ export default function DepositoCapitalCliente({
                 archivo={archivo}
                 onArchivo={handleFileChange}
                 disabled={subiendo}
+                progreso={subiendo ? progreso : null}
                 compacto
                 label="Elegí el comprobante o arrastralo acá"
                 ayuda="PDF, JPG o PNG · hasta 10 MB"

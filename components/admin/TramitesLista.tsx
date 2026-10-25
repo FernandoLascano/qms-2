@@ -10,6 +10,7 @@ import { Building2, FileText, Search, Trash2, User } from 'lucide-react'
 
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { SlideToConfirm } from '@/components/ui/slide-to-confirm'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
@@ -18,7 +19,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -264,14 +264,12 @@ export default function TramitesLista({ tramites }: { tramites: any[] }) {
               junto con sus documentos, pagos, notificaciones y mensajes. No se puede deshacer.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="secondary" onClick={() => setAEliminar(null)} disabled={eliminando}>
+          <div className="space-y-3">
+            <SlideToConfirm label="Deslizá para eliminar definitivamente" onConfirm={eliminar} loading={eliminando} />
+            <Button variant="ghost" className="w-full" onClick={() => setAEliminar(null)} disabled={eliminando}>
               Cancelar
             </Button>
-            <Button variant="danger-solid" onClick={eliminar} loading={eliminando}>
-              Eliminar definitivamente
-            </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

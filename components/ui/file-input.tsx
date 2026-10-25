@@ -33,6 +33,10 @@ export interface FileInputProps
   onArchivo?: (archivo: File | null) => void
   /** Versión de una línea, para formularios densos. */
   compacto?: boolean
+  /** Avance de la subida (0–100). `null`/ausente = no se está subiendo. */
+  progreso?: number | null
+  /** La subida terminó bien: muestra el tilde animado. */
+  listo?: boolean
 }
 
 export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
@@ -44,6 +48,8 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
       archivo,
       onArchivo,
       compacto = false,
+      progreso = null,
+      listo = false,
       disabled,
       onChange,
       ...props
@@ -127,19 +133,41 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             )}
           >
             <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary"
+              className={cn(
+                'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors',
+                listo ? 'bg-success-solid text-on-primary' : 'bg-primary-soft text-primary',
+              )}
               aria-hidden
             >
-              <FileText className="h-4 w-4" />
+              {listo ? <TildeAnimado /> : <FileText className="h-4 w-4" />}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-body-sm font-medium text-ink">
                 {elegido.name}
               </span>
-              <span className="block text-label text-ink-2 tnum">
-                {formatearPeso(elegido.size)}
-              </span>
+              {progreso !== null && !listo ? (
+                <span className="mt-1 flex items-center gap-2" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progreso} aria-label="Subiendo archivo">
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-n-200">
+                    <span
+                      className={cn(
+                        'block h-full rounded-full bg-primary transition-[width] duration-300 ease-out',
+                        progreso >= 100 && 'animate-pulse',
+                      )}
+                      style={{ width: `${Math.max(progreso, 4)}%` }}
+                    />
+                  </span>
+                  <span className="shrink-0 text-label text-ink-2 tnum">
+                    {progreso < 100 ? `${progreso}%` : 'Procesando…'}
+                  </span>
+                </span>
+              ) : (
+                <span className={cn('block text-label tnum', listo ? 'font-medium text-success' : 'text-ink-2')}>
+                  {listo ? 'Subido' : formatearPeso(elegido.size)}
+                </span>
+              )}
             </span>
+            {progreso === null && !listo && (
+            <>
             <label
               htmlFor={props.id ?? id}
               className="cursor-pointer rounded-chip px-2 py-1 text-label font-semibold text-primary hover:bg-primary-soft"
@@ -154,6 +182,8 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             >
               <X className="h-4 w-4" aria-hidden />
             </button>
+            </>
+            )}
           </div>
         ) : (
           <label
@@ -201,3 +231,12 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
 )
 
 FileInput.displayName = 'FileInput'
+
+/** Tilde que se dibuja solo (trazo SVG; keyframe `dibujar-trazo` en globals.css). */
+function TildeAnimado() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12.5l4.5 4.5L19 7.5" className="trazo-dibujado" pathLength={1} />
+    </svg>
+  )
+}

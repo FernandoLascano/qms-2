@@ -30,12 +30,15 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { EmptyState } from '@/components/ui/states'
 import { AnilloProgreso } from '@/components/ui/charts'
-import { calcularProgreso, detalleEtapas, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { etapaActual, getEstado } from '@/lib/tramites/estado'
+import { pasosCliente, type AvanceCliente } from '@/lib/tramites/pasos-cliente'
 import { calcularAcciones, accionPrincipal, type IconoAccion } from '@/lib/tramites/acciones'
 import { cn } from '@/lib/utils'
 import { nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 import { SUGERIDOS_EN_CURSO, SUGERIDOS_INSCRIPTA } from '@/lib/servicios'
 import { ServiciosSugeridos } from '@/components/cliente/ServiciosSugeridos'
+import { FestejoInscripta } from '@/components/cliente/FestejoInscripta'
+import { RecorridoPanel } from '@/components/cliente/RecorridoPanel'
 
 const ICONOS: Record<IconoAccion, LucideIcon> = {
   pago: CreditCard,
@@ -173,8 +176,7 @@ async function DashboardPage() {
           accion={proxima}
           tramiteId={foco.id}
           formularioCompleto={foco.formularioCompleto}
-          etapas={detalleEtapas(foco)}
-          progreso={calcularProgreso(foco)}
+          avance={pasosCliente(foco)}
           otrosPendientes={acciones.filter(
             (a) => a.responsable === 'cliente' && a.tipo !== proxima.tipo,
           ).length}
@@ -187,7 +189,7 @@ async function DashboardPage() {
           {/* Columna principal */}
           <div className="space-y-section">
             {activos.length > 0 && (
-              <section className="space-y-4">
+              <section className="space-y-4" data-recorrido="tramite">
                 <SectionHeader
                   title={activos.length === 1 ? 'Tu trámite' : 'Tus trámites en curso'}
                   as="h2"
@@ -215,7 +217,7 @@ async function DashboardPage() {
                         <Card interactive>
                           <CardBody className="flex items-center gap-5">
                             <AnilloProgreso
-                              valor={calcularProgreso(tramite)}
+                              valor={pasosCliente(tramite).porcentaje}
                               tamano={84}
                               grosor={8}
                             />
@@ -247,6 +249,8 @@ async function DashboardPage() {
               </section>
             )}
 
+            {sociedades.slice(0, 1).map((soc) => <FestejoInscripta key={soc.id} tramiteId={soc.id} />)}
+            <RecorridoPanel />
             {sociedades.length > 0 && (
               <section className="space-y-4">
                 <SectionHeader
@@ -299,7 +303,7 @@ async function DashboardPage() {
           {/* Columna lateral: accesos y ayuda */}
           <aside className="space-y-4">
             <SectionHeader title="Accesos" as="h2" />
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden" data-recorrido="accesos">
               <ul className="divide-y divide-line">
                 <Acceso
                   href="/dashboard/mi-sociedad"
@@ -377,15 +381,13 @@ function ProximoPaso({
   accion,
   tramiteId,
   formularioCompleto,
-  etapas,
-  progreso,
+  avance,
   otrosPendientes,
 }: {
   accion: ReturnType<typeof accionPrincipal> & object
   tramiteId: string
   formularioCompleto: boolean
-  etapas: ReturnType<typeof detalleEtapas>
-  progreso: number
+  avance: AvanceCliente
   otrosPendientes: number
 }) {
   const Icono = ICONOS[accion.icono]
@@ -474,21 +476,21 @@ function ProximoPaso({
         </div>
         </div>
 
-        {/* Las 7 etapas, para que el bloque diga además dónde estás parado.
-            Ocupaba un vacío grande a la derecha. */}
+        {/* Los mismos pasos que la línea de tiempo del trámite, para que el
+            bloque diga además dónde estás parado. */}
         <div className="shrink-0 lg:w-56">
           <div className="rounded-card border border-line bg-surface/70 p-4 backdrop-blur-sm">
             <div className="mb-3 flex items-baseline justify-between">
               <span className="text-label font-semibold text-ink-2">Tu trámite</span>
-              <span className="text-body font-bold text-primary tnum">{progreso}%</span>
+              <span className="text-body font-bold text-primary tnum">{avance.porcentaje}%</span>
             </div>
             <ol className="space-y-2">
-              {etapas.map((etapa) => (
+              {avance.pasos.map((etapa) => (
                 <li key={etapa.key} className="flex items-center gap-2.5">
                   <span
                     className={cn(
                       'flex h-4 w-4 shrink-0 items-center justify-center rounded-full',
-                      etapa.completada
+                      etapa.completado
                         ? 'bg-success-solid text-on-primary'
                         : etapa.actual
                           ? 'bg-primary text-on-primary'
@@ -496,15 +498,15 @@ function ProximoPaso({
                     )}
                     aria-hidden
                   >
-                    {etapa.completada && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
-                    {etapa.actual && !etapa.completada && (
+                    {etapa.completado && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+                    {etapa.actual && !etapa.completado && (
                       <span className="h-1.5 w-1.5 rounded-full bg-on-primary" />
                     )}
                   </span>
                   <span
                     className={cn(
                       'truncate text-body-sm',
-                      etapa.completada
+                      etapa.completado
                         ? 'text-ink-2'
                         : etapa.actual
                           ? 'font-semibold text-ink'

@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LabeledProgress } from '@/components/ui/progress'
 import { EmptyState } from '@/components/ui/states'
-import { calcularProgreso, etapaActual, getEstado } from '@/lib/tramites/estado'
+import { etapaActual, getEstado } from '@/lib/tramites/estado'
+import { pasosCliente } from '@/lib/tramites/pasos-cliente'
 import { pesos, nombreJurisdiccion } from '@/lib/etiquetas'
 import { fechaLarga, formatearFecha } from '@/lib/fechas'
 
@@ -66,7 +67,7 @@ async function TramitesPage() {
           {tramites.map((tramite) => {
             const socios = (tramite.socios as unknown[]) ?? []
             const estado = getEstado(tramite, 'cliente')
-            const progreso = calcularProgreso(tramite)
+            const progreso = pasosCliente(tramite).porcentaje
             const completo = progreso === 100
             const href = tramite.formularioCompleto
               ? `/dashboard/tramites/${tramite.id}`

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileInput } from '@/components/ui/file-input'
+import { SlideToConfirm } from '@/components/ui/slide-to-confirm'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -35,18 +36,20 @@ export default function DatosFinalesForm({
     fechaInscripcion: fechaInscripcionActual || ''
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  const yaInscripta = Boolean(cuitActual)
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault()
+
     // Validar que todos los campos estén completos
     if (!formData.cuit || !formData.matricula || !formData.numeroResolucion || !formData.fechaInscripcion) {
-      toast.error('Debes completar CUIT, Matrícula, Resolución de Inscripción y Fecha de Inscripción')
+      toast.error('Completá CUIT, matrícula, resolución y fecha de inscripción')
       return
     }
 
     // Validar que se haya seleccionado el archivo de resolución
     if (!archivoResolucion) {
-      toast.error('Debes subir el archivo de Resolución de Inscripción')
+      toast.error('Subí el archivo de la resolución de inscripción')
       return
     }
 
@@ -92,7 +95,7 @@ export default function DatosFinalesForm({
           <span>Datos de la Sociedad Inscripta</span>
         </CardTitle>
         <CardDescription>
-          Completa esta información cuando la sociedad esté inscripta
+          Completá esta información cuando la sociedad esté inscripta
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -164,14 +167,21 @@ export default function DatosFinalesForm({
               Sube el archivo PDF o imagen de la resolución de inscripción. Este documento será enviado al cliente.
             </p>
           </div>
-          <Button
-            type="submit"
-            disabled={guardando}
-            className="gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {guardando ? 'Guardando...' : 'Guardar Datos Finales'}
-          </Button>
+          {yaInscripta ? (
+            <Button type="submit" disabled={guardando} className="gap-2">
+              <Save className="h-4 w-4" />
+              {guardando ? 'Guardando...' : 'Actualizar datos finales'}
+            </Button>
+          ) : (
+            // Inscribir le manda al cliente el email final: se desliza, no se cliquea.
+            <SlideToConfirm
+              label="Deslizá para inscribir y avisar al cliente"
+              onConfirm={() => void handleSubmit()}
+              loading={guardando}
+              tone="primary"
+              className="max-w-md"
+            />
+          )}
         </form>
       </CardContent>
     </Card>

@@ -8,6 +8,7 @@ import { FileText, Download, Upload, AlertCircle, CheckCircle, Clock } from 'luc
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { FileInput } from '@/components/ui/file-input'
+import { subirConProgreso } from '@/lib/subir'
 
 interface Documento {
   id: string
@@ -43,6 +44,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
   const router = useRouter()
   const [archivosSeleccionados, setArchivosSeleccionados] = useState<Record<string, File | null>>({})
   const [subiendo, setSubiendo] = useState<Record<string, boolean>>({})
+  const [progreso, setProgreso] = useState<Record<string, number>>({})
   const [subiendoTodos, setSubiendoTodos] = useState(false)
 
   // Tipos de documentos para firmar y sus correspondientes firmados
@@ -270,10 +272,9 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
       formData.append('descripcion', `Documento firmado correspondiente a: ${doc.nombre}`)
       formData.append('documentoOriginalId', doc.id) // Para relacionarlo explícitamente
 
-      const response = await fetch('/api/documentos/upload', {
-        method: 'POST',
-        body: formData
-      })
+      const response = await subirConProgreso('/api/documentos/upload', formData, (p) =>
+        setProgreso(prev => ({ ...prev, [doc.id]: p })),
+      )
 
       const result = await response.json()
 
@@ -519,6 +520,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                     archivo={archivosSeleccionados[doc.id] ?? null}
                     onArchivo={(f) => handleFileChange(doc.id, f)}
                     disabled={subiendo[doc.id]}
+                    progreso={subiendo[doc.id] ? progreso[doc.id] ?? 0 : null}
                     compacto
                     label="Elegí el documento firmado o arrastralo acá"
                     ayuda="PDF, JPG o PNG · hasta 10 MB"
@@ -621,6 +623,7 @@ export default function DocumentosParaFirmar({ documentos, tramiteId }: Document
                                   archivo={archivosSeleccionados[doc.id] ?? null}
                                   onArchivo={(f) => handleFileChange(doc.id, f)}
                                   disabled={subiendo[doc.id]}
+                                  progreso={subiendo[doc.id] ? progreso[doc.id] ?? 0 : null}
                                   compacto
                                   label="Subir la versión corregida"
                                   ayuda="PDF, JPG o PNG · hasta 10 MB"

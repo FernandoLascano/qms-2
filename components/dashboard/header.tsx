@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import NotificationBell from './NotificationBell'
 import { itemPorRuta } from '@/lib/dashboard/navigation'
 
@@ -13,6 +14,9 @@ import { itemPorRuta } from '@/lib/dashboard/navigation'
  * No repite el título de la pantalla (eso lo hace <PageHeader>) ni la
  * identidad del usuario (vive en el pie del sidebar).
  */
+// Sólo lo usa el admin: no se descarga en el panel de los clientes.
+const BuscadorAdmin = dynamic(() => import('@/components/admin/BuscadorAdmin').then((m) => m.BuscadorAdmin), { ssr: false })
+
 export function Header() {
   const { data: session } = useSession()
   const pathname = usePathname()
@@ -37,8 +41,10 @@ export function Header() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-3">
-
-          <NotificationBell />
+          {isAdmin && <BuscadorAdmin />}
+          <div data-recorrido="notificaciones">
+            <NotificationBell />
+          </div>
         </div>
       </div>
     </header>

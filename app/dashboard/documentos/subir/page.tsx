@@ -10,6 +10,8 @@ import { Select } from '@/components/ui/select'
 import { ArrowLeft, Upload, FileText, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { FileInput } from '@/components/ui/file-input'
+import { subirConProgreso } from '@/lib/subir'
 
 interface Tramite {
   id: string
@@ -23,6 +25,8 @@ export default function SubirDocumentoPage() {
   const [tramites, setTramites] = useState<Tramite[]>([])
   const [cargando, setCargando] = useState(true)
   const [subiendo, setSubiendo] = useState(false)
+  const [progreso, setProgreso] = useState(0)
+  const [listo, setListo] = useState(false)
   const [archivo, setArchivo] = useState<File | null>(null)
   
   // Obtener tramiteId de la URL si existe
@@ -55,26 +59,23 @@ export default function SubirDocumentoPage() {
       .finally(() => setCargando(false))
   }, [tramiteIdFromUrl])
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // Validar tamaño (máx 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('El archivo no puede superar los 10MB')
-        return
-      }
-
-      // Validar tipo
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
-      if (!allowedTypes.includes(file.type)) {
-        toast.error('Solo se permiten archivos PDF, JPG o PNG')
-        return
-      }
-
-      setArchivo(file)
-      if (!formData.nombre) {
-        setFormData(prev => ({ ...prev, nombre: file.name }))
-      }
+  const handleFileChange = (file: File | null) => {
+    if (!file) {
+      setArchivo(null)
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo no puede superar los 10MB')
+      return
+    }
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Solo se permiten archivos PDF, JPG o PNG')
+      return
+    }
+    setArchivo(file)
+    if (!formData.nombre) {
+      setFormData(prev => ({ ...prev, nombre: file.name }))
     }
   }
 
@@ -102,25 +103,25 @@ export default function SubirDocumentoPage() {
       data.append('nombre', formData.nombre)
       data.append('descripcion', formData.descripcion)
 
-      const response = await fetch('/api/documentos/upload', {
-        method: 'POST',
-        body: data
-      })
+      setProgreso(0)
+      const response = await subirConProgreso('/api/documentos/upload', data, setProgreso)
 
       const result = await response.json()
 
       if (response.ok && result.success) {
-        toast.success('Documento subido exitosamente')
-        router.push('/dashboard/documentos')
+        setListo(true)
+        toast.success('Documento subido')
+        // Un instante para que se vea el tilde antes de volver a la lista.
+        setTimeout(() => router.push('/dashboard/documentos'), 700)
+        return
       } else {
         toast.error(result.error || 'Error al subir el documento')
       }
     } catch (error) {
       console.error('Error al subir documento:', error)
       toast.error('Error al subir el documento')
-    } finally {
-      setSubiendo(false)
     }
+    setSubiendo(false)
   }
 
   return (
@@ -229,37 +230,15 @@ export default function SubirDocumentoPage() {
             <div>
               <Label htmlFor="file">Archivo *</Label>
               <div className="mt-2">
-                <label
-                  htmlFor="file"
-                  className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-line-strong rounded-control cursor-pointer hover:bg-surface-2 transition"
-                >
-                  {archivo ? (
-                    <div className="text-center">
-                      <FileText className="h-10 w-10 text-info mx-auto mb-2" />
-                      <p className="text-body-sm font-medium text-ink">{archivo.name}</p>
-                      <p className="text-label text-ink-2 mt-1">
-                        {(archivo.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <Upload className="h-10 w-10 text-ink-3 mx-auto mb-2" />
-                      <p className="text-body-sm text-ink-2">
-                        <span className="font-medium text-info">Click para subir</span> o arrastra el archivo
-                      </p>
-                      <p className="text-label text-ink-2 mt-1">
-                        PDF, JPG o PNG (máx. 10MB)
-                      </p>
-                    </div>
-                  )}
-                </label>
-                <input
+                <FileInput
                   id="file"
-                  type="file"
-                  className="hidden"
                   accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileChange}
-                  disabled={subiendo}
+                  archivo={archivo}
+                  onArchivo={handleFileChange}
+                  disabled={subiendo || listo}
+                  progreso={subiendo ? progreso : null}
+                  listo={listo}
+                  ayuda="PDF, JPG o PNG · hasta 10 MB"
                 />
               </div>
             </div>
