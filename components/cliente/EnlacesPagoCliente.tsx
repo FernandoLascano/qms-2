@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { ExternalLink, AlertCircle, CheckCircle, Clock, Upload, X } from 'lucide-react'
 import { FileInput } from '@/components/ui/file-input'
+import { subirConProgreso } from '@/lib/subir'
 import { pesos } from '@/lib/etiquetas'
 
 interface EnlacePago {
@@ -32,6 +33,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
   const [confirmandoPago, setConfirmandoPago] = useState<string | null>(null)
   const [archivo, setArchivo] = useState<File | null>(null)
   const [subiendoComprobante, setSubiendoComprobante] = useState(false)
+  const [progreso, setProgreso] = useState(0)
 
   const handleReportarVencido = async (enlaceId: string) => {
     setReportando(enlaceId)
@@ -66,10 +68,8 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
       const formData = new FormData()
       formData.append('comprobante', archivo)
 
-      const response = await fetch(`/api/enlaces-pago/${enlaceId}/confirmar-pago`, {
-        method: 'PATCH',
-        body: formData
-      })
+      setProgreso(0)
+      const response = await subirConProgreso(`/api/enlaces-pago/${enlaceId}/confirmar-pago`, formData, setProgreso, 'PATCH')
 
       if (response.ok) {
         toast.success('¡Pago confirmado! El equipo revisará tu comprobante.')
@@ -227,6 +227,7 @@ export default function EnlacesPagoCliente({ enlaces }: EnlacesPagoClienteProps)
                         accept="image/*,.pdf"
                         archivo={archivo}
                         onArchivo={setArchivo}
+                        progreso={subiendoComprobante ? progreso : null}
                         compacto
                         label="Elegí el comprobante o arrastralo acá"
                         ayuda="PDF, JPG o PNG"

@@ -684,3 +684,16 @@ input[type="number"] {
   transition: transform 0.28s var(--ease), background-color 0.2s var(--ease);
 }
 .segmento-fortaleza[data-lleno="true"] > span { transform: scaleX(1); }
+
+/* Tilde que se dibuja (FileInput al terminar una subida). */
+.trazo-dibujado {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dibujar-trazo 0.4s ease-out 0.05s forwards;
+}
+@keyframes dibujar-trazo {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trazo-dibujado { animation: none; stroke-dashoffset: 0; }
+}
