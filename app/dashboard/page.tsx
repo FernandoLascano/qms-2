@@ -36,6 +36,8 @@ import { cn } from '@/lib/utils'
 import { nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
 import { SUGERIDOS_EN_CURSO, SUGERIDOS_INSCRIPTA } from '@/lib/servicios'
 import { ServiciosSugeridos } from '@/components/cliente/ServiciosSugeridos'
+import { FestejoInscripta } from '@/components/cliente/FestejoInscripta'
+import { RecorridoPanel } from '@/components/cliente/RecorridoPanel'
 
 const ICONOS: Record<IconoAccion, LucideIcon> = {
   pago: CreditCard,
@@ -187,7 +189,7 @@ async function DashboardPage() {
           {/* Columna principal */}
           <div className="space-y-section">
             {activos.length > 0 && (
-              <section className="space-y-4">
+              <section className="space-y-4" data-recorrido="tramite">
                 <SectionHeader
                   title={activos.length === 1 ? 'Tu trámite' : 'Tus trámites en curso'}
                   as="h2"
@@ -247,6 +249,8 @@ async function DashboardPage() {
               </section>
             )}
 
+            {sociedades.slice(0, 1).map((soc) => <FestejoInscripta key={soc.id} tramiteId={soc.id} />)}
+            <RecorridoPanel />
             {sociedades.length > 0 && (
               <section className="space-y-4">
                 <SectionHeader
@@ -297,7 +301,7 @@ async function DashboardPage() {
           </div>
 
           {/* Columna lateral: accesos y ayuda */}
-          <aside className="space-y-4">
+          <aside className="space-y-4" data-recorrido="accesos">
             <SectionHeader title="Accesos" as="h2" />
             <Card className="overflow-hidden">
               <ul className="divide-y divide-line">

@@ -18,6 +18,7 @@ import EnlacesPagoCliente from '@/components/cliente/EnlacesPagoCliente'
 import HonorariosPagoCliente from '@/components/cliente/HonorariosPagoCliente'
 import ProximosPasos from '@/components/cliente/ProximosPasos'
 import TimelineProgreso from '@/components/cliente/TimelineProgreso'
+import { FestejoInscripta } from '@/components/cliente/FestejoInscripta'
 import MensajesDelEquipo from '@/components/cliente/MensajesDelEquipo'
 import DocumentosParaFirmar from '@/components/cliente/DocumentosParaFirmar'
 import DepositoCapitalCliente from '@/components/cliente/DepositoCapitalCliente'
@@ -109,6 +110,8 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
           </CardBody>
         </Card>
       )}
+
+      {tramite.sociedadInscripta && <FestejoInscripta tramiteId={tramite.id} />}
 
       {/* Sociedad inscripta: los datos oficiales van primero */}
       {(tramite.cuit || tramite.matricula || tramite.numeroResolucion) && (

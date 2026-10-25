@@ -42,7 +42,9 @@ export function Header() {
 
         <div className="flex shrink-0 items-center gap-3">
           {isAdmin && <BuscadorAdmin />}
-          <NotificationBell />
+          <div data-recorrido="notificaciones">
+            <NotificationBell />
+          </div>
         </div>
       </div>
     </header>
