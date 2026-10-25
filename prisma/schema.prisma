@@ -757,8 +757,7 @@ model Notificacion {
 
   createdAt DateTime @default(now())
 
-  @@index([userId, leida])
-  @@index([userId])
+  // [userId] y [userId, leida] los cubre el índice de abajo (mismo prefijo).
   @@index([createdAt])
   // Polling cada 60 s: no leídas del usuario, más nuevas primero (y el contador).
   @@index([userId, leida, createdAt])
