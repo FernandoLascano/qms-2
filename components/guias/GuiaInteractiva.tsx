@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Aviso } from '@/components/ui/aviso'
 import { cn } from '@/lib/utils'
 import type { Guia } from '@/lib/guias'
+import { ReproductorVideo } from './ReproductorVideo'
 
 /**
  * Guía paso a paso: un paso a la vez con su captura, lista de pasos para
@@ -41,6 +42,7 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
 
   const seccion = guia.secciones.find((s) => s.id === seccionId) ?? guia.secciones[0]
   const paso = seccion.pasos[indice]
+  const capturaAncha = !!paso.imagen && paso.imagen.ancho > paso.imagen.alto
   const clave = (i: number) => `${seccion.id}.${i}`
   const totalPasos = guia.secciones.reduce((n, s) => n + s.pasos.length, 0)
   const totalHechos = hechos.length
@@ -67,6 +69,16 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
 
   return (
     <div className="space-y-6">
+      {guia.video && (
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-heading font-semibold text-ink">
+            <PlayCircle className="h-5 w-5 text-primary" aria-hidden /> Miralo en video
+          </h2>
+          <ReproductorVideo video={guia.video} titulo={guia.titulo} />
+          <p className="text-body-sm text-ink-2">¿Preferís ir a tu ritmo? Abajo está la guía paso a paso.</p>
+        </section>
+      )}
+
       {/* Avance total */}
       <div className="rounded-card border border-line bg-surface p-4 shadow-raise">
         <div className="mb-2 flex items-center justify-between text-body-sm">
@@ -145,7 +157,9 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
           </p>
           <h2 className="mt-1 text-title text-ink">{paso.titulo}</h2>
 
-          <div className="mt-4 grid gap-5 sm:grid-cols-[1fr_auto] sm:items-start">
+          {/* Capturas de computadora (apaisadas) van a lo ancho, abajo del texto;
+              las de teléfono, al costado. */}
+          <div className={cn('mt-4 grid gap-5', !capturaAncha && 'sm:grid-cols-[1fr_auto] sm:items-start')}>
             <div className="space-y-3 text-body text-ink-2">
               <p>{paso.texto}</p>
               {paso.items && (
@@ -160,14 +174,15 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
               )}
             </div>
             {paso.imagen && (
-              <figure className="mx-auto grid place-items-center rounded-card bg-surface-2 p-4 sm:mx-0">
-                {/* eslint-disable-next-line @next/next/no-img-element -- capturas chicas y locales */}
+              <figure className={cn('grid place-items-center overflow-hidden rounded-card bg-surface-2', capturaAncha ? 'p-2 sm:p-3' : 'mx-auto p-3 sm:mx-0')}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- capturas locales en WebP, ya livianas */}
                 <img
                   src={paso.imagen.src}
                   alt={paso.imagen.alt}
                   width={paso.imagen.ancho}
                   height={paso.imagen.alto}
-                  className="h-auto max-h-72 w-auto max-w-full rounded-control"
+                  loading="lazy"
+                  className={cn('h-auto max-w-full', capturaAncha ? 'w-full' : 'max-h-96 w-auto')}
                 />
               </figure>
             )}
@@ -199,23 +214,6 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
         </div>
       )}
 
-      {guia.videoYoutube && (
-        <section className="space-y-3">
-          <h2 className="flex items-center gap-2 text-heading font-semibold text-ink">
-            <PlayCircle className="h-5 w-5 text-primary" aria-hidden /> ¿Preferís verlo en video?
-          </h2>
-          <div className="aspect-video overflow-hidden rounded-card border border-line bg-surface-2">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${guia.videoYoutube}`}
-              title={`Video: ${guia.titulo}`}
-              loading="lazy"
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full"
-            />
-          </div>
-        </section>
-      )}
 
       <Aviso>
         QuieroMiSAS no tiene relación con Ciudadano Digital: es una plataforma del Gobierno de la Provincia de Córdoba.
