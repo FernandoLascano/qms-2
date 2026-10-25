@@ -60,6 +60,9 @@ const PROVINCIAS_RESIDENCIA = [
   'Santiago del Estero', 'Tierra del Fuego', 'Tucumán', 'Otro país',
 ]
 
+/** Atajos del aporte de cada socio (paso Socios). */
+const PORCENTAJES_RAPIDOS = [10, 25, 50, 51, 100]
+
 const PASOS = [
   { id: 1, nombre: 'Datos', icon: User },
   { id: 2, nombre: 'Nombre', icon: Building2 },
@@ -417,11 +420,22 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
     enabled: status === 'authenticated' && !cargandoBorrador && !cargaFallida && !enviado,
   })
 
+  // Al cambiar de paso, arriba de todo. El scroll suave (scrollIntoView) se
+  // cortaba en iPhone porque el contenido cambia de alto mientras anima.
+  const primerRender = useRef(true)
+  useEffect(() => {
+    if (primerRender.current) {
+      primerRender.current = false
+      return
+    }
+    inicioRef.current?.closest('main')?.scrollTo({ top: 0 })
+    window.scrollTo({ top: 0 })
+  }, [pasoActual])
+
   const irAPaso = (paso: number) => {
     setDireccion(paso < pasoActual ? 'atras' : 'adelante')
     setPasoActual(paso)
     setPasoMaximo((m) => Math.max(m, paso))
-    inicioRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     // Al cambiar de paso se guarda ya, sin esperar los 5 segundos.
     void guardarAhora()
   }
@@ -752,9 +766,10 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
             />
           </div>
 
-          {/* En el teléfono los siete pasos no entran: se desplaza el indicador, no la página. */}
-          <div className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-            <ol className="flex min-w-max md:min-w-0 items-start justify-between gap-2">
+          {/* En el teléfono entran los siete: sólo círculos (el nombre del paso
+              actual ya está arriba). Antes la fila desbordaba y corría la página. */}
+          <div>
+            <ol className="grid grid-cols-7 items-start gap-1 md:flex md:justify-between md:gap-2">
               {PASOS.map((paso) => {
                 const Icon = paso.icon
                 const hecho = pasoActual > paso.id
@@ -765,19 +780,19 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                   <>
                     <span
                       className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-full transition-all',
+                        'flex h-9 w-9 items-center justify-center rounded-full transition-all md:h-10 md:w-10',
                         hecho ? 'bg-success-solid text-on-primary' : activo ? 'bg-primary text-on-primary ring-4 ring-primary-soft' : 'bg-surface-3 text-ink-3',
                       )}
                     >
                       {hecho ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                     </span>
-                    <span className={cn('text-label md:text-body-sm font-semibold', activo ? 'text-primary' : 'text-ink-2')}>
+                    <span className={cn('sr-only md:not-sr-only md:text-body-sm font-semibold', activo ? 'text-primary' : 'text-ink-2')}>
                       {paso.nombre}
                     </span>
                   </>
                 )
                 return (
-                  <li key={paso.id} className="flex min-w-16 flex-1 justify-center">
+                  <li key={paso.id} className="flex justify-center md:min-w-16 md:flex-1">
                     {abrible ? (
                       <button
                         type="button"
@@ -803,7 +818,7 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
         </div>
 
         <Card>
-          <CardContent className="p-card sm:p-8">
+          <CardContent padding="none" className="p-card sm:p-8">
             {/* El key reinicia la animación de entrada en cada cambio de paso. */}
             <div key={pasoActual} className={direccion === 'atras' ? 'paso-atras' : 'paso-adelante'}>
 
@@ -1274,64 +1289,51 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                       />
 
                       <div className="mt-4 border-t border-line pt-4 space-y-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-body-sm font-semibold text-ink">Aporte de capital <span className="text-danger">*</span></p>
-                          <div className="inline-flex rounded-control border border-line p-0.5" role="group" aria-label="Cómo indicar el aporte">
-                            {(['MONTO', 'PORCENTAJE'] as const).map((tipo) => (
+                        <p className="text-body-sm font-semibold text-ink">Aporte de capital <span className="text-danger">*</span></p>
+                        {/* Siempre en porcentaje: el monto en pesos lo calcula el formulario. */}
+                        <div className="flex flex-wrap gap-2" role="group" aria-label={`Porcentaje rápido del socio ${index + 1}`}>
+                          {PORCENTAJES_RAPIDOS.map((p) => {
+                            const activo = socio.tipoAporte === 'PORCENTAJE' ? parseFloat(socio.aportePorcentaje.replace(',', '.')) === p : Math.abs(pct - p) < 0.005
+                            return (
                               <button
-                                key={tipo}
+                                key={p}
                                 type="button"
-                                aria-pressed={socio.tipoAporte === tipo}
-                                onClick={() =>
-                                  // Al cambiar de modo se conserva el mismo aporte, expresado en el otro.
-                                  actualizarSocio(index, tipo === 'MONTO'
-                                    ? { tipoAporte: 'MONTO', aporteCapital: String(aporte) }
-                                    : { tipoAporte: 'PORCENTAJE', aportePorcentaje: pct ? pct.toFixed(2).replace(/\.?0+$/, '') : '' })
-                                }
+                                aria-pressed={activo}
+                                onClick={() => actualizarSocio(index, { tipoAporte: 'PORCENTAJE', aportePorcentaje: String(p) })}
                                 className={cn(
-                                  'min-h-8 rounded-[6px] px-3 text-body-sm transition-colors',
-                                  socio.tipoAporte === tipo ? 'bg-primary-soft font-semibold text-primary' : 'text-ink-2 hover:text-ink',
+                                  'min-h-11 min-w-14 rounded-control border px-3 text-body-sm font-semibold tnum transition-colors md:min-h-9',
+                                  activo ? 'border-primary bg-primary-soft text-primary' : 'border-line text-ink-2 hover:border-line-strong hover:text-ink',
                                 )}
                               >
-                                {tipo === 'MONTO' ? 'En pesos' : 'En porcentaje'}
+                                {p}%
                               </button>
-                            ))}
-                          </div>
+                            )
+                          })}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
-                          {socio.tipoAporte === 'MONTO' ? (
-                            <CampoMonto
-                              id={`socios.${index}.aporte`}
-                              aria-label={`Aporte del socio ${index + 1} en pesos`}
-                              value={socio.aporteCapital === '0' ? '' : socio.aporteCapital}
-                              onChange={(v) => actualizarSocio(index, { aporteCapital: v })}
-                              placeholder="0"
-                              error={errorDe(`socios.${index}.aporte`)}
-                            />
-                          ) : (
-                            <div>
-                              <div className="relative">
-                                <Input
-                                  id={`socios.${index}.aporte`}
-                                  aria-label={`Aporte del socio ${index + 1} en porcentaje`}
-                                  inputMode="decimal"
-                                  value={socio.aportePorcentaje === '0' ? '' : socio.aportePorcentaje}
-                                  onChange={(e) => actualizarSocio(index, { aportePorcentaje: e.target.value.replace(/[^\d.,]/g, '') })}
-                                  placeholder="0"
-                                  aria-invalid={!!errorDe(`socios.${index}.aporte`) || undefined}
-                                  className={cn('pr-8 tnum', errorDe(`socios.${index}.aporte`) && 'border-danger-solid')}
-                                />
-                                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-3">%</span>
-                              </div>
-                              <ErrorDe mensaje={errorDe(`socios.${index}.aporte`)} />
+                          <div>
+                            <div className="relative">
+                              <Input
+                                id={`socios.${index}.aporte`}
+                                aria-label={`Aporte del socio ${index + 1} en porcentaje`}
+                                inputMode="decimal"
+                                // Un aporte cargado en pesos (borradores viejos, «partes iguales») se muestra en %.
+                                value={
+                                  socio.tipoAporte === 'PORCENTAJE'
+                                    ? socio.aportePorcentaje === '0' ? '' : socio.aportePorcentaje
+                                    : pct ? pct.toFixed(2).replace(/\.?0+$/, '') : ''
+                                }
+                                onChange={(e) => actualizarSocio(index, { tipoAporte: 'PORCENTAJE', aportePorcentaje: e.target.value.replace(/[^\d.,]/g, '') })}
+                                placeholder="Otro porcentaje"
+                                aria-invalid={!!errorDe(`socios.${index}.aporte`) || undefined}
+                                className={cn('pr-8 tnum', errorDe(`socios.${index}.aporte`) && 'border-danger-solid')}
+                              />
+                              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-ink-3">%</span>
                             </div>
-                          )}
+                            <ErrorDe mensaje={errorDe(`socios.${index}.aporte`)} />
+                          </div>
                           <p className="text-body-sm text-ink-2 sm:pt-2.5 tnum">
-                            {aporte > 0
-                              ? socio.tipoAporte === 'MONTO'
-                                ? `Equivale al ${pct.toLocaleString('es-AR', { maximumFractionDigits: 2 })}% del capital`
-                                : `Equivale a ${pesos(aporte)}`
-                              : ' '}
+                            {aporte > 0 ? `Equivale a ${pesos(aporte)}` : ' '}
                           </p>
                         </div>
                       </div>

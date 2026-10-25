@@ -93,7 +93,7 @@ export function personaVacia(): Persona {
 }
 
 export function socioVacio(): Socio {
-  return { ...personaVacia(), aporteCapital: '0', tipoAporte: 'MONTO', aportePorcentaje: '0' }
+  return { ...personaVacia(), aporteCapital: '0', tipoAporte: 'PORCENTAJE', aportePorcentaje: '0' }
 }
 
 export const ESTADOS_CIVILES = ['Soltero/a', 'Casado/a', 'Divorciado/a', 'Viudo/a']
