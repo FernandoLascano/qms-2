@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Aviso } from '@/components/ui/aviso'
 import { cn } from '@/lib/utils'
 import type { Guia } from '@/lib/guias'
+import { ReproductorVideo } from './ReproductorVideo'
 
 /**
  * Guía paso a paso: un paso a la vez con su captura, lista de pasos para
@@ -67,6 +68,16 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
 
   return (
     <div className="space-y-6">
+      {guia.video && (
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-heading font-semibold text-ink">
+            <PlayCircle className="h-5 w-5 text-primary" aria-hidden /> Miralo en video
+          </h2>
+          <ReproductorVideo video={guia.video} titulo={guia.titulo} />
+          <p className="text-body-sm text-ink-2">¿Preferís ir a tu ritmo? Abajo está la guía paso a paso.</p>
+        </section>
+      )}
+
       {/* Avance total */}
       <div className="rounded-card border border-line bg-surface p-4 shadow-raise">
         <div className="mb-2 flex items-center justify-between text-body-sm">
@@ -199,23 +210,6 @@ export function GuiaInteractiva({ guia }: { guia: Guia }) {
         </div>
       )}
 
-      {guia.videoYoutube && (
-        <section className="space-y-3">
-          <h2 className="flex items-center gap-2 text-heading font-semibold text-ink">
-            <PlayCircle className="h-5 w-5 text-primary" aria-hidden /> ¿Preferís verlo en video?
-          </h2>
-          <div className="aspect-video overflow-hidden rounded-card border border-line bg-surface-2">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${guia.videoYoutube}`}
-              title={`Video: ${guia.titulo}`}
-              loading="lazy"
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="h-full w-full"
-            />
-          </div>
-        </section>
-      )}
 
       <Aviso>
         QuieroMiSAS no tiene relación con Ciudadano Digital: es una plataforma del Gobierno de la Provincia de Córdoba.

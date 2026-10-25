@@ -5,9 +5,15 @@
  * de esas mismas infografías; las capturas de cada paso son recortes de ellas
  * (public/assets/img/guias/).
  *
- * Para sumar un video: poner el id de YouTube en `videoYoutube` (la parte
- * después de «v=» en el link). Si está vacío, la sección del video no aparece.
+ * Videos: propios, sin YouTube. El MP4 vive en el bucket público de Supabase
+ * (assets-publicos/videos/guias) y el póster y los subtítulos en
+ * public/videos/guias. Se arman con Remotion en ~/proyectos/qms-videos.
+ * Si `video` es null, la sección del video no aparece.
  */
+
+import type { VideoGuia } from '@/components/guias/ReproductorVideo'
+
+const VIDEOS = 'https://zeufpoxrkfqykwelqvxb.supabase.co/storage/v1/object/public/assets-publicos/videos/guias'
 
 export interface PasoGuia {
   titulo: string
@@ -28,7 +34,7 @@ export interface Guia {
   slug: string
   titulo: string
   bajada: string
-  videoYoutube: string | null
+  video: VideoGuia | null
   secciones: SeccionGuia[]
   /** Qué hacer al terminar. */
   cierre: string
@@ -46,7 +52,12 @@ export const GUIA_CIUDADANO_DIGITAL: Guia = {
   titulo: 'Cómo obtener Ciudadano Digital Nivel 2',
   bajada:
     'Con Ciudadano Digital (CiDi) Nivel 2 firmás los documentos de tu sociedad desde el teléfono o la computadora, estés donde estés. Lo necesita cada socio y cada administrador.',
-  videoYoutube: null,
+  video: {
+    src: `${VIDEOS}/ciudadano-digital-v1.mp4`,
+    poster: '/videos/guias/ciudadano-digital-poster.jpg',
+    subtitulos: '/videos/guias/ciudadano-digital.vtt',
+    duracion: 88,
+  },
   secciones: [
     {
       id: 'nivel-2',
@@ -109,7 +120,12 @@ export const GUIA_FIRMA_CIDI: Guia = {
   titulo: 'Cómo firmar un documento con Ciudadano Digital',
   bajada:
     'El estatuto (y, si querés, la declaración jurada de ARCA) se firma con Firma CiDi. Se hace desde una computadora y lleva unos minutos.',
-  videoYoutube: null,
+  video: {
+    src: `${VIDEOS}/firma-ciudadano-digital-v1.mp4`,
+    poster: '/videos/guias/firma-ciudadano-digital-poster.jpg',
+    subtitulos: '/videos/guias/firma-ciudadano-digital.vtt',
+    duracion: 89,
+  },
   secciones: [
     {
       id: 'firmar',
