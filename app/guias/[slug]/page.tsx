@@ -5,6 +5,7 @@ import { ArrowLeft, Clock } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 import { GuiaInteractiva } from '@/components/guias/GuiaInteractiva'
 import { GUIAS } from '@/lib/guias'
+import { metadataDePagina } from '@/lib/seo/site'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const guia = GUIAS.find((g) => g.slug === slug)
   if (!guia) return {}
-  return { title: `${guia.titulo} | QuieroMiSAS`, description: guia.bajada, alternates: { canonical: `/guias/${guia.slug}` } }
+  return metadataDePagina({ ruta: `/guias/${guia.slug}`, titulo: `${guia.titulo} | QuieroMiSAS`, descripcion: guia.bajada })
 }
 
 export default async function GuiaPage({ params }: Props) {

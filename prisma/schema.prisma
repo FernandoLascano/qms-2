@@ -757,8 +757,7 @@ model Notificacion {
 
   createdAt DateTime @default(now())
 
-  @@index([userId, leida])
-  @@index([userId])
+  // [userId] y [userId, leida] los cubre el índice de abajo (mismo prefijo).
   @@index([createdAt])
   // Polling cada 60 s: no leídas del usuario, más nuevas primero (y el contador).
   @@index([userId, leida, createdAt])
@@ -1212,6 +1211,10 @@ model Config {
   domicilioSedeDirecciones String[] @default(["Ituzaingó 87", "Ituzaingó 87, 5to Piso", "Pasaje Chagas 6043"]) // Direcciones disponibles para elegir
   domicilioSedePrecioAnual Float    @default(0) // Precio anual del servicio
   domicilioSedeDiasAlerta  Int      @default(30) // Días antes del vencimiento para alertar
+
+  // Objetivo interno del trámite, en días corridos desde la reserva de nombre
+  // hasta la inscripción (lo que mide Analytics > Tiempo promedio). 0 = sin objetivo.
+  objetivoDiasTramite Int @default(0)
 
   // Contrato de domicilio (plantilla lib/plantillas/contrato-domicilio.docx).
   // Texto libre: se imprime tal cual en el contrato (ej. "$ 20.000 (pesos veinte mil)").

@@ -141,7 +141,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       })
     ])
 
-    const mensajeAdmin = `El cliente ha subido un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisa y valida el pago.`
+    const mensajeAdmin = `El cliente subió un comprobante de transferencia para el pago de honorarios ($${pago.monto.toLocaleString('es-AR')}). Revisá y validá el pago.`
 
     // Notificaciones en la base (admins + cliente) en un solo insert.
     await prisma.notificacion.createMany({

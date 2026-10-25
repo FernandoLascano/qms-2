@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { metadataDePagina } from '@/lib/seo/site'
 import { headers } from 'next/headers'
 import type { LucideIcon } from 'lucide-react'
 import {
@@ -44,13 +45,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Partner no encontrado | QuieroMiSAS' }
   }
 
-  return {
-    title: `${partner.nombre} | QuieroMiSAS`,
-    alternates: { canonical: `/partners/${slug}` },
-    description: partner.aplicaDescuento && partner.descuentoValor
+  return metadataDePagina({
+    ruta: `/partners/${slug}`,
+    titulo: `${partner.nombre} | QuieroMiSAS`,
+    descripcion: partner.aplicaDescuento && partner.descuentoValor
       ? `Conseguí beneficios exclusivos y ahorro en planes de constitución con ${partner.nombre}.`
       : `Beneficios exclusivos de ${partner.nombre} para constituir tu SAS.`,
-  }
+  })
 }
 
 function formatPublicEconomicSummary(partner: {

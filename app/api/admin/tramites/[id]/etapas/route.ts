@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailEtapaCompletada, enviarEmailSociedadInscripta } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
+import { nombreEtapa } from '@/lib/etiquetas'
 
 interface RouteParams {
   params: Promise<{
@@ -160,24 +161,12 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       const mensajesEtapas: { [key: string]: string } = {
         honorariosPagados: 'Confirmamos el pago de los honorarios. ¡Seguimos avanzando con tu trámite!',
         denominacionReservada: 'La denominación de tu sociedad fue reservada. Próximamente te vamos a enviar el enlace de pago de la tasa retributiva de servicios de IPJ y los datos para realizar el depósito en garantía del 25% del capital. Ese depósito se hace en una cuenta que se abre especialmente para el trámite y se restituye a los CBU informados una vez inscripta la Sociedad.',
-        capitalDepositado: 'Se ha confirmado el depósito del 25% del capital social.',
-        tasaPagada: 'El pago de la tasa retributiva ha sido confirmado.',
+        capitalDepositado: 'Confirmamos el depósito del 25% del capital social.',
+        tasaPagada: 'Confirmamos el pago de la tasa retributiva.',
         borradorEnviado: 'Te enviamos el borrador de los documentos de tu Sociedad. Revisalo con atención desde tu panel y, si está todo correcto, aprobalo. Con tu aprobación preparamos la versión final para la firma. Tené en cuenta que casi todas las cláusulas vienen del modelo pre-aprobado y no se pueden modificar: lo que sí podemos corregir es el objeto social y los datos personales de quienes intervienen.',
         tramiteIngresado: '¡Tu sociedad está cada vez más cerca! Ya ingresamos formalmente el trámite en el organismo. Normalmente la resolución de inscripción sale dentro de los 1 a 4 días hábiles. Te avisamos apenas esté lista.',
-        tramiteObservado: 'El organismo observó el trámite. Ya lo estamos gestionando; te mantendremos al tanto.',
-        sociedadInscripta: '¡Felicitaciones! Tu sociedad ha sido inscripta exitosamente.'
-      }
-
-      const nombresEtapas: { [key: string]: string } = {
-        honorariosPagados: 'Honorarios Pagados',
-        denominacionReservada: 'Reserva de Denominación',
-        capitalDepositado: 'Capital Depositado',
-        tasaPagada: 'Tasa Pagada',
-        borradorEnviado: 'Borrador Enviado',
-        documentosFirmados: 'Documentos Firmados',
-        tramiteIngresado: 'Trámite Ingresado',
-        tramiteObservado: 'Trámite Observado',
-        sociedadInscripta: 'Sociedad Inscripta'
+        tramiteObservado: 'El organismo observó el trámite. Ya lo estamos gestionando; te vamos a mantener al tanto.',
+        sociedadInscripta: '¡Felicitaciones! Tu sociedad ya está inscripta.'
       }
 
       if (mensajesEtapas[etapa]) {
@@ -187,7 +176,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
             tramiteId: id,
             tipo: etapa === 'sociedadInscripta' ? 'EXITO' : 'INFO',
             // Nombre legible («Trámite ingresado»), no la clave partida («tramite Ingresado»).
-            titulo: `Etapa completada: ${nombresEtapas[etapa] ?? etapa}`,
+            titulo: `Etapa completada: ${nombreEtapa(etapa)}`,
             mensaje: mensajesEtapas[etapa],
             link: `/dashboard/tramites/${id}`
           }
@@ -213,11 +202,11 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               ))
             } 
             // Para otras etapas importantes, enviar email de progreso
-            else if (nombresEtapas[etapa]) {
+            else {
               enSegundoPlano('admin/tramites/[id]/etapas', () => enviarEmailEtapaCompletada(
                 usuario.email,
                 usuario.name,
-                nombresEtapas[etapa],
+                nombreEtapa(etapa),
                 id
               ))
             }

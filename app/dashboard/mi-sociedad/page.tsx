@@ -293,7 +293,7 @@ export default async function MiSociedadPage() {
                             href={`/api/documentos/${doc!.id}/view?download=1`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex min-h-10 items-center gap-1 text-body-sm font-medium text-primary hover:text-primary"
+                            className="inline-flex min-h-11 items-center gap-1 text-body-sm font-medium text-primary hover:text-primary"
                           >
                             <Download className="h-4 w-4" /> Descargar
                           </a>

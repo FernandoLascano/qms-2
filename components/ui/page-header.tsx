@@ -64,7 +64,7 @@ export function PageHeader({
                 {crumb.href ? (
                   <Link
                     href={crumb.href}
-                    className="rounded-chip hover:text-ink hover:underline underline-offset-4"
+                    className="inline-flex min-h-11 items-center rounded-chip hover:text-ink hover:underline underline-offset-4 md:min-h-0"
                   >
                     {crumb.label}
                   </Link>

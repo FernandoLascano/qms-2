@@ -198,7 +198,7 @@ export async function POST(request: Request) {
               tramiteId: tramiteId,
               tipo: 'EXITO',
               titulo: 'Pago de Honorarios Confirmado',
-              mensaje: `Hemos recibido ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')}.`
+              mensaje: `Recibimos ${conceptoTexto} por $${pago.monto.toLocaleString('es-AR')}.`
             }
           })
         }

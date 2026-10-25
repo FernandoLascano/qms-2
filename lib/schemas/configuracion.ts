@@ -32,6 +32,7 @@ export const LIMITES_CONFIG = {
   comisionOriginacionPct: { label: 'Comisión de originación', min: 0, max: 100 },
   domicilioSedePrecioAnual: { label: 'Precio anual del domicilio', min: 0 },
   domicilioSedeDiasAlerta: { label: 'Alerta de vencimiento del domicilio', min: 0, max: 365, entero: true },
+  objetivoDiasTramite: { label: 'Objetivo interno del trámite', min: 0, max: 365, entero: true },
 } satisfies Record<string, LimiteNumerico>
 
 export type CampoNumericoConfig = keyof typeof LIMITES_CONFIG

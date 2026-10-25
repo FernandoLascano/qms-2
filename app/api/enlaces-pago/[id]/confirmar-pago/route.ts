@@ -167,7 +167,7 @@ export async function PATCH(
       data: {
         tipo: 'EXITO',
         titulo: 'Comprobante recibido',
-        mensaje: `Hemos recibido tu comprobante de pago de ${conceptoTexto}. Lo revisaremos pronto.`,
+        mensaje: `Recibimos tu comprobante de pago de ${conceptoTexto}. Lo vamos a revisar pronto.`,
         userId: session.user.id,
         tramiteId: enlace.tramiteId,
         link: `/dashboard/tramites/${enlace.tramiteId}#enlaces-pago`,

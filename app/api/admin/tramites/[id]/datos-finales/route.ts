@@ -34,14 +34,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     // Validar que todos los campos estén presentes
     if (!cuit || !matricula || !numeroResolucion || !fechaInscripcion) {
       return NextResponse.json(
-        { error: 'Debes completar CUIT, Matrícula, Resolución de Inscripción y Fecha de Inscripción' },
+        { error: 'Completá CUIT, Matrícula, Resolución de Inscripción y Fecha de Inscripción' },
         { status: 400 }
       )
     }
 
     if (!archivoResolucion) {
       return NextResponse.json(
-        { error: 'Debes subir el archivo de Resolución de Inscripción' },
+        { error: 'Subí el archivo de Resolución de Inscripción' },
         { status: 400 }
       )
     }

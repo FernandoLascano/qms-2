@@ -110,7 +110,7 @@ function Acciones({
         href={enlaceWhatsapp(servicio.nombre)}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-control px-3 text-body-sm font-medium text-ink-2 hover:bg-surface-2 hover:text-ink"
+        className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-control px-3 text-body-sm font-medium text-ink-2 hover:bg-surface-2 hover:text-ink"
       >
         <MessageCircle className="h-4 w-4" aria-hidden />
         Preguntar por WhatsApp

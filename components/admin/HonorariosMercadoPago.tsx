@@ -32,6 +32,8 @@ interface HonorariosMercadoPagoProps {
   tramiteId: string
   pagos: Pago[]
   plan?: 'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'
+  /** Viene del server (getPublicConfig): antes se pedía a /api/config al montar. */
+  precios: PreciosConfig
 }
 
 type PreciosConfig = {
@@ -39,13 +41,6 @@ type PreciosConfig = {
   precioPlanEmprendedor: number
   precioPlanPremium: number
   descuentoTransferencia: number
-}
-
-const PRECIOS_DEFAULT: PreciosConfig = {
-  precioPlanBasico: 285000,
-  precioPlanEmprendedor: 320000,
-  precioPlanPremium: 390000,
-  descuentoTransferencia: 3
 }
 
 // Calcula los montos de honorarios de un plan a partir de la configuración:
@@ -72,13 +67,12 @@ interface CuentaBancaria {
   titular: string
 }
 
-export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: HonorariosMercadoPagoProps) {
+export default function HonorariosMercadoPago({ tramiteId, pagos, plan, precios }: HonorariosMercadoPagoProps) {
   const router = useRouter()
   const [generando, setGenerando] = useState(false)
   const [planSeleccionado, setPlanSeleccionado] = useState<'BASICO' | 'EMPRENDEDOR' | 'PREMIUM'>(plan || 'EMPRENDEDOR')
-  const [precios, setPrecios] = useState<PreciosConfig>(PRECIOS_DEFAULT)
-  const [monto, setMonto] = useState('')
-  const [montoTransferencia, setMontoTransferencia] = useState('')
+  const [monto, setMonto] = useState(() => montosDePlan(plan || 'EMPRENDEDOR', precios).mercadoPago.toString())
+  const [montoTransferencia, setMontoTransferencia] = useState(() => montosDePlan(plan || 'EMPRENDEDOR', precios).transferencia.toString())
   const [cuentasPreConfiguradas, setCuentasPreConfiguradas] = useState<CuentaBancaria[]>([])
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState<string>('')
   const [datosBancarios, setDatosBancarios] = useState({
@@ -87,27 +81,6 @@ export default function HonorariosMercadoPago({ tramiteId, pagos, plan }: Honora
     alias: '',
     titular: ''
   })
-
-  // Cargar precios desde la configuración e inicializar montos según el plan
-  useEffect(() => {
-    const planActual = plan || 'EMPRENDEDOR'
-    fetch('/api/config')
-      .then(res => res.json())
-      .then(data => {
-        const nuevosPrecios: PreciosConfig = {
-          precioPlanBasico: data.precioPlanBasico ?? PRECIOS_DEFAULT.precioPlanBasico,
-          precioPlanEmprendedor: data.precioPlanEmprendedor ?? PRECIOS_DEFAULT.precioPlanEmprendedor,
-          precioPlanPremium: data.precioPlanPremium ?? PRECIOS_DEFAULT.precioPlanPremium,
-          descuentoTransferencia: data.descuentoTransferencia ?? PRECIOS_DEFAULT.descuentoTransferencia
-        }
-        setPrecios(nuevosPrecios)
-        setPlanSeleccionado(planActual)
-        const montos = montosDePlan(planActual, nuevosPrecios)
-        setMonto(montos.mercadoPago.toString())
-        setMontoTransferencia(montos.transferencia.toString())
-      })
-      .catch(err => console.error('Error al cargar precios:', err))
-  }, [plan])
 
   // Cargar cuentas bancarias pre-configuradas
   useEffect(() => {

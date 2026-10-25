@@ -15,6 +15,8 @@ interface TiemposPromedioProps {
     inscripcion: Dias
   }
   muestra?: number
+  /** Objetivo interno en días corridos (Configuración). null = no hay uno cargado. */
+  objetivo?: number | null
 }
 
 const SIN_DATOS = 'Sin datos suficientes'
@@ -27,7 +29,7 @@ const PROMESA_WEB_DIAS_HABILES = 5
  * etapa no tiene casos suficientes se dice así, en vez de mostrar un número
  * estimado como si fuera medido.
  */
-export function TiemposPromedioPanel({ total, desdeValidacion, porEtapa, muestra }: TiemposPromedioProps) {
+export function TiemposPromedioPanel({ total, desdeValidacion, porEtapa, muestra, objetivo }: TiemposPromedioProps) {
   const etapas = [
     { nombre: '1. Reserva Denominación', detalle: 'desde el formulario enviado', dias: porEtapa.reservaDenominacion, color: 'bg-info-solid' },
     { nombre: '2. Depósito Capital', detalle: 'desde la reserva', dias: porEtapa.depositoCapital, color: 'bg-info-solid' },
@@ -103,19 +105,34 @@ export function TiemposPromedioPanel({ total, desdeValidacion, porEtapa, muestra
         ))}
       </div>
 
-      {/* Antes decía «Objetivo: ≤ 5 días» en verde, como una meta medida. No
-          hay un objetivo interno definido: los 5 días son lo que promete la web
-          (hábiles, desde que está toda la documentación), y lo de arriba son
-          días corridos desde la reserva, con las esperas del cliente adentro. */}
+      {/* Antes decía «Objetivo: ≤ 5 días» fijo. Los 5 días son lo que promete
+          la web (hábiles, desde que está toda la documentación); el objetivo
+          interno se carga en Configuración y se mide en días corridos desde la
+          reserva, igual que el promedio de arriba. */}
       <div className="mt-6 pt-4 border-t border-line space-y-1 text-body-sm">
+        <div className="flex justify-between gap-3">
+          <span className="text-ink-2">Objetivo interno:</span>
+          {objetivo ? (
+            <span
+              className={`shrink-0 font-semibold ${
+                total === null ? 'text-ink' : total <= objetivo ? 'text-success' : 'text-danger'
+              }`}
+            >
+              {objetivo} días corridos
+              {total !== null && (total <= objetivo ? ' · se cumple' : ` · ${(total - objetivo).toFixed(1)} días de más`)}
+            </span>
+          ) : (
+            <span className="shrink-0 text-ink-3">Sin cargar (Configuración)</span>
+          )}
+        </div>
         <div className="flex justify-between gap-3">
           <span className="text-ink-2">Lo que promete la web:</span>
           <span className="shrink-0 font-semibold text-ink">{PROMESA_WEB_DIAS_HABILES} días hábiles</span>
         </div>
         <p className="text-label text-ink-3">
-          Se cuentan desde que está toda la documentación. El promedio de arriba son días corridos desde la
-          reserva de nombre e incluye lo que se espera al cliente (depósito, firma), así que no se comparan
-          directo. No hay un objetivo interno cargado.
+          La promesa de la web se cuenta desde que está toda la documentación. El promedio de arriba son días
+          corridos desde la reserva de nombre e incluye lo que se espera al cliente (depósito, firma), así que no
+          se comparan directo.
         </p>
       </div>
     </div>

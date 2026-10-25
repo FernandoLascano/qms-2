@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { uploadToSupabase } from '@/lib/supabase-storage'
+import { optimizarPortada } from '@/lib/imagenes'
 
 const MAX_BYTES = 8 * 1024 * 1024 // 8 MB
 
@@ -31,14 +32,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Solo se permiten imágenes' }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const uploaded = await uploadToSupabase(
-      buffer,
-      'blog/hero',
-      file.name,
-      file.type || 'image/jpeg',
-      'public'
-    )
+    const portada = await optimizarPortada(Buffer.from(await file.arrayBuffer()), file.name, file.type || 'image/jpeg')
+    const uploaded = await uploadToSupabase(portada.buffer, 'blog/hero', portada.nombre, portada.tipo, 'public')
 
     if (!uploaded?.url) {
       return NextResponse.json({ error: 'No se pudo subir la imagen' }, { status: 500 })

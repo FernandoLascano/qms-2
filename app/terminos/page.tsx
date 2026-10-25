@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
+import { metadataDePagina } from '@/lib/seo/site'
 
-export const metadata = {
-  alternates: { canonical: '/terminos' },
-  title: 'Términos y Condiciones | QuieroMiSAS',
-  description: 'Términos y condiciones de uso del servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina.',
-}
+export const metadata = metadataDePagina({
+  ruta: '/terminos',
+  titulo: 'Términos y Condiciones | QuieroMiSAS',
+  descripcion: 'Términos y condiciones de uso del servicio de constitución de Sociedades por Acciones Simplificadas (S.A.S.) en Argentina.',
+})
 
 export default function TerminosPage() {
   return (
