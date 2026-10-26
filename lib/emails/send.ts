@@ -311,7 +311,8 @@ export async function enviarToqueLead(
     to: email,
     subject: asunto,
     template: 'emailLeadSecuencia',
-    data: { nombre, cuerpo, tramiteId, ultimo }
+    // Sólo el nombre de pila: «Hola Juan Pérez» suena a sistema.
+    data: { nombre: nombre.split(' ')[0], cuerpo, tramiteId, ultimo }
   })
 }
 

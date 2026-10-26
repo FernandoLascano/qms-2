@@ -83,11 +83,12 @@ function primerContactoEmail(c: ContextoMensaje): { asunto: string; cuerpo: stri
         asunto: `Lo del domicilio de ${suSociedad(c)} tiene solución`,
         cuerpo:
           saludo +
-          `Vi que el formulario de ${suSociedad(c)} quedó frenado en el paso del domicilio, que es ` +
-          `donde se traba casi todo el mundo.\n\n` +
-          `La sede social tiene que estar en Córdoba o en CABA, pero no hace falta que vivas ahí ` +
-          `ni que alquiles una oficina. Si no tenés dónde fijarla, te la damos nosotros y queda ` +
-          `resuelto. Después la empresa puede operar en todo el país.\n\n` +
+          `Vi que el formulario de ${suSociedad(c)} quedó en el paso del domicilio, que es la ` +
+          `duda más común.\n\n` +
+          `La sede social tiene que estar en Córdoba, pero no hace falta que vivas ahí ni que ` +
+          `alquiles una oficina. Si no tenés una dirección para usar, te ofrecemos la nuestra con ` +
+          `el servicio de domicilio, que tiene un costo aparte. Una vez inscripta, la sociedad ` +
+          `puede trabajar en todo el país.\n\n` +
           `¿Lo vemos juntos? Respondeme y coordinamos.` +
           cierre,
       }
@@ -111,8 +112,8 @@ function primerContactoEmail(c: ContextoMensaje): { asunto: string; cuerpo: stri
           `Por si te sirve para decidir:\n` +
           `· Una S.A.S. se puede constituir con un solo socio.\n` +
           `· El trámite es 100% online, no hace falta escribanía.\n` +
-          `· La sede tiene que estar en Córdoba o CABA, pero si no tenés dónde fijarla, te la ` +
-          `damos nosotros.\n\n` +
+          `· La sede tiene que estar en Córdoba, pero si no tenés una dirección para usar, te ` +
+          `ofrecemos la nuestra (con costo aparte).\n\n` +
           `Si te quedó alguna duda, respondeme este mail y te la resuelvo.` +
           cierre,
       }
@@ -148,9 +149,10 @@ export function plantillasPara(c: ContextoMensaje): Plantilla[] {
       titulo: 'Explicar el domicilio',
       cuando: 'La duda es dónde fijar la sede',
       cuerpo:
-        `${n} Te cuento cómo funciona lo del domicilio: la sede social tiene que estar en Córdoba ` +
-        `o en CABA, pero no hace falta que vivas ahí ni que tengas oficina. Si no tenés dónde ` +
-        `fijarla, te damos una nosotros y queda resuelto. La empresa después opera en todo el país.`,
+        `${n} Te cuento cómo funciona lo del domicilio: la sede social tiene que estar en Córdoba, ` +
+        `pero no hace falta que vivas ahí ni que tengas oficina. Si no tenés una dirección para ` +
+        `usar, te ofrecemos la nuestra con el servicio de domicilio, que tiene un costo aparte. ` +
+        `La sociedad después puede trabajar en todo el país.`,
     },
     {
       id: 'wa-recordatorio',

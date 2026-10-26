@@ -97,13 +97,15 @@ export const EJEMPLOS_EMAIL: EjemploEmail[] = [
   {
     template: 'emailLeadSecuencia',
     etiqueta: 'Secuencia de leads',
-    asunto: '¿Te ayudamos con el domicilio de tu S.A.S.?',
+    asunto: 'Tu S.A.S. puede tener sede en Córdoba aunque no vivas ahí',
     datos: {
       nombre: 'Fernando',
       cuerpo:
-        'Te frenaste justo en el paso del domicilio, que es donde se traba casi todo el mundo.\n\n' +
-        'La sede social de tu S.A.S. tiene que estar en Córdoba o en CABA, pero eso no significa que tengas que vivir ahí ni alquilar una oficina. Si no tenés dónde fijarla, te la damos nosotros y queda resuelto.\n\n' +
-        'Tu empresa después puede operar en todo el país, sin importar dónde se constituyó.',
+        'Tu formulario quedó guardado en el paso del domicilio. Es la duda más común, así que te la aclaramos:\n\n' +
+        '· La sede social tiene que estar en Córdoba.\n' +
+        '· No hace falta que vivas ahí ni que alquiles una oficina.\n' +
+        '· Si no tenés una dirección para usar, te ofrecemos la nuestra con el servicio de domicilio, que tiene un costo aparte.\n\n' +
+        'Una vez inscripta, tu sociedad puede trabajar en todo el país.',
       tramiteId: 'cltx123',
       ultimo: false,
     },

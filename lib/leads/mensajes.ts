@@ -4,7 +4,7 @@
  * El contenido no es genérico a propósito. Medido sobre los borradores reales,
  * hay dos grupos que no se parecen en nada: los que abrieron el formulario y no
  * escribieron ni el nombre, y los que cargaron sus datos y se trabaron cuando
- * el formulario les pidió una dirección en Córdoba o CABA. Mandarles lo mismo a
+ * el formulario les pidió una dirección en Córdoba. Mandarles lo mismo a
  * los dos desperdicia el único contacto que se va a leer.
  *
  * El tono sale de lo que funciona en los contactos que sí cierran: ofrecer
@@ -40,10 +40,10 @@ export function mensajeWhatsapp(
       )
     case 'TRABADO_DOMICILIO':
       return (
-        `${hola} ${presentacion} Vi que te frenaste en el paso del domicilio, que es donde se traba ` +
-        `casi todo el mundo, así que te lo aclaro: la sede social tiene que estar en Córdoba o en ` +
-        `CABA, pero no hace falta que vivas ahí ni que tengas una oficina. Si no tenés dónde ` +
-        `fijarla, te la resolvemos nosotros. ¿Querés que lo veamos?`
+        `${hola} ${presentacion} Vi que el formulario quedó en el paso del domicilio, que es la ` +
+        `duda más común, así que te lo aclaro: la sede social tiene que estar en Córdoba, pero no ` +
+        `hace falta que vivas ahí ni que tengas una oficina. Si no tenés una dirección para usar, ` +
+        `te ofrecemos la nuestra con el servicio de domicilio, que tiene un costo aparte. ¿Querés que lo veamos?`
       )
     case 'CASI_LISTO':
       return (
@@ -70,13 +70,15 @@ export function mensajeEmail(
   if (segmento === 'TRABADO_DOMICILIO') {
     if (toque <= 1)
       return {
-        asunto: 'Lo del domicilio para tu S.A.S. es más fácil de lo que parece',
+        asunto: 'Tu S.A.S. puede tener sede en Córdoba aunque no vivas ahí',
         texto:
-          `Te frenaste justo en el paso del domicilio, que es donde se traba casi todo el mundo.\n\n` +
-          `La sede social de tu S.A.S. tiene que estar en Córdoba o en CABA, pero eso no significa ` +
-          `que tengas que vivir ahí ni alquilar una oficina. Si no tenés dónde fijarla, te la ` +
-          `damos nosotros y queda resuelto.\n\n` +
-          `Tu empresa después puede operar en todo el país, sin importar dónde se constituyó.`,
+          `Tu formulario quedó guardado en el paso del domicilio. Es la duda más común, así que ` +
+          `te la aclaramos:\n\n` +
+          `· La sede social tiene que estar en Córdoba.\n` +
+          `· No hace falta que vivas ahí ni que alquiles una oficina.\n` +
+          `· Si no tenés una dirección para usar, te ofrecemos la nuestra con el servicio de ` +
+          `domicilio, que tiene un costo aparte.\n\n` +
+          `Una vez inscripta, tu sociedad puede trabajar en todo el país.`,
       }
     if (toque <= 3)
       return {
@@ -149,8 +151,8 @@ export function mensajeEmail(
         `Por si te sirve para decidir:\n\n` +
         `· Una S.A.S. se puede constituir con un solo socio.\n` +
         `· El trámite es 100% online, no hace falta escribanía.\n` +
-        `· La sede tiene que estar en Córdoba o CABA, pero si no tenés dónde fijarla, ` +
-        `te la damos nosotros.\n\n` +
+        `· La sede tiene que estar en Córdoba, pero si no tenés una dirección para usar, ` +
+        `te ofrecemos la nuestra (con costo aparte).\n\n` +
         `Cualquier duda, respondeme.`,
     }
   if (toque <= 7)
