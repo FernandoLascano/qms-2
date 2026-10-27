@@ -166,7 +166,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
       )}
 
       {/* Columna principal + resumen lateral */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-section">
           <ProximosPasos
             tramite={tramite}

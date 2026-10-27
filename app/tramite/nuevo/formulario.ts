@@ -258,7 +258,8 @@ export function erroresDelPaso(paso: number, f: FormData, smvm: number): Errores
       } else {
         poner('actividadPrincipal', validarActividadPrincipal(f.actividadPrincipal))
       }
-      if (!f.sinDomicilio) {
+      // En CABA no prestamos domicilio: la dirección es obligatoria.
+      if (!f.sinDomicilio || f.jurisdiccion === 'CABA') {
         if (!requerido(f.domicilio)) e.domicilio = 'Completá la dirección de la sede'
         if (!requerido(f.ciudad)) e.ciudad = 'Completá la ciudad'
         if (!requerido(f.departamento)) e.departamento = 'Elegí el departamento'

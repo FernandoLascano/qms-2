@@ -94,6 +94,9 @@ export default function JurisdiccionSelector({ value, onChange }: Props) {
               <span className={`font-medium ${j.habilitada ? 'text-gray-900' : 'text-gray-400'}`}>
                 {j.nombre}
               </span>
+              {j.habilitada && j.jurisdiccion === 'CABA' && (
+                <p className="mt-1 text-xs text-gray-500">Necesitás una dirección propia en CABA: ahí no ofrecemos el servicio de domicilio.</p>
+              )}
               {!j.habilitada && (
                 <div className="flex items-center gap-1.5 mt-1">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-500" />

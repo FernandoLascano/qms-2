@@ -408,6 +408,9 @@
 body {
   background: var(--canvas);
   color: var(--ink);
+  /* Las animaciones que entran de costado (x: ±20) ensanchaban la página en
+     el celular hasta terminar y se podía arrastrar de lado. clip no rompe sticky. */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -54,7 +54,7 @@ export function nivelDe(c: { peorSituacion: number; chequesRechazados: number; c
 }
 
 async function pedir(ruta: string): Promise<{ results?: Record<string, unknown> } | null> {
-  const res = await fetch(`${API}/${ruta}`, { signal: AbortSignal.timeout(20_000), cache: 'no-store' })
+  const res = await fetch(`${API}/${ruta}`, { signal: AbortSignal.timeout(12_000), cache: 'no-store' })
   if (res.status === 404) return null
   if (!res.ok) throw new Error(`BCRA respondió ${res.status}`)
   return res.json()
@@ -64,9 +64,10 @@ type PeriodoApi = { periodo: string; entidades?: { entidad: string; situacion: n
 
 /** Las tres consultas del BCRA para un CUIT, resumidas. */
 export async function consultarCuit(cuit: string): Promise<ResultadoBcra> {
+  // El historial es sólo para el gráfico: si esa consulta falla, igual sirven la situación y los cheques.
   const [actual, historicas, cheques] = await Promise.all([
     pedir(cuit),
-    pedir(`Historicas/${cuit}`),
+    pedir(`Historicas/${cuit}`).catch(() => null),
     pedir(`ChequesRechazados/${cuit}`),
   ])
 
@@ -191,9 +192,12 @@ export async function consultarTramite(tramiteId: string): Promise<{ consultados
     if (!r) continue
     const antes = nivelDe(anterior)
     const ahora = nivelDe({ ...r, error: null })
-    const chequesNuevos = r.chequesRechazados - (anterior?.chequesRechazados ?? 0)
+    // Por identidad y no por cantidad: si sale uno viejo y entra uno nuevo, el total no cambia.
+    const claveCheque = (c: ChequeBcra) => `${c.entidad}|${c.causal}|${c.fecha}|${c.monto}`
+    const previos = new Set(((anterior?.cheques as ChequeBcra[] | undefined) ?? []).map(claveCheque))
+    const chequesNuevos = anterior ? r.cheques.filter((c) => !previos.has(claveCheque(c))).length : r.chequesRechazados
     if (ORDEN_NIVEL[ahora] > Math.max(ORDEN_NIVEL[antes], ORDEN_NIVEL.OK) || chequesNuevos > 0) {
-      empeoraron.push({ nombre: p.nombre, rol: p.rol, antes, ahora, peorSituacion: r.peorSituacion, chequesNuevos: Math.max(0, chequesNuevos) })
+      empeoraron.push({ nombre: p.nombre, rol: p.rol, antes, ahora, peorSituacion: r.peorSituacion, chequesNuevos })
     }
   }
 
@@ -225,10 +229,14 @@ export async function ultimasConsultas(tramiteIds: string[]): Promise<Map<string
     where: { tramiteId: { in: tramiteIds } },
     orderBy: { consultadoEl: 'desc' },
   })
+  // Sólo las personas de la última consulta de cada trámite: un socio que ya no
+  // está (o un CUIT corregido) no vuelve a aparecer. Una consulta tarda segundos.
+  const ultimaDe = new Map<string, number>()
+  for (const f of filas) if (!ultimaDe.has(f.tramiteId)) ultimaDe.set(f.tramiteId, f.consultadoEl.getTime())
   const vistos = new Set<string>()
   for (const f of filas) {
     const clave = `${f.tramiteId}:${f.cuit}`
-    if (vistos.has(clave)) continue
+    if (vistos.has(clave) || f.consultadoEl.getTime() < ultimaDe.get(f.tramiteId)! - 10 * 60_000) continue
     vistos.add(clave)
     const fila: FilaBcra = {
       cuit: f.cuit,
@@ -273,3 +281,29 @@ export function resumenBcra(filas: FilaBcra[] | undefined) {
   }
 }
 export type ResumenBcra = ReturnType<typeof resumenBcra>
+
+/**
+ * Consulta un trámite y, si la sociedad empeoró, avisa a los admins por mail.
+ * La situación personal de los socios no dispara avisos: se ve en el panel.
+ */
+export async function consultarYAvisar(tramiteId: string): Promise<{ consultados: number; aviso: boolean }> {
+  const { consultados, empeoraron } = await consultarTramite(tramiteId)
+  const sociedad = empeoraron.filter((e) => e.rol === 'SOCIEDAD')
+  if (sociedad.length === 0) return { consultados, aviso: false }
+  const tramite = await prisma.tramite.findUnique({ where: { id: tramiteId }, select: { denominacionAprobada: true, denominacionSocial1: true } })
+  const alerta = {
+    denominacion: tramite?.denominacionAprobada || tramite?.denominacionSocial1 || 'Sociedad',
+    tramiteId,
+    personas: sociedad.map((x) => ({
+      nombre: x.nombre,
+      rol: x.rol,
+      nivel: x.ahora === 'RIESGO' ? ('RIESGO' as const) : ('ATENCION' as const),
+      situacion: x.peorSituacion > 1 ? `Situación ${x.peorSituacion} · ${SITUACIONES[x.peorSituacion]}` : '',
+      chequesNuevos: x.chequesNuevos,
+    })),
+  }
+  const { enviarAlertaBcra } = await import('@/lib/emails/send')
+  const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { email: true, name: true } })
+  await Promise.all(admins.map((a) => enviarAlertaBcra(a.email, a.name || '', [alerta]).catch(() => {})))
+  return { consultados, aviso: true }
+}

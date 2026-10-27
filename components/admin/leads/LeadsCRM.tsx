@@ -60,7 +60,8 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
   const [nuevo, setNuevo] = useState(false)
   const [perdiendo, setPerdiendo] = useState<LeadCRM | null>(null)
   const [editando, setEditando] = useState<LeadCRM | null>(null)
-  const [pantallaAncha, setPantallaAncha] = useState(true)
+  // null hasta medir: si arrancaba en true, en el celular se abría solo el primer lead.
+  const [pantallaAncha, setPantallaAncha] = useState<boolean | null>(null)
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)')
@@ -150,7 +151,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
 
   // En pantalla ancha siempre hay un lead abierto: el primero de la lista.
   useEffect(() => {
-    if (pantallaAncha && !seleccionado && ordenVisible[0]) seleccionar(ordenVisible[0])
+    if (pantallaAncha === true && !seleccionado && ordenVisible[0]) seleccionar(ordenVisible[0])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pantallaAncha, seleccionado, ordenVisible[0]])
 
@@ -235,7 +236,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
         </ol>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start">
         {/* ── Lista ── */}
         <div className="space-y-3">
           <nav aria-label="Vistas" className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
@@ -329,7 +330,7 @@ export default function LeadsCRM({ leads, firma }: { leads: LeadCRM[]; firma: st
         </div>
 
         {/* ── Ficha ── */}
-        {pantallaAncha ? (
+        {pantallaAncha !== false ? (
           <Card className="lg:sticky lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:overflow-y-auto">
             {detalle ?? <EmptyState icon={Users} title="Elegí un lead" description="Su ficha aparece acá." />}
           </Card>

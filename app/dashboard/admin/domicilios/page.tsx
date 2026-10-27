@@ -266,7 +266,7 @@ export default function DomiciliosPage() {
           {pendientes.length === 0 ? (
             <p className="text-body-sm text-ink-2 py-2">{filtroContrato && pendientesTodos.length > 0 ? 'Ninguna con ese estado de contrato.' : 'No hay solicitudes pendientes.'}</p>
           ) : (
-            <table className="w-full text-body-sm text-ink">
+            <table className="w-full min-w-[44rem] text-body-sm text-ink">
               <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th className="pr-3">BCRA</th>{contratosDisponibles && <th className="pr-3">Contrato</th>}<th></th></tr></thead>
               <tbody>
                 {pendientes.map((i) => (
@@ -426,19 +426,21 @@ export default function DomiciliosPage() {
                       <button
                         type="button"
                         onClick={() => setInformeDe(i.tramite.id)}
-                        className="mt-3 flex w-full items-center justify-between gap-2 rounded-control border border-line p-3 text-left transition hover:border-primary-line hover:bg-primary-soft/40"
+                        className="mt-3 block w-full rounded-control border border-line p-3 text-left transition hover:border-primary-line hover:bg-primary-soft/40"
                       >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <Landmark className="h-4 w-4 shrink-0 text-primary" />
-                          <span className="min-w-0">
-                            <span className="block text-body-sm font-medium text-ink">Situación en el BCRA</span>
-                            <span className="block text-label text-ink-2">
-                              {i.bcra.consultadoEl ? `Consultado el ${fmtFecha(i.bcra.consultadoEl)}` : 'Todavía no se consultó'}
-                            </span>
-                            <NotaSociosBcra resumen={i.bcra} className="mt-0.5" />
+                        <span className="flex items-center justify-between gap-2">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Landmark className="h-4 w-4 shrink-0 text-primary" />
+                            <span className="truncate text-body-sm font-medium text-ink">BCRA</span>
                           </span>
+                          <EstadoSociedadBcra resumen={i.bcra} />
                         </span>
-                        <EstadoSociedadBcra resumen={i.bcra} />
+                        <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 pl-6">
+                          <span className="text-label text-ink-2">
+                            {i.bcra.consultadoEl ? `Consultado el ${fmtFecha(i.bcra.consultadoEl)}` : 'Todavía no se consultó'}
+                          </span>
+                          <NotaSociosBcra resumen={i.bcra} />
+                        </span>
                       </button>
 
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -536,7 +538,7 @@ function ResumenDomicilios({
     .slice(0, 5)
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <TarjetaDom titulo="Facturación anual" valor={fmt(facturacionAnual)} destacado />
         <TarjetaDom titulo="Servicios activos" valor={String(activos.length)} />

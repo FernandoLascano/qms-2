@@ -2,7 +2,7 @@ import { NextResponse, after } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { consultarTramite, resumenBcra, ultimasConsultas } from '@/lib/bcra'
+import { consultarYAvisar, resumenBcra, ultimasConsultas } from '@/lib/bcra'
 import { estadoContrato, serializarFirmado, type ResumenContrato } from '@/lib/contrato-domicilio-firmado'
 
 // GET - Lista de servicios de domicilio en sede + parámetros de config
@@ -161,7 +161,7 @@ export async function POST(request: Request) {
       }).catch(() => {})
     }
 
-    after(() => consultarTramite(tramiteId).catch(() => {}))
+    after(() => consultarYAvisar(tramiteId).catch(() => {}))
     return NextResponse.json(creado, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Error al cargar el servicio' }, { status: 500 })

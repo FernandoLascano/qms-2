@@ -225,7 +225,7 @@ export default function EmailsPage() {
                 type="checkbox"
                 checked={soloSinLeer}
                 onChange={(e) => { setSoloSinLeer(e.target.checked); setPage(1) }}
-                className="h-4 w-4 accent-[var(--color-primary)]"
+                className="h-5 w-5 sm:h-4 sm:w-4 accent-[var(--color-primary)]"
               />
               Sólo sin leer
             </label>
@@ -241,7 +241,7 @@ export default function EmailsPage() {
             aria-label="Seleccionar todos"
             checked={todosSeleccionados}
             onChange={() => setSelectedIds(todosSeleccionados ? new Set() : new Set(emails.map((e) => e.id)))}
-            className="h-4 w-4 accent-[var(--color-primary)]"
+            className="h-5 w-5 sm:h-4 sm:w-4 accent-[var(--color-primary)]"
           />
           {selectedIds.size > 0 ? (
             <>
@@ -298,7 +298,7 @@ export default function EmailsPage() {
                           return n
                         })
                       }}
-                      className="relative z-10 mt-1 h-4 w-4 accent-[var(--color-primary)]"
+                      className="relative z-10 mt-1 h-5 w-5 sm:h-4 sm:w-4 accent-[var(--color-primary)]"
                     />
                     <span className={cn('mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full', entrante ? 'bg-success-soft text-success' : 'bg-info-soft text-info')} aria-hidden>
                       {entrante ? <ArrowDownLeft className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}

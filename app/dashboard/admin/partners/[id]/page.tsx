@@ -353,7 +353,7 @@ export default function PartnerDetailPage() {
             </div>
 
             {partner.aplicaDescuento && (
-              <div className="grid gap-4 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
+              <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)]">
                 <div className="space-y-2">
                   <Label htmlFor="descuento-tipo">Tipo</Label>
                   <Select

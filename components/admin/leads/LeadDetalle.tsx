@@ -99,7 +99,7 @@ export function LeadDetalle({
           <DatoContacto icono={Phone} valor={lead.telefono} vacio="Sin teléfono" etiqueta="Teléfono copiado"
             extra={lead.telefono ? (
               <a href={`https://wa.me/${lead.telefono.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                className="rounded-chip p-1 text-ink-3 hover:bg-surface-3 hover:text-success" title="Abrir chat de WhatsApp"
+                className="relative rounded-chip p-1 text-ink-3 after:absolute after:-inset-2 after:content-[''] hover:bg-surface-3 hover:text-success" title="Abrir chat de WhatsApp"
                 aria-label="Abrir chat de WhatsApp">
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               </a>
@@ -339,7 +339,7 @@ function DatoContacto({
     <span className="inline-flex h-8 max-w-full items-center gap-1 rounded-control border border-line bg-surface-2 pl-2.5 pr-1 text-body-sm text-ink">
       <Icono className="h-3.5 w-3.5 shrink-0 text-ink-3" aria-hidden />
       <span className="truncate">{valor}</span>
-      <button onClick={() => copiar(valor, etiqueta)} className="rounded-chip p-1 text-ink-3 hover:bg-surface-3 hover:text-ink" title="Copiar" aria-label={`Copiar ${valor}`}>
+      <button onClick={() => copiar(valor, etiqueta)} className="relative rounded-chip p-1 text-ink-3 after:absolute after:-inset-2 after:content-[''] hover:bg-surface-3 hover:text-ink" title="Copiar" aria-label={`Copiar ${valor}`}>
         <Copy className="h-3.5 w-3.5" aria-hidden />
       </button>
       {extra}

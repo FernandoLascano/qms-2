@@ -185,7 +185,7 @@ async function DashboardPage() {
 
       {/* ─── Composición de dos ejes ─────────────────────────────────── */}
       {tramites.length > 0 && (
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
           {/* Columna principal */}
           <div className="space-y-section">
             {activos.length > 0 && (
