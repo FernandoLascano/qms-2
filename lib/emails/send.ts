@@ -331,7 +331,7 @@ export async function enviarAlertaDenominacion(
   })
 }
 
-/** Aviso a un admin: clientes con domicilio que empeoraron en la Central de Deudores. */
+/** Aviso a un admin: sociedades con domicilio que empeoraron en la Central de Deudores. */
 export async function enviarAlertaBcra(
   email: string,
   nombre: string,
@@ -339,7 +339,7 @@ export async function enviarAlertaBcra(
 ) {
   return sendEmail({
     to: email,
-    subject: alertas.length === 1 ? `BCRA: ${alertas[0].denominacion} empeoró su situación` : `BCRA: ${alertas.length} clientes con domicilio empeoraron`,
+    subject: alertas.length === 1 ? `BCRA: ${alertas[0].denominacion} empeoró su situación` : `BCRA: ${alertas.length} sociedades con domicilio empeoraron`,
     template: 'emailAlertaBcra',
     data: { nombre, alertas },
   })

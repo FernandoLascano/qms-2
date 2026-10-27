@@ -13,8 +13,8 @@ import { Select } from '@/components/ui/select'
 import { fechaParaInput, formatearFecha, hoyParaInput, sumarAniosInput } from '@/lib/fechas'
 import { EstadoContratoBadge, SubirContratoFirmadoDialog, VerContratoFirmado, detalleContrato } from '@/components/admin/ContratoFirmado'
 import type { EstadoContrato, ResumenContrato } from '@/lib/contrato-domicilio-firmado'
-import { InformeBcraDialog, SemaforoBcra } from '@/components/admin/InformeBcra'
-import type { Nivel } from '@/lib/bcra'
+import { EstadoSociedadBcra, InformeBcraDialog, NotaSociosBcra, SemaforoBcra } from '@/components/admin/InformeBcra'
+import type { Nivel, ResumenBcra as ResumenBcraItem } from '@/lib/bcra'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -29,7 +29,7 @@ type Item = {
   direccion: string | null
   /** null si todavía no existe la tabla de contratos firmados. */
   contrato: ResumenContrato | null
-  bcra: { nivel: Nivel; consultadoEl: string | null; personas: number }
+  bcra: ResumenBcraItem
   tramite: { id: string; denominacion: string; cliente: string; email: string | null }
 }
 type ConfigDom = { direcciones: string[]; precioAnual: number; diasAlerta: number }
@@ -283,9 +283,17 @@ export default function DomiciliosPage() {
                     <td className="pr-3 text-ink-2 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
                     <td className="pr-3">
                       {/* Antes de aceptar: ver cómo está en el BCRA. */}
-                      <button type="button" onClick={() => setInformeDe(i.tramite.id)} className="group inline-flex flex-col items-start gap-0.5 text-left">
-                        <SemaforoBcra nivel={i.bcra.nivel} />
-                        <span className="text-label text-primary group-hover:underline">{i.bcra.nivel === 'SIN_CONSULTAR' ? 'Consultar' : 'Ver informe'}</span>
+                      <button type="button" onClick={() => setInformeDe(i.tramite.id)} className="group inline-flex flex-col items-start gap-1 text-left">
+                        {i.bcra.consultadoEl ? (
+                          <>
+                            {/* Antes de constituir no hay CUIT de la sociedad: lo que se evalúa son los socios. */}
+                            {i.bcra.sociedad && <SemaforoBcra nivel={i.bcra.nivel} />}
+                            <NotaSociosBcra resumen={i.bcra} className={i.bcra.sociedad ? '' : 'text-body-sm text-ink'} />
+                          </>
+                        ) : (
+                          <SemaforoBcra nivel="SIN_CONSULTAR" />
+                        )}
+                        <span className="text-label text-primary group-hover:underline">{i.bcra.consultadoEl ? 'Ver informe' : 'Consultar'}</span>
                       </button>
                     </td>
                     {contratosDisponibles && (
@@ -425,11 +433,12 @@ export default function DomiciliosPage() {
                           <span className="min-w-0">
                             <span className="block text-body-sm font-medium text-ink">Situación en el BCRA</span>
                             <span className="block text-label text-ink-2">
-                              {i.bcra.consultadoEl ? `Consultado el ${fmtFecha(i.bcra.consultadoEl)} · ${i.bcra.personas} ${i.bcra.personas === 1 ? 'persona' : 'personas'}` : 'Todavía no se consultó'}
+                              {i.bcra.consultadoEl ? `Consultado el ${fmtFecha(i.bcra.consultadoEl)}` : 'Todavía no se consultó'}
                             </span>
+                            <NotaSociosBcra resumen={i.bcra} className="mt-0.5" />
                           </span>
                         </span>
-                        <SemaforoBcra nivel={i.bcra.nivel} />
+                        <EstadoSociedadBcra resumen={i.bcra} />
                       </button>
 
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -597,16 +606,19 @@ const ORDEN_NIVEL: Record<Nivel, number> = { RIESGO: 0, ATENCION: 1, ERROR: 2, S
 
 function ResumenBcra({ activos, onAbrir }: { activos: Item[]; onAbrir: (tramiteId: string) => void }) {
   if (activos.length === 0) return null
-  const cuenta = (n: Nivel) => activos.filter((a) => a.bcra.nivel === n).length
+  // El conteo es por la situación de la sociedad; sin CUIT o sin consultar va aparte.
+  const cuenta = (n: Nivel) => activos.filter((a) => a.bcra.sociedad && a.bcra.nivel === n).length
+  const sinDatos = activos.filter((a) => !a.bcra.sociedad || a.bcra.nivel === 'ERROR' || a.bcra.nivel === 'SIN_CONSULTAR').length
   const segmentos: { nivel: Nivel; n: number; color: string; etiqueta: string }[] = [
     { nivel: 'OK', n: cuenta('OK'), color: 'bg-success-solid', etiqueta: 'Sin problemas' },
     { nivel: 'ATENCION', n: cuenta('ATENCION'), color: 'bg-warning-solid', etiqueta: 'Atención' },
     { nivel: 'RIESGO', n: cuenta('RIESGO'), color: 'bg-danger-solid', etiqueta: 'Riesgo' },
-    { nivel: 'SIN_CONSULTAR', n: cuenta('SIN_CONSULTAR') + cuenta('ERROR'), color: 'bg-n-300', etiqueta: 'Sin consultar' },
+    { nivel: 'SIN_CONSULTAR', n: sinDatos, color: 'bg-n-300', etiqueta: 'Sin datos de la sociedad' },
   ]
   const aMirar = activos
-    .filter((a) => a.bcra.nivel === 'RIESGO' || a.bcra.nivel === 'ATENCION')
+    .filter((a) => a.bcra.sociedad && (a.bcra.nivel === 'RIESGO' || a.bcra.nivel === 'ATENCION'))
     .sort((a, b) => ORDEN_NIVEL[a.bcra.nivel] - ORDEN_NIVEL[b.bcra.nivel])
+  const conSociosConDeudas = activos.filter((a) => a.bcra.socios.conDeudas > 0).length
 
   return (
     <Card>
@@ -616,7 +628,7 @@ function ResumenBcra({ activos, onAbrir }: { activos: Item[]; onAbrir: (tramiteI
             <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary"><Landmark className="h-5 w-5" /></span>
             <div>
               <h3 className="text-heading text-ink">Seguimiento en el BCRA</h3>
-              <p className="text-body-sm text-ink-2">Central de Deudores de la sociedad, socios y administradores. Se revisa todos los meses y te llega un mail si alguien empeora.</p>
+              <p className="text-body-sm text-ink-2">Situación de cada sociedad en la Central de Deudores. Se revisa todos los meses y te llega un mail si alguna empeora.</p>
             </div>
           </div>
         </div>
@@ -636,6 +648,13 @@ function ResumenBcra({ activos, onAbrir }: { activos: Item[]; onAbrir: (tramiteI
             </div>
           ))}
         </div>
+
+        {conSociosConDeudas > 0 && (
+          <p className="flex items-center gap-1.5 text-label text-ink-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-warning-solid" />
+            Aparte, {conSociosConDeudas} {conSociosConDeudas === 1 ? 'cliente tiene' : 'clientes tienen'} algún socio con deudas personales (informativo, se ve en cada informe).
+          </p>
+        )}
 
         {aMirar.length > 0 && (
           <ul className="divide-y divide-line rounded-control border border-line">

@@ -121,8 +121,7 @@ export const EJEMPLOS_EMAIL: EjemploEmail[] = [
           denominacion: 'Mi Empresa S.A.S.',
           tramiteId: 'cltx123',
           personas: [
-            { nombre: 'Juan Pérez', rol: 'SOCIO_ADMINISTRADOR', nivel: 'RIESGO', situacion: 'Situación 3 · Riesgo medio', chequesNuevos: 0 },
-            { nombre: 'Mi Empresa S.A.S.', rol: 'SOCIEDAD', nivel: 'ATENCION', situacion: '', chequesNuevos: 1 },
+            { nombre: 'Mi Empresa S.A.S.', rol: 'SOCIEDAD', nivel: 'RIESGO', situacion: 'Situación 3 · Riesgo medio', chequesNuevos: 1 },
           ],
         },
       ],

@@ -1289,7 +1289,7 @@ export const emailAlertaBcra = ({ nombre, alertas }: EmailTemplateProps) => {
 
   const content = `
     ${Hero(
-      lista.length === 1 ? 'Un cliente con domicilio empeoró en el BCRA' : `${lista.length} clientes con domicilio empeoraron en el BCRA`,
+      lista.length === 1 ? 'Una sociedad con domicilio empeoró en el BCRA' : `${lista.length} sociedades con domicilio empeoraron en el BCRA`,
       'Resultado del seguimiento mensual de la Central de Deudores',
       hayRiesgo ? 'danger' : 'warning',
       '',
