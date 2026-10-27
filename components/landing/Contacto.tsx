@@ -130,7 +130,7 @@ export function Contacto() {
   ]
 
   return (
-    <section id="contacto" className="py-seccion md:py-seccion-lg bg-surface-2">
+    <section id="contacto" className="overflow-x-clip py-seccion md:py-seccion-lg bg-surface-2">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {siteKey && formularioActivo && (
           <Script

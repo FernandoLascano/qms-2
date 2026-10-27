@@ -405,11 +405,16 @@
 /* ============================================================================
    BASE
    ============================================================================ */
+/* Las animaciones que entran de costado (x: ±20) ensanchaban la página en el
+   celular: el navegador achicaba todo para que entre y quedaba una franja
+   blanca a la derecha. Va en html y body; clip no rompe sticky. */
+html {
+  overflow-x: clip;
+}
+
 body {
   background: var(--canvas);
   color: var(--ink);
-  /* Las animaciones que entran de costado (x: ±20) ensanchaban la página en
-     el celular hasta terminar y se podía arrastrar de lado. clip no rompe sticky. */
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
