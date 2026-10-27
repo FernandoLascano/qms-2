@@ -9,12 +9,14 @@ import { prisma } from '@/lib/prisma'
 import { getPublicConfig } from '@/lib/config'
 import { esBot } from '@/lib/partners'
 import PartnerLandingClient from '../[slug]/PartnerLandingClient'
+import FormularioBase93 from './FormularioBase93'
 
 /**
  * Landing propia de Base93 (red internacional de constitución de sociedades).
  * Le gana a /partners/[slug] por ser ruta estática. En inglés por defecto y en
  * español con ?lang=es. Los planes en pesos salen de la configuración; los
  * servicios para extranjeros están en dólares y los fijó Fernando (27/10/2026).
+ * Sin plazos de constitución: Fernando no quiere prometer tiempos.
  */
 
 const SLUG = 'base93'
@@ -22,7 +24,7 @@ const DESCUENTO = 10
 const WHATSAPP = 'https://wa.me/5493512136212'
 
 /** Honorarios en dólares sin descuento. */
-const USD = { paquete: 1800, cdi: 400, busqueda: 250 }
+const USD = { paquete: 2000, cdi: 450, busqueda: 300 }
 
 type Idioma = 'en' | 'es'
 
@@ -35,13 +37,13 @@ const TEXTOS = {
     ctaEmpezar: 'Start online',
     datos: [
       { valor: `${DESCUENTO}%`, texto: 'off every QMS fee' },
-      { valor: '~5 days', texto: 'for a local S.A.S.' },
+      { valor: '100% online', texto: 'from the form to the tax ID' },
       { valor: 'Córdoba + Buenos Aires', texto: 'jurisdictions' },
     ],
     localesTitulo: 'For Argentine residents',
-    localesBajada: 'S.A.S. incorporation plans. Fees plus VAT; government fees are extra.',
+    localesBajada: 'S.A.S. incorporation plans. Fees plus VAT. Government fees (approx. USD 200) and the 25% share capital deposit, which is recoverable, are extra.',
     extranjerosTitulo: 'For foreign investors',
-    extranjerosBajada: 'Fees in US dollars. No VAT when paid from abroad; government fees are extra. Each case is quoted before work starts.',
+    extranjerosBajada: 'Fees in US dollars, plus VAT. Government fees (approx. USD 200) and the 25% share capital deposit, which is recoverable, are extra. Each case is quoted before work starts.',
     antes: 'Standard',
     elegir: 'Start with',
     planes: {
@@ -56,7 +58,7 @@ const TEXTOS = {
       },
       cdi: {
         nombre: 'CDI tax ID, per shareholder',
-        detalle: 'Every foreign shareholder needs a CDI from ARCA. In person in Argentina, or remotely with an apostilled and translated power of attorney. Up to 2 months.',
+        detalle: 'Every foreign shareholder needs a CDI from ARCA. In person in Argentina, or remotely with an apostilled and translated power of attorney. It can take up to 2 months.',
       },
       busqueda: {
         nombre: 'Resident-director search',
@@ -65,10 +67,10 @@ const TEXTOS = {
     },
     comoTitulo: 'How it works for foreign investors',
     pasos: [
-      { titulo: 'Quote', texto: 'Send us the shareholders, the business and the jurisdiction. We reply with a full quote in 2 business days.' },
+      { titulo: 'Quote', texto: 'Send us the shareholders, the business and the jurisdiction. We reply with a full quote.' },
       { titulo: 'CDI and power of attorney', texto: 'Each foreign shareholder applies for a CDI, in Argentina or remotely through an apostilled power of attorney.' },
-      { titulo: 'Incorporation', texto: 'We incorporate the company in about 5 business days, so you don’t have to wait for the CDI.' },
-      { titulo: 'Share transfer', texto: 'Once the CDI is issued, we transfer the shares to the foreign shareholders in about one week.' },
+      { titulo: 'Incorporation', texto: 'We incorporate the company while the CDI is in progress, so you don’t have to wait for it.' },
+      { titulo: 'Share transfer', texto: 'Once the CDI is issued, we transfer the shares to the foreign shareholders.' },
     ],
     requisitosTitulo: 'What you need',
     requisitos: [
@@ -78,7 +80,7 @@ const TEXTOS = {
       'Three name options, business purpose and share capital',
       'A director resident in Argentina, or our search service',
     ],
-    nota: 'Prices as of October 2026. Government fees in Córdoba are about ARS 166,850 and are passed through at cost. The minimum share capital is two national minimum wages.',
+    nota: 'Prices as of October 2026, plus VAT. Government fees are approx. USD 200 and are passed through at cost. The 25% share capital deposit is recoverable. The minimum share capital is two national minimum wages.',
     contactoTitulo: 'Talk to us',
     contactoTexto: 'Mention Base93 and we apply the discount to your quote.',
     email: 'Email us',
@@ -93,13 +95,13 @@ const TEXTOS = {
     ctaEmpezar: 'Empezar online',
     datos: [
       { valor: `${DESCUENTO}%`, texto: 'en todos los honorarios' },
-      { valor: '~5 días', texto: 'para una S.A.S. local' },
+      { valor: '100% online', texto: 'del formulario al CUIT' },
       { valor: 'Córdoba + CABA', texto: 'jurisdicciones' },
     ],
     localesTitulo: 'Para residentes en Argentina',
-    localesBajada: 'Planes de constitución de S.A.S. Honorarios más IVA; las tasas del Estado se pagan aparte.',
+    localesBajada: 'Planes de constitución de S.A.S. Honorarios más IVA. Aparte: las tasas (aprox. USD 200) y el depósito del 25% del capital social, que es recuperable.',
     extranjerosTitulo: 'Para inversores del exterior',
-    extranjerosBajada: 'Honorarios en dólares. Sin IVA si se pagan desde el exterior; las tasas del Estado se pagan aparte. Cada caso se presupuesta antes de empezar.',
+    extranjerosBajada: 'Honorarios en dólares, más IVA. Aparte: las tasas (aprox. USD 200) y el depósito del 25% del capital social, que es recuperable. Cada caso se presupuesta antes de empezar.',
     antes: 'Precio de lista',
     elegir: 'Empezar con',
     planes: {
@@ -114,7 +116,7 @@ const TEXTOS = {
       },
       cdi: {
         nombre: 'CDI ante ARCA, por socio',
-        detalle: 'Cada socio extranjero necesita un CDI. Se tramita en Argentina o a distancia con un poder apostillado y traducido. Hasta 2 meses.',
+        detalle: 'Cada socio extranjero necesita un CDI. Se tramita en Argentina o a distancia con un poder apostillado y traducido. Puede demorar hasta 2 meses.',
       },
       busqueda: {
         nombre: 'Búsqueda de administrador residente',
@@ -123,10 +125,10 @@ const TEXTOS = {
     },
     comoTitulo: 'Cómo funciona para inversores del exterior',
     pasos: [
-      { titulo: 'Presupuesto', texto: 'Contanos quiénes son los socios, la actividad y la jurisdicción. Te mandamos el presupuesto completo en 2 días hábiles.' },
+      { titulo: 'Presupuesto', texto: 'Contanos quiénes son los socios, la actividad y la jurisdicción. Te mandamos el presupuesto completo.' },
       { titulo: 'CDI y poder', texto: 'Cada socio del exterior tramita su CDI, en Argentina o a distancia con un poder apostillado.' },
-      { titulo: 'Constitución', texto: 'Constituimos la sociedad en unos 5 días hábiles, sin esperar el CDI.' },
-      { titulo: 'Cesión de acciones', texto: 'Con el CDI listo, cedemos las acciones a los socios del exterior en una semana.' },
+      { titulo: 'Constitución', texto: 'Constituimos la sociedad mientras sale el CDI, sin esperarlo.' },
+      { titulo: 'Cesión de acciones', texto: 'Con el CDI listo, cedemos las acciones a los socios del exterior.' },
     ],
     requisitosTitulo: 'Qué necesitás',
     requisitos: [
@@ -136,7 +138,7 @@ const TEXTOS = {
       'Tres opciones de nombre, objeto y capital social',
       'Un administrador residente en Argentina, o nuestro servicio de búsqueda',
     ],
-    nota: 'Precios a octubre de 2026. Las tasas del Estado en Córdoba rondan los $166.850 y se cobran al costo. El capital mínimo es de dos salarios mínimos.',
+    nota: 'Precios a octubre de 2026, más IVA. Las tasas rondan los USD 200 y se cobran al costo. El depósito del 25% del capital social es recuperable. El capital mínimo es de dos salarios mínimos.',
     contactoTitulo: 'Hablemos',
     contactoTexto: 'Decinos que venís de Base93 y aplicamos el descuento en tu presupuesto.',
     email: 'Escribinos',
@@ -204,10 +206,12 @@ export default async function Base93Page({ searchParams }: Props) {
 
       <header className="border-b border-line bg-surface">
         <div className="container mx-auto flex items-center justify-between gap-4 px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" width={150} height={56} className="h-11 w-auto md:h-12" />
-            <span className="hidden text-sm font-semibold text-gray-400 sm:inline">× Base93</span>
+            <img src="/assets/img/qms-logo-reg.png" alt="QuieroMiSAS" width={150} height={56} className="h-9 w-auto sm:h-11 md:h-12" />
+            <span className="text-sm font-semibold text-gray-400" aria-hidden>×</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/img/partners/base93-logo.png" alt="Base93" width={800} height={141} className="h-5 w-auto md:h-6" />
           </Link>
           <nav aria-label={idioma === 'es' ? 'Idioma' : 'Language'} className="flex rounded-full border border-gray-200 p-1 text-sm font-semibold">
             {(['en', 'es'] as const).map((l) => (
@@ -234,7 +238,7 @@ export default async function Base93Page({ searchParams }: Props) {
           <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight md:text-6xl">{t.titulo}</h1>
           <p className="mt-5 max-w-2xl text-base text-white/80 md:text-lg">{t.bajada}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href={mailto} className="inline-flex items-center rounded-xl bg-white px-6 py-3 font-semibold text-brand-900 transition hover:bg-brand-50">
+            <a href="#caso" className="inline-flex items-center rounded-xl bg-white px-6 py-3 font-semibold text-brand-900 transition hover:bg-brand-50">
               {t.ctaCotizar}
             </a>
             <Link href={registro} className="inline-flex items-center rounded-xl border border-white/20 px-6 py-3 font-semibold text-white transition hover:bg-white/10">
@@ -315,7 +319,7 @@ export default async function Base93Page({ searchParams }: Props) {
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <section className="mx-auto max-w-6xl">
           <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm md:p-10">
             <h2 className="text-2xl font-black text-gray-900">{t.requisitosTitulo}</h2>
             <ul className="mt-5 space-y-3">
@@ -327,6 +331,12 @@ export default async function Base93Page({ searchParams }: Props) {
               ))}
             </ul>
             <p className="mt-6 text-xs leading-5 text-gray-500">{t.nota}</p>
+          </div>
+        </section>
+
+        <section id="caso" className="mx-auto grid max-w-6xl scroll-mt-6 grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[1.4fr_0.6fr]">
+          <div className="rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm md:p-10">
+            <FormularioBase93 idioma={idioma} />
           </div>
           <div className="flex flex-col justify-between rounded-[2rem] bg-gray-900 p-6 text-white md:p-10">
             <div>
