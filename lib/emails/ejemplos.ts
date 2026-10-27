@@ -111,6 +111,24 @@ export const EJEMPLOS_EMAIL: EjemploEmail[] = [
     },
   },
   {
+    template: 'emailAlertaBcra',
+    etiqueta: 'Alerta BCRA (domicilio)',
+    asunto: 'BCRA: Mi Empresa S.A.S. empeoró su situación',
+    datos: {
+      nombre: 'Fernando',
+      alertas: [
+        {
+          denominacion: 'Mi Empresa S.A.S.',
+          tramiteId: 'cltx123',
+          personas: [
+            { nombre: 'Juan Pérez', rol: 'SOCIO_ADMINISTRADOR', nivel: 'RIESGO', situacion: 'Situación 3 · Riesgo medio', chequesNuevos: 0 },
+            { nombre: 'Mi Empresa S.A.S.', rol: 'SOCIEDAD', nivel: 'ATENCION', situacion: '', chequesNuevos: 1 },
+          ],
+        },
+      ],
+    },
+  },
+  {
     template: 'emailAlertaDenominacion',
     etiqueta: 'Denominación por vencer',
     asunto: '⚠️ Alerta: Denominación próxima a vencer - Mi Empresa S.A.S.',
