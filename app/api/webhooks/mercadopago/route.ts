@@ -183,6 +183,7 @@ export async function POST(request: Request) {
 
         await registerPartnerConversion({
           userId: pago.userId,
+          concepto,
           montoCobrado: pago.monto,
           metodoPago: 'MERCADO_PAGO',
           sourceType: 'PAGO',

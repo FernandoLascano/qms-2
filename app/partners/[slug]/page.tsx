@@ -4,6 +4,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { metadataDePagina } from '@/lib/seo/site'
 import { headers } from 'next/headers'
+import { after } from 'next/server'
 import type { LucideIcon } from 'lucide-react'
 import {
   BadgeCheck,
@@ -18,6 +19,7 @@ import Navbar from '@/components/Navbar'
 import { prisma } from '@/lib/prisma'
 import { getPublicConfig } from '@/lib/config'
 import { urlLogoPartner } from '@/lib/partner-logo'
+import { esBot } from '@/lib/partners'
 import PartnerLandingClient from './PartnerLandingClient'
 
 interface Props {
@@ -102,7 +104,6 @@ const PLAN_FEATURES = {
   EMPRENDEDOR: [
     'Todo lo del plan Básico',
     'Lista para facturar',
-    'Acompañamiento para primera etapa operativa',
   ],
   PREMIUM: [
     'Todo lo del plan Emprendedor',
@@ -134,15 +135,20 @@ export default async function PartnerPage({ params }: Props) {
   const userAgent = headerStore.get('user-agent')
   const referrer = headerStore.get('referer')
 
-  prisma.referralClick.create({
-    data: {
-      partnerId: partner.id,
-      ip,
-      userAgent,
-      referrer,
-      landingPath: `/partners/${slug}`,
-    },
-  }).catch(() => {})
+  // Bots y vistas previas de links (WhatsApp, LinkedIn) no son visitas: inflaban la conversión.
+  if (!esBot(userAgent)) {
+    after(() =>
+      prisma.referralClick.create({
+        data: {
+          partnerId: partner.id,
+          ip,
+          userAgent,
+          referrer,
+          landingPath: `/partners/${slug}`,
+        },
+      }).catch(() => {}),
+    )
+  }
 
   const beneficios = Array.isArray(partner.beneficios) ? (partner.beneficios as string[]) : []
   const economicSummary = formatPublicEconomicSummary(partner)
@@ -154,23 +160,23 @@ export default async function PartnerPage({ params }: Props) {
   const plans = [
     {
       key: 'BASICO' as const,
-      name: 'Basico',
-      highlight: 'Para empezar rapido',
-      description: 'Ideal si queres constituir tu SAS con un servicio claro, agil y costo eficiente.',
+      name: 'Básico',
+      highlight: 'Para empezar rápido',
+      description: 'Ideal si querés constituir tu SAS con un servicio claro, ágil y costo eficiente.',
       accent: 'border-gray-200',
     },
     {
       key: 'EMPRENDEDOR' as const,
       name: 'Emprendedor',
-      highlight: 'El mas elegido',
-      description: 'Pensado para quienes quieren un extra de acompanamiento en la puesta en marcha.',
+      highlight: 'El más elegido',
+      description: 'Pensado para quienes quieren un extra de acompañamiento en la puesta en marcha.',
       accent: 'border-brand-300 ring-2 ring-brand-100',
     },
     {
       key: 'PREMIUM' as const,
       name: 'Premium',
       highlight: 'Cobertura ampliada',
-      description: 'La opcion mas completa para quienes priorizan soporte y mayor alcance del servicio.',
+      description: 'La opción más completa para quienes priorizan soporte y mayor alcance del servicio.',
       accent: 'border-gray-200',
     },
   ].map((plan) => {
@@ -198,10 +204,10 @@ export default async function PartnerPage({ params }: Props) {
                 Convenio exclusivo
               </span>
               <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight md:text-6xl">
-                Constitui tu SAS con beneficios especiales de {partner.nombre}
+                Constituí tu SAS con beneficios especiales de {partner.nombre}
               </h1>
               <p className="mt-5 max-w-xl text-base text-white/80 md:text-lg">
-                Accede a condiciones preferenciales, acompanamiento cercano y un proceso 100% digital para crear tu sociedad de forma simple y profesional.
+                Accedé a condiciones preferenciales, acompañamiento cercano y un proceso 100% digital para crear tu sociedad de forma simple y profesional.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -220,15 +226,15 @@ export default async function PartnerPage({ params }: Props) {
               <div className="mt-10 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-black">{bestSavings > 0 ? `$${bestSavings.toLocaleString('es-AR')}` : '100%'}</div>
-                  <div className="mt-1 text-sm text-white/70">{bestSavings > 0 ? 'Ahorro maximo estimado' : 'Proceso digital y guiado'}</div>
+                  <div className="mt-1 text-sm text-white/70">{bestSavings > 0 ? 'Ahorro máximo estimado' : 'Proceso digital y guiado'}</div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-black">3 planes</div>
-                  <div className="mt-1 text-sm text-white/70">Con beneficio aplicado segun convenio</div>
+                  <div className="mt-1 text-sm text-white/70">Con beneficio aplicado según convenio</div>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-2xl font-black">+ soporte</div>
-                  <div className="mt-1 text-sm text-white/70">Te acompanamos de punta a punta</div>
+                  <div className="mt-1 text-sm text-white/70">Te acompañamos de punta a punta</div>
                 </div>
               </div>
             </div>
@@ -248,7 +254,7 @@ export default async function PartnerPage({ params }: Props) {
               )}
               <div className="mt-6 rounded-3xl border border-white bg-white p-6 shadow-sm">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-700">
-                  Beneficio visible para clientes
+                  Tu beneficio
                 </p>
                 <h2 className="mt-2 text-2xl font-black text-gray-900">
                   Tu propuesta con {partner.nombre}
@@ -270,9 +276,9 @@ export default async function PartnerPage({ params }: Props) {
                   </div>
                 )}
                 <div className="mt-6 rounded-2xl border border-gray-100 bg-gray-50 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Que incluye esta experiencia</p>
+                  <p className="text-sm font-semibold text-gray-900">Qué incluye esta experiencia</p>
                   <ul className="mt-3 space-y-2 text-sm text-gray-600">
-                    <li>Proceso claro y acompanado</li>
+                    <li>Proceso claro y acompañado</li>
                     <li>Beneficios aplicados sobre precios actuales</li>
                     <li>Inicio online en pocos minutos</li>
                   </ul>
@@ -290,13 +296,13 @@ export default async function PartnerPage({ params }: Props) {
           </div>
           <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="text-sm font-black text-brand-700">02</div>
-            <h3 className="mt-3 text-xl font-black text-gray-900">Elegi el plan que mejor te calce</h3>
+            <h3 className="mt-3 text-xl font-black text-gray-900">Elegí el plan que mejor te calce</h3>
             <p className="mt-2 text-sm leading-6 text-gray-600">Vas a ver el valor estimado de cada plan con el beneficio ya reflejado de manera transparente.</p>
           </div>
           <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="text-sm font-black text-brand-700">03</div>
-            <h3 className="mt-3 text-xl font-black text-gray-900">Avanzá con acompanamiento</h3>
-            <p className="mt-2 text-sm leading-6 text-gray-600">Nuestro equipo te guia paso a paso para constituir tu SAS con el respaldo del convenio.</p>
+            <h3 className="mt-3 text-xl font-black text-gray-900">Avanzá con acompañamiento</h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600">Nuestro equipo te guía paso a paso para constituir tu SAS con el respaldo del convenio.</p>
           </div>
         </section>
 
@@ -311,11 +317,11 @@ export default async function PartnerPage({ params }: Props) {
             </div>
             {partner.aplicaDescuento && partner.descuentoValor ? (
               <div className="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-900">
-                Beneficio aplicado automaticamente en esta simulacion
+                Beneficio aplicado automáticamente en esta simulación
               </div>
             ) : (
               <div className="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700">
-                Precios estimados segun valores vigentes
+                Precios estimados según valores vigentes
               </div>
             )}
           </div>
@@ -331,7 +337,7 @@ export default async function PartnerPage({ params }: Props) {
                   </div>
                   {plan.savings > 0 && (
                     <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
-                      Ahorras ${plan.savings.toLocaleString('es-AR')}
+                      Ahorrás ${plan.savings.toLocaleString('es-AR')}
                     </span>
                   )}
                 </div>
@@ -343,7 +349,7 @@ export default async function PartnerPage({ params }: Props) {
                   <div className="mt-1 text-4xl font-black text-gray-900">
                     ${plan.final.toLocaleString('es-AR')}
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">No incluye tasas ni gastos de inscripcion segun jurisdiccion.</p>
+                  <p className="mt-2 text-xs text-gray-500">No incluye tasas ni gastos de inscripción según jurisdicción.</p>
                 </div>
 
                 <div className="mt-5 space-y-3">

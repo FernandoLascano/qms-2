@@ -3,6 +3,7 @@ import { sendEmail } from '@/lib/email'
 import { rateLimit } from '@/lib/rate-limit'
 import { verifyTurnstileToken } from '@/lib/turnstile'
 import { capturarLead } from '@/lib/leads/capturar'
+import { prisma } from '@/lib/prisma'
 
 // Escapa HTML para evitar inyección en el email que recibe el equipo.
 function escapeHtml(value: string): string {
@@ -81,12 +82,16 @@ export async function POST(request: NextRequest) {
     //
     // Va primero para que un fallo del proveedor de email no se lleve puesto el
     // lead; capturarLead nunca lanza, así que tampoco puede romper el envío.
+    // El formulario de la landing de un partner manda su slug: el lead queda a su nombre.
+    const partner = typeof body.partner === 'string'
+      ? await prisma.partner.findUnique({ where: { slug: body.partner, activo: true }, select: { id: true } })
+      : null
     await capturarLead({
       email,
       nombre,
-      origen: 'FORMULARIO_CONTACTO',
+      origen: partner ? 'PARTNER' : 'FORMULARIO_CONTACTO',
       mensaje: `${asunto}\n\n${mensaje}`,
-      atribucion: body.atribucion || null,
+      atribucion: partner ? { ...(body.atribucion || {}), partnerId: partner.id } : body.atribucion || null,
     })
 
     // Valores escapados para insertar en el HTML del email

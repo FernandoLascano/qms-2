@@ -52,12 +52,16 @@ export function validatePartnerEconomicConfig(input: PartnerEconomicInput): stri
 
 export async function registerPartnerConversion(params: {
   userId: string
+  /** Sólo los honorarios convierten: una tasa o el capital no son ingreso de QMS. */
+  concepto: string | null | undefined
   montoCobrado: number
   metodoPago?: string | null
   sourceType: 'PAGO' | 'ENLACE_PAGO'
   sourceId?: string | null
   pagoId?: string | null
 }) {
+  if (!params.concepto?.startsWith('HONORARIOS')) return { created: false, reason: 'NOT_FEES' as const }
+
   const user = await prisma.user.findUnique({
     where: { id: params.userId },
     select: { id: true, partnerId: true },
@@ -112,4 +116,11 @@ export async function registerPartnerConversion(params: {
   } catch {
     return { created: false, reason: 'CREATE_FAILED' as const }
   }
+}
+
+const BOT = /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|telegram|slack|linkedin|discord|preview/i
+
+/** Crawlers y vistas previas de links: no cuentan como visitas a la landing de un partner. */
+export function esBot(userAgent: string | null) {
+  return BOT.test(userAgent ?? '')
 }
