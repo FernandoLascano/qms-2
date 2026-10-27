@@ -581,7 +581,7 @@ export default function HomePage({
             <div>
               <h4 className="font-bold text-white mb-4 text-sm uppercase tracking-wider">Contacto</h4>
               <ul className="space-y-1 text-sm md:space-y-3">
-                <li className="text-n-400">Córdoba, Argentina</li>
+                <li className="flex min-h-10 items-center text-n-400 md:min-h-0">Córdoba, Argentina</li>
                 <li>
                   <a href="tel:+5493512136212" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">
                     +54 9 351 213 6212
@@ -605,8 +605,9 @@ export default function HomePage({
             </div>
           </div>
 
-          {/* Bottom Footer - Centrado para no superponerse con el botón del chat */}
-          <div className="border-t border-n-800 pt-8 pr-20 md:pr-24">
+          {/* Bottom Footer - Centrado, con el mismo margen a los dos lados para que
+              el botón del chat no lo tape y el texto no quede corrido a la izquierda. */}
+          <div className="border-t border-n-800 pt-8 px-20 md:px-24">
             <div className="flex flex-col justify-center items-center gap-2 text-center">
               <p className="text-sm text-ink-3">
                 © 2026 QuieroMiSAS
