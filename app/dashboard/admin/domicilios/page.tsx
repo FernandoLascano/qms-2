@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
-import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock, Upload } from 'lucide-react'
+import { Building, CheckCircle2, RefreshCw, XCircle, DollarSign, ExternalLink, MapPin, Pencil, CalendarClock, Upload, Landmark } from 'lucide-react'
 import { Select } from '@/components/ui/select'
 import { fechaParaInput, formatearFecha, hoyParaInput, sumarAniosInput } from '@/lib/fechas'
 import { EstadoContratoBadge, SubirContratoFirmadoDialog, VerContratoFirmado, detalleContrato } from '@/components/admin/ContratoFirmado'
 import type { EstadoContrato, ResumenContrato } from '@/lib/contrato-domicilio-firmado'
+import { InformeBcraDialog, SemaforoBcra } from '@/components/admin/InformeBcra'
+import type { Nivel } from '@/lib/bcra'
 
 type Estado = 'PENDIENTE_CONTACTO' | 'ACTIVO' | 'CANCELADO'
 type Item = {
@@ -27,6 +29,7 @@ type Item = {
   direccion: string | null
   /** null si todavía no existe la tabla de contratos firmados. */
   contrato: ResumenContrato | null
+  bcra: { nivel: Nivel; consultadoEl: string | null; personas: number }
   tramite: { id: string; denominacion: string; cliente: string; email: string | null }
 }
 type ConfigDom = { direcciones: string[]; precioAnual: number; diasAlerta: number }
@@ -60,6 +63,7 @@ export default function DomiciliosPage() {
   const [contratosDisponibles, setContratosDisponibles] = useState(false)
   const [filtroContrato, setFiltroContrato] = useState<FiltroContrato>('')
   const [subirPara, setSubirPara] = useState<Item | null>(null)
+  const [informeDe, setInformeDe] = useState<string | null>(null)
   const [nuevo, setNuevo] = useState({ tramiteId: '', direccion: '', monto: '', fechaInicio: hoyISO(), fechaVencimiento: masUnAnioISO(hoyISO()) })
 
   async function cargar() {
@@ -84,6 +88,9 @@ export default function DomiciliosPage() {
     const c = new URLSearchParams(window.location.search).get('contrato')
     if (c === 'sin-firmar') setFiltroContrato('SIN_FIRMAR')
     else if (c === 'firmado') setFiltroContrato('FIRMADO')
+    // El mail de alerta del BCRA linkea con ?bcra=<trámite> para abrir el informe.
+    const b = new URLSearchParams(window.location.search).get('bcra')
+    if (b) setInformeDe(b)
   }, [])
 
   async function agregarExistente() {
@@ -173,6 +180,8 @@ export default function DomiciliosPage() {
 
       <ResumenDomicilios activos={activosTodos} config={config} />
 
+      <ResumenBcra activos={activosTodos} onAbrir={setInformeDe} />
+
       {contratosDisponibles && activosTodos.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line-card bg-surface p-card shadow-card">
           <p className="text-body-sm text-ink">
@@ -258,7 +267,7 @@ export default function DomiciliosPage() {
             <p className="text-body-sm text-ink-2 py-2">{filtroContrato && pendientesTodos.length > 0 ? 'Ninguna con ese estado de contrato.' : 'No hay solicitudes pendientes.'}</p>
           ) : (
             <table className="w-full text-body-sm text-ink">
-              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th>{contratosDisponibles && <th className="pr-3">Contrato</th>}<th></th></tr></thead>
+              <thead><tr className="text-left text-ink-2 border-b border-line"><th className="py-2 pr-3">Cliente</th><th className="pr-3">Sociedad</th><th className="pr-3">Solicitó</th><th className="pr-3">BCRA</th>{contratosDisponibles && <th className="pr-3">Contrato</th>}<th></th></tr></thead>
               <tbody>
                 {pendientes.map((i) => (
                   <tr key={i.id} className="border-b border-line last:border-0 align-top">
@@ -272,6 +281,13 @@ export default function DomiciliosPage() {
                       </Link>
                     </td>
                     <td className="pr-3 text-ink-2 whitespace-nowrap">{fmtFecha(i.createdAt)}</td>
+                    <td className="pr-3">
+                      {/* Antes de aceptar: ver cómo está en el BCRA. */}
+                      <button type="button" onClick={() => setInformeDe(i.tramite.id)} className="group inline-flex flex-col items-start gap-0.5 text-left">
+                        <SemaforoBcra nivel={i.bcra.nivel} />
+                        <span className="text-label text-primary group-hover:underline">{i.bcra.nivel === 'SIN_CONSULTAR' ? 'Consultar' : 'Ver informe'}</span>
+                      </button>
+                    </td>
                     {contratosDisponibles && (
                       <td className="pr-3">
                         {i.contrato && (
@@ -399,6 +415,23 @@ export default function DomiciliosPage() {
                         </div>
                       )}
 
+                      <button
+                        type="button"
+                        onClick={() => setInformeDe(i.tramite.id)}
+                        className="mt-3 flex w-full items-center justify-between gap-2 rounded-control border border-line p-3 text-left transition hover:border-primary-line hover:bg-primary-soft/40"
+                      >
+                        <span className="flex min-w-0 items-center gap-2">
+                          <Landmark className="h-4 w-4 shrink-0 text-primary" />
+                          <span className="min-w-0">
+                            <span className="block text-body-sm font-medium text-ink">Situación en el BCRA</span>
+                            <span className="block text-label text-ink-2">
+                              {i.bcra.consultadoEl ? `Consultado el ${fmtFecha(i.bcra.consultadoEl)} · ${i.bcra.personas} ${i.bcra.personas === 1 ? 'persona' : 'personas'}` : 'Todavía no se consultó'}
+                            </span>
+                          </span>
+                        </span>
+                        <SemaforoBcra nivel={i.bcra.nivel} />
+                      </button>
+
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Button size="sm" disabled={saving} onClick={() => accion(i.id, { accion: 'renovar' }, 'Renovado 1 año')} className="gap-1"><RefreshCw className="h-4 w-4" /> Renovar 1 año</Button>
                         <Button size="sm" variant="outline" disabled={saving} onClick={() => accion(i.id, { accion: 'pagar' }, 'Cobro registrado')} className="gap-1 text-ink-2" title="Registrar cobro sin extender la fecha"><DollarSign className="h-4 w-4" /> Cobrado</Button>
@@ -413,6 +446,10 @@ export default function DomiciliosPage() {
           )}
         </CardContent>
       </Card>
+
+      {informeDe && (
+        <InformeBcraDialog tramiteId={informeDe} open={!!informeDe} onOpenChange={(o) => !o && setInformeDe(null)} onActualizado={cargar} />
+      )}
 
       {subirPara && (
         <SubirContratoFirmadoDialog
@@ -549,6 +586,74 @@ function ResumenDomicilios({
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+/* ─────────────────────── Seguimiento BCRA ───────────────────────
+   Cuántos clientes activos están bien, en atención o en riesgo. Los que
+   tienen algo para mirar se listan para abrir el informe de un clic.      */
+
+const ORDEN_NIVEL: Record<Nivel, number> = { RIESGO: 0, ATENCION: 1, ERROR: 2, SIN_CONSULTAR: 3, OK: 4 }
+
+function ResumenBcra({ activos, onAbrir }: { activos: Item[]; onAbrir: (tramiteId: string) => void }) {
+  if (activos.length === 0) return null
+  const cuenta = (n: Nivel) => activos.filter((a) => a.bcra.nivel === n).length
+  const segmentos: { nivel: Nivel; n: number; color: string; etiqueta: string }[] = [
+    { nivel: 'OK', n: cuenta('OK'), color: 'bg-success-solid', etiqueta: 'Sin problemas' },
+    { nivel: 'ATENCION', n: cuenta('ATENCION'), color: 'bg-warning-solid', etiqueta: 'Atención' },
+    { nivel: 'RIESGO', n: cuenta('RIESGO'), color: 'bg-danger-solid', etiqueta: 'Riesgo' },
+    { nivel: 'SIN_CONSULTAR', n: cuenta('SIN_CONSULTAR') + cuenta('ERROR'), color: 'bg-n-300', etiqueta: 'Sin consultar' },
+  ]
+  const aMirar = activos
+    .filter((a) => a.bcra.nivel === 'RIESGO' || a.bcra.nivel === 'ATENCION')
+    .sort((a, b) => ORDEN_NIVEL[a.bcra.nivel] - ORDEN_NIVEL[b.bcra.nivel])
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 p-card">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-soft text-primary"><Landmark className="h-5 w-5" /></span>
+            <div>
+              <h3 className="text-heading text-ink">Seguimiento en el BCRA</h3>
+              <p className="text-body-sm text-ink-2">Central de Deudores de la sociedad, socios y administradores. Se revisa todos los meses y te llega un mail si alguien empeora.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Barra apilada con la proporción de cada estado */}
+        <div className="flex h-3 w-full overflow-hidden rounded-full bg-surface-3">
+          {segmentos.filter((s) => s.n > 0).map((s) => (
+            <div key={s.nivel} className={s.color} style={{ width: `${(s.n / activos.length) * 100}%` }} title={`${s.etiqueta}: ${s.n}`} />
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {segmentos.map((s) => (
+            <div key={s.nivel} className="flex items-center gap-2 text-body-sm">
+              <span className={`h-2.5 w-2.5 rounded-full ${s.color}`} />
+              <span className="text-ink-2">{s.etiqueta}</span>
+              <span className="font-semibold tnum text-ink">{s.n}</span>
+            </div>
+          ))}
+        </div>
+
+        {aMirar.length > 0 && (
+          <ul className="divide-y divide-line rounded-control border border-line">
+            {aMirar.map((a) => (
+              <li key={a.id}>
+                <button type="button" onClick={() => onAbrir(a.tramite.id)} className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition hover:bg-surface-2">
+                  <span className="min-w-0 truncate text-body-sm font-medium text-ink">{a.tramite.denominacion}</span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <SemaforoBcra nivel={a.bcra.nivel} />
+                    <span className="text-label text-primary">Ver →</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

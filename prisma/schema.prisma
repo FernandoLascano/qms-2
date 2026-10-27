@@ -314,6 +314,7 @@ model Tramite {
   leadSeguimientos LeadSeguimiento[]
   serviciosContratados ServicioContratado[]
   domicilioSede    DomicilioSede?
+  consultasBcra    ConsultaBcra[]
   contratosDomicilio ContratoDomicilioVersion[]
   contratosDomicilioFirmados ContratoDomicilioFirmado[]
 
@@ -669,6 +670,31 @@ model DomicilioSede {
 
   @@index([estado])
   @@index([fechaVencimiento])
+}
+
+// Consulta a la Central de Deudores del BCRA de la sociedad, un socio o un
+// administrador (lib/bcra.ts). Se guarda cada consulta para ver la evolución:
+// el semáforo usa la última de cada CUIT.
+model ConsultaBcra {
+  id                 String   @id @default(cuid())
+  tramiteId          String
+  tramite            Tramite  @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  cuit               String
+  rol                String // SOCIEDAD | SOCIO | ADMINISTRADOR | SOCIO_ADMINISTRADOR
+  nombre             String
+  periodo            String? // último período informado por el BCRA (AAAAMM)
+  peorSituacion      Int      @default(0) // 0 = no figura; 1 normal … 6 irrecuperable por disposición técnica
+  deudaTotal         Float    @default(0) // en miles de pesos, como lo informa el BCRA
+  entidades          Json // deudas del último período, por entidad
+  historial          Json // [{ periodo, situacion, monto }] de los últimos 24 meses
+  chequesRechazados  Int      @default(0)
+  chequesSinPagar    Int      @default(0)
+  cheques            Json // detalle de los cheques rechazados
+  error              String?
+  consultadoEl       DateTime @default(now())
+
+  @@index([tramiteId, consultadoEl])
+  @@index([cuit, consultadoEl])
 }
 
 // Cada contrato de domicilio generado para un trámite, con los datos con que

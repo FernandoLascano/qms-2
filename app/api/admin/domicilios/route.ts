@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { consultarTramite, resumenBcra, ultimasConsultas } from '@/lib/bcra'
 import { estadoContrato, serializarFirmado, type ResumenContrato } from '@/lib/contrato-domicilio-firmado'
 
 // GET - Lista de servicios de domicilio en sede + parámetros de config
@@ -45,6 +46,7 @@ export async function GET() {
     // de firmados todavía no existe (migración sin correr), la pantalla sigue
     // andando y sólo se oculta la columna de contrato.
     const tramiteIds = items.map((i) => i.tramiteId)
+    const bcraPromesa = ultimasConsultas(tramiteIds)
     const contratos = await Promise.all([
       prisma.contratoDomicilioFirmado.findMany({
         where: { tramiteId: { in: tramiteIds } },
@@ -60,6 +62,7 @@ export async function GET() {
       console.error('No se pudo leer el estado de los contratos de domicilio:', e)
       return null
     })
+    const bcra = await bcraPromesa
     // Las listas vienen de la más nueva a la más vieja: la primera de cada trámite es la vigente.
     const firmadoPorTramite = new Map<string, NonNullable<typeof contratos>[0][number]>()
     const versionPorTramite = new Map<string, NonNullable<typeof contratos>[1][number]>()
@@ -95,6 +98,7 @@ export async function GET() {
         notas: i.notas,
         createdAt: i.createdAt,
         contrato: resumenContrato(i.tramiteId),
+        bcra: resumenBcra(bcra.get(i.tramiteId)),
         tramite: {
           id: i.tramite.id,
           denominacion: i.tramite.denominacionAprobada || i.tramite.denominacionSocial1,
@@ -157,6 +161,7 @@ export async function POST(request: Request) {
       }).catch(() => {})
     }
 
+    after(() => consultarTramite(tramiteId).catch(() => {}))
     return NextResponse.json(creado, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Error al cargar el servicio' }, { status: 500 })

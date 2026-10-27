@@ -1249,6 +1249,64 @@ export const emailLeadSecuencia = ({ nombre, cuerpo, tramiteId, ultimo }: EmailT
   })
 }
 
+// Alerta BCRA: algún cliente con domicilio en sede empeoró en la Central de Deudores (para admin)
+type AlertaBcraPersona = { nombre: string; rol: string; nivel: 'ATENCION' | 'RIESGO'; situacion: string; chequesNuevos: number }
+export const emailAlertaBcra = ({ nombre, alertas }: EmailTemplateProps) => {
+  const lista = (alertas || []) as { denominacion: string; tramiteId: string; personas: AlertaBcraPersona[] }[]
+  const hayRiesgo = lista.some((a) => a.personas.some((p) => p.nivel === 'RIESGO'))
+  const roles: Record<string, string> = { SOCIEDAD: 'Sociedad', SOCIO: 'Socio', ADMINISTRADOR: 'Administrador', SOCIO_ADMINISTRADOR: 'Socio y administrador' }
+
+  const bloques = lista
+    .map((a) => {
+      const filas = a.personas
+        .map((p) => {
+          const t = TONOS[p.nivel === 'RIESGO' ? 'danger' : 'warning']
+          const detalle = [p.situacion, p.chequesNuevos > 0 ? `${p.chequesNuevos} cheque${p.chequesNuevos === 1 ? '' : 's'} rechazado${p.chequesNuevos === 1 ? '' : 's'} nuevo${p.chequesNuevos === 1 ? '' : 's'}` : '']
+            .filter(Boolean)
+            .join(' · ')
+          return `
+          <tr>
+            <td style="padding: 10px 0; border-top: 1px solid ${colors.border};">
+              <p style="margin: 0; color: ${colors.dark}; ${type.body} font-weight: 600;">${escapar(p.nombre)}</p>
+              <p style="margin: 2px 0 0 0; color: ${colors.textMuted}; ${type.bodySm}">${roles[p.rol] ?? p.rol}</p>
+            </td>
+            <td style="padding: 10px 0; border-top: 1px solid ${colors.border}; text-align: right; vertical-align: middle;">
+              <span style="display: inline-block; background-color: ${t.bg}; border: 1px solid ${t.line}; color: ${t.text}; padding: 5px 12px; border-radius: ${radius.chip}; ${type.bodySm} font-weight: 700; white-space: nowrap;">${escapar(detalle)}</span>
+            </td>
+          </tr>`
+        })
+        .join('')
+      return `
+      <table cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 20px 0; border: 1px solid ${colors.border}; border-radius: ${radius.card}; border-collapse: separate;">
+        <tr><td style="padding: 16px 20px;">
+          <p style="margin: 0 0 6px 0; color: ${colors.dark}; ${type.heading}">${escapar(a.denominacion)}</p>
+          <table cellpadding="0" cellspacing="0" width="100%">${filas}</table>
+          <p style="margin: 12px 0 0 0; ${type.bodySm}"><a href="${BASE_URL}/dashboard/admin/domicilios?bcra=${a.tramiteId}" style="color: ${colors.primary}; font-weight: 600; text-decoration: none;">Ver el informe completo →</a></p>
+        </td></tr>
+      </table>`
+    })
+    .join('')
+
+  const content = `
+    ${Hero(
+      lista.length === 1 ? 'Un cliente con domicilio empeoró en el BCRA' : `${lista.length} clientes con domicilio empeoraron en el BCRA`,
+      'Resultado del seguimiento mensual de la Central de Deudores',
+      hayRiesgo ? 'danger' : 'warning',
+      '',
+      hayRiesgo ? 'circle-alert-danger' : 'clock-warning',
+    )}
+    ${bloques}
+    ${InfoCard('Situación 2 es riesgo bajo; de 3 en adelante, la deuda tiene atrasos de más de 90 días. Conviene revisar el contrato de domicilio y hablar con el cliente antes de la renovación.', 'info', 'Cómo leerlo')}
+    ${CTAButton('Ver domicilios', `${BASE_URL}/dashboard/admin/domicilios`)}
+  `
+
+  return EmailLayout({
+    children: content,
+    nombre,
+    preheader: 'Seguimiento del BCRA: hay cambios en la situación de clientes con domicilio en sede',
+  })
+}
+
 // 11. Alerta de denominación próxima a vencer (para admin)
 export const emailAlertaDenominacion = ({ nombre, denominacion, diasParaVencer, tramiteId }: EmailTemplateProps) => {
   const content = `

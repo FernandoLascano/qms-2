@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { consultarTramite } from '@/lib/bcra'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -76,6 +77,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     const actualizado = await prisma.domicilioSede.update({ where: { id }, data })
+    // Al activar, primera consulta al BCRA (sin demorar la respuesta).
+    if (accion === 'activar') after(() => consultarTramite(actual.tramiteId).catch(() => {}))
     return NextResponse.json(actualizado)
   } catch {
     return NextResponse.json({ error: 'Error al actualizar el servicio' }, { status: 500 })
