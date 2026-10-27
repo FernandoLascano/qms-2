@@ -4,7 +4,9 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { cookies } from "next/headers"
 import { enviarEmailBienvenida } from "@/lib/emails/send"
+import { capturarLead } from "@/lib/leads/capturar"
 import { ipDesdeHeaders, limpiarLoginFallidos, loginBloqueado, registrarLoginFallido } from "@/lib/rate-limit"
 
 /** Login Google: GOOGLE_CLIENT_ID/SECRET o los mismos valores que GA4 (GOOGLE_OAUTH_*). */
@@ -108,6 +110,22 @@ export const authOptions: NextAuthOptions = {
     // Cubre el alta con Google (el alta manual manda su propio email de bienvenida).
     async createUser({ user }) {
       if (!user?.email) return
+      // Alta con Google desde el link de un partner: misma cookie que lee el alta con email.
+      try {
+        const ref = (await cookies()).get("partner_ref")?.value
+        const partner = ref
+          ? await prisma.partner.findUnique({ where: { slug: decodeURIComponent(ref), activo: true }, select: { id: true } })
+          : null
+        if (partner && user.id) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { partnerId: partner.id, referredAt: new Date(), referralSource: "PARTNER_LINK" },
+          })
+          await capturarLead({ email: user.email, nombre: user.name ?? null, origen: "PARTNER", userId: user.id, atribucion: { partnerId: partner.id } })
+        }
+      } catch {
+        // la atribución no debe frenar el alta
+      }
       try {
         await enviarEmailBienvenida(user.email, user.name || "")
       } catch {

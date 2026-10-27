@@ -90,6 +90,12 @@ export default function RegistroPage() {
   // atribuido (antes sólo se registraba desde la portada).
   useEffect(() => {
     registrarAtribucion()
+    // El link de un partner (/registro?ref=slug) deja la misma cookie que su
+    // landing: así lo leen el alta con email y el alta con Google.
+    const ref = new URLSearchParams(window.location.search).get('ref')
+    if (ref) {
+      document.cookie = `partner_ref=${encodeURIComponent(ref)}; Path=/; Max-Age=${60 * 60 * 24 * 30}; SameSite=Lax`
+    }
   }, [])
 
   const cambiar = (e: React.ChangeEvent<HTMLInputElement>) => {

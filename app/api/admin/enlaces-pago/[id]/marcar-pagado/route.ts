@@ -41,6 +41,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (enlace.tramite) {
       await registerPartnerConversion({
         userId: enlace.tramite.userId,
+        concepto: enlace.concepto,
         montoCobrado: enlace.monto,
         metodoPago: 'TRANSFERENCIA',
         sourceType: 'ENLACE_PAGO',

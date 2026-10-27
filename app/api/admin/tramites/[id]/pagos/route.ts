@@ -74,6 +74,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     await registerPartnerConversion({
       userId: tramite.userId,
+      concepto,
       montoCobrado: pago.monto,
       metodoPago: pago.metodoPago,
       sourceType: 'PAGO',
