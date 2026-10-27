@@ -12,7 +12,7 @@ export const maxDuration = 300
  * domicilio en sede activo. Corre todos los días pero sólo consulta a quien
  * lleva 28 días o más sin consultar (el BCRA actualiza una vez por mes), y de
  * a tandas, para no pasarse del tiempo de la función.
- * Si alguien empeoró, manda un solo mail a cada admin con todos los casos.
+ * Si alguna sociedad empeoró, manda un solo mail a cada admin con todos los casos.
  */
 
 const DIAS_ENTRE_CONSULTAS = 28
@@ -58,7 +58,8 @@ export async function GET(request: Request) {
   const errores: string[] = []
   for (const p of pendientes) {
     try {
-      const { empeoraron } = await consultarTramite(p.tramiteId)
+      // Sólo avisa si empeora la sociedad: la situación personal de un socio se ve en el panel, sin mail.
+      const empeoraron = (await consultarTramite(p.tramiteId)).empeoraron.filter((e) => e.rol === 'SOCIEDAD')
       if (empeoraron.length > 0) {
         alertas.push({ denominacion: p.tramite.denominacionAprobada || p.tramite.denominacionSocial1, tramiteId: p.tramiteId, personas: empeoraron })
       }

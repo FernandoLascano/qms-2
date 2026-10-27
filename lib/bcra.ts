@@ -53,14 +53,6 @@ export function nivelDe(c: { peorSituacion: number; chequesRechazados: number; c
   return 'OK'
 }
 
-/** El peor nivel de un grupo de personas (el de la sociedad para el semáforo general). */
-export function peorNivel(niveles: Nivel[]): Nivel {
-  if (niveles.length === 0) return 'SIN_CONSULTAR'
-  const conDatos = niveles.filter((n) => n !== 'SIN_CONSULTAR' && n !== 'ERROR')
-  if (conDatos.length === 0) return niveles.includes('ERROR') ? 'ERROR' : 'SIN_CONSULTAR'
-  return conDatos.reduce((a, b) => (ORDEN_NIVEL[b] > ORDEN_NIVEL[a] ? b : a))
-}
-
 async function pedir(ruta: string): Promise<{ results?: Record<string, unknown> } | null> {
   const res = await fetch(`${API}/${ruta}`, { signal: AbortSignal.timeout(20_000), cache: 'no-store' })
   if (res.status === 404) return null
@@ -261,12 +253,23 @@ export async function ultimasConsultas(tramiteIds: string[]): Promise<Map<string
   return porTramite
 }
 
-/** Resumen para la lista: semáforo general y fecha de la última consulta. */
+/** Algún problema en la Central de Deudores (situación 2+ o cheques rechazados). */
+const conDeudas = (f: FilaBcra) => f.nivel === 'ATENCION' || f.nivel === 'RIESGO'
+
+/**
+ * Resumen para la lista. El semáforo es el de la sociedad: lo que le pasa a un
+ * socio en lo personal no es lo mismo y no tiene que alarmar (pedido de
+ * Fernando). Los socios van aparte, como dato informativo.
+ */
 export function resumenBcra(filas: FilaBcra[] | undefined) {
-  if (!filas || filas.length === 0) return { nivel: 'SIN_CONSULTAR' as Nivel, consultadoEl: null, personas: 0 }
+  const sociedad = filas?.find((f) => f.rol === 'SOCIEDAD')
+  const personas = (filas ?? []).filter((f) => f.rol !== 'SOCIEDAD')
   return {
-    nivel: peorNivel(filas.map((f) => f.nivel)),
-    consultadoEl: filas.map((f) => f.consultadoEl).sort().at(-1) ?? null,
-    personas: filas.length,
+    nivel: sociedad ? sociedad.nivel : ('SIN_CONSULTAR' as Nivel),
+    /** false si la sociedad todavía no tiene CUIT (o no se consultó): sólo hay datos de los socios. */
+    sociedad: !!sociedad,
+    socios: { total: personas.length, conDeudas: personas.filter(conDeudas).length },
+    consultadoEl: (filas ?? []).map((f) => f.consultadoEl).sort().at(-1) ?? null,
   }
 }
+export type ResumenBcra = ReturnType<typeof resumenBcra>

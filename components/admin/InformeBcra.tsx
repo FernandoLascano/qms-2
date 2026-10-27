@@ -7,12 +7,14 @@ import { Badge, type Tone } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
-import type { FilaBcra, Nivel } from '@/lib/bcra'
+import type { FilaBcra, Nivel, ResumenBcra } from '@/lib/bcra'
 
 /**
  * Informe de la Central de Deudores del BCRA para un cliente con domicilio en
- * sede: un semáforo general y, por persona, la situación actual, la deuda, los
- * cheques rechazados y los últimos 24 meses en barras.
+ * sede. El semáforo es el de la sociedad; los socios y administradores van
+ * aparte y en tono informativo: su situación personal no es la de la
+ * sociedad y no tiene que alarmar. Por persona: situación, deuda, cheques
+ * rechazados y los últimos 24 meses en barras.
  */
 
 const NIVEL: Record<Nivel, { tone: Tone; etiqueta: string }> = {
@@ -57,12 +59,39 @@ function fmtPesos(miles: number) {
   return `$ ${Math.round(pesos).toLocaleString('es-AR')}`
 }
 
-/** Píldora del semáforo. */
+/** Píldora del semáforo de la sociedad. */
 export function SemaforoBcra({ nivel, size = 'sm' }: { nivel: Nivel; size?: 'sm' | 'md' }) {
   return (
     <Badge tone={NIVEL[nivel].tone} dot size={size}>
       {NIVEL[nivel].etiqueta}
     </Badge>
+  )
+}
+
+/** Situación personal de un socio o administrador: nunca en rojo. */
+const NIVEL_PERSONA: Record<Nivel, { tone: Tone; etiqueta: string }> = {
+  OK: { tone: 'success', etiqueta: 'Sin deudas' },
+  ATENCION: { tone: 'neutral', etiqueta: 'Deuda con atraso leve' },
+  RIESGO: { tone: 'warning', etiqueta: 'Deudas irregulares' },
+  ERROR: { tone: 'neutral', etiqueta: 'No se pudo consultar' },
+  SIN_CONSULTAR: { tone: 'neutral', etiqueta: 'Sin consultar' },
+}
+
+/** Semáforo de la sociedad, o «sin CUIT» si todavía no tiene: entonces sólo hay datos de los socios. */
+export function EstadoSociedadBcra({ resumen }: { resumen: ResumenBcra }) {
+  if (!resumen.sociedad && resumen.socios.total > 0) return <Badge tone="neutral" size="sm">Sociedad sin CUIT</Badge>
+  return <SemaforoBcra nivel={resumen.nivel} />
+}
+
+/** Línea chica con la situación de los socios: dato informativo. */
+export function NotaSociosBcra({ resumen, className }: { resumen: ResumenBcra; className?: string }) {
+  const { total, conDeudas } = resumen.socios
+  if (total === 0) return null
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 text-label text-ink-2', className)}>
+      <span className={cn('h-1.5 w-1.5 rounded-full', conDeudas ? 'bg-warning-solid' : 'bg-success-solid')} />
+      {conDeudas ? `Socios: ${conDeudas} de ${total} con deudas` : `Socios: sin deudas`}
+    </span>
   )
 }
 
@@ -109,7 +138,8 @@ export function InformeBcraDialog({
   }
 
   const personas = informe?.personas ?? []
-  const general: Nivel = personas.length === 0 ? 'SIN_CONSULTAR' : peor(personas.map((p) => p.nivel))
+  const sociedad = personas.find((p) => p.rol === 'SOCIEDAD')
+  const socios = personas.filter((p) => p.rol !== 'SOCIEDAD')
   const ultima = personas.map((p) => p.consultadoEl).sort().at(-1)
   const periodo = personas.map((p) => p.periodo).filter(Boolean).sort().at(-1) ?? null
 
@@ -119,7 +149,7 @@ export function InformeBcraDialog({
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-3">
             <span>Situación en el BCRA</span>
-            {informe && <SemaforoBcra nivel={general} size="md" />}
+            {informe && personas.length > 0 && (sociedad ? <SemaforoBcra nivel={sociedad.nivel} size="md" /> : <Badge tone="neutral">Sociedad sin CUIT</Badge>)}
           </DialogTitle>
           <DialogDescription>
             {informe?.denominacion ?? 'Cargando…'}
@@ -150,7 +180,25 @@ export function InformeBcraDialog({
           </div>
         ) : (
           <div className="space-y-4">
-            {personas.map((p) => <TarjetaPersona key={p.cuit} p={p} />)}
+            {sociedad ? (
+              <TarjetaPersona p={sociedad} />
+            ) : (
+              <p className="rounded-card border border-dashed border-line bg-surface-2 p-card text-body-sm text-ink-2">
+                La sociedad todavía no tiene CUIT, así que no se puede consultar. Mientras tanto, lo que hay para evaluar es la situación de los socios.
+              </p>
+            )}
+
+            {socios.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <div>
+                  <h3 className="text-heading text-ink">Socios y administradores</h3>
+                  <p className="text-body-sm text-ink-2">
+                    {sociedad ? 'Su situación personal, como dato informativo: no cambia el semáforo de la sociedad.' : 'Su situación personal en la Central de Deudores.'}
+                  </p>
+                </div>
+                {socios.map((p) => <TarjetaPersona key={p.cuit} p={p} persona />)}
+              </div>
+            )}
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
               <p className="text-label text-ink-3">
                 Fuente: Central de Deudores del BCRA (pública). Se actualiza una vez por mes; el seguimiento es automático.
@@ -166,18 +214,13 @@ export function InformeBcraDialog({
   )
 }
 
-const ORDEN: Record<Nivel, number> = { SIN_CONSULTAR: 0, ERROR: 0, OK: 1, ATENCION: 2, RIESGO: 3 }
-function peor(niveles: Nivel[]): Nivel {
-  const conDatos = niveles.filter((n) => n !== 'ERROR' && n !== 'SIN_CONSULTAR')
-  if (conDatos.length === 0) return niveles.includes('ERROR') ? 'ERROR' : 'SIN_CONSULTAR'
-  return conDatos.reduce((a, b) => (ORDEN[b] > ORDEN[a] ? b : a))
-}
-
-function TarjetaPersona({ p }: { p: FilaBcra }) {
+/** `persona`: socio o administrador; tarjeta más sobria, sin bordes ni etiquetas de alarma. */
+function TarjetaPersona({ p, persona = false }: { p: FilaBcra; persona?: boolean }) {
   const Icono = p.rol === 'SOCIEDAD' ? Building2 : User
-  const borde = p.nivel === 'RIESGO' ? 'border-danger-line' : p.nivel === 'ATENCION' ? 'border-warning-line' : 'border-line'
+  const borde = persona ? 'border-line' : p.nivel === 'RIESGO' ? 'border-danger-line' : p.nivel === 'ATENCION' ? 'border-warning-line' : 'border-line'
+  const etiqueta = persona ? NIVEL_PERSONA[p.nivel] : NIVEL[p.nivel]
   return (
-    <section className={cn('rounded-card border bg-surface p-card shadow-raise', borde)}>
+    <section className={cn('rounded-card border bg-surface p-card', persona ? '' : 'shadow-raise', borde)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
@@ -188,7 +231,7 @@ function TarjetaPersona({ p }: { p: FilaBcra }) {
             <p className="text-label text-ink-2">{ROL[p.rol] ?? p.rol} · <span className="tnum">{fmtCuit(p.cuit)}</span></p>
           </div>
         </div>
-        <SemaforoBcra nivel={p.nivel} />
+        <Badge tone={etiqueta.tone} dot size="sm">{etiqueta.etiqueta}</Badge>
       </div>
 
       {p.error ? (
@@ -196,13 +239,13 @@ function TarjetaPersona({ p }: { p: FilaBcra }) {
       ) : (
         <>
           <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
-            <Dato titulo="Situación" valor={p.peorSituacion ? String(p.peorSituacion) : '—'} nota={SITUACION[p.peorSituacion]} clase={textoSituacion(p.peorSituacion)} />
+            <Dato titulo="Situación" valor={p.peorSituacion ? String(p.peorSituacion) : '—'} nota={SITUACION[p.peorSituacion]} clase={persona ? undefined : textoSituacion(p.peorSituacion)} />
             <Dato titulo="Deuda informada" valor={p.deudaTotal ? fmtPesos(p.deudaTotal) : '$ 0'} nota={p.entidades.length ? `${p.entidades.length} entidad${p.entidades.length === 1 ? '' : 'es'}` : 'sin deudas'} />
             <Dato
               titulo="Cheques rechazados"
               valor={String(p.chequesRechazados)}
               nota={p.chequesRechazados ? (p.chequesSinPagar ? `${p.chequesSinPagar} sin pagar` : 'todos pagados') : 'ninguno'}
-              clase={p.chequesSinPagar ? 'text-danger' : p.chequesRechazados ? 'text-warning' : undefined}
+              clase={persona ? undefined : p.chequesSinPagar ? 'text-danger' : p.chequesRechazados ? 'text-warning' : undefined}
             />
           </div>
 
