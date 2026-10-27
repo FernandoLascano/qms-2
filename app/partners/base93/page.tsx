@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { after } from 'next/server'
-import { BadgeCheck, Building2, FileSignature, Globe2, Landmark, UserCheck } from 'lucide-react'
+import { BadgeCheck, Building2, FileSignature, Globe2, Landmark, MapPin, UserCheck } from 'lucide-react'
 import { metadataDePagina } from '@/lib/seo/site'
 import { prisma } from '@/lib/prisma'
 import { getPublicConfig } from '@/lib/config'
@@ -24,7 +24,7 @@ const DESCUENTO = 10
 const WHATSAPP = 'https://wa.me/5493512136212'
 
 /** Honorarios en dólares sin descuento. */
-const USD = { paquete: 2000, cdi: 450, busqueda: 300 }
+const USD = { paquete: 2000, cdi: 450, busqueda: 300, domicilio: 350 }
 
 type Idioma = 'en' | 'es'
 
@@ -64,7 +64,12 @@ const TEXTOS = {
         nombre: 'Resident-director search',
         detalle: 'Directors must reside in Argentina. We find a candidate; the director’s monthly fee is agreed in each case.',
       },
+      domicilio: {
+        nombre: 'Registered address in Córdoba',
+        detalle: 'The company’s legal address at our office in Córdoba. Billed yearly.',
+      },
     },
+    porAnio: '/ year',
     comoTitulo: 'How it works for foreign investors',
     pasos: [
       { titulo: 'Quote', texto: 'Send us the shareholders, the business and the jurisdiction. We reply with a full quote.' },
@@ -122,7 +127,12 @@ const TEXTOS = {
         nombre: 'Búsqueda de administrador residente',
         detalle: 'El administrador tiene que residir en Argentina. Buscamos el candidato; su honorario mensual se acuerda en cada caso.',
       },
+      domicilio: {
+        nombre: 'Domicilio legal en Córdoba',
+        detalle: 'El domicilio de la sociedad en nuestra oficina de Córdoba. Se abona por año.',
+      },
     },
+    porAnio: '/ año',
     comoTitulo: 'Cómo funciona para inversores del exterior',
     pasos: [
       { titulo: 'Presupuesto', texto: 'Contanos quiénes son los socios, la actividad y la jurisdicción. Te mandamos el presupuesto completo.' },
@@ -198,6 +208,7 @@ export default async function Base93Page({ searchParams }: Props) {
     { clave: 'paquete', icono: Building2, ...t.servicios.paquete, precio: USD.paquete, destacado: true },
     { clave: 'cdi', icono: FileSignature, ...t.servicios.cdi, precio: USD.cdi, destacado: false },
     { clave: 'busqueda', icono: UserCheck, ...t.servicios.busqueda, precio: USD.busqueda, destacado: false },
+    { clave: 'domicilio', icono: MapPin, ...t.servicios.domicilio, precio: USD.domicilio, destacado: false },
   ]
 
   return (
@@ -258,7 +269,7 @@ export default async function Base93Page({ searchParams }: Props) {
         <section className="mx-auto max-w-6xl rounded-[2rem] border border-gray-200 bg-white p-6 shadow-sm md:p-10">
           <h2 className="text-3xl font-black text-gray-900">{t.extranjerosTitulo}</h2>
           <p className="mt-2 max-w-3xl text-gray-600">{t.extranjerosBajada}</p>
-          <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-5 md:grid-cols-2 xl:grid-cols-4">
             {servicios.map((s) => (
               <div key={s.clave} className={`flex flex-col rounded-3xl border bg-white p-6 shadow-sm ${s.destacado ? 'border-brand-300 ring-2 ring-brand-100' : 'border-gray-200'}`}>
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
@@ -270,7 +281,10 @@ export default async function Base93Page({ searchParams }: Props) {
                   <div className="text-sm text-gray-500">
                     {t.antes} <span className="line-through">USD {numero(s.precio)}</span>
                   </div>
-                  <div className="mt-1 text-3xl font-black text-gray-900">USD {numero(conDescuento(s.precio))}</div>
+                  <div className="mt-1 text-3xl font-black text-gray-900">
+                    USD {numero(conDescuento(s.precio))}
+                    {s.clave === 'domicilio' && <span className="ml-1 text-base font-semibold text-gray-500">{t.porAnio}</span>}
+                  </div>
                 </div>
               </div>
             ))}
