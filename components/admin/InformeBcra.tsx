@@ -145,8 +145,9 @@ export function InformeBcraDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[88vh] overflow-y-auto">
-        <DialogHeader>
+      {/* minmax(0,1fr): sin esto la tabla ancha estiraba la grilla y en el celular se cortaba todo a la derecha. */}
+      <DialogContent className="max-w-3xl max-h-[88vh] grid-cols-[minmax(0,1fr)] overflow-y-auto px-4 sm:px-6">
+        <DialogHeader className="pr-8 text-left">
           <DialogTitle className="flex flex-wrap items-center gap-3">
             <span>Situación en el BCRA</span>
             {informe && personas.length > 0 && (sociedad ? <SemaforoBcra nivel={sociedad.nivel} size="md" /> : <Badge tone="neutral">Sociedad sin CUIT</Badge>)}
@@ -240,11 +241,11 @@ function TarjetaPersona({ p, persona = false }: { p: FilaBcra; persona?: boolean
         <>
           <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
             <Dato titulo="Situación" valor={p.peorSituacion ? String(p.peorSituacion) : '—'} nota={SITUACION[p.peorSituacion]} clase={persona ? undefined : textoSituacion(p.peorSituacion)} />
-            <Dato titulo="Deuda informada" valor={p.deudaTotal ? fmtPesos(p.deudaTotal) : '$ 0'} nota={p.entidades.length ? `${p.entidades.length} entidad${p.entidades.length === 1 ? '' : 'es'}` : 'sin deudas'} />
+            <Dato titulo="Deuda" valor={p.deudaTotal ? fmtPesos(p.deudaTotal) : '$ 0'} nota={p.entidades.length ? `${p.entidades.length} entidad${p.entidades.length === 1 ? '' : 'es'}` : 'sin deudas'} />
             <Dato
-              titulo="Cheques rechazados"
+              titulo="Cheques"
               valor={String(p.chequesRechazados)}
-              nota={p.chequesRechazados ? (p.chequesSinPagar ? `${p.chequesSinPagar} sin pagar` : 'todos pagados') : 'ninguno'}
+              nota={p.chequesRechazados ? (p.chequesSinPagar ? `rechazados, ${p.chequesSinPagar} sin pagar` : 'rechazados, pagados') : 'sin rechazos'}
               clase={persona ? undefined : p.chequesSinPagar ? 'text-danger' : p.chequesRechazados ? 'text-warning' : undefined}
             />
           </div>
@@ -252,8 +253,8 @@ function TarjetaPersona({ p, persona = false }: { p: FilaBcra; persona?: boolean
           <Historial meses={p.historial} />
 
           {p.entidades.length > 0 && (
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-body-sm">
+            <div className="-mx-1 mt-4 overflow-x-auto px-1">
+              <table className="w-full min-w-[30rem] text-body-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-label text-ink-2">
                     <th className="py-1.5 pr-3 font-medium">Entidad</th>
@@ -286,7 +287,7 @@ function TarjetaPersona({ p, persona = false }: { p: FilaBcra; persona?: boolean
               <p className="mb-2 flex items-center gap-1.5 text-body-sm font-semibold text-warning"><FileWarning className="h-4 w-4" /> Cheques rechazados</p>
               <ul className="space-y-1 text-body-sm text-ink">
                 {p.cheques.slice(0, 8).map((c, i) => (
-                  <li key={i} className="flex flex-wrap justify-between gap-2">
+                  <li key={i} className="flex flex-wrap justify-between gap-x-3 gap-y-0.5">
                     <span>{c.fecha ? fechaCorta(c.fecha) : '—'} · {c.causal}</span>
                     <span className="tnum">$ {Math.round(c.monto).toLocaleString('es-AR')} · {c.pagado ? 'pagado' : <b className="text-danger">sin pagar</b>}</span>
                   </li>
@@ -306,10 +307,10 @@ function TarjetaPersona({ p, persona = false }: { p: FilaBcra; persona?: boolean
 
 function Dato({ titulo, valor, nota, clase }: { titulo: string; valor: string; nota?: string; clase?: string }) {
   return (
-    <div className="rounded-control bg-surface-2 p-3">
+    <div className="min-w-0 rounded-control bg-surface-2 p-2.5 sm:p-3">
       <p className="text-label text-ink-2">{titulo}</p>
       <p className={cn('mt-0.5 text-heading tnum text-ink', clase)}>{valor}</p>
-      {nota && <p className="truncate text-label text-ink-3">{nota}</p>}
+      {nota && <p className="text-label leading-snug text-ink-3">{nota}</p>}
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
-import { consultarTramite, SITUACIONES, type Empeoro } from '@/lib/bcra'
-import { enviarAlertaBcra } from '@/lib/emails/send'
+import { consultarYAvisar, personasAConsultar } from '@/lib/bcra'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -10,13 +9,16 @@ export const maxDuration = 300
 /**
  * Seguimiento mensual en la Central de Deudores del BCRA de los clientes con
  * domicilio en sede activo. Corre todos los días pero sólo consulta a quien
- * lleva 28 días o más sin consultar (el BCRA actualiza una vez por mes), y de
- * a tandas, para no pasarse del tiempo de la función.
- * Si alguna sociedad empeoró, manda un solo mail a cada admin con todos los casos.
+ * lleva 28 días o más sin una consulta que haya salido bien (el BCRA actualiza
+ * una vez por mes): si el BCRA estaba caído, se reintenta al día siguiente.
+ *
+ * El aviso sale apenas se consulta cada trámite y sólo si empeora la
+ * sociedad: si la función se corta por tiempo, no se pierde ninguno.
  */
 
 const DIAS_ENTRE_CONSULTAS = 28
-const POR_CORRIDA = 15
+/** Margen para cortar antes de los 300 s de la función. */
+const PRESUPUESTO_MS = 220_000
 
 function autorizado(request: Request) {
   const token = (request.headers.get('authorization') || '').replace('Bearer ', '')
@@ -31,6 +33,7 @@ function autorizado(request: Request) {
 
 export async function GET(request: Request) {
   if (!autorizado(request)) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  const inicio = Date.now()
 
   const activos = await prisma.domicilioSede.findMany({
     where: { estado: 'ACTIVO' },
@@ -38,9 +41,12 @@ export async function GET(request: Request) {
       tramiteId: true,
       tramite: {
         select: {
+          cuit: true,
           denominacionAprobada: true,
           denominacionSocial1: true,
-          consultasBcra: { select: { consultadoEl: true }, orderBy: { consultadoEl: 'desc' }, take: 1 },
+          socios: true,
+          administradores: true,
+          consultasBcra: { where: { error: null }, select: { consultadoEl: true }, orderBy: { consultadoEl: 'desc' }, take: 1 },
         },
       },
     },
@@ -48,40 +54,26 @@ export async function GET(request: Request) {
 
   const limite = Date.now() - DIAS_ENTRE_CONSULTAS * 86_400_000
   const vencidos = activos
-    .map((a) => ({ ...a, ultima: a.tramite.consultasBcra[0]?.consultadoEl ?? null }))
+    // Sin ningún CUIT válido no hay nada que consultar: no ocupa lugar en la cola.
+    .filter((a) => personasAConsultar(a.tramite).length > 0)
+    .map((a) => ({ tramiteId: a.tramiteId, ultima: a.tramite.consultasBcra[0]?.consultadoEl ?? null }))
     .filter((a) => !a.ultima || a.ultima.getTime() < limite)
     // Los que nunca se consultaron, primero; después los más viejos.
     .sort((a, b) => (a.ultima?.getTime() ?? 0) - (b.ultima?.getTime() ?? 0))
-  const pendientes = vencidos.slice(0, POR_CORRIDA)
 
-  const alertas: { denominacion: string; tramiteId: string; personas: Empeoro[] }[] = []
+  let consultados = 0
+  let avisos = 0
   const errores: string[] = []
-  for (const p of pendientes) {
+  for (const v of vencidos) {
+    if (Date.now() - inicio > PRESUPUESTO_MS) break
     try {
-      // Sólo avisa si empeora la sociedad: la situación personal de un socio se ve en el panel, sin mail.
-      const empeoraron = (await consultarTramite(p.tramiteId)).empeoraron.filter((e) => e.rol === 'SOCIEDAD')
-      if (empeoraron.length > 0) {
-        alertas.push({ denominacion: p.tramite.denominacionAprobada || p.tramite.denominacionSocial1, tramiteId: p.tramiteId, personas: empeoraron })
-      }
+      const r = await consultarYAvisar(v.tramiteId)
+      consultados++
+      if (r.aviso) avisos++
     } catch {
-      errores.push(p.tramiteId)
+      errores.push(v.tramiteId)
     }
   }
 
-  if (alertas.length > 0) {
-    const admins = await prisma.user.findMany({ where: { rol: 'ADMIN' }, select: { email: true, name: true } })
-    const paraMail = alertas.map((a) => ({
-      ...a,
-      personas: a.personas.map((x) => ({
-        nombre: x.nombre,
-        rol: x.rol,
-        nivel: x.ahora === 'RIESGO' ? ('RIESGO' as const) : ('ATENCION' as const),
-        situacion: x.peorSituacion > 1 ? `Situación ${x.peorSituacion} · ${SITUACIONES[x.peorSituacion]}` : '',
-        chequesNuevos: x.chequesNuevos,
-      })),
-    }))
-    await Promise.all(admins.map((a) => enviarAlertaBcra(a.email, a.name || '', paraMail).catch(() => {})))
-  }
-
-  return NextResponse.json({ consultados: pendientes.length, quedan: vencidos.length - pendientes.length, alertas: alertas.length, errores })
+  return NextResponse.json({ consultados, quedan: vencidos.length - consultados - errores.length, avisos, errores })
 }
