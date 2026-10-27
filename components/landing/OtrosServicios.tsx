@@ -37,7 +37,7 @@ export function OtrosServicios() {
   const grilla = useAlAparecer<HTMLDivElement>()
 
   return (
-    <section className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
+    <section id="servicios" className="py-seccion md:py-seccion-lg bg-surface-2 overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header - estilo consistente con la página */}
         <div ref={cabecera.ref} className={`text-center mb-8 ${cabecera.clase}`}>

@@ -562,8 +562,8 @@ export default function HomePage({
               <ul className="space-y-1 text-sm md:space-y-3">
                 <li><Link href="/tramite/nuevo" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Constituir S.A.S.</Link></li>
                 <li><a href="#planes" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Planes y Precios</a></li>
-                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Reformas de Estatuto</a></li>
-                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Asesoría Societaria</a></li>
+                <li><a href="#servicios" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Reformas de Estatuto</a></li>
+                <li><a href="#servicios" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Asesoría Societaria</a></li>
               </ul>
             </div>
 
@@ -573,7 +573,7 @@ export default function HomePage({
               <ul className="space-y-1 text-sm md:space-y-3">
                 <li><a href="#faq" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Preguntas Frecuentes</a></li>
                 <li><Link href="/blog" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Blog y Notas</Link></li>
-                <li><a href="#" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Marco Legal</a></li>
+                <li><a href="#servicios" className="inline-flex min-h-10 items-center text-n-400 hover:text-white transition md:min-h-0">Marco Legal</a></li>
               </ul>
             </div>
 
