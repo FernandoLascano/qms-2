@@ -8,7 +8,7 @@
 export const KNOWLEDGE_BASE_COMPACT = `
 # QuieroMiSAS (resumen)
 - Plataforma 100% online para constituir S.A.S. en Argentina (Grupo MW). ~5 días hábiles. Contacto: contacto@quieromisas.com, +54 9 351 213 6212.
-- Jurisdicción principal: Córdoba (IPJ). CABA/IGJ puede no estar disponible según momento.
+- Jurisdicción principal: Córdoba (IPJ). También CABA (IGJ), sólo si el cliente tiene una dirección propia allá: en CABA no ofrecemos domicilio.
 - Cualquier provincia puede constituir en Córdoba; la SAS opera en todo el país. Sede social Córdoba; domicilio fiscal donde corresponda.
 
 # S.A.S. (resumen)
@@ -66,11 +66,11 @@ export const KNOWLEDGE_BASE = `
 - Todos los costos informados con transparencia antes de comenzar.
 
 ## JURISDICCIONES Y DOMICILIO
-- Actualmente trabajamos en Córdoba (IPJ). CABA (IGJ) temporalmente no disponible.
+- Trabajamos en Córdoba (IPJ) y en CABA (IGJ). En CABA el cliente necesita una dirección propia para la sede: allá no ofrecemos el servicio de domicilio.
 - IMPORTANTE: NO hace falta ser de Córdoba para constituir la SAS en Córdoba. Personas de CUALQUIER provincia de Argentina (Buenos Aires, Chubut, Mendoza, Salta, Tucumán, etc.) pueden constituir su SAS en Córdoba.
 - La SAS inscripta en Córdoba es válida y opera en TODO el territorio argentino.
 - El cliente solo necesita declarar su domicilio fiscal donde tenga su actividad comercial y tributar en esa provincia.
-- La sede social se fija en Córdoba. Si no tienen domicilio en Córdoba, los ayudamos.
+- En Córdoba, si no tienen una dirección para la sede, les ofrecemos la nuestra con el servicio de domicilio, que tiene un costo anual aparte.
 - ¿Por qué Córdoba? Proceso más rápido (5 días), gastos más bajos, 100% digital, publicación en boletín oficial bonificada.
 - Si preguntan desde otra provincia, SIEMPRE explicar que pueden constituir en Córdoba sin problema.
 

@@ -158,6 +158,9 @@ const nombreCompleto = (p: { nombre: string; apellido: string }) => `${p.nombre}
 
 // Los precios y el SMVM llegan del server (page.tsx): antes se pedían a
 // /api/config al montar y el formulario arrancaba con valores por defecto.
+/** En CABA la ciudad y el departamento son la propia Ciudad: no se piden. */
+const CIUDAD_CABA = 'Ciudad Autónoma de Buenos Aires'
+
 export default function FormularioNuevoTramite({ config }: { config: PublicConfig }) {
   const router = useRouter()
   const { data: session, status } = useSession()
@@ -329,11 +332,12 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
               objetoSocial,
               objetoPersonalizado,
               actividadPrincipal: txt(du.actividadPrincipal),
-              sinDomicilio,
+              // En CABA no prestamos domicilio: un borrador viejo no puede quedar pidiéndolo.
+              sinDomicilio: draft.jurisdiccion === 'CABA' ? false : sinDomicilio,
               provinciaResidencia: txt(du.provinciaResidencia),
               domicilio,
-              ciudad: txt(du.ciudad) || (sinDomicilio ? '' : partes.at(-3) ?? ''),
-              departamento: txt(du.departamento) || (sinDomicilio ? '' : partes.at(-2) ?? ''),
+              ciudad: draft.jurisdiccion === 'CABA' ? CIUDAD_CABA : txt(du.ciudad) || (sinDomicilio ? '' : partes.at(-3) ?? ''),
+              departamento: draft.jurisdiccion === 'CABA' ? CIUDAD_CABA : txt(du.departamento) || (sinDomicilio ? '' : partes.at(-2) ?? ''),
               provincia: draft.jurisdiccion === 'CABA' ? 'Ciudad Autónoma de Buenos Aires' : 'Córdoba',
               capitalSocial: String(capital),
               numeroSocios: socios.length || 1,
@@ -956,7 +960,15 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                   <h3 className="text-heading font-semibold text-ink mb-4">Jurisdicción</h3>
                   <JurisdiccionSelector
                     value={formData.jurisdiccion}
-                    onChange={(id, provincia) => setFormData(prev => ({ ...prev, jurisdiccion: id as FormData['jurisdiccion'], provincia }))}
+                    onChange={(id, provincia) =>
+                      setFormData((prev) => {
+                        // En CABA no prestamos domicilio: la sede tiene que ser una dirección propia,
+                        // y ciudad y departamento son la propia Ciudad.
+                        if (id === 'CABA') return { ...prev, jurisdiccion: 'CABA', provincia, sinDomicilio: false, ciudad: CIUDAD_CABA, departamento: CIUDAD_CABA }
+                        const venia = prev.ciudad === CIUDAD_CABA
+                        return { ...prev, jurisdiccion: id as FormData['jurisdiccion'], provincia, ...(venia && { ciudad: '', departamento: '' }) }
+                      })
+                    }
                   />
                 </div>
               </div>
@@ -1082,17 +1094,31 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                       los borradores abandonados: de 8 personas que eligen
                       denominación, sólo 1 llega a cargar un domicilio, porque
                       quien es de otra provincia cree que el trámite no es para él. */}
-                  <Aviso>
-                    <p className="text-ink">
-                      La sede tiene que estar en <span className="font-semibold">{formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'CABA'}</span>,
-                      pero <span className="font-semibold">no hace falta que vivas ahí</span>.
-                    </p>
-                    <p>
-                      Si no tenés una dirección para fijarla, te la damos nosotros y seguís sin problema. La sociedad
-                      después puede operar en todo el país.
-                    </p>
-                  </Aviso>
+                  {formData.jurisdiccion === 'CABA' ? (
+                    <Aviso>
+                      <p className="text-ink">
+                        La sede tiene que estar en <span className="font-semibold">CABA</span>, en una dirección tuya o de alguien que te la preste.
+                      </p>
+                      <p>
+                        En CABA <span className="font-semibold">no ofrecemos el servicio de domicilio</span>: si no tenés una dirección ahí, podés
+                        constituir en Córdoba, donde sí te la damos. La sociedad después puede operar en todo el país.
+                      </p>
+                    </Aviso>
+                  ) : (
+                    <Aviso>
+                      <p className="text-ink">
+                        La sede tiene que estar en <span className="font-semibold">Córdoba</span>,
+                        pero <span className="font-semibold">no hace falta que vivas ahí</span>.
+                      </p>
+                      <p>
+                        Si no tenés una dirección para fijarla, te ofrecemos la nuestra con el servicio de domicilio, que tiene un costo
+                        aparte. La sociedad después puede operar en todo el país.
+                      </p>
+                    </Aviso>
+                  )}
 
+                  {formData.jurisdiccion !== 'CABA' && (
+                  <>
                   <p className="text-body-sm font-semibold text-ink-2 pt-1">¿Tenés una dirección para la sede?</p>
                   <Opcion activa={!formData.sinDomicilio}>
                     <input type="radio" name="sinDomicilio" checked={!formData.sinDomicilio} onChange={() => actualizar('sinDomicilio', false)} className="mt-1" />
@@ -1108,6 +1134,8 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                       <p className="text-body-sm text-ink-2">Es un servicio anual. Te decimos cuánto sale antes de cobrarte nada, y no te frena para terminar el formulario.</p>
                     </div>
                   </Opcion>
+                  </>
+                  )}
 
                   {!formData.sinDomicilio && (
                     <div className="space-y-4 pt-2">
@@ -1122,6 +1150,8 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                         error={errorDe('domicilio')}
                       />
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {formData.jurisdiccion !== 'CABA' && (
+                        <>
                         <FormField
                           label="Ciudad"
                           name="ciudad"
@@ -1145,6 +1175,8 @@ export default function FormularioNuevoTramite({ config }: { config: PublicConfi
                           opciones={DEPARTAMENTOS_CORDOBA}
                           error={errorDe('departamento')}
                         />
+                        </>
+                        )}
                         <div className="space-y-2">
                           <div className="flex items-center justify-between"><Label htmlFor="provincia" className="text-body-sm font-semibold">Provincia</Label></div>
                           <Input id="provincia" value={formData.jurisdiccion === 'CORDOBA' ? 'Córdoba' : 'Ciudad Autónoma de Buenos Aires'} disabled className="bg-surface-3" />
