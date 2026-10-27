@@ -281,7 +281,7 @@ async function AdminDashboardPage() {
       />
 
       {/* ─── Composición principal: el trabajo manda, las métricas acompañan ─ */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
         {/* Columna principal */}
         <section className="space-y-4">
           <SectionHeader title="Para resolver" as="h2" />

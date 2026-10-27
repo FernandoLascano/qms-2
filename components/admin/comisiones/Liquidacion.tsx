@@ -103,7 +103,7 @@ export function LiquidacionTab({
   const comisiones = totales.comisionFernando + totales.comisionJustiniano + totales.comisionMw
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
       <div className="space-y-4">
         <Card className="overflow-hidden">
           <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-line px-card-sm py-3.5 sm:px-card">

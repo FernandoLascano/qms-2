@@ -118,7 +118,7 @@ export default function BlogIndexClient({ initialPosts }: { initialPosts: Post[]
                     <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(post.fechaPublicacion).toLocaleDateString('es-AR')}</span>
+                        <span>{new Date(post.fechaPublicacion).toLocaleDateString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock className="w-4 h-4" />

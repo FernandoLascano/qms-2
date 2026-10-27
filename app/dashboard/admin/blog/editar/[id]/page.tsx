@@ -668,7 +668,7 @@ export default function EditarPostPage() {
         <div className="bg-surface rounded-control shadow-raise p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-title font-semibold text-ink">Contenido del Artículo</h2>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => addSection('h2')}
@@ -795,7 +795,7 @@ export default function EditarPostPage() {
         </div>
 
         {/* Botones de Acción */}
-        <div className="flex items-center justify-end gap-4 sticky bottom-0 bg-surface p-4 rounded-control shadow-raise border border-line">
+        <div className="flex flex-wrap items-center justify-end gap-4 sticky bottom-0 bg-surface p-4 rounded-control shadow-raise border border-line">
           <Link
             href="/dashboard/admin/blog"
             className="px-6 py-3 border border-line-strong text-ink-2 rounded-control hover:bg-surface-2 transition cursor-pointer"

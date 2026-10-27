@@ -538,7 +538,7 @@ function ResumenDomicilios({
     .slice(0, 5)
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,4fr)]">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <TarjetaDom titulo="Facturación anual" valor={fmt(facturacionAnual)} destacado />
         <TarjetaDom titulo="Servicios activos" valor={String(activos.length)} />
