@@ -42,6 +42,17 @@ export async function POST(request: Request) {
     if (!data.email?.trim()) erroresValidacion.push('Email del usuario')
     if (!data.plan) erroresValidacion.push('Plan')
     if (!data.jurisdiccion) erroresValidacion.push('Jurisdicción')
+    else {
+      // Una jurisdicción deshabilitada en el panel va a consulta: no se envía online
+      // (p. ej. un borrador de CABA de antes de deshabilitarla).
+      const j = await prisma.gastoJurisdiccion.findUnique({ where: { jurisdiccion: data.jurisdiccion }, select: { nombre: true, habilitada: true } })
+      if (j && !j.habilitada) {
+        return NextResponse.json(
+          { error: 'Jurisdicción sujeta a consulta', details: `${j.nombre} no se puede tramitar online. Escribinos por WhatsApp o volvé al primer paso y elegí Córdoba.` },
+          { status: 400 }
+        )
+      }
+    }
 
     // Validar denominaciones del paso 2
     if (!data.denominacion1?.trim()) erroresValidacion.push('Primera opción de denominación social')

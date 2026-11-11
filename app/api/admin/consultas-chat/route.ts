@@ -95,7 +95,7 @@ Analizá las siguientes preguntas que hicieron los visitantes del sitio web y:
 4. Sugerí 3-5 preguntas que deberían agregarse al FAQ del sitio basándote en patrones
 
 Contexto del servicio:
-- Constituyen S.A.S. en Córdoba (IPJ) y CABA (IGJ), aunque CABA está temporalmente deshabilitada
+- Constituyen S.A.S. en Córdoba (IPJ) y CABA (IGJ), aunque CABA es sólo a consulta (turnos de IGJ de hasta 30 días, firma presencial)
 - Planes: Básico ($${precioPlanBasico.toLocaleString('es-AR')}), Emprendedor ($${precioPlanEmprendedor.toLocaleString('es-AR')}), Premium ($${precioPlanPremium.toLocaleString('es-AR')})
 - Plazo: 5 días hábiles
 - 100% online

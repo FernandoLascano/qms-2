@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Check, AlertCircle } from 'lucide-react'
+import { ETIQUETA_A_CONSULTA, motivoConsulta, whatsappConsulta } from '@/lib/jurisdicciones'
 
 interface Jurisdiccion {
   id: string
@@ -98,10 +99,21 @@ export default function JurisdiccionSelector({ value, onChange }: Props) {
                 <p className="mt-1 text-xs text-gray-500">Necesitás una dirección propia en CABA: ahí no ofrecemos el servicio de domicilio.</p>
               )}
               {!j.habilitada && (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-xs text-amber-600 font-medium">No disponible actualmente</span>
-                </div>
+                <>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-xs text-amber-600 font-medium">{ETIQUETA_A_CONSULTA}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-600">{motivoConsulta(j.jurisdiccion)}</p>
+                  <a
+                    href={whatsappConsulta(j.nombre)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-brand-700 underline underline-offset-2"
+                  >
+                    Escribinos por WhatsApp
+                  </a>
+                </>
               )}
             </div>
             {value === j.jurisdiccion && j.habilitada && (

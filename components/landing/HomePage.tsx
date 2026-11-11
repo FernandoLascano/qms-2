@@ -600,7 +600,7 @@ export default function HomePage({
           <div className="border-t border-n-800 pt-8 mb-8">
             <div className="flex flex-wrap justify-center gap-3 text-sm">
               <span className="bg-n-800 px-4 py-2 rounded-full text-n-300">Córdoba (IPJ)</span>
-              <span className="bg-n-800 px-4 py-2 rounded-full text-n-300">CABA (IGJ)</span>
+              <span className="bg-n-800 px-4 py-2 rounded-full text-n-300">CABA (IGJ) · a consulta</span>
               <span className="text-ink-3 px-4 py-2">Próximamente más provincias</span>
             </div>
           </div>
