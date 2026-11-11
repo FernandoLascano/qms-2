@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { MapPin, Info, CheckCircle2, AlertCircle } from 'lucide-react'
+import { ETIQUETA_A_CONSULTA, motivoConsulta, whatsappConsulta } from '@/lib/jurisdicciones'
 
 export interface Jurisdiccion {
   id: string
@@ -74,7 +75,7 @@ export function GastosJurisdiccion({ jurisdicciones }: { jurisdicciones: Jurisdi
                 <span className="relative z-10">{j.nombre}</span>
                 {!j.habilitada && selected !== index && (
                   <span className="relative z-10 text-xs bg-n-200 text-ink-3 px-1.5 py-0.5 rounded-full">
-                    Próximamente
+                    A consulta
                   </span>
                 )}
               </button>
@@ -93,11 +94,19 @@ export function GastosJurisdiccion({ jurisdicciones }: { jurisdicciones: Jurisdi
             >
               <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-warning">Jurisdicción no disponible actualmente</p>
+                <p className="text-sm font-semibold text-warning">{current.nombre}: {ETIQUETA_A_CONSULTA.toLowerCase()}</p>
                 <p className="text-sm text-warning mt-1">
-                  Por el momento no estamos operando en {current.nombre}. Te mostramos los gastos de referencia para que puedas comparar.
-                  Te recomendamos constituir en <strong>Córdoba (IPJ)</strong> donde tenemos operación activa y los costos son más accesibles.
+                  {motivoConsulta(current.jurisdiccion)} Por eso no la ofrecemos online: escribinos y lo vemos con vos.
+                  Te mostramos los gastos de referencia para que puedas comparar con <strong>Córdoba (IPJ)</strong>, donde todo el trámite es digital.
                 </p>
+                <a
+                  href={whatsappConsulta(current.nombre)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-warning underline underline-offset-2"
+                >
+                  Consultanos por WhatsApp
+                </a>
               </div>
             </m.div>
           )}
@@ -218,7 +227,7 @@ export function GastosJurisdiccion({ jurisdicciones }: { jurisdicciones: Jurisdi
                         {j.totalEstimado || '-'}
                       </p>
                       {!j.habilitada && (
-                        <p className="text-xs text-warning font-medium mt-1">No disponible</p>
+                        <p className="text-xs text-warning font-medium mt-1">{ETIQUETA_A_CONSULTA}</p>
                       )}
                     </div>
                     {i < jurisdicciones.length - 1 && (

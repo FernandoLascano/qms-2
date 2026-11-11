@@ -25,7 +25,7 @@ export const faqs: FAQItem[] = [
   },
   {
     pregunta: '¿Cuánto tiempo tarda el proceso completo?',
-    respuesta: 'El proceso completo toma aproximadamente 5 días hábiles desde que completás el formulario y aportás toda la documentación. Esto incluye la reserva de denominación, depósito de capital, firma digital y la inscripción ante IPJ (Córdoba) o IGJ (CABA).'
+    respuesta: 'El proceso completo toma aproximadamente 5 días hábiles desde que completás el formulario y aportás toda la documentación. Esto incluye la reserva de denominación, depósito de capital, firma digital y la inscripción ante IPJ (Córdoba). En CABA (IGJ) los plazos son otros, porque los turnos para firmar pueden demorar hasta 30 días y la firma es presencial: consultanos.'
   },
   {
     pregunta: '¿Cuánto cuesta constituir una S.A.S.?',
