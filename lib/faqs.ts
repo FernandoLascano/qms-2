@@ -41,11 +41,11 @@ export const faqs: FAQItem[] = [
   },
   {
     pregunta: '¿No soy de Córdoba ni de CABA, igual puedo constituir una S.A.S. en Córdoba o CABA?',
-    respuesta: 'Sí. La única salvedad que deberás tener en cuenta es que la sede social de tu S.A.S. deberá estar fijada dentro de la provincia de Córdoba o la Ciudad Autónoma de Buenos Aires. Si no dispones de un domicilio donde fijarla, contáctate con nosotros para que podamos ayudarte.'
+    respuesta: 'Sí. Podés constituirla en Córdoba vivas en la provincia que vivas: la sede social tiene que estar en Córdoba y, si no tenés una dirección ahí, te ofrecemos la nuestra con el servicio de domicilio. CABA es sujeto a consulta: los turnos de la IGJ para firmar pueden demorar hasta 30 días, la firma es presencial y la sede tiene que ser una dirección propia en la Ciudad.'
   },
   {
     pregunta: '¿En qué jurisdicciones trabajan?',
-    respuesta: 'Actualmente trabajamos en Córdoba (IPJ) y Ciudad Autónoma de Buenos Aires (IGJ). Tu empresa, una vez inscripta, puede operar en todo el territorio argentino sin restricciones.'
+    respuesta: 'Trabajamos en Córdoba (IPJ), con todo el trámite online. CABA (IGJ) es sujeto a consulta: los turnos para firmar pueden demorar hasta 30 días y la firma es presencial, así que escribinos antes de empezar. Tu empresa, una vez inscripta, puede operar en todo el territorio argentino sin restricciones.'
   },
   {
     pregunta: '¿Puedo ser accionista o administrador de una S.A.S. siendo extranjero?',
