@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { emailManual } from '@/lib/emails/templates'
 import { prepararMailManual } from '@/lib/emails/destinatario'
+import { guardarAdjuntosEnviados } from '@/lib/emails/adjuntos-enviados'
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
@@ -122,6 +123,8 @@ export async function POST(
       return NextResponse.json({ error: 'Error al enviar respuesta' }, { status: 500 })
     }
 
+    const adjuntosGuardados = await guardarAdjuntosEnviados(result.messageId, parsedAttachments)
+
     // Guardar en DB
     const reply = await prisma.email.create({
       data: {
@@ -138,14 +141,7 @@ export async function POST(
         status: 'READ',
         parentEmailId: id,
         tramiteId: originalEmail.tramiteId,
-        attachments: {
-          create: parsedAttachments.map((item) => ({
-            fileName: item.filename,
-            mimeType: item.contentType || 'application/octet-stream',
-            size: item.size,
-            s3Key: `outbound-inline/${result.messageId || 'unknown'}/${item.filename}`,
-          })),
-        },
+        attachments: { create: adjuntosGuardados },
       },
     })
 

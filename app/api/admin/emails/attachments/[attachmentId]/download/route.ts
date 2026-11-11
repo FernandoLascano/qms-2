@@ -34,7 +34,7 @@ export async function GET(
     }
 
     if (attachment.s3Key.startsWith('outbound-inline/')) {
-      return NextResponse.json({ error: 'El adjunto no está disponible para descarga directa' }, { status: 400 })
+      return NextResponse.json({ error: 'Este adjunto se envió antes de que el panel guardara copias de los archivos enviados, así que no se puede descargar' }, { status: 400 })
     }
 
     const object = await s3.send(new GetObjectCommand({
