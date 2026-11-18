@@ -1394,3 +1394,23 @@ model MaintenanceRun {
   @@index([kind, createdAt(sort: Desc)], map: "maintenance_runs_kind_created_at_idx")
   @@map("maintenance_runs")
 }
+
+// Rastro de seguridad: IP y navegador en altas de cuenta y de trámite.
+// Sin relaciones a propósito: el registro queda aunque se borre el usuario.
+model EventoSeguridad {
+  id        String  @id @default(cuid())
+  accion    String // REGISTRO | REGISTRO_GOOGLE | BORRADOR_CREADO | TRAMITE_ENVIADO
+  userId    String?
+  tramiteId String?
+  email     String?
+  ip        String?
+  userAgent String?
+  pais      String?
+  ciudad    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([ip])
+}

@@ -7,6 +7,7 @@ import { getPublicConfig } from '@/lib/config'
 import { capitalMinimo } from '@/lib/precios'
 import { parsearMonto } from '@/lib/montos'
 import { rateLimit } from '@/lib/rate-limit'
+import { registrarEventoSeguridad } from '@/lib/seguridad/eventos'
 
 // Guardar borrador del formulario
 export async function POST(request: Request) {
@@ -254,6 +255,10 @@ export async function POST(request: Request) {
           { status: 500 }
         )
       }
+    }
+
+    if (!data.tramiteId) {
+      registrarEventoSeguridad(request.headers, 'BORRADOR_CREADO', { userId: session.user.id, tramiteId: tramite.id })
     }
 
     return NextResponse.json({

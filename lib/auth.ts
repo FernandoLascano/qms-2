@@ -4,9 +4,10 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { enviarEmailBienvenida } from "@/lib/emails/send"
 import { capturarLead } from "@/lib/leads/capturar"
+import { registrarEventoSeguridad } from "@/lib/seguridad/eventos"
 import { ipDesdeHeaders, limpiarLoginFallidos, loginBloqueado, registrarLoginFallido } from "@/lib/rate-limit"
 
 /** Login Google: GOOGLE_CLIENT_ID/SECRET o los mismos valores que GA4 (GOOGLE_OAUTH_*). */
@@ -110,6 +111,11 @@ export const authOptions: NextAuthOptions = {
     // Cubre el alta con Google (el alta manual manda su propio email de bienvenida).
     async createUser({ user }) {
       if (!user?.email) return
+      try {
+        registrarEventoSeguridad(await headers(), "REGISTRO_GOOGLE", { userId: user.id, email: user.email })
+      } catch {
+        // sin contexto de request: no hay IP que guardar
+      }
       // Alta con Google desde el link de un partner: misma cookie que lee el alta con email.
       try {
         const ref = (await cookies()).get("partner_ref")?.value
