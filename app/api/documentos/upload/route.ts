@@ -7,6 +7,7 @@ import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 import { leerComprobanteAlSubir } from '@/lib/ai/comprobante'
 import { rateLimit } from '@/lib/rate-limit'
+import { TipoDocumento } from '@prisma/client'
 
 // Margen para la lectura del comprobante, que corre después de responder.
 export const maxDuration = 60
@@ -66,6 +67,15 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validar antes de subir: si el insert fallaba después, el archivo quedaba
+    // huérfano en el storage y la respuesta era un 500.
+    if (!tramiteId || !nombre?.trim()) {
+      return NextResponse.json({ error: 'Faltan datos del documento' }, { status: 400 })
+    }
+    if (tipo && !(Object.values(TipoDocumento) as string[]).includes(tipo)) {
+      return NextResponse.json({ error: 'Tipo de documento no válido' }, { status: 400 })
+    }
+
     // Verificar que el trámite pertenece al usuario y obtener información para emails
     const tramite = await prisma.tramite.findFirst({
       where: {
@@ -115,7 +125,7 @@ export async function POST(request: Request) {
       data: {
         tramiteId: tramiteId,
         userId: session.user.id,
-        tipo: tipo as any,
+        tipo: (tipo || null) as TipoDocumento | null,
         nombre: nombre,
         descripcion: descripcion || null,
         url: fileUrl,
