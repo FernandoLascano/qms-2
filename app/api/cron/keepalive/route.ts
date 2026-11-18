@@ -11,6 +11,8 @@ export const dynamic = 'force-dynamic'
  */
 
 const DIAS_RETENCION = 90
+// IP y navegador de altas (EventoSeguridad): 12 meses, como dice /privacidad.
+const DIAS_RETENCION_SEGURIDAD = 365
 
 function verificarAutorizacion(request: Request): boolean {
   const authHeader = request.headers.get('authorization')
@@ -37,7 +39,10 @@ export async function GET(request: Request) {
         createdAt: { lt: new Date(Date.now() - DIAS_RETENCION * 24 * 60 * 60 * 1000) },
       },
     })
-    return NextResponse.json({ ok: true, borrados })
+    const { count: eventosSeguridadBorrados } = await prisma.eventoSeguridad.deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - DIAS_RETENCION_SEGURIDAD * 24 * 60 * 60 * 1000) } },
+    })
+    return NextResponse.json({ ok: true, borrados, eventosSeguridadBorrados })
   } catch (error) {
     console.error('Error en keepalive:', error)
     return NextResponse.json({ ok: false, error: 'No se pudo registrar el latido' }, { status: 500 })
