@@ -6,6 +6,7 @@ import { OBJETO_SOCIAL_PREAPROBADO } from '@/lib/objeto-social'
 import { getPublicConfig } from '@/lib/config'
 import { capitalMinimo } from '@/lib/precios'
 import { parsearMonto } from '@/lib/montos'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Guardar borrador del formulario
 export async function POST(request: Request) {
@@ -20,6 +21,16 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json()
+
+    // Crear un borrador es crear un trámite: mismo tope que /api/tramites (el
+    // pentest del 18/11/2026 creó 13 por acá). El autoguardado, con
+    // tramiteId, no cuenta.
+    if (!data.tramiteId && session.user.rol !== 'ADMIN') {
+      const limite =
+        (await rateLimit(request, 'borrador-crear', 3, '10 m', session.user.id)) ??
+        (await rateLimit(request, 'borrador-crear-diario', 5, '1 d', session.user.id))
+      if (limite) return limite
+    }
     
     // Con tramiteId se actualiza ese borrador; sin tramiteId se crea uno nuevo.
     // Antes, sin id se pisaba "el borrador más reciente": abrir «Nuevo trámite»
