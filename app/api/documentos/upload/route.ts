@@ -6,6 +6,7 @@ import { uploadToSupabase } from '@/lib/supabase-storage'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 import { leerComprobanteAlSubir } from '@/lib/ai/comprobante'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Margen para la lectura del comprobante, que corre después de responder.
 export const maxDuration = 60
@@ -20,6 +21,11 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
+
+    // Cada subida avisa por email a los admins. 30 por hora alcanza para cargar
+    // toda la documentación de un trámite con varios socios.
+    const limite = await rateLimit(request, 'documento-upload', 30, '1 h', session.user.id)
+    if (limite) return limite
 
     const formData = await request.formData()
     const file = formData.get('file') as File
