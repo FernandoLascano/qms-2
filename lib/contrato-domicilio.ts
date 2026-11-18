@@ -112,15 +112,42 @@ export function camposPlantilla(d: DatosContrato, generadoEl: Date = new Date())
 const VACIO = '________'
 const DIR = path.join(process.cwd(), 'lib/plantillas')
 
-const escaparHtml = (s: string) =>
+export const escaparHtml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * Partes del contrato que sólo cambian con la firma electrónica
+ * (lib/contrato-domicilio-firma.ts): trazos de firma, Anexo I completado y
+ * certificado. Son HTML ya armado. Sin firma, el Anexo queda con las líneas
+ * para completar a mano, igual que el Word.
+ */
+export const HTML_SIN_FIRMA = {
+  firma_prestador: '',
+  firma_sociedad: '',
+  firma_coobligado: '',
+  anexo_actividad: '______________________________________________',
+  anexo_beneficiarios: '______________________________',
+  anexo_cuenta_propia: '<span class="box"></span> SÍ <span class="box"></span> NO',
+  anexo_tercero: '________________',
+  anexo_pep: '<span class="box"></span> NO <span class="box"></span> SÍ: ________________',
+  anexo_uif: '<span class="box"></span> NO <span class="box"></span> SÍ: ________________',
+  anexo_firma: '',
+  anexo_aclaracion: '',
+  anexo_fecha: '',
+  certificado: '',
+}
+export type HtmlFirma = Partial<typeof HTML_SIN_FIRMA>
 
 /**
  * Versión HTML del contrato, para el PDF: se ve como el diseño de QuieroMiSAS
  * (la conversión del Word con LibreOffice no lo respeta). El texto legal es el
  * mismo de la plantilla Word.
  */
-export async function contratoDomicilioHtml(d: DatosContrato, generadoEl: Date = new Date()): Promise<string> {
+export async function contratoDomicilioHtml(
+  d: DatosContrato,
+  generadoEl: Date = new Date(),
+  firma: HtmlFirma = {},
+): Promise<string> {
   const [plantilla, logo, montserrat, openSans, openSansItalic] = await Promise.all([
     readFile(path.join(DIR, 'contrato-domicilio.html'), 'utf8'),
     readFile(path.join(DIR, 'logo-qms.png')),
@@ -135,9 +162,11 @@ export async function contratoDomicilioHtml(d: DatosContrato, generadoEl: Date =
     FUENTE_OPENSANS_ITALIC: openSansItalic.toString('base64'),
   }
   const campos: Record<string, string> = camposPlantilla(d, generadoEl)
+  const html: Record<string, string> = { ...HTML_SIN_FIRMA, ...firma }
 
   return plantilla.replace(/\{\{([A-Za-z_]+)\}\}/g, (todo, clave: string) => {
     if (clave in archivos) return archivos[clave]
+    if (clave in html) return html[clave]
     if (!(clave in campos)) return VACIO
     const valor = campos[clave]
     // Las casillas se dibujan: ☒ marcada (roja), ☐ vacía.
