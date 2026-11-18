@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { enviarEmailNotificacion } from '@/lib/emails/send'
+import { rateLimit } from '@/lib/rate-limit'
 
 // POST - El cliente manifiesta interés en un servicio adicional. Avisa al equipo.
 export async function POST(request: Request) {
@@ -12,8 +13,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
     }
 
+    // Cada consulta manda un email a cada admin: con tope, un script no puede
+    // llenar la casilla (pasó el 18/11/2026 con un pentest automatizado).
+    const limite = await rateLimit(request, 'servicio-consulta', 5, '1 h', session.user.id)
+    if (limite) return limite
+
     const { servicio } = await request.json()
     if (!servicio || typeof servicio !== 'string') {
+      return NextResponse.json({ error: 'Servicio no válido' }, { status: 400 })
+    }
+    // Sólo servicios del catálogo: el texto va al asunto del email a los admins.
+    const existe = await prisma.servicioCatalogo.findFirst({ where: { nombre: servicio, activo: true }, select: { id: true } })
+    if (!existe) {
       return NextResponse.json({ error: 'Servicio no válido' }, { status: 400 })
     }
 

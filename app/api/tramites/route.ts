@@ -13,6 +13,7 @@ import { capitalMinimo } from '@/lib/precios'
 import { parsearMonto } from '@/lib/montos'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 import { revisarFormularioAlEnviar } from '@/lib/ai/revision'
+import { rateLimit } from '@/lib/rate-limit'
 
 // Margen para la revisión del formulario con IA, que corre después de responder.
 export const maxDuration = 60
@@ -27,6 +28,15 @@ export async function POST(request: Request) {
         { error: 'No autenticado', details: 'Debes iniciar sesión para crear un trámite' },
         { status: 401 }
       )
+    }
+
+    // Nadie arma más de un par de sociedades por día; un script sí (13 trámites
+    // en 8 segundos el 18/11/2026). Los admins no tienen tope.
+    if (session.user.rol !== 'ADMIN') {
+      const limite =
+        (await rateLimit(request, 'tramite-crear', 3, '10 m', session.user.id)) ??
+        (await rateLimit(request, 'tramite-crear-diario', 5, '1 d', session.user.id))
+      if (limite) return limite
     }
 
     const data = await request.json()
