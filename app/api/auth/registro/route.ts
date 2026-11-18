@@ -8,6 +8,7 @@ import { buildEmailVerificationLink, createEmailVerificationToken } from "@/lib/
 import { enviarEmailVerificacionCuenta } from "@/lib/emails/send"
 import { capturarLead } from '@/lib/leads/capturar'
 import { normalizarEmail, validarEmailCuenta, validarNombreUsuario, validarPassword, validarTelefono } from '@/lib/validaciones'
+import { registrarEventoSeguridad } from '@/lib/seguridad/eventos'
 
 export async function POST(request: Request) {
   try {
@@ -103,6 +104,7 @@ export async function POST(request: Request) {
         emailVerified: autoVerifyEmail ? new Date() : null,
       }
     })
+    registrarEventoSeguridad(request.headers, 'REGISTRO', { userId: user.id, email: user.email })
 
     // Registrarse no es abrir un trámite. Hay 11 usuarios que se registraron y
     // nunca empezaron uno: existían sólo como User y no aparecían en ninguna

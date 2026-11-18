@@ -14,6 +14,7 @@ import { parsearMonto } from '@/lib/montos'
 import { enSegundoPlano } from '@/lib/en-segundo-plano'
 import { revisarFormularioAlEnviar } from '@/lib/ai/revision'
 import { rateLimit } from '@/lib/rate-limit'
+import { registrarEventoSeguridad } from '@/lib/seguridad/eventos'
 
 // Margen para la revisión del formulario con IA, que corre después de responder.
 export const maxDuration = 60
@@ -358,6 +359,7 @@ export async function POST(request: Request) {
         }
       })
     }
+    registrarEventoSeguridad(request.headers, 'TRAMITE_ENVIADO', { userId: session.user.id, tramiteId: tramite.id })
 
     // El cliente envió el formulario: sus borradores anteriores dejan de ser
     // leads y quedan marcados como ganados. Sin esto la conversión nunca se

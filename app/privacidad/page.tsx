@@ -16,7 +16,7 @@ export default function PrivacidadPage() {
       <article className="py-16 md:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Política de Privacidad</h1>
-          <p className="text-gray-500 mb-12">Última actualización: 8 de octubre de 2026</p>
+          <p className="text-gray-500 mb-12">Última actualización: 18 de noviembre de 2026</p>
 
           <div className="prose prose-gray max-w-none space-y-8 text-gray-600">
             <section>
@@ -44,13 +44,14 @@ export default function PrivacidadPage() {
                 <li><strong>Datos del trámite:</strong> información relativa a la constitución de la sociedad (denominación, capital social, socios, objeto social, etc.).</li>
                 <li><strong>Datos de la cuenta:</strong> usuario, contraseña (encriptada), historial de actividad.</li>
                 <li><strong>Datos de pago:</strong> información necesaria para procesar pagos (se procesan a través de proveedores autorizados como Mercado Pago).</li>
+                <li><strong>Datos técnicos de seguridad:</strong> dirección IP, tipo de navegador y ubicación aproximada (país y ciudad) al crear la cuenta y al iniciar o enviar un trámite.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Finalidad del tratamiento</h2>
               <p>
-                Los datos personales se utilizan para: (a) gestionar la constitución de S.A.S. y los trámites asociados; (b) comunicarnos con el usuario sobre el estado de su trámite; (c) cumplir con obligaciones legales y regulatorias (IGJ, IPJ, ARCA, etc.); (d) emitir facturas y documentación; (e) mejorar nuestros servicios; (f) enviar comunicaciones comerciales cuando el usuario haya dado su consentimiento.
+                Los datos personales se utilizan para: (a) gestionar la constitución de S.A.S. y los trámites asociados; (b) comunicarnos con el usuario sobre el estado de su trámite; (c) cumplir con obligaciones legales y regulatorias (IGJ, IPJ, ARCA, etc.); (d) emitir facturas y documentación; (e) mejorar nuestros servicios; (f) enviar comunicaciones comerciales cuando el usuario haya dado su consentimiento; (g) prevenir fraudes y usos indebidos de la plataforma y proteger la seguridad del servicio.
               </p>
             </section>
 
@@ -80,7 +81,7 @@ export default function PrivacidadPage() {
             <section>
               <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Conservación de datos</h2>
               <p>
-                Los datos se conservan durante el tiempo necesario para cumplir con la finalidad del tratamiento y con las obligaciones legales (por ejemplo, documentación societaria y contable según normativa vigente). Una vez cumplidos los plazos legales, los datos se suprimen o anonimizan de forma segura.
+                Los datos se conservan durante el tiempo necesario para cumplir con la finalidad del tratamiento y con las obligaciones legales (por ejemplo, documentación societaria y contable según normativa vigente). Una vez cumplidos los plazos legales, los datos se suprimen o anonimizan de forma segura. Los datos técnicos de seguridad se conservan por un plazo máximo de 12 meses y luego se eliminan automáticamente.
               </p>
             </section>
 
