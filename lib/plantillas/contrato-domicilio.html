@@ -75,6 +75,19 @@
   .anexo ol { margin: 0 0 5mm; padding-left: 5mm; }
   .anexo li { margin-bottom: 4mm; }
   .anexo .firma-anexo { margin-top: 14mm; }
+
+  /* Firma electrónica: el trazo va sobre la línea; sin firma no se dibuja nada */
+  .firma .trazo { display: block; height: 15mm; max-width: 100%; object-fit: contain; object-position: left bottom; margin-top: -15mm; }
+  .firma .dato { min-height: 5mm; margin: -6mm 0 1mm; font-size: 9pt; color: var(--negro); }
+  .certificado { break-before: page; }
+  .certificado h2 { margin: 0 0 2mm; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13pt; color: var(--negro); }
+  .certificado h2 span { color: var(--rojo); }
+  .certificado h3 { margin: 6mm 0 2mm; font-size: 10pt; color: var(--negro); }
+  .certificado table { width: 100%; border-collapse: collapse; font-size: 8.2pt; }
+  .certificado th, .certificado td { border-bottom: 1px solid var(--linea); padding: 1.6mm 2.4mm; text-align: left; vertical-align: top; }
+  .certificado th { width: 30%; background: var(--fondo-etiqueta); color: var(--negro); }
+  .certificado .mono { font-family: monospace; font-size: 7.6pt; word-break: break-all; }
+  .certificado tr { break-inside: avoid; }
 </style>
 </head>
 <body>
@@ -164,21 +177,21 @@
 
     <div class="firmas">
       <div class="firma">
-        <div class="linea"></div>
+        {{firma_prestador}}<div class="linea"></div>
         <p class="quien">Por EL PRESTADOR</p>
         <p>Aclaración: {{prestador_representante}}</p>
         <p>Carácter: {{prestador_caracter}}</p>
         <p>DNI/CUIT: {{prestador_dni}}</p>
       </div>
       <div class="firma">
-        <div class="linea"></div>
+        {{firma_sociedad}}<div class="linea"></div>
         <p class="quien">Por LA SOCIEDAD</p>
         <p>Aclaración: {{representante_nombre}}</p>
         <p>Carácter: {{representante_caracter}}</p>
         <p>DNI/CUIT: {{representante_dni}}</p>
       </div>
       <div class="firma">
-        <div class="linea"></div>
+        {{firma_coobligado}}<div class="linea"></div>
         <p class="quien">EL COOBLIGADO</p>
         <p>Aclaración: {{coobligado_nombre}}</p>
         <p>Carácter: por derecho propio</p>
@@ -190,19 +203,20 @@
       <h2><span>ANEXO I</span> · DECLARACIÓN JURADA</h2>
       <p>LA SOCIEDAD, por su representante, declara bajo juramento:</p>
       <ol>
-        <li>Actividad real: ______________________________________________</li>
-        <li>Beneficiario/s final/es (nombre, DNI, participación): ______________________________</li>
-        <li>Actúa por cuenta propia: <span class="box"></span> SÍ <span class="box"></span> NO. En su caso, tercero: ________________</li>
-        <li>Persona Expuesta Políticamente (representante o beneficiario final): <span class="box"></span> NO <span class="box"></span> SÍ: ________________</li>
-        <li>Sujeto Obligado ante la UIF: <span class="box"></span> NO <span class="box"></span> SÍ: ________________</li>
+        <li>Actividad real: {{anexo_actividad}}</li>
+        <li>Beneficiario/s final/es (nombre, DNI, participación): {{anexo_beneficiarios}}</li>
+        <li>Actúa por cuenta propia: {{anexo_cuenta_propia}}. En su caso, tercero: {{anexo_tercero}}</li>
+        <li>Persona Expuesta Políticamente (representante o beneficiario final): {{anexo_pep}}</li>
+        <li>Sujeto Obligado ante la UIF: {{anexo_uif}}</li>
       </ol>
       <p>Declara que la información es veraz y completa, que no usará el servicio para ocultar beneficiarios finales ni el origen de fondos, y que informará cualquier cambio dentro de los cinco (5) días hábiles.</p>
       <div class="firmas firma-anexo">
-        <div class="firma"><div class="linea"></div><p class="quien">Firma</p></div>
-        <div class="firma"><div class="linea"></div><p class="quien">Aclaración</p></div>
-        <div class="firma"><div class="linea"></div><p class="quien">Fecha</p></div>
+        <div class="firma">{{anexo_firma}}<div class="linea"></div><p class="quien">Firma</p></div>
+        <div class="firma">{{anexo_aclaracion}}<div class="linea"></div><p class="quien">Aclaración</p></div>
+        <div class="firma">{{anexo_fecha}}<div class="linea"></div><p class="quien">Fecha</p></div>
       </div>
     </section>
+    {{certificado}}
   </main>
 </body>
 </html>

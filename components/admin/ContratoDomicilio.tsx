@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { FileSignature, FileText, FileType } from 'lucide-react'
+import { FileSignature, FileText, FileType, Send } from 'lucide-react'
 import { Card, CardBody } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Field } from '@/components/ui/field'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import type { DatosContrato, PersonaContrato } from '@/lib/contrato-domicilio'
+import { PadFirma, type FirmaCapturada } from '@/components/firma/PadFirma'
+
+/** Avisa a FirmaContratoDomicilio que hay una solicitud nueva. */
+export const EVENTO_FIRMA_ACTUALIZADA = 'contrato-domicilio-firma'
 
 type Version = {
   version: number
@@ -39,6 +43,9 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
   const [coobligado, setCoobligado] = useState('')
   // De dónde salen los datos del formulario: una versión guardada o el trámite.
   const [origen, setOrigen] = useState<string>('tramite')
+  const [firmando, setFirmando] = useState(false)
+  const [miFirma, setMiFirma] = useState<FirmaCapturada | null>(null)
+  const [enviando, setEnviando] = useState(false)
 
   const fmtFecha = (iso: string) =>
     new Date(iso).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -127,6 +134,27 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
     }
   }
 
+  async function enviarAFirmar() {
+    if (!datos || !miFirma) return
+    setEnviando(true)
+    try {
+      const res = await fetch(`/api/admin/tramites/${tramiteId}/contrato-domicilio/firma`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ datos, firma: miFirma }),
+      })
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || 'No se pudo enviar')
+      toast.success('Contrato enviado: el cliente ya lo puede firmar desde su panel')
+      setFirmando(false)
+      setAbierto(false)
+      window.dispatchEvent(new Event(EVENTO_FIRMA_ACTUALIZADA))
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'No se pudo enviar')
+    } finally {
+      setEnviando(false)
+    }
+  }
+
   const administradores = precarga?.personas.filter((p) => p.clave.startsWith('adm-')) ?? []
 
   const texto = (k: keyof DatosContrato, label: string, extra?: { hint?: string; placeholder?: string }) => (
@@ -146,7 +174,7 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
         <div className="min-w-0">
           <h3 className="text-heading text-ink">Contrato de domicilio</h3>
           <p className="text-body-sm text-ink-2">
-            Arma el contrato de domicilio en sede desde la plantilla Word, con los datos del trámite, y lo descarga en Word o PDF para firmarlo en Adobe Sign u otra plataforma. No se le manda nada al cliente.
+            Arma el contrato de domicilio en sede con los datos del trámite. Lo podés descargar en Word o PDF, o firmarlo vos y enviárselo al cliente para que lo firme desde su panel.
           </p>
         </div>
         <Button onClick={abrir} loading={cargando}>
@@ -307,6 +335,34 @@ export default function ContratoDomicilio({ tramiteId }: { tramiteId: string }) 
             >
               {ocupado !== 'pdf' && <FileType className="h-4 w-4" aria-hidden />}
               Descargar PDF
+            </Button>
+            <Button onClick={() => { setMiFirma(null); setFirmando(true) }} disabled={!!ocupado || !precarga?.pdfDisponible}>
+              <Send className="h-4 w-4" aria-hidden />
+              Firmar y enviar al cliente
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={firmando} onOpenChange={(v) => !enviando && setFirmando(v)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-title">Firmar por Ancalan y enviar</DialogTitle>
+            <DialogDescription>
+              Firmás como {datos?.prestador_representante || 'EL PRESTADOR'}. El cliente recibe un email y firma desde su
+              panel, con un código que le llega a su casilla. Si había otro contrato esperando su firma, queda anulado.
+            </DialogDescription>
+          </DialogHeader>
+          {firmando && datos && (
+            <PadFirma id="firma-prestador" nombre={datos.prestador_representante} onChange={setMiFirma} />
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="secondary" onClick={() => setFirmando(false)} disabled={enviando}>
+              Cancelar
+            </Button>
+            <Button onClick={enviarAFirmar} loading={enviando} disabled={!miFirma}>
+              {!enviando && <Send className="h-4 w-4" aria-hidden />}
+              Firmar y enviar
             </Button>
           </DialogFooter>
         </DialogContent>

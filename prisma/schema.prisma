@@ -317,6 +317,7 @@ model Tramite {
   consultasBcra    ConsultaBcra[]
   contratosDomicilio ContratoDomicilioVersion[]
   contratosDomicilioFirmados ContratoDomicilioFirmado[]
+  firmasContratoDomicilio ContratoDomicilioFirma[]
 
   @@index([userId])
   @@index([estadoGeneral])
@@ -709,6 +710,7 @@ model ContratoDomicilioVersion {
   formato   String // "pdf" | "docx": el de la primera descarga de esta versión
   generadoPor String? // nombre del admin
   firmados    ContratoDomicilioFirmado[]
+  firmas      ContratoDomicilioFirma[]
 
   createdAt DateTime @default(now())
 
@@ -733,8 +735,46 @@ model ContratoDomicilioFirmado {
   // Versión generada a la que corresponde (opcional).
   contratoVersionId String?
   contratoVersion   ContratoDomicilioVersion? @relation(fields: [contratoVersionId], references: [id], onDelete: SetNull)
+  firmaElectronica  ContratoDomicilioFirma?
 
   createdAt DateTime @default(now()) // fecha de carga
+
+  @@index([tramiteId, createdAt])
+}
+
+// Firma electrónica del contrato de domicilio dentro de QMS
+// (lib/contrato-domicilio-firma.ts). El admin la envía ya firmada por
+// EL PRESTADOR; el cliente la firma desde su panel con un código por email.
+// Al terminar se arma el PDF final y se guarda como ContratoDomicilioFirmado.
+// Estados: PENDIENTE (espera al cliente) → PROCESANDO (firmó; se arma el
+// PDF) → FIRMADO. ANULADA: el admin la reemplazó por otra.
+model ContratoDomicilioFirma {
+  id                String                   @id @default(cuid())
+  tramiteId         String
+  tramite           Tramite                  @relation(fields: [tramiteId], references: [id], onDelete: Cascade)
+  contratoVersionId String
+  contratoVersion   ContratoDomicilioVersion @relation(fields: [contratoVersionId], references: [id], onDelete: Cascade)
+  estado            String                   @default("PENDIENTE")
+
+  pdfPath String // contrato que ve el cliente antes de firmar (bucket documentos)
+  pdfHash String // SHA-256 de ese PDF
+
+  firmaPrestador Json // Firma (ver lib/contrato-domicilio-firma.ts)
+  firmasCliente  Json? // Firma[]
+  anexo          Json? // Anexo I completado por el cliente
+  eventos        Json  @default("[]") // registro de auditoría
+
+  // Código de verificación por email (sólo el hash).
+  codigoHash     String?
+  codigoVence    DateTime?
+  codigoIntentos Int       @default(0)
+
+  firmadoId  String?                   @unique
+  firmado    ContratoDomicilioFirmado? @relation(fields: [firmadoId], references: [id], onDelete: SetNull)
+  enviadoPor String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tramiteId, createdAt])
 }

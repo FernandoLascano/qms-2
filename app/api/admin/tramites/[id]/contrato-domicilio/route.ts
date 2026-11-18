@@ -14,6 +14,7 @@ import {
   type DatosContrato,
   type PersonaContrato,
 } from '@/lib/contrato-domicilio'
+import { guardarVersion } from '@/lib/contrato-domicilio-firma'
 
 // El conversor a PDF se apaga cuando no se usa: el primer pedido puede tardar.
 export const maxDuration = 60
@@ -52,36 +53,6 @@ async function requireAdmin() {
 /** Hoy en AAAA-MM-DD según el día argentino (valor por defecto de la fecha de firma). */
 function hoyArgentina() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
-}
-
-/** JSON con las claves ordenadas, para comparar dos juegos de datos. */
-function canonico(d: DatosContrato) {
-  return JSON.stringify(Object.fromEntries(Object.entries(d).sort(([a], [b]) => a.localeCompare(b))))
-}
-
-/**
- * Guarda los datos del contrato como una versión nueva del trámite. Si son
- * iguales a los de la última (p. ej. se bajó en Word y después en PDF), no
- * crea otra. Devuelve el número de versión.
- */
-async function guardarVersion(tramiteId: string, datos: DatosContrato, formato: string, generadoPor: string | null) {
-  for (let intento = 0; intento < 3; intento++) {
-    const ultima = await prisma.contratoDomicilioVersion.findFirst({
-      where: { tramiteId },
-      orderBy: { version: 'desc' },
-    })
-    if (ultima && canonico(ultima.datos as DatosContrato) === canonico(datos)) return ultima.version
-    try {
-      const nueva = await prisma.contratoDomicilioVersion.create({
-        data: { tramiteId, version: (ultima?.version ?? 0) + 1, datos, formato, generadoPor },
-      })
-      return nueva.version
-    } catch (e) {
-      // Dos descargas a la vez: la otra se quedó con el número; se reintenta.
-      if ((e as { code?: string })?.code !== 'P2002') throw e
-    }
-  }
-  throw new Error('No se pudo guardar la versión del contrato')
 }
 
 // GET - Datos precargados para el formulario del contrato
@@ -211,7 +182,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   }
 
   // El historial no frena la descarga: si falla, el contrato se entrega igual.
-  const version = await guardarVersion(id, body.datos, formato, session.user.name ?? null).catch((e) => {
+  const version = await guardarVersion(id, body.datos, formato, session.user.name ?? null).then((v) => v.version).catch((e) => {
     console.error('No se pudo guardar la versión del contrato de domicilio:', e)
     return null
   })

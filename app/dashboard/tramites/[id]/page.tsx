@@ -22,6 +22,7 @@ import { FestejoInscripta } from '@/components/cliente/FestejoInscripta'
 import MensajesDelEquipo from '@/components/cliente/MensajesDelEquipo'
 import DocumentosParaFirmar from '@/components/cliente/DocumentosParaFirmar'
 import DepositoCapitalCliente from '@/components/cliente/DepositoCapitalCliente'
+import FirmarContratoDomicilio from '@/components/cliente/FirmarContratoDomicilio'
 import ChatBox from '@/components/chat/ChatBox'
 import AsistenteTramite from '@/components/cliente/AsistenteTramite'
 import { pesos, nombreJurisdiccion, nombrePlan } from '@/lib/etiquetas'
@@ -73,6 +74,7 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
         include: { user: { select: { name: true, email: true } } },
         orderBy: { createdAt: 'asc' },
       },
+      firmasContratoDomicilio: { where: { estado: { not: 'ANULADA' } }, select: { id: true }, take: 1 },
     },
   })
 
@@ -195,6 +197,11 @@ async function TramiteDetallePage({ params, searchParams }: PageProps) {
                 tramiteId={tramite.id}
                 documentos={tramite.documentos || []}
               />
+            )}
+            {tramite.firmasContratoDomicilio.length > 0 && (
+              <div id="contrato-domicilio" className="scroll-mt-24">
+                <FirmarContratoDomicilio tramiteId={tramite.id} />
+              </div>
             )}
             {tramite.notificaciones?.length > 0 && (
               <MensajesDelEquipo notificaciones={tramite.notificaciones} />

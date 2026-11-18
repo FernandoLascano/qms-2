@@ -49,6 +49,7 @@ import SubirDocumentosParaCliente from '@/components/admin/SubirDocumentosParaCl
 import SubirBorrador from '@/components/admin/SubirBorrador'
 import ContratoDomicilio from '@/components/admin/ContratoDomicilio'
 import ContratoFirmadoTramite from '@/components/admin/ContratoFirmado'
+import FirmaContratoDomicilio from '@/components/admin/FirmaContratoDomicilio'
 import ChatBox from '@/components/chat/ChatBox'
 import ComprobantesReview from '@/components/admin/ComprobantesReview'
 import CuentaCapital from '@/components/admin/CuentaCapital'
@@ -374,6 +375,8 @@ async function AdminTramiteDetallePage({ params, searchParams }: PageProps) {
           />
 
           <ContratoDomicilio tramiteId={tramite.id} />
+
+          <FirmaContratoDomicilio tramiteId={tramite.id} />
 
           <ContratoFirmadoTramite tramiteId={tramite.id} />
 
