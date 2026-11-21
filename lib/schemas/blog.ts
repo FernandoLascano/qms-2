@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 
 function sanitizeText(s: string, maxLen: number): string {
   const clipped = s.slice(0, maxLen)
-  return DOMPurify.sanitize(clipped, {
-    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a', 'h2', 'h3'],
-    ALLOWED_ATTR: ['href', 'target', 'rel'],
+  return sanitizeHtml(clipped, {
+    allowedTags: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a', 'h2', 'h3'],
+    allowedAttributes: { a: ['href', 'target', 'rel'] },
   })
 }
 

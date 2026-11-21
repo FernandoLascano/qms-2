@@ -450,6 +450,17 @@ select:not([data-size="sm"]) {
   line-height: var(--text-body--line-height);
 }
 
+/* En pantallas táctiles, 16px en todos los campos (también los size="sm"):
+   por debajo de eso Safari en iPhone agranda la página al tocar un campo y
+   después no vuelve sola al tamaño normal. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 /* El select nativo no aplica line-height como el resto: se lo centra por
    alto de caja para que no baile respecto de los inputs de al lado. */
 select {

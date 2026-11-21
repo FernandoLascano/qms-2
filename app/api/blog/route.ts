@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { blogPostCreateSchema } from '@/lib/schemas/blog'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 import { revalidatePath } from 'next/cache'
 
 function emptyPublicListDevFallback(publicoSolo: boolean) {
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     const d = parsed.data
     const metaDescription =
       d.metaDescription != null
-        ? DOMPurify.sanitize(d.metaDescription, { ALLOWED_TAGS: [] })
+        ? sanitizeHtml(d.metaDescription, { allowedTags: [], allowedAttributes: {} })
         : null
 
     const post = await prisma.post.create({

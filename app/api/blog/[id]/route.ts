@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { blogPostUpdateSchema } from '@/lib/schemas/blog'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 import { revalidatePath } from 'next/cache'
 
 // GET - Obtener un post por ID
@@ -77,8 +77,9 @@ export async function PATCH(
 
     const patch = { ...parsed.data } as Record<string, unknown>
     if (patch.metaDescription !== undefined && patch.metaDescription !== null) {
-      patch.metaDescription = DOMPurify.sanitize(String(patch.metaDescription), {
-        ALLOWED_TAGS: [],
+      patch.metaDescription = sanitizeHtml(String(patch.metaDescription), {
+        allowedTags: [],
+        allowedAttributes: {},
       })
     }
     if (patch.contenido !== undefined) {
