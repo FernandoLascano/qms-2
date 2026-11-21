@@ -452,12 +452,13 @@ select:not([data-size="sm"]) {
 
 /* En pantallas táctiles, 16px en todos los campos (también los size="sm"):
    por debajo de eso Safari en iPhone agranda la página al tocar un campo y
-   después no vuelve sola al tamaño normal. */
+   después no vuelve sola al tamaño normal. Lleva !important porque la regla
+   de arriba (select:not(...)) es más específica y le ganaba a los select. */
 @media (pointer: coarse) {
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   select {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
 
