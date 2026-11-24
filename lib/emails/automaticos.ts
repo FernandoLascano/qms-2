@@ -48,8 +48,10 @@ export function esCorreoAutomatico({
   }
 
   if (/\[FWD\]/.test(asunto)) return { automatico: true, seguro: true, motivo: 'reenvio-propio' }
-  if (casillaDeReenvio && remitente.toLowerCase() === casillaDeReenvio.toLowerCase() && ASUNTO_AUTOMATICO.test(asunto)) {
-    return { automatico: true, seguro: true, motivo: 'casilla-de-reenvio' }
+  // Lo que manda la propia casilla de reenvío no se reenvía nunca: volvería a
+  // ella misma. Sólo se archiva si además parece respuesta automática.
+  if (casillaDeReenvio && remitente.trim().toLowerCase() === casillaDeReenvio.trim().toLowerCase()) {
+    return { automatico: true, seguro: ASUNTO_AUTOMATICO.test(asunto), motivo: 'casilla-de-reenvio' }
   }
   // Sólo por el asunto: no se reenvía (eso corta el bucle), pero tampoco se
   // archiva, por si era una persona.
